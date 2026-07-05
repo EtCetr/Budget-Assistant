@@ -1,0 +1,58 @@
+# pubspec.yaml
+name: budget_assistant
+description: "Family Financial Assistant - Offline First, E2E Encrypted"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.5.1 # Указана в оригинальном pubspec
+  riverpod_annotation: ^2.3.5 # Указана в оригинальном pubspec
+
+  # Local Database (Offline-First)
+  drift: ^2.18.0 # Указана в оригинальном pubspec
+  sqlite3_flutter_libs: ^0.5.21 # Указана в оригинальном pubspec
+  path_provider: ^2.1.3 # Указана в оригинальном pubspec
+  path: ^1.9.0 # Указана в оригинальном pubspec
+
+  # Navigation
+  go_router: ^14.2.0 # Указана в оригинальном pubspec
+
+  # Security
+  flutter_secure_storage: ^9.2.2 # Указана в оригинальном pubspec
+
+  # Utils & Models
+  freezed_annotation: ^2.4.1 # Указана в оригинальном pubspec
+  json_annotation: ^4.9.0 # Указана в оригинальном pubspec
+  logger: ^2.3.0 # Указана в оригинальном pubspec
+  intl: ^0.19.0 # Указана в оригинальном pubspec
+
+  # Networking (может понадобиться для Supabase позже, но включена в оригинальный pubspec)
+  supabase_flutter: ^2.5.4 # Указана в оригинальном pubspec
+  dio: ^5.4.3+1 # Указана в оригинальном pubspec
+
+  # Crypto (указан в оригинальном pubspec, может быть полезен для HKDF/sha256)
+  crypto: ^3.0.3 # Замените на актуальную стабильную версию, например, ^3.0.3 или новее
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+  # Code Generation
+  build_runner: ^2.4.9
+  freezed: ^2.5.2
+  json_serializable: ^6.8.0
+  drift_dev: ^2.18.0
+  riverpod_generator: ^2.4.0
+  custom_lint: ^0.6.4
+  riverpod_lint: ^2.3.10
+
+flutter:
+  uses-material-design: true
