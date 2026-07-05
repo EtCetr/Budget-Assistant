@@ -8,6 +8,12 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "adaptive_number",
+      "rootUri": "file:///D:/Flutter/PubCache/hosted/pub.dev/adaptive_number-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "analyzer",
       "rootUri": "file:///D:/Flutter/PubCache/hosted/pub.dev/analyzer-6.4.1",
       "packageUri": "lib/",
@@ -195,9 +201,9 @@
     },
     {
       "name": "dart_jsonwebtoken",
-      "rootUri": "file:///D:/Flutter/PubCache/hosted/pub.dev/dart_jsonwebtoken-3.4.1",
+      "rootUri": "file:///D:/Flutter/PubCache/hosted/pub.dev/dart_jsonwebtoken-3.1.1",
       "packageUri": "lib/",
-      "languageVersion": "3.0"
+      "languageVersion": "2.12"
     },
     {
       "name": "dart_style",
@@ -228,6 +234,18 @@
       "rootUri": "file:///D:/Flutter/PubCache/hosted/pub.dev/drift_dev-2.21.2",
       "packageUri": "lib/",
       "languageVersion": "3.3"
+    },
+    {
+      "name": "drift_flutter",
+      "rootUri": "file:///D:/Flutter/PubCache/hosted/pub.dev/drift_flutter-0.2.7",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "ed25519_edwards",
+      "rootUri": "file:///D:/Flutter/PubCache/hosted/pub.dev/ed25519_edwards-0.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "fake_async",
@@ -512,6 +530,12 @@
       "languageVersion": "3.2"
     },
     {
+      "name": "mocktail",
+      "rootUri": "file:///D:/Flutter/PubCache/hosted/pub.dev/mocktail-1.0.5",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "objective_c",
       "rootUri": "file:///D:/Flutter/PubCache/hosted/pub.dev/objective_c-9.4.1",
       "packageUri": "lib/",
@@ -585,7 +609,7 @@
     },
     {
       "name": "pointycastle",
-      "rootUri": "file:///D:/Flutter/PubCache/hosted/pub.dev/pointycastle-4.0.0",
+      "rootUri": "file:///D:/Flutter/PubCache/hosted/pub.dev/pointycastle-3.9.1",
       "packageUri": "lib/",
       "languageVersion": "3.2"
     },
