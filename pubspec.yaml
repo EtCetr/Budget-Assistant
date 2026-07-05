@@ -1,63 +1,69 @@
-# pubspec.yaml
 name: budget_assistant
 description: "Family Financial Assistant - Offline First, E2E Encrypted"
 publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.3.0 <4.0.0' # Обновлено с 3.12.0 для совместимости с выбранными зависимостями
+  sdk: '>=3.10.0 <4.0.0' # Обновлено для поддержки analyzer 12.x и новых пакетов
 
 dependencies:
   flutter:
     sdk: flutter
 
-  # State Management
-  flutter_riverpod: ^2.5.1
-  riverpod_annotation: ^2.3.5
+  # State Management (Riverpod 3.x/4.x ecosystem)
+  flutter_riverpod: ^3.3.2
+  riverpod_annotation: ^4.0.3
 
   # Local Database (Offline-First)
-  drift: ^2.18.0 # Соответствует drift_dev ^2.18.0
-  drift_flutter: ^0.2.7
-  sqlite3: ^2.4.3 # <-- ВЕРНУЛИСЬ К ВЕРСИИ, КОТОРАЯ СОВМЕСТИМА С drift_dev ^2.18.0
+  drift: ^2.34.0
+  drift_flutter: ^0.3.0
+  sqlite3: ^3.1.5 # ВАЖНО: drift 2.34.0 требует sqlite3 ^3.1.5
   path_provider: ^2.1.5
   path: ^1.9.1
 
   # Navigation
-  go_router: ^14.2.0
+  go_router: ^14.8.1
 
   # Security
-  flutter_secure_storage: ^9.2.2
+  flutter_secure_storage: ^9.2.4
 
   # Utils & Models
-  freezed_annotation: ^2.4.1
+  freezed_annotation: ^3.1.0
   json_annotation: ^4.9.0
-  logger: ^2.3.0
-  intl: ^0.19.0
+  logger: ^2.5.0
+  intl: ^0.20.1
 
   # Networking
-  supabase_flutter: ^2.5.4
-  dio: ^5.4.3+1
+  supabase_flutter: ^2.8.2
+  dio: ^5.7.0
 
-  # Crypto
-  crypto: ^3.0.3
-  pointycastle: ^3.7.3
+  # Crypto (Для AES-256-GCM и HKDF)
+  crypto: ^3.0.6
+  pointycastle: ^3.9.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 
-  # Code Generation
-  build_runner: ^2.4.9
-  freezed: ^2.5.2
-  json_serializable: ^6.8.0
-  drift_dev: ^2.18.0 # <-- ОСТАЕТСЯ ^2.18.0
-  riverpod_generator: ^2.4.0
-  custom_lint: ^0.6.4
-  riverpod_lint: ^2.3.10
-
+  # Code Generation (Золотая комбинация для analyzer ^12.0.0)
+  build_runner: ^2.4.14
+  
+  # ВНИМАНИЕ: ТОЧНЫЕ ВЕРСИИ (без ^) для предотвращения подтягивания analyzer 13.x
+  freezed: 3.2.6-dev.1 # Поддерживает analyzer >=12.0.0 <13.0.0
+  json_serializable: ^6.9.2
+  drift_dev: 2.34.0 # Поддерживает analyzer >=10.0.0 <13.0.0
+  
+  riverpod_generator: ^4.0.4 # Требует analyzer ^12.0.0
+  
   # Mocking (for tests)
-  mocktail: ^1.0.3
+  mocktail: ^1.0.4
+
+  # ВРЕМЕННО УДАЛЕНО ИЗ-ЗА КОНФЛИКТА analyzer:
+  # custom_lint и riverpod_lint требуют старых версий analyzer и блокируют build_runner.
+  # Это не влияет на генерацию кода и работу приложения.
+  # custom_lint: ^0.7.0
+  # riverpod_lint: ^3.0.0
 
 flutter:
   uses-material-design: true

@@ -3,7 +3,6 @@ import 'package:crypto/crypto.dart';
 import '../exceptions/security_exceptions.dart';
 
 /// Утилита для деривации ключей по стандарту HKDF (RFC 5869).
-/// Используется для безопасной передачи мастер-ключа пространства через invite_token.
 class HkdfUtils {
   /// HMAC-based Extract
   static Uint8List extract(Uint8List salt, Uint8List ikm) {
@@ -18,7 +17,8 @@ class HkdfUtils {
   /// HMAC-based Expand
   static Uint8List expand(Uint8List prk, Uint8List info, int length) {
     try {
-      final hashLen = 32; // SHA-256 output length
+      const hashLen =
+          32; // <-- ИСПРАВЛЕНО: final -> const (SHA-256 output length)
       final n = (length + hashLen - 1) ~/ hashLen;
       var okm = <int>[];
       var t = Uint8List(0);

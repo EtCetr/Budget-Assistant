@@ -6,9 +6,21 @@ final secureStorageServiceProvider = Provider<SecureStorageService>((ref) {
   return SecureStorageService();
 });
 
-// Заглушка для активного пространства.
-// Будет обновлена в Фазе 1 (Этап 3) при реализации Multi-Group.
-final currentSpaceIdProvider = StateProvider<String?>((ref) => null);
+// ИСПРАВЛЕНО: StateProvider удален в Riverpod 3.x.
+// Используем NotifierProvider для управления состоянием без code generation.
+class CurrentSpaceIdNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void set(String? spaceId) {
+    state = spaceId;
+  }
+}
+
+final currentSpaceIdProvider =
+    NotifierProvider<CurrentSpaceIdNotifier, String?>(
+      CurrentSpaceIdNotifier.new,
+    );
 
 final encryptionServiceProvider = Provider<EncryptionService>((ref) {
   final secureStorage = ref.watch(secureStorageServiceProvider);
