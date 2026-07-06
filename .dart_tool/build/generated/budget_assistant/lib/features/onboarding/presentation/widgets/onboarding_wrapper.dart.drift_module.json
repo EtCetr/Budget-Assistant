@@ -1,0 +1,14 @@
+{
+  "elements": {},
+  "imports": [
+    "package:flutter/material.dart",
+    "package:flutter_riverpod/flutter_riverpod.dart",
+    "package:budget_assistant/features/onboarding/domain/enums/onboarding_step.dart",
+    "package:budget_assistant/features/onboarding/domain/notifiers/onboarding_notifier.dart",
+    "package:budget_assistant/features/onboarding/presentation/screens/welcome_screen.dart",
+    "package:budget_assistant/features/onboarding/presentation/screens/base_currency_screen.dart",
+    "package:budget_assistant/features/onboarding/presentation/screens/security_setup_screen.dart",
+    "package:budget_assistant/features/onboarding/presentation/screens/space_decision_screen.dart",
+    "package:budget_assistant/features/onboarding/presentation/screens/first_account_screen.dart"
+  ]
+}

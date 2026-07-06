@@ -1,0 +1,7 @@
+{
+  "elements": {},
+  "imports": [
+    "package:freezed_annotation/freezed_annotation.dart",
+    "package:budget_assistant/features/onboarding/domain/enums/onboarding_step.dart"
+  ]
+}

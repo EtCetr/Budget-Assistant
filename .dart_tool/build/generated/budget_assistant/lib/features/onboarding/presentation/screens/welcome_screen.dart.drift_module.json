@@ -1,0 +1,8 @@
+{
+  "elements": {},
+  "imports": [
+    "package:flutter/material.dart",
+    "package:flutter_riverpod/flutter_riverpod.dart",
+    "package:budget_assistant/features/onboarding/domain/notifiers/onboarding_notifier.dart"
+  ]
+}

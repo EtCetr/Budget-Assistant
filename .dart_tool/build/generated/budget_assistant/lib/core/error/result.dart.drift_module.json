@@ -1,6 +1,0 @@
-{
-  "elements": {},
-  "imports": [
-    "package:budget_assistant/core/error/failures.dart"
-  ]
-}
