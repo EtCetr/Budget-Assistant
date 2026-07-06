@@ -1,0 +1,9 @@
+// lib/core/database/tables/tables.dart
+export 'syncable_mixin.dart';
+export 'users.dart';
+export 'spaces.dart';
+export 'memberships.dart';
+export 'app_settings.dart';
+export 'notifications.dart';
+export 'sync_conflicts.dart';
+export 'sync_logs.dart';

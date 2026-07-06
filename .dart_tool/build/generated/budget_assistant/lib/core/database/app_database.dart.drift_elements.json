@@ -1,0 +1,1 @@
+{"valid_import":true,"imports":[{"uri":"package:drift/drift.dart","transitive":false},{"uri":"package:drift_flutter/drift_flutter.dart","transitive":false},{"uri":"package:budget_assistant/core/database/tables/tables.dart","transitive":false}],"elements":[{"kind":"database","name":"AppDatabase","dart_name":"AppDatabase"}]}

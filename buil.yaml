@@ -1,0 +1,17 @@
+# build.yaml
+targets:
+  $default:
+    builders:
+      freezed:
+        options:
+          generic_argument_factories: true
+          when: none
+          union_when: none
+          union_key: runtime_type
+          copy_with: true
+      json_serializable:
+        options:
+          any_map: false
+          checked: true
+          explicit_to_json: true
+          field_rename: none

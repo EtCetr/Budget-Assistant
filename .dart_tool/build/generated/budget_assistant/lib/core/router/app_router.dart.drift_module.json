@@ -1,0 +1,7 @@
+{
+  "elements": {},
+  "imports": [
+    "package:go_router/go_router.dart",
+    "package:budget_assistant/features/home/presentation/screens/home_screen.dart"
+  ]
+}

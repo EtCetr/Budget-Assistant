@@ -29,7 +29,7 @@ dependencies:
 
   # Utils & Models
   freezed_annotation: ^3.1.0
-  json_annotation: ^4.9.0
+  json_annotation: ^4.12.0
   logger: ^2.5.0
   intl: ^0.20.1
 

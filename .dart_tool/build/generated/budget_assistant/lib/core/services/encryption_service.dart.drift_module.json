@@ -1,0 +1,9 @@
+{
+  "elements": {},
+  "imports": [
+    "package:logger/logger.dart",
+    "package:pointycastle/export.dart",
+    "package:budget_assistant/core/services/secure_storage_service.dart",
+    "package:budget_assistant/core/exceptions/security_exceptions.dart"
+  ]
+}

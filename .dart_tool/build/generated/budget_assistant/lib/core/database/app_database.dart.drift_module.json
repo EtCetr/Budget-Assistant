@@ -1,0 +1,87 @@
+{
+  "elements": {
+    "AppDatabase": {
+      "id": {
+        "library_uri": "package:budget_assistant/core/database/app_database.dart",
+        "name": "AppDatabase"
+      },
+      "declaration": {
+        "source_uri": "package:budget_assistant/core/database/app_database.dart",
+        "offset": 352,
+        "name": "AppDatabase"
+      },
+      "references": [
+        {
+          "library_uri": "package:budget_assistant/core/database/tables/users.dart",
+          "name": "users"
+        },
+        {
+          "library_uri": "package:budget_assistant/core/database/tables/spaces.dart",
+          "name": "spaces"
+        },
+        {
+          "library_uri": "package:budget_assistant/core/database/tables/memberships.dart",
+          "name": "memberships"
+        },
+        {
+          "library_uri": "package:budget_assistant/core/database/tables/app_settings.dart",
+          "name": "app_settings"
+        },
+        {
+          "library_uri": "package:budget_assistant/core/database/tables/notifications.dart",
+          "name": "notifications"
+        },
+        {
+          "library_uri": "package:budget_assistant/core/database/tables/sync_conflicts.dart",
+          "name": "sync_conflicts"
+        },
+        {
+          "library_uri": "package:budget_assistant/core/database/tables/sync_logs.dart",
+          "name": "sync_logs"
+        }
+      ],
+      "type": "database",
+      "tables": [
+        {
+          "library_uri": "package:budget_assistant/core/database/tables/users.dart",
+          "name": "users"
+        },
+        {
+          "library_uri": "package:budget_assistant/core/database/tables/spaces.dart",
+          "name": "spaces"
+        },
+        {
+          "library_uri": "package:budget_assistant/core/database/tables/memberships.dart",
+          "name": "memberships"
+        },
+        {
+          "library_uri": "package:budget_assistant/core/database/tables/app_settings.dart",
+          "name": "app_settings"
+        },
+        {
+          "library_uri": "package:budget_assistant/core/database/tables/notifications.dart",
+          "name": "notifications"
+        },
+        {
+          "library_uri": "package:budget_assistant/core/database/tables/sync_conflicts.dart",
+          "name": "sync_conflicts"
+        },
+        {
+          "library_uri": "package:budget_assistant/core/database/tables/sync_logs.dart",
+          "name": "sync_logs"
+        }
+      ],
+      "views": [],
+      "includes": [],
+      "queries": [],
+      "schema_version": 1,
+      "daos": [],
+      "has_constructor_arg": false
+    }
+  },
+  "imports": [
+    "package:drift/drift.dart",
+    "package:drift_flutter/drift_flutter.dart",
+    "package:budget_assistant/core/database/tables/tables.dart"
+  ]
+}

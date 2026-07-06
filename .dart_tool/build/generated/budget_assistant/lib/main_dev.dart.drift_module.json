@@ -1,0 +1,10 @@
+{
+  "elements": {},
+  "imports": [
+    "package:flutter/material.dart",
+    "package:flutter_riverpod/flutter_riverpod.dart",
+    "package:budget_assistant/app.dart",
+    "package:budget_assistant/core/config/app_config.dart",
+    "package:budget_assistant/core/utils/logger.dart"
+  ]
+}
