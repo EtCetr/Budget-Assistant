@@ -1,25 +1,34 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/logger.dart';
 import '../exceptions/security_exceptions.dart';
 
 /// Сервис-обёртка над flutter_secure_storage.
 /// Гарантирует, что все ошибки работы с Android Keystore перехватываются и логируются.
 class SecureStorageService {
   final FlutterSecureStorage _storage;
-  final Logger _logger;
 
-  SecureStorageService({
-    FlutterSecureStorage? storage,
-    Logger? logger,
-  })  : _storage = storage ?? const FlutterSecureStorage(),
-        _logger = logger ?? Logger();
+  SecureStorageService({FlutterSecureStorage? storage})
+    : _storage =
+          storage ??
+          const FlutterSecureStorage(
+            aOptions: AndroidOptions(encryptedSharedPreferences: true),
+          );
 
   Future<String?> read(String key) async {
     try {
       return await _storage.read(key: key);
-    } catch (e, s) {
-      _logger.e('SecureStorage read error for key: $key',
-          error: e, stackTrace: s);
+    } on PlatformException catch (e) {
+      // Android Keystore: ключ инвалидирован (новый отпечаток/PIN)
+      if (e.code == '-4' || e.code.contains('KeyPermanentlyInvalidated')) {
+        AppLogger.w('Key permanently invalidated for $key: ${e.message}');
+        await _storage.delete(key: key);
+        throw KeyInvalidatedException(key);
+      }
+      AppLogger.e('SecureStorage read error: $key - ${e.message}');
+      throw SecurityException('Failed to read from SecureStorage', e);
+    } catch (e) {
+      AppLogger.e('SecureStorage read error: $key - $e');
       throw SecurityException('Failed to read from SecureStorage', e);
     }
   }
@@ -27,9 +36,8 @@ class SecureStorageService {
   Future<void> write(String key, String value) async {
     try {
       await _storage.write(key: key, value: value);
-    } catch (e, s) {
-      _logger.e('SecureStorage write error for key: $key',
-          error: e, stackTrace: s);
+    } catch (e) {
+      AppLogger.e('SecureStorage write error: $key - $e');
       throw SecurityException('Failed to write to SecureStorage', e);
     }
   }
@@ -37,9 +45,8 @@ class SecureStorageService {
   Future<void> delete(String key) async {
     try {
       await _storage.delete(key: key);
-    } catch (e, s) {
-      _logger.e('SecureStorage delete error for key: $key',
-          error: e, stackTrace: s);
+    } catch (e) {
+      AppLogger.e('SecureStorage delete error: $key - $e');
       throw SecurityException('Failed to delete from SecureStorage', e);
     }
   }
@@ -47,9 +54,8 @@ class SecureStorageService {
   Future<bool> containsKey(String key) async {
     try {
       return await _storage.containsKey(key: key);
-    } catch (e, s) {
-      _logger.e('SecureStorage containsKey error for key: $key',
-          error: e, stackTrace: s);
+    } catch (e) {
+      AppLogger.e('SecureStorage containsKey error: $key - $e');
       return false;
     }
   }

@@ -7,7 +7,10 @@ class HkdfUtils {
   /// HMAC-based Extract
   static Uint8List extract(Uint8List salt, Uint8List ikm) {
     try {
-      final hmac = Hmac(sha256, salt);
+      // RFC 5869 Section 2.2: если salt пустой, заменяем на HashLen нулей
+      final effectiveSalt = salt.isEmpty ? Uint8List(32) : salt;
+
+      final hmac = Hmac(sha256, effectiveSalt);
       return Uint8List.fromList(hmac.convert(ikm).bytes);
     } catch (e) {
       throw SecurityException('HKDF Extract failed', e);
@@ -17,8 +20,15 @@ class HkdfUtils {
   /// HMAC-based Expand
   static Uint8List expand(Uint8List prk, Uint8List info, int length) {
     try {
-      const hashLen =
-          32; // <-- ИСПРАВЛЕНО: final -> const (SHA-256 output length)
+      const hashLen = 32; // SHA-256 output length
+
+      // RFC 5869 Section 2.3: L <= 255 * HashLen
+      if (length < 0 || length > 255 * hashLen) {
+        throw SecurityException(
+          'HKDF Expand: length must be 0..8160, got $length',
+        );
+      }
+
       final n = (length + hashLen - 1) ~/ hashLen;
       var okm = <int>[];
       var t = Uint8List(0);

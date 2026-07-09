@@ -5,6 +5,7 @@
     "package:flutter_riverpod/flutter_riverpod.dart",
     "package:supabase_flutter/supabase_flutter.dart",
     "package:budget_assistant/app.dart",
-    "package:budget_assistant/core/services/global_error_handler.dart"
+    "package:budget_assistant/core/services/global_error_handler.dart",
+    "package:budget_assistant/core/logger.dart"
   ]
 }

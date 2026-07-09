@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:logger/logger.dart';
 import 'package:pointycastle/export.dart';
+import 'package:budget_assistant/core/logger.dart';
 import 'secure_storage_service.dart';
 import '../exceptions/security_exceptions.dart';
 
@@ -10,14 +10,10 @@ import '../exceptions/security_exceptions.dart';
 /// Обеспечивает конфиденциальность и проверку целостности (Auth Tag).
 class EncryptionService {
   final SecureStorageService _secureStorage;
-  final Logger _logger;
   final Random _random = Random.secure();
 
-  EncryptionService({
-    required SecureStorageService secureStorage,
-    Logger? logger,
-  })  : _secureStorage = secureStorage,
-        _logger = logger ?? Logger();
+  EncryptionService({required SecureStorageService secureStorage})
+    : _secureStorage = secureStorage;
 
   Future<Uint8List> _getKey(String spaceId) async {
     final keyString = await _secureStorage.read('enc_key_$spaceId');
@@ -40,20 +36,23 @@ class EncryptionService {
       cipher.init(true, params);
       return cipher.process(plaintext);
     } catch (e, s) {
-      _logger.e('AES-GCM Encryption failed', error: e, stackTrace: s);
+      AppLogger.e('AES-GCM Encryption failed', e, s);
       throw EncryptionException('AES-GCM Encryption failed', e);
     }
   }
 
   Uint8List _decryptAesGcm(
-      Uint8List key, Uint8List iv, Uint8List ciphertextWithTag) {
+    Uint8List key,
+    Uint8List iv,
+    Uint8List ciphertextWithTag,
+  ) {
     try {
       final cipher = GCMBlockCipher(AESEngine());
       final params = AEADParameters(KeyParameter(key), 128, iv, Uint8List(0));
       cipher.init(false, params);
       return cipher.process(ciphertextWithTag);
     } catch (e, s) {
-      _logger.e('AES-GCM Decryption failed', error: e, stackTrace: s);
+      AppLogger.e('AES-GCM Decryption failed', e, s);
       throw DecryptionException('AES-GCM Decryption failed or invalid tag', e);
     }
   }
@@ -63,8 +62,11 @@ class EncryptionService {
       final key = await _getKey(spaceId);
       final iv = _generateIv();
       final plaintextBytes = utf8.encode(plaintext);
-      final ciphertextWithTag =
-          _encryptAesGcm(key, iv, Uint8List.fromList(plaintextBytes));
+      final ciphertextWithTag = _encryptAesGcm(
+        key,
+        iv,
+        Uint8List.fromList(plaintextBytes),
+      );
 
       // Формат payload: IV (12 bytes) + Ciphertext + Tag (16 bytes)
       final payload = Uint8List(iv.length + ciphertextWithTag.length);
@@ -105,8 +107,11 @@ class EncryptionService {
       final iv = _generateIv();
       // Конвертируем Int64 (копейки) в 8 байт Big Endian
       final bytes = ByteData(8)..setInt64(0, value, Endian.big);
-      final ciphertextWithTag =
-          _encryptAesGcm(key, iv, bytes.buffer.asUint8List());
+      final ciphertextWithTag = _encryptAesGcm(
+        key,
+        iv,
+        bytes.buffer.asUint8List(),
+      );
 
       final payload = Uint8List(iv.length + ciphertextWithTag.length);
       payload.setAll(0, iv);

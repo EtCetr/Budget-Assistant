@@ -30,3 +30,18 @@ class DecryptionException extends SecurityException {
     super.cause,
   ]); // <-- ИСПРАВЛЕНО: super parameters
 }
+
+/// Исключение: ключ шифрования был инвалидирован Android Keystore.
+/// Например, пользователь добавил новый отпечаток или сменил PIN устройства.
+/// Приложение должно удалить старый ключ и попросить пользователя создать новый.
+class KeyInvalidatedException implements Exception {
+  final String keyName;
+  final String message;
+
+  KeyInvalidatedException(this.keyName)
+    : message =
+          'Key "$keyName" was permanently invalidated by Android Keystore';
+
+  @override
+  String toString() => 'KeyInvalidatedException: $message';
+}
