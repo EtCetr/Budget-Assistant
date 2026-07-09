@@ -1,0 +1,104 @@
+// lib/features/categories/data/datasources/category_dao.dart
+import 'package:drift/drift.dart';
+import '../../../../core/database/app_database.dart';
+import '../models/category_model.dart';
+
+part 'category_dao.g.dart';
+
+@DriftAccessor(tables: [Categories])
+class CategoryDao extends DatabaseAccessor<AppDatabase>
+    with _$CategoryDaoMixin {
+  CategoryDao(super.db);
+
+  Future<List<CategoryModel>> getCategoriesByUserId(String userId) async {
+    try {
+      final query = select(categories)..where((t) => t.userId.equals(userId));
+      final results = await query.get();
+
+      return results
+          .map(
+            (row) => CategoryModel(
+              id: row.id,
+              spaceId: row.spaceId,
+              userId: row.userId,
+              parentId: row.parentId,
+              name: row.name,
+              type: row.type,
+              iconEmoji: row.iconEmoji,
+              colorHex: row.colorHex,
+              isPinnedForCashback: row.isPinnedForCashback,
+              isSystem: row.isSystem,
+              sortOrder: row.sortOrder,
+              createdAt: row.createdAt,
+              updatedAt: row.updatedAt,
+              syncStatus: row.syncStatus,
+            ),
+          )
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to get categories: $e');
+    }
+  }
+
+  Future<void> insertCategory(CategoryModel category) async {
+    try {
+      await into(categories).insert(
+        CategoriesCompanion(
+          id: Value(category.id),
+          spaceId: Value(category.spaceId),
+          userId: Value(category.userId),
+          parentId: Value(category.parentId),
+          name: Value(category.name),
+          type: Value(category.type),
+          iconEmoji: Value(category.iconEmoji),
+          colorHex: Value(category.colorHex),
+          isPinnedForCashback: Value(category.isPinnedForCashback),
+          isSystem: Value(category.isSystem),
+          sortOrder: Value(category.sortOrder),
+          createdAt: Value(category.createdAt),
+          updatedAt: Value(category.updatedAt),
+          syncStatus: Value(category.syncStatus),
+        ),
+      );
+    } catch (e) {
+      throw Exception('Failed to insert category: $e');
+    }
+  }
+
+  Future<List<CategoryModel>> getCategoriesByParentId(String? parentId) async {
+    try {
+      final query = select(categories);
+
+      if (parentId == null) {
+        query.where((t) => t.parentId.isNull());
+      } else {
+        query.where((t) => t.parentId.equals(parentId));
+      }
+
+      final results = await query.get();
+
+      return results
+          .map(
+            (row) => CategoryModel(
+              id: row.id,
+              spaceId: row.spaceId,
+              userId: row.userId,
+              parentId: row.parentId,
+              name: row.name,
+              type: row.type,
+              iconEmoji: row.iconEmoji,
+              colorHex: row.colorHex,
+              isPinnedForCashback: row.isPinnedForCashback,
+              isSystem: row.isSystem,
+              sortOrder: row.sortOrder,
+              createdAt: row.createdAt,
+              updatedAt: row.updatedAt,
+              syncStatus: row.syncStatus,
+            ),
+          )
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to get categories by parent: $e');
+    }
+  }
+}

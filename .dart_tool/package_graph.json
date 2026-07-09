@@ -132,7 +132,7 @@
     },
     {
       "name": "build_runner",
-      "version": "2.15.0",
+      "version": "2.15.1",
       "dependencies": [
         "analyzer",
         "args",
@@ -222,7 +222,7 @@
     },
     {
       "name": "supabase_flutter",
-      "version": "2.15.4",
+      "version": "2.16.0",
       "dependencies": [
         "app_links",
         "async",
@@ -343,7 +343,7 @@
     },
     {
       "name": "drift",
-      "version": "2.34.0",
+      "version": "2.34.1",
       "dependencies": [
         "async",
         "collection",
@@ -490,7 +490,7 @@
     },
     {
       "name": "build_config",
-      "version": "1.3.0",
+      "version": "1.3.1",
       "dependencies": [
         "checked_yaml",
         "json_annotation",
@@ -500,7 +500,7 @@
     },
     {
       "name": "build",
-      "version": "4.0.6",
+      "version": "4.0.7",
       "dependencies": [
         "analyzer",
         "crypto",
@@ -773,7 +773,7 @@
     },
     {
       "name": "build_daemon",
-      "version": "4.1.1",
+      "version": "4.1.2",
       "dependencies": [
         "built_collection",
         "built_value",
@@ -905,7 +905,7 @@
     },
     {
       "name": "supabase",
-      "version": "2.13.4",
+      "version": "2.14.0",
       "dependencies": [
         "functions_client",
         "gotrue",
@@ -1396,7 +1396,7 @@
     },
     {
       "name": "realtime_client",
-      "version": "2.10.0",
+      "version": "2.11.0",
       "dependencies": [
         "collection",
         "http",
@@ -1417,7 +1417,7 @@
     },
     {
       "name": "gotrue",
-      "version": "2.25.0",
+      "version": "2.26.0",
       "dependencies": [
         "collection",
         "crypto",

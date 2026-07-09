@@ -1,0 +1,22 @@
+targets:
+  $default:
+    builders:
+      riverpod_generator:
+        enabled: true
+      drift_dev:
+        enabled: true
+      freezed:
+        enabled: true
+        options:
+          generic_argument_factories: true
+          when: false        # ИСПРАВЛЕНО: вместо "none" пишем false
+          union_when: false  # ИСПРАВЛЕНО: вместо "none" пишем false
+          union_key: runtime_type
+          copy_with: true
+      json_serializable:
+        enabled: true
+        options:
+          any_map: false
+          checked: true
+          explicit_to_json: true
+          field_rename: none

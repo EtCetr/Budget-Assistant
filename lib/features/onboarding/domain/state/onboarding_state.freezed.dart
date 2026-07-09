@@ -140,67 +140,6 @@ return $default(_that);case _:
 
 }
 }
-/// A variant of `when` that fallback to an `orElse` callback.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( OnboardingStep currentStep,  String? baseCurrency,  int? initialBalanceKopecks)?  $default,{required TResult orElse(),}) {final _that = this;
-switch (_that) {
-case _OnboardingState() when $default != null:
-return $default(_that.currentStep,_that.baseCurrency,_that.initialBalanceKopecks);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// As opposed to `map`, this offers destructuring.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case Subclass2(:final field2):
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( OnboardingStep currentStep,  String? baseCurrency,  int? initialBalanceKopecks)  $default,) {final _that = this;
-switch (_that) {
-case _OnboardingState():
-return $default(_that.currentStep,_that.baseCurrency,_that.initialBalanceKopecks);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `when` that fallback to returning `null`
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( OnboardingStep currentStep,  String? baseCurrency,  int? initialBalanceKopecks)?  $default,) {final _that = this;
-switch (_that) {
-case _OnboardingState() when $default != null:
-return $default(_that.currentStep,_that.baseCurrency,_that.initialBalanceKopecks);case _:
-  return null;
-
-}
-}
 
 }
 

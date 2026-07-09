@@ -148,67 +148,6 @@ return $default(_that);case _:
 
 }
 }
-/// A variant of `when` that fallback to an `orElse` callback.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email,  String displayName,  String? displayNameDative,  String? avatarUrl,  DateTime createdAt,  DateTime updatedAt,  String syncStatus)?  $default,{required TResult orElse(),}) {final _that = this;
-switch (_that) {
-case _UserDto() when $default != null:
-return $default(_that.id,_that.email,_that.displayName,_that.displayNameDative,_that.avatarUrl,_that.createdAt,_that.updatedAt,_that.syncStatus);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// As opposed to `map`, this offers destructuring.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case Subclass2(:final field2):
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email,  String displayName,  String? displayNameDative,  String? avatarUrl,  DateTime createdAt,  DateTime updatedAt,  String syncStatus)  $default,) {final _that = this;
-switch (_that) {
-case _UserDto():
-return $default(_that.id,_that.email,_that.displayName,_that.displayNameDative,_that.avatarUrl,_that.createdAt,_that.updatedAt,_that.syncStatus);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `when` that fallback to returning `null`
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email,  String displayName,  String? displayNameDative,  String? avatarUrl,  DateTime createdAt,  DateTime updatedAt,  String syncStatus)?  $default,) {final _that = this;
-switch (_that) {
-case _UserDto() when $default != null:
-return $default(_that.id,_that.email,_that.displayName,_that.displayNameDative,_that.avatarUrl,_that.createdAt,_that.updatedAt,_that.syncStatus);case _:
-  return null;
-
-}
-}
 
 }
 

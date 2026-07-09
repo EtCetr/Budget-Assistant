@@ -6,16 +6,24 @@ part of 'user_dto.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_UserDto _$UserDtoFromJson(Map<String, dynamic> json) => _UserDto(
-  id: json['id'] as String,
-  email: json['email'] as String,
-  displayName: json['displayName'] as String,
-  displayNameDative: json['displayNameDative'] as String?,
-  avatarUrl: json['avatarUrl'] as String?,
-  createdAt: DateTime.parse(json['createdAt'] as String),
-  updatedAt: DateTime.parse(json['updatedAt'] as String),
-  syncStatus: json['syncStatus'] as String,
-);
+_UserDto _$UserDtoFromJson(
+  Map<String, dynamic> json,
+) => $checkedCreate('_UserDto', json, ($checkedConvert) {
+  final val = _UserDto(
+    id: $checkedConvert('id', (v) => v as String),
+    email: $checkedConvert('email', (v) => v as String),
+    displayName: $checkedConvert('displayName', (v) => v as String),
+    displayNameDative: $checkedConvert(
+      'displayNameDative',
+      (v) => v as String?,
+    ),
+    avatarUrl: $checkedConvert('avatarUrl', (v) => v as String?),
+    createdAt: $checkedConvert('createdAt', (v) => DateTime.parse(v as String)),
+    updatedAt: $checkedConvert('updatedAt', (v) => DateTime.parse(v as String)),
+    syncStatus: $checkedConvert('syncStatus', (v) => v as String),
+  );
+  return val;
+});
 
 Map<String, dynamic> _$UserDtoToJson(_UserDto instance) => <String, dynamic>{
   'id': instance.id,
