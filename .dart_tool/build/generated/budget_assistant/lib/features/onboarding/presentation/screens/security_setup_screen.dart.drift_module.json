@@ -3,8 +3,7 @@
   "imports": [
     "package:flutter/material.dart",
     "package:flutter_riverpod/flutter_riverpod.dart",
-    "package:budget_assistant/features/onboarding/domain/notifiers/onboarding_notifier.dart",
-    "package:local_auth/local_auth.dart",
-    "package:flutter_secure_storage/flutter_secure_storage.dart"
+    "package:go_router/go_router.dart",
+    "package:budget_assistant/features/onboarding/domain/notifiers/onboarding_notifier.dart"
   ]
 }

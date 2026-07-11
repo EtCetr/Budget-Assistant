@@ -2,7 +2,6 @@
   "elements": {},
   "imports": [
     "package:flutter/material.dart",
-    "package:flutter_riverpod/flutter_riverpod.dart",
-    "package:budget_assistant/core/router/app_router.dart"
+    "package:budget_assistant/features/security/presentation/screens/pin_entry_screen.dart"
   ]
 }

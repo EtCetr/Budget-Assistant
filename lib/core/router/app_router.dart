@@ -3,14 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:budget_assistant/features/auth/domain/notifiers/auth_notifier.dart'; // <--- КРИТИЧНЫЙ ИМПОРТ
+import 'package:budget_assistant/features/auth/domain/notifiers/auth_notifier.dart';
 import 'package:budget_assistant/features/home/presentation/screens/home_screen.dart';
 import 'package:budget_assistant/features/onboarding/presentation/widgets/onboarding_wrapper.dart';
 import 'package:budget_assistant/features/auth/presentation/screens/auth_wrapper.dart';
 import 'package:budget_assistant/features/spaces/presentation/screens/space_selector_screen.dart';
 import 'package:budget_assistant/features/security/presentation/screens/app_lock_screen.dart';
 import 'package:budget_assistant/features/invites/presentation/screens/accept_invite_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/pin_onboarding_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/pin_entry_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/biometric_onboarding_screen.dart';
 import 'package:budget_assistant/core/router/routes.dart';
+
 part 'app_router.g.dart';
 
 @riverpod
@@ -53,6 +57,7 @@ class _AuthRefreshNotifier extends ChangeNotifier {
   late final ProviderSubscription _sub;
 
   _AuthRefreshNotifier(Ref ref) {
+    // ИСПРАВЛЕНО: authProvider -> authNotifierProvider
     _sub = ref.listen(authProvider, (_, __) {
       notifyListeners();
     });
@@ -67,6 +72,7 @@ class _AuthRefreshNotifier extends ChangeNotifier {
 
 @riverpod
 GoRouter appRouter(Ref ref) {
+  // ИСПРАВЛЕНО: authProvider -> authNotifierProvider
   final authStatus = ref.watch(authProvider);
   final refreshNotifier = _AuthRefreshNotifier(ref);
 
@@ -112,15 +118,36 @@ GoRouter appRouter(Ref ref) {
           return AcceptInviteScreen(token: token);
         },
       ),
+      // --- НОВЫЕ МАРШРУТЫ ДЛЯ БЕЗОПАСНОСТИ ---
+      GoRoute(
+        path: '/security/pin-onboarding',
+        name: 'pin_onboarding',
+        builder: (context, state) => const PinOnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/security/pin-entry',
+        name: 'pin_entry',
+        builder: (context, state) {
+          final mode = state.uri.queryParameters['mode'] ?? 'unlock';
+          return PinEntryScreen(mode: mode);
+        },
+      ),
+      GoRoute(
+        path: '/security/biometric-onboarding',
+        name: 'biometric_onboarding',
+        builder: (context, state) => const BiometricOnboardingScreen(),
+      ),
     ],
     redirect: (BuildContext context, GoRouterState state) {
       final isAppLocked = ref.read(appLockProvider);
       final location = state.uri.path;
 
+      // 1. Приоритет: Блокировка приложения
       if (isAppLocked && location != AppRoutes.lock) {
         return AppRoutes.lock;
       }
 
+      // 2. Не авторизован -> Auth
       if (authStatus == AuthStatus.unauthenticated) {
         if (!location.startsWith(AppRoutes.auth) &&
             !location.startsWith(AppRoutes.invite)) {
@@ -128,6 +155,7 @@ GoRouter appRouter(Ref ref) {
         }
       }
 
+      // 3. Авторизован -> Проверка онбординга
       if (authStatus == AuthStatus.authenticated) {
         if (location.startsWith(AppRoutes.auth)) {
           final onboardingCompleted =

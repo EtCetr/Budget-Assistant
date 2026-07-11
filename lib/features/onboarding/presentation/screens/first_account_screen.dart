@@ -1,10 +1,11 @@
-// lib/features/onboarding/presentation/screens/first_account_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:budget_assistant/core/router/app_router.dart';
+import 'package:budget_assistant/core/router/routes.dart';
 import 'package:budget_assistant/features/onboarding/domain/notifiers/onboarding_notifier.dart';
-import 'package:budget_assistant/core/utils/amount_utils.dart'; // Убедитесь, что этот файл существует
+import 'package:budget_assistant/core/utils/amount_utils.dart';
 
-// Изменено на ConsumerStatefulWidget для корректного dispose контроллера
 class FirstAccountScreen extends ConsumerStatefulWidget {
   const FirstAccountScreen({super.key});
 
@@ -13,8 +14,7 @@ class FirstAccountScreen extends ConsumerStatefulWidget {
 }
 
 class _FirstAccountScreenState extends ConsumerState<FirstAccountScreen> {
-  final TextEditingController _initialBalanceController =
-      TextEditingController();
+  final _initialBalanceController = TextEditingController();
 
   @override
   void dispose() {
@@ -37,9 +37,7 @@ class _FirstAccountScreenState extends ConsumerState<FirstAccountScreen> {
             const SizedBox(height: 16),
             TextField(
               controller: _initialBalanceController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
                 labelText: 'Initial Balance (₽)',
                 prefixIcon: Icon(Icons.money),
@@ -51,7 +49,6 @@ class _FirstAccountScreenState extends ConsumerState<FirstAccountScreen> {
                 final balanceStr = _initialBalanceController.text.trim();
                 if (balanceStr.isNotEmpty) {
                   try {
-                    // Парсинг в double допустим ТОЛЬКО на UI-слое перед конвертацией
                     final balanceInRubles = double.tryParse(balanceStr) ?? 0.0;
                     final balanceInKopecks = rublesToKopecks(balanceInRubles);
 
@@ -59,15 +56,19 @@ class _FirstAccountScreenState extends ConsumerState<FirstAccountScreen> {
                       'Creating account with balance: $balanceInKopecks kopecks',
                     );
 
-                    // Сохраняем баланс и завершаем онбординг
+                    // Сохраняем баланс
                     ref
                         .read(onboardingProvider.notifier)
                         .setInitialBalance(balanceInKopecks);
 
                     // TODO: Вызвать CreateAccountUseCase перед completeOnboarding
-                    ref
-                        .read(onboardingProvider.notifier)
-                        .completeOnboarding();
+                    
+                    // Завершаем онбординг
+                    ref.read(onboardingStatusProvider.notifier).complete();
+                    ref.read(onboardingProvider.notifier).completeOnboarding();
+                    
+                    // ✅ ЯВНАЯ НАВИГАЦИЯ на главный экран
+                    context.go(AppRoutes.home);
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Invalid amount: $e')),
