@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budget_assistant/app.dart';
 import 'package:budget_assistant/core/services/global_error_handler.dart';
 import 'package:budget_assistant/core/logger.dart';
+import 'package:budget_assistant/core/database/app_database.dart';
 
 Future<void> main() async {
   GlobalErrorHandler.runWithGuard(() async {
@@ -30,7 +31,12 @@ Future<void> main() async {
     // await EncryptionService.instance.init();
 
     AppLogger.i('App bootstrap completed successfully');
-
+    AppLogger.i('🚀 Forcing DB initialization...');
+    final db = AppDatabase();
+    // Простой запрос заставляет Drift открыть БД и запустить миграции
+    await db.customSelect('SELECT 1').get();
+    AppLogger.i('✅ DB initialized successfully');
+    await db.close();
     // 4. Запуск приложения — в ТОЙ ЖЕ зоне, что и ensureInitialized!
     runApp(const ProviderScope(child: BudgetAssistantApp()));
   });

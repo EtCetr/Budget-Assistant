@@ -7,7 +7,7 @@
       },
       "declaration": {
         "source_uri": "package:budget_assistant/core/database/app_database.dart",
-        "offset": 6034,
+        "offset": 6093,
         "name": "AppDatabase"
       },
       "references": [
@@ -146,7 +146,7 @@
       },
       "declaration": {
         "source_uri": "package:budget_assistant/core/database/app_database.dart",
-        "offset": 1408,
+        "offset": 1467,
         "name": "Accounts"
       },
       "references": [
@@ -170,7 +170,7 @@
           "nameInDart": "id",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 1451,
+            "offset": 1510,
             "name": "id"
           },
           "typeConverter": null,
@@ -191,7 +191,7 @@
           "nameInDart": "userId",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 1485,
+            "offset": 1544,
             "name": "userId"
           },
           "typeConverter": null,
@@ -226,7 +226,7 @@
           "nameInDart": "spaceId",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 1546,
+            "offset": 1605,
             "name": "spaceId"
           },
           "typeConverter": null,
@@ -261,7 +261,7 @@
           "nameInDart": "bankName",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 1620,
+            "offset": 1679,
             "name": "bankName"
           },
           "typeConverter": null,
@@ -282,7 +282,7 @@
           "nameInDart": "customName",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 1660,
+            "offset": 1719,
             "name": "customName"
           },
           "typeConverter": null,
@@ -303,7 +303,7 @@
           "nameInDart": "cardNumberMask",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 1702,
+            "offset": 1761,
             "name": "cardNumberMask"
           },
           "typeConverter": null,
@@ -324,7 +324,7 @@
           "nameInDart": "accountType",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 1759,
+            "offset": 1818,
             "name": "accountType"
           },
           "typeConverter": null,
@@ -345,7 +345,7 @@
           "nameInDart": "currency",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 1802,
+            "offset": 1861,
             "name": "currency"
           },
           "typeConverter": null,
@@ -366,7 +366,7 @@
           "nameInDart": "currentBalance",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 1841,
+            "offset": 1900,
             "name": "currentBalance"
           },
           "typeConverter": null,
@@ -387,7 +387,7 @@
           "nameInDart": "creditLimit",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 1889,
+            "offset": 1948,
             "name": "creditLimit"
           },
           "typeConverter": null,
@@ -408,7 +408,7 @@
           "nameInDart": "gracePeriodEnd",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 1950,
+            "offset": 2009,
             "name": "gracePeriodEnd"
           },
           "typeConverter": null,
@@ -429,7 +429,7 @@
           "nameInDart": "minPaymentAmount",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 2010,
+            "offset": 2069,
             "name": "minPaymentAmount"
           },
           "typeConverter": null,
@@ -450,7 +450,7 @@
           "nameInDart": "includeInPersonalBalance",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 2072,
+            "offset": 2131,
             "name": "includeInPersonalBalance"
           },
           "typeConverter": null,
@@ -480,7 +480,7 @@
           "nameInDart": "includeInFamilyBalance",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 2172,
+            "offset": 2231,
             "name": "includeInFamilyBalance"
           },
           "typeConverter": null,
@@ -510,7 +510,7 @@
           "nameInDart": "isSharedBalance",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 2271,
+            "offset": 2330,
             "name": "isSharedBalance"
           },
           "typeConverter": null,
@@ -540,7 +540,7 @@
           "nameInDart": "isSharedExpenses",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 2363,
+            "offset": 2422,
             "name": "isSharedExpenses"
           },
           "typeConverter": null,
@@ -570,7 +570,7 @@
           "nameInDart": "expenseDetailLevel",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 2456,
+            "offset": 2515,
             "name": "expenseDetailLevel"
           },
           "typeConverter": null,
@@ -600,7 +600,7 @@
           "nameInDart": "isSharedIncomes",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 2555,
+            "offset": 2614,
             "name": "isSharedIncomes"
           },
           "typeConverter": null,
@@ -630,7 +630,7 @@
           "nameInDart": "incomeDetailLevel",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 2647,
+            "offset": 2706,
             "name": "incomeDetailLevel"
           },
           "typeConverter": null,
@@ -660,7 +660,7 @@
           "nameInDart": "sortOrder",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 2744,
+            "offset": 2803,
             "name": "sortOrder"
           },
           "typeConverter": null,
@@ -681,7 +681,7 @@
           "nameInDart": "isArchived",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 2799,
+            "offset": 2858,
             "name": "isArchived"
           },
           "typeConverter": null,
@@ -711,7 +711,7 @@
           "nameInDart": "isSystem",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 2879,
+            "offset": 2938,
             "name": "isSystem"
           },
           "typeConverter": null,
@@ -741,7 +741,7 @@
           "nameInDart": "createdAt",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 2961,
+            "offset": 3020,
             "name": "createdAt"
           },
           "typeConverter": null,
@@ -762,7 +762,7 @@
           "nameInDart": "updatedAt",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 3010,
+            "offset": 3069,
             "name": "updatedAt"
           },
           "typeConverter": null,
@@ -783,7 +783,7 @@
           "nameInDart": "syncStatus",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 3055,
+            "offset": 3114,
             "name": "syncStatus"
           },
           "typeConverter": null,
@@ -833,7 +833,7 @@
       },
       "declaration": {
         "source_uri": "package:budget_assistant/core/database/app_database.dart",
-        "offset": 3184,
+        "offset": 3243,
         "name": "Mortgages"
       },
       "references": [
@@ -853,7 +853,7 @@
           "nameInDart": "id",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 3228,
+            "offset": 3287,
             "name": "id"
           },
           "typeConverter": null,
@@ -874,7 +874,7 @@
           "nameInDart": "accountId",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 3262,
+            "offset": 3321,
             "name": "accountId"
           },
           "typeConverter": null,
@@ -912,7 +912,7 @@
           "nameInDart": "initialLoanAmount",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 3337,
+            "offset": 3396,
             "name": "initialLoanAmount"
           },
           "typeConverter": null,
@@ -933,7 +933,7 @@
           "nameInDart": "propertyValue",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 3388,
+            "offset": 3447,
             "name": "propertyValue"
           },
           "typeConverter": null,
@@ -954,7 +954,7 @@
           "nameInDart": "interestRateBps",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 3435,
+            "offset": 3494,
             "name": "interestRateBps"
           },
           "typeConverter": null,
@@ -975,7 +975,7 @@
           "nameInDart": "remainingTermMonths",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 3484,
+            "offset": 3543,
             "name": "remainingTermMonths"
           },
           "typeConverter": null,
@@ -996,7 +996,7 @@
           "nameInDart": "monthlyPayment",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 3537,
+            "offset": 3596,
             "name": "monthlyPayment"
           },
           "typeConverter": null,
@@ -1017,7 +1017,7 @@
           "nameInDart": "nextPaymentDate",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 3590,
+            "offset": 3649,
             "name": "nextPaymentDate"
           },
           "typeConverter": null,
@@ -1038,7 +1038,7 @@
           "nameInDart": "createdAt",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 3656,
+            "offset": 3715,
             "name": "createdAt"
           },
           "typeConverter": null,
@@ -1059,7 +1059,7 @@
           "nameInDart": "updatedAt",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 3705,
+            "offset": 3764,
             "name": "updatedAt"
           },
           "typeConverter": null,
@@ -1080,7 +1080,7 @@
           "nameInDart": "syncStatus",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 3750,
+            "offset": 3809,
             "name": "syncStatus"
           },
           "typeConverter": null,
@@ -1130,7 +1130,7 @@
       },
       "declaration": {
         "source_uri": "package:budget_assistant/core/database/app_database.dart",
-        "offset": 3879,
+        "offset": 3938,
         "name": "Categories"
       },
       "references": [
@@ -1154,7 +1154,7 @@
           "nameInDart": "id",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 3924,
+            "offset": 3983,
             "name": "id"
           },
           "typeConverter": null,
@@ -1175,7 +1175,7 @@
           "nameInDart": "spaceId",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 3958,
+            "offset": 4017,
             "name": "spaceId"
           },
           "typeConverter": null,
@@ -1210,7 +1210,7 @@
           "nameInDart": "userId",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 4032,
+            "offset": 4091,
             "name": "userId"
           },
           "typeConverter": null,
@@ -1245,7 +1245,7 @@
           "nameInDart": "parentId",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 4093,
+            "offset": 4152,
             "name": "parentId"
           },
           "typeConverter": null,
@@ -1280,7 +1280,7 @@
           "nameInDart": "name",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 4172,
+            "offset": 4231,
             "name": "name"
           },
           "typeConverter": null,
@@ -1301,7 +1301,7 @@
           "nameInDart": "type",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 4208,
+            "offset": 4267,
             "name": "type"
           },
           "typeConverter": null,
@@ -1322,7 +1322,7 @@
           "nameInDart": "iconEmoji",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 4244,
+            "offset": 4303,
             "name": "iconEmoji"
           },
           "typeConverter": null,
@@ -1343,7 +1343,7 @@
           "nameInDart": "colorHex",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 4296,
+            "offset": 4355,
             "name": "colorHex"
           },
           "typeConverter": null,
@@ -1364,7 +1364,7 @@
           "nameInDart": "isPinnedForCashback",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 4347,
+            "offset": 4406,
             "name": "isPinnedForCashback"
           },
           "typeConverter": null,
@@ -1394,7 +1394,7 @@
           "nameInDart": "isSystem",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 4443,
+            "offset": 4502,
             "name": "isSystem"
           },
           "typeConverter": null,
@@ -1424,7 +1424,7 @@
           "nameInDart": "sortOrder",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 4520,
+            "offset": 4579,
             "name": "sortOrder"
           },
           "typeConverter": null,
@@ -1445,7 +1445,7 @@
           "nameInDart": "createdAt",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 4579,
+            "offset": 4638,
             "name": "createdAt"
           },
           "typeConverter": null,
@@ -1466,7 +1466,7 @@
           "nameInDart": "updatedAt",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 4628,
+            "offset": 4687,
             "name": "updatedAt"
           },
           "typeConverter": null,
@@ -1487,7 +1487,7 @@
           "nameInDart": "syncStatus",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 4673,
+            "offset": 4732,
             "name": "syncStatus"
           },
           "typeConverter": null,
@@ -1537,7 +1537,7 @@
       },
       "declaration": {
         "source_uri": "package:budget_assistant/core/database/app_database.dart",
-        "offset": 4802,
+        "offset": 4861,
         "name": "CategoryRules"
       },
       "references": [
@@ -1565,7 +1565,7 @@
           "nameInDart": "id",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 4850,
+            "offset": 4909,
             "name": "id"
           },
           "typeConverter": null,
@@ -1586,7 +1586,7 @@
           "nameInDart": "spaceId",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 4884,
+            "offset": 4943,
             "name": "spaceId"
           },
           "typeConverter": null,
@@ -1621,7 +1621,7 @@
           "nameInDart": "userId",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 4958,
+            "offset": 5017,
             "name": "userId"
           },
           "typeConverter": null,
@@ -1656,7 +1656,7 @@
           "nameInDart": "bankName",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 5019,
+            "offset": 5078,
             "name": "bankName"
           },
           "typeConverter": null,
@@ -1677,7 +1677,7 @@
           "nameInDart": "triggerString",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 5059,
+            "offset": 5118,
             "name": "triggerString"
           },
           "typeConverter": null,
@@ -1698,7 +1698,7 @@
           "nameInDart": "targetCategoryId",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 5104,
+            "offset": 5163,
             "name": "targetCategoryId"
           },
           "typeConverter": null,
@@ -1733,7 +1733,7 @@
           "nameInDart": "createdAt",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 5184,
+            "offset": 5243,
             "name": "createdAt"
           },
           "typeConverter": null,
@@ -1754,7 +1754,7 @@
           "nameInDart": "updatedAt",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 5233,
+            "offset": 5292,
             "name": "updatedAt"
           },
           "typeConverter": null,
@@ -1775,7 +1775,7 @@
           "nameInDart": "syncStatus",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/app_database.dart",
-            "offset": 5278,
+            "offset": 5337,
             "name": "syncStatus"
           },
           "typeConverter": null,
@@ -1837,6 +1837,7 @@
     "package:budget_assistant/core/database/daos/app_settings_dao.dart",
     "package:budget_assistant/core/database/daos/notifications_dao.dart",
     "package:budget_assistant/core/database/daos/sync_conflicts_dao.dart",
-    "package:budget_assistant/core/database/daos/sync_logs_dao.dart"
+    "package:budget_assistant/core/database/daos/sync_logs_dao.dart",
+    "package:budget_assistant/core/logger.dart"
   ]
 }

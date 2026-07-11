@@ -27,6 +27,10 @@ import 'daos/notifications_dao.dart';
 import 'daos/sync_conflicts_dao.dart';
 import 'daos/sync_logs_dao.dart';
 
+
+import 'package:budget_assistant/core/logger.dart';
+
+
 part 'app_database.g.dart';
 
 // ═══════════════════════════════════════════════════════════════
@@ -286,21 +290,36 @@ class AppDatabase extends _$AppDatabase {
       }
     },
 
+    
     beforeOpen: (details) async {
+      AppLogger.i('🔧 Migration details: wasCreated=${details.wasCreated}, hadUpgrade=${details.hadUpgrade}, versionNow=${details.versionNow}, versionBefore=${details.versionBefore}');
       // Включаем Foreign Keys (SQLite по умолчанию их не проверяет!)
       await customStatement('PRAGMA foreign_keys = ON');
       // WAL-режим: позволяет читать БД во время записи (критично для UI)
       await customStatement('PRAGMA journal_mode = WAL');
       // NORMAL вместо FULL: уменьшает overhead от sync, безопасно при WAL
       await customStatement('PRAGMA synchronous = NORMAL');
-    },
+            // Проверяем список таблиц ПОСЛЕ миграции
+      final tables = await customSelect("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name").get();
+      AppLogger.i('📋 Tables in DB: ${tables.map((r) => r.read<String>('name')).join(', ')}');
+    }
   );
 }
 
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'budget_assistant.sqlite'));
-    return NativeDatabase.createInBackground(file);
+    final dbPath = p.join(dbFolder.path, 'budget_assistant.sqlite');
+
+    AppLogger.i('📁 DB Path: $dbPath');
+    AppLogger.i(
+      '📂 Directory exists: ${await Directory(dbFolder.path).exists()}',
+    );
+
+    // Проверяем, существует ли файл ДО открытия
+    final fileExists = await File(dbPath).exists();
+    AppLogger.i('💾 DB file exists before open: $fileExists');
+
+    return NativeDatabase.createInBackground(File(dbPath));
   });
 }
