@@ -42,8 +42,8 @@ class UsersLocalDataSource {
       id: dto.id,
       email: dto.email,
       displayName: dto.displayName,
-      createdAt: dto.createdAt.toUtc(),
-      updatedAt: dto.updatedAt.toUtc(),
+      createdAt: Value(dto.createdAt.toUtc()),
+      updatedAt: Value(dto.updatedAt.toUtc()),
 
       // Nullable поля (оборачиваем в Value)
       displayNameDative: Value(dto.displayNameDative),

@@ -8,10 +8,55 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $UsersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
     'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _emailMeta = const VerificationMeta('email');
+  @override
+  late final GeneratedColumn<String> email = GeneratedColumn<String>(
+    'email',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -23,15 +68,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   @override
   late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
     'display_name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _emailMeta = const VerificationMeta('email');
-  @override
-  late final GeneratedColumn<String> email = GeneratedColumn<String>(
-    'email',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -60,50 +96,16 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
-    'syncStatus',
-  );
-  @override
-  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
-    'sync_status',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant('pending'),
-  );
   @override
   List<GeneratedColumn> get $columns => [
-    id,
-    displayName,
-    email,
-    displayNameDative,
-    avatarUrl,
     createdAt,
     updatedAt,
     syncStatus,
+    id,
+    email,
+    displayName,
+    displayNameDative,
+    avatarUrl,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -117,10 +119,36 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
       context.missing(_idMeta);
+    }
+    if (data.containsKey('email')) {
+      context.handle(
+        _emailMeta,
+        email.isAcceptableOrUnknown(data['email']!, _emailMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_emailMeta);
     }
     if (data.containsKey('display_name')) {
       context.handle(
@@ -132,14 +160,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       );
     } else if (isInserting) {
       context.missing(_displayNameMeta);
-    }
-    if (data.containsKey('email')) {
-      context.handle(
-        _emailMeta,
-        email.isAcceptableOrUnknown(data['email']!, _emailMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_emailMeta);
     }
     if (data.containsKey('display_name_dative')) {
       context.handle(
@@ -156,28 +176,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         avatarUrl.isAcceptableOrUnknown(data['avatar_url']!, _avatarUrlMeta),
       );
     }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_updatedAtMeta);
-    }
-    if (data.containsKey('sync_status')) {
-      context.handle(
-        _syncStatusMeta,
-        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
-      );
-    }
     return context;
   }
 
@@ -187,26 +185,6 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
   User map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return User(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      displayName: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}display_name'],
-      )!,
-      email: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}email'],
-      )!,
-      displayNameDative: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}display_name_dative'],
-      ),
-      avatarUrl: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}avatar_url'],
-      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -219,6 +197,26 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         DriftSqlType.string,
         data['${effectivePrefix}sync_status'],
       )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      email: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}email'],
+      )!,
+      displayName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_name'],
+      )!,
+      displayNameDative: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_name_dative'],
+      ),
+      avatarUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}avatar_url'],
+      ),
     );
   }
 
@@ -229,56 +227,56 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
 }
 
 class User extends DataClass implements Insertable<User> {
-  final String id;
-  final String displayName;
-  final String email;
-  final String? displayNameDative;
-  final String? avatarUrl;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String syncStatus;
+  final String id;
+  final String email;
+  final String displayName;
+  final String? displayNameDative;
+  final String? avatarUrl;
   const User({
-    required this.id,
-    required this.displayName,
-    required this.email,
-    this.displayNameDative,
-    this.avatarUrl,
     required this.createdAt,
     required this.updatedAt,
     required this.syncStatus,
+    required this.id,
+    required this.email,
+    required this.displayName,
+    this.displayNameDative,
+    this.avatarUrl,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['sync_status'] = Variable<String>(syncStatus);
     map['id'] = Variable<String>(id);
-    map['display_name'] = Variable<String>(displayName);
     map['email'] = Variable<String>(email);
+    map['display_name'] = Variable<String>(displayName);
     if (!nullToAbsent || displayNameDative != null) {
       map['display_name_dative'] = Variable<String>(displayNameDative);
     }
     if (!nullToAbsent || avatarUrl != null) {
       map['avatar_url'] = Variable<String>(avatarUrl);
     }
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['sync_status'] = Variable<String>(syncStatus);
     return map;
   }
 
   UsersCompanion toCompanion(bool nullToAbsent) {
     return UsersCompanion(
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncStatus: Value(syncStatus),
       id: Value(id),
-      displayName: Value(displayName),
       email: Value(email),
+      displayName: Value(displayName),
       displayNameDative: displayNameDative == null && nullToAbsent
           ? const Value.absent()
           : Value(displayNameDative),
       avatarUrl: avatarUrl == null && nullToAbsent
           ? const Value.absent()
           : Value(avatarUrl),
-      createdAt: Value(createdAt),
-      updatedAt: Value(updatedAt),
-      syncStatus: Value(syncStatus),
     );
   }
 
@@ -288,193 +286,191 @@ class User extends DataClass implements Insertable<User> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return User(
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
       id: serializer.fromJson<String>(json['id']),
-      displayName: serializer.fromJson<String>(json['displayName']),
       email: serializer.fromJson<String>(json['email']),
+      displayName: serializer.fromJson<String>(json['displayName']),
       displayNameDative: serializer.fromJson<String?>(
         json['displayNameDative'],
       ),
       avatarUrl: serializer.fromJson<String?>(json['avatarUrl']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      syncStatus: serializer.fromJson<String>(json['syncStatus']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'displayName': serializer.toJson<String>(displayName),
-      'email': serializer.toJson<String>(email),
-      'displayNameDative': serializer.toJson<String?>(displayNameDative),
-      'avatarUrl': serializer.toJson<String?>(avatarUrl),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'syncStatus': serializer.toJson<String>(syncStatus),
+      'id': serializer.toJson<String>(id),
+      'email': serializer.toJson<String>(email),
+      'displayName': serializer.toJson<String>(displayName),
+      'displayNameDative': serializer.toJson<String?>(displayNameDative),
+      'avatarUrl': serializer.toJson<String?>(avatarUrl),
     };
   }
 
   User copyWith({
-    String? id,
-    String? displayName,
-    String? email,
-    Value<String?> displayNameDative = const Value.absent(),
-    Value<String?> avatarUrl = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     String? syncStatus,
+    String? id,
+    String? email,
+    String? displayName,
+    Value<String?> displayNameDative = const Value.absent(),
+    Value<String?> avatarUrl = const Value.absent(),
   }) => User(
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
     id: id ?? this.id,
-    displayName: displayName ?? this.displayName,
     email: email ?? this.email,
+    displayName: displayName ?? this.displayName,
     displayNameDative: displayNameDative.present
         ? displayNameDative.value
         : this.displayNameDative,
     avatarUrl: avatarUrl.present ? avatarUrl.value : this.avatarUrl,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    syncStatus: syncStatus ?? this.syncStatus,
   );
   User copyWithCompanion(UsersCompanion data) {
     return User(
-      id: data.id.present ? data.id.value : this.id,
-      displayName: data.displayName.present
-          ? data.displayName.value
-          : this.displayName,
-      email: data.email.present ? data.email.value : this.email,
-      displayNameDative: data.displayNameDative.present
-          ? data.displayNameDative.value
-          : this.displayNameDative,
-      avatarUrl: data.avatarUrl.present ? data.avatarUrl.value : this.avatarUrl,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncStatus: data.syncStatus.present
           ? data.syncStatus.value
           : this.syncStatus,
+      id: data.id.present ? data.id.value : this.id,
+      email: data.email.present ? data.email.value : this.email,
+      displayName: data.displayName.present
+          ? data.displayName.value
+          : this.displayName,
+      displayNameDative: data.displayNameDative.present
+          ? data.displayNameDative.value
+          : this.displayNameDative,
+      avatarUrl: data.avatarUrl.present ? data.avatarUrl.value : this.avatarUrl,
     );
   }
 
   @override
   String toString() {
     return (StringBuffer('User(')
-          ..write('id: $id, ')
-          ..write('displayName: $displayName, ')
-          ..write('email: $email, ')
-          ..write('displayNameDative: $displayNameDative, ')
-          ..write('avatarUrl: $avatarUrl, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('syncStatus: $syncStatus')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('id: $id, ')
+          ..write('email: $email, ')
+          ..write('displayName: $displayName, ')
+          ..write('displayNameDative: $displayNameDative, ')
+          ..write('avatarUrl: $avatarUrl')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(
-    id,
-    displayName,
-    email,
-    displayNameDative,
-    avatarUrl,
     createdAt,
     updatedAt,
     syncStatus,
+    id,
+    email,
+    displayName,
+    displayNameDative,
+    avatarUrl,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is User &&
-          other.id == this.id &&
-          other.displayName == this.displayName &&
-          other.email == this.email &&
-          other.displayNameDative == this.displayNameDative &&
-          other.avatarUrl == this.avatarUrl &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
-          other.syncStatus == this.syncStatus);
+          other.syncStatus == this.syncStatus &&
+          other.id == this.id &&
+          other.email == this.email &&
+          other.displayName == this.displayName &&
+          other.displayNameDative == this.displayNameDative &&
+          other.avatarUrl == this.avatarUrl);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
-  final Value<String> id;
-  final Value<String> displayName;
-  final Value<String> email;
-  final Value<String?> displayNameDative;
-  final Value<String?> avatarUrl;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<String> syncStatus;
+  final Value<String> id;
+  final Value<String> email;
+  final Value<String> displayName;
+  final Value<String?> displayNameDative;
+  final Value<String?> avatarUrl;
   final Value<int> rowid;
   const UsersCompanion({
-    this.id = const Value.absent(),
-    this.displayName = const Value.absent(),
-    this.email = const Value.absent(),
-    this.displayNameDative = const Value.absent(),
-    this.avatarUrl = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncStatus = const Value.absent(),
+    this.id = const Value.absent(),
+    this.email = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.displayNameDative = const Value.absent(),
+    this.avatarUrl = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   UsersCompanion.insert({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
     required String id,
-    required String displayName,
     required String email,
+    required String displayName,
     this.displayNameDative = const Value.absent(),
     this.avatarUrl = const Value.absent(),
-    required DateTime createdAt,
-    required DateTime updatedAt,
-    this.syncStatus = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
-       displayName = Value(displayName),
        email = Value(email),
-       createdAt = Value(createdAt),
-       updatedAt = Value(updatedAt);
+       displayName = Value(displayName);
   static Insertable<User> custom({
-    Expression<String>? id,
-    Expression<String>? displayName,
-    Expression<String>? email,
-    Expression<String>? displayNameDative,
-    Expression<String>? avatarUrl,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<String>? syncStatus,
+    Expression<String>? id,
+    Expression<String>? email,
+    Expression<String>? displayName,
+    Expression<String>? displayNameDative,
+    Expression<String>? avatarUrl,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (displayName != null) 'display_name': displayName,
-      if (email != null) 'email': email,
-      if (displayNameDative != null) 'display_name_dative': displayNameDative,
-      if (avatarUrl != null) 'avatar_url': avatarUrl,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncStatus != null) 'sync_status': syncStatus,
+      if (id != null) 'id': id,
+      if (email != null) 'email': email,
+      if (displayName != null) 'display_name': displayName,
+      if (displayNameDative != null) 'display_name_dative': displayNameDative,
+      if (avatarUrl != null) 'avatar_url': avatarUrl,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
   UsersCompanion copyWith({
-    Value<String>? id,
-    Value<String>? displayName,
-    Value<String>? email,
-    Value<String?>? displayNameDative,
-    Value<String?>? avatarUrl,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<String>? syncStatus,
+    Value<String>? id,
+    Value<String>? email,
+    Value<String>? displayName,
+    Value<String?>? displayNameDative,
+    Value<String?>? avatarUrl,
     Value<int>? rowid,
   }) {
     return UsersCompanion(
-      id: id ?? this.id,
-      displayName: displayName ?? this.displayName,
-      email: email ?? this.email,
-      displayNameDative: displayNameDative ?? this.displayNameDative,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       syncStatus: syncStatus ?? this.syncStatus,
+      id: id ?? this.id,
+      email: email ?? this.email,
+      displayName: displayName ?? this.displayName,
+      displayNameDative: displayNameDative ?? this.displayNameDative,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -482,21 +478,6 @@ class UsersCompanion extends UpdateCompanion<User> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (displayName.present) {
-      map['display_name'] = Variable<String>(displayName.value);
-    }
-    if (email.present) {
-      map['email'] = Variable<String>(email.value);
-    }
-    if (displayNameDative.present) {
-      map['display_name_dative'] = Variable<String>(displayNameDative.value);
-    }
-    if (avatarUrl.present) {
-      map['avatar_url'] = Variable<String>(avatarUrl.value);
-    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -505,6 +486,21 @@ class UsersCompanion extends UpdateCompanion<User> {
     }
     if (syncStatus.present) {
       map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (email.present) {
+      map['email'] = Variable<String>(email.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (displayNameDative.present) {
+      map['display_name_dative'] = Variable<String>(displayNameDative.value);
+    }
+    if (avatarUrl.present) {
+      map['avatar_url'] = Variable<String>(avatarUrl.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -515,14 +511,14 @@ class UsersCompanion extends UpdateCompanion<User> {
   @override
   String toString() {
     return (StringBuffer('UsersCompanion(')
-          ..write('id: $id, ')
-          ..write('displayName: $displayName, ')
-          ..write('email: $email, ')
-          ..write('displayNameDative: $displayNameDative, ')
-          ..write('avatarUrl: $avatarUrl, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncStatus: $syncStatus, ')
+          ..write('id: $id, ')
+          ..write('email: $email, ')
+          ..write('displayName: $displayName, ')
+          ..write('displayNameDative: $displayNameDative, ')
+          ..write('avatarUrl: $avatarUrl, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -534,6 +530,42 @@ class $SpacesTable extends Spaces with TableInfo<$SpacesTable, Space> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $SpacesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -573,49 +605,28 @@ class $SpacesTable extends Spaces with TableInfo<$SpacesTable, Space> {
     requiredDuringInsert: false,
     defaultValue: const Constant('active'),
   );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
+  static const VerificationMeta _currencyCodeMeta = const VerificationMeta(
+    'currencyCode',
   );
   @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
-    'syncStatus',
-  );
-  @override
-  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
-    'sync_status',
+  late final GeneratedColumn<String> currencyCode = GeneratedColumn<String>(
+    'currency_code',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-    defaultValue: const Constant('pending'),
+    defaultValue: const Constant('RUB'),
   );
   @override
   List<GeneratedColumn> get $columns => [
+    createdAt,
+    updatedAt,
+    syncStatus,
     id,
     name,
     encryptionSalt,
     status,
-    createdAt,
-    updatedAt,
-    syncStatus,
+    currencyCode,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -629,6 +640,24 @@ class $SpacesTable extends Spaces with TableInfo<$SpacesTable, Space> {
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
@@ -659,26 +688,13 @@ class $SpacesTable extends Spaces with TableInfo<$SpacesTable, Space> {
         status.isAcceptableOrUnknown(data['status']!, _statusMeta),
       );
     }
-    if (data.containsKey('created_at')) {
+    if (data.containsKey('currency_code')) {
       context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_createdAtMeta);
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_updatedAtMeta);
-    }
-    if (data.containsKey('sync_status')) {
-      context.handle(
-        _syncStatusMeta,
-        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+        _currencyCodeMeta,
+        currencyCode.isAcceptableOrUnknown(
+          data['currency_code']!,
+          _currencyCodeMeta,
+        ),
       );
     }
     return context;
@@ -690,6 +706,18 @@ class $SpacesTable extends Spaces with TableInfo<$SpacesTable, Space> {
   Space map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Space(
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -706,17 +734,9 @@ class $SpacesTable extends Spaces with TableInfo<$SpacesTable, Space> {
         DriftSqlType.string,
         data['${effectivePrefix}status'],
       )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      syncStatus: attachedDatabase.typeMapping.read(
+      currencyCode: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}sync_status'],
+        data['${effectivePrefix}currency_code'],
       )!,
     );
   }
@@ -728,44 +748,48 @@ class $SpacesTable extends Spaces with TableInfo<$SpacesTable, Space> {
 }
 
 class Space extends DataClass implements Insertable<Space> {
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String syncStatus;
   final String id;
   final String name;
   final String encryptionSalt;
   final String status;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final String syncStatus;
+  final String currencyCode;
   const Space({
+    required this.createdAt,
+    required this.updatedAt,
+    required this.syncStatus,
     required this.id,
     required this.name,
     required this.encryptionSalt,
     required this.status,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.syncStatus,
+    required this.currencyCode,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['sync_status'] = Variable<String>(syncStatus);
     map['id'] = Variable<String>(id);
     map['name'] = Variable<String>(name);
     map['encryption_salt'] = Variable<String>(encryptionSalt);
     map['status'] = Variable<String>(status);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['sync_status'] = Variable<String>(syncStatus);
+    map['currency_code'] = Variable<String>(currencyCode);
     return map;
   }
 
   SpacesCompanion toCompanion(bool nullToAbsent) {
     return SpacesCompanion(
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncStatus: Value(syncStatus),
       id: Value(id),
       name: Value(name),
       encryptionSalt: Value(encryptionSalt),
       status: Value(status),
-      createdAt: Value(createdAt),
-      updatedAt: Value(updatedAt),
-      syncStatus: Value(syncStatus),
+      currencyCode: Value(currencyCode),
     );
   }
 
@@ -775,172 +799,187 @@ class Space extends DataClass implements Insertable<Space> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Space(
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       encryptionSalt: serializer.fromJson<String>(json['encryptionSalt']),
       status: serializer.fromJson<String>(json['status']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      currencyCode: serializer.fromJson<String>(json['currencyCode']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
       'encryptionSalt': serializer.toJson<String>(encryptionSalt),
       'status': serializer.toJson<String>(status),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'syncStatus': serializer.toJson<String>(syncStatus),
+      'currencyCode': serializer.toJson<String>(currencyCode),
     };
   }
 
   Space copyWith({
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? syncStatus,
     String? id,
     String? name,
     String? encryptionSalt,
     String? status,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    String? syncStatus,
+    String? currencyCode,
   }) => Space(
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
     id: id ?? this.id,
     name: name ?? this.name,
     encryptionSalt: encryptionSalt ?? this.encryptionSalt,
     status: status ?? this.status,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    syncStatus: syncStatus ?? this.syncStatus,
+    currencyCode: currencyCode ?? this.currencyCode,
   );
   Space copyWithCompanion(SpacesCompanion data) {
     return Space(
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       encryptionSalt: data.encryptionSalt.present
           ? data.encryptionSalt.value
           : this.encryptionSalt,
       status: data.status.present ? data.status.value : this.status,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      syncStatus: data.syncStatus.present
-          ? data.syncStatus.value
-          : this.syncStatus,
+      currencyCode: data.currencyCode.present
+          ? data.currencyCode.value
+          : this.currencyCode,
     );
   }
 
   @override
   String toString() {
     return (StringBuffer('Space(')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('encryptionSalt: $encryptionSalt, ')
           ..write('status: $status, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('syncStatus: $syncStatus')
+          ..write('currencyCode: $currencyCode')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(
+    createdAt,
+    updatedAt,
+    syncStatus,
     id,
     name,
     encryptionSalt,
     status,
-    createdAt,
-    updatedAt,
-    syncStatus,
+    currencyCode,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Space &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncStatus == this.syncStatus &&
           other.id == this.id &&
           other.name == this.name &&
           other.encryptionSalt == this.encryptionSalt &&
           other.status == this.status &&
-          other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt &&
-          other.syncStatus == this.syncStatus);
+          other.currencyCode == this.currencyCode);
 }
 
 class SpacesCompanion extends UpdateCompanion<Space> {
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<String> syncStatus;
   final Value<String> id;
   final Value<String> name;
   final Value<String> encryptionSalt;
   final Value<String> status;
-  final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
-  final Value<String> syncStatus;
+  final Value<String> currencyCode;
   final Value<int> rowid;
   const SpacesCompanion({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.encryptionSalt = const Value.absent(),
     this.status = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.syncStatus = const Value.absent(),
+    this.currencyCode = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SpacesCompanion.insert({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
     required String id,
     required String name,
     required String encryptionSalt,
     this.status = const Value.absent(),
-    required DateTime createdAt,
-    required DateTime updatedAt,
-    this.syncStatus = const Value.absent(),
+    this.currencyCode = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
-       encryptionSalt = Value(encryptionSalt),
-       createdAt = Value(createdAt),
-       updatedAt = Value(updatedAt);
+       encryptionSalt = Value(encryptionSalt);
   static Insertable<Space> custom({
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? syncStatus,
     Expression<String>? id,
     Expression<String>? name,
     Expression<String>? encryptionSalt,
     Expression<String>? status,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? updatedAt,
-    Expression<String>? syncStatus,
+    Expression<String>? currencyCode,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (encryptionSalt != null) 'encryption_salt': encryptionSalt,
       if (status != null) 'status': status,
-      if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (syncStatus != null) 'sync_status': syncStatus,
+      if (currencyCode != null) 'currency_code': currencyCode,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
   SpacesCompanion copyWith({
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<String>? syncStatus,
     Value<String>? id,
     Value<String>? name,
     Value<String>? encryptionSalt,
     Value<String>? status,
-    Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
-    Value<String>? syncStatus,
+    Value<String>? currencyCode,
     Value<int>? rowid,
   }) {
     return SpacesCompanion(
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
       id: id ?? this.id,
       name: name ?? this.name,
       encryptionSalt: encryptionSalt ?? this.encryptionSalt,
       status: status ?? this.status,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      syncStatus: syncStatus ?? this.syncStatus,
+      currencyCode: currencyCode ?? this.currencyCode,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -948,6 +987,15 @@ class SpacesCompanion extends UpdateCompanion<Space> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
@@ -960,14 +1008,8 @@ class SpacesCompanion extends UpdateCompanion<Space> {
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (syncStatus.present) {
-      map['sync_status'] = Variable<String>(syncStatus.value);
+    if (currencyCode.present) {
+      map['currency_code'] = Variable<String>(currencyCode.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -978,13 +1020,5018 @@ class SpacesCompanion extends UpdateCompanion<Space> {
   @override
   String toString() {
     return (StringBuffer('SpacesCompanion(')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('encryptionSalt: $encryptionSalt, ')
           ..write('status: $status, ')
+          ..write('currencyCode: $currencyCode, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $MembershipsTable extends Memberships
+    with TableInfo<$MembershipsTable, Membership> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MembershipsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _spaceIdMeta = const VerificationMeta(
+    'spaceId',
+  );
+  @override
+  late final GeneratedColumn<String> spaceId = GeneratedColumn<String>(
+    'space_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES spaces (id)',
+    ),
+  );
+  static const VerificationMeta _roleMeta = const VerificationMeta('role');
+  @override
+  late final GeneratedColumn<String> role = GeneratedColumn<String>(
+    'role',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('member'),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('active'),
+  );
+  static const VerificationMeta _lastActiveAtMeta = const VerificationMeta(
+    'lastActiveAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastActiveAt = GeneratedColumn<DateTime>(
+    'last_active_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _joinedAtMeta = const VerificationMeta(
+    'joinedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> joinedAt = GeneratedColumn<DateTime>(
+    'joined_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _leftAtMeta = const VerificationMeta('leftAt');
+  @override
+  late final GeneratedColumn<DateTime> leftAt = GeneratedColumn<DateTime>(
+    'left_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    createdAt,
+    updatedAt,
+    syncStatus,
+    id,
+    userId,
+    spaceId,
+    role,
+    status,
+    lastActiveAt,
+    joinedAt,
+    leftAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'memberships';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Membership> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('space_id')) {
+      context.handle(
+        _spaceIdMeta,
+        spaceId.isAcceptableOrUnknown(data['space_id']!, _spaceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_spaceIdMeta);
+    }
+    if (data.containsKey('role')) {
+      context.handle(
+        _roleMeta,
+        role.isAcceptableOrUnknown(data['role']!, _roleMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('last_active_at')) {
+      context.handle(
+        _lastActiveAtMeta,
+        lastActiveAt.isAcceptableOrUnknown(
+          data['last_active_at']!,
+          _lastActiveAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('joined_at')) {
+      context.handle(
+        _joinedAtMeta,
+        joinedAt.isAcceptableOrUnknown(data['joined_at']!, _joinedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_joinedAtMeta);
+    }
+    if (data.containsKey('left_at')) {
+      context.handle(
+        _leftAtMeta,
+        leftAt.isAcceptableOrUnknown(data['left_at']!, _leftAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {userId, spaceId},
+  ];
+  @override
+  Membership map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Membership(
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      spaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}space_id'],
+      )!,
+      role: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}role'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      lastActiveAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_active_at'],
+      ),
+      joinedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}joined_at'],
+      )!,
+      leftAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}left_at'],
+      ),
+    );
+  }
+
+  @override
+  $MembershipsTable createAlias(String alias) {
+    return $MembershipsTable(attachedDatabase, alias);
+  }
+}
+
+class Membership extends DataClass implements Insertable<Membership> {
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String syncStatus;
+  final String id;
+  final String userId;
+  final String spaceId;
+  final String role;
+  final String status;
+  final DateTime? lastActiveAt;
+  final DateTime joinedAt;
+  final DateTime? leftAt;
+  const Membership({
+    required this.createdAt,
+    required this.updatedAt,
+    required this.syncStatus,
+    required this.id,
+    required this.userId,
+    required this.spaceId,
+    required this.role,
+    required this.status,
+    this.lastActiveAt,
+    required this.joinedAt,
+    this.leftAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['space_id'] = Variable<String>(spaceId);
+    map['role'] = Variable<String>(role);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || lastActiveAt != null) {
+      map['last_active_at'] = Variable<DateTime>(lastActiveAt);
+    }
+    map['joined_at'] = Variable<DateTime>(joinedAt);
+    if (!nullToAbsent || leftAt != null) {
+      map['left_at'] = Variable<DateTime>(leftAt);
+    }
+    return map;
+  }
+
+  MembershipsCompanion toCompanion(bool nullToAbsent) {
+    return MembershipsCompanion(
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncStatus: Value(syncStatus),
+      id: Value(id),
+      userId: Value(userId),
+      spaceId: Value(spaceId),
+      role: Value(role),
+      status: Value(status),
+      lastActiveAt: lastActiveAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastActiveAt),
+      joinedAt: Value(joinedAt),
+      leftAt: leftAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(leftAt),
+    );
+  }
+
+  factory Membership.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Membership(
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      spaceId: serializer.fromJson<String>(json['spaceId']),
+      role: serializer.fromJson<String>(json['role']),
+      status: serializer.fromJson<String>(json['status']),
+      lastActiveAt: serializer.fromJson<DateTime?>(json['lastActiveAt']),
+      joinedAt: serializer.fromJson<DateTime>(json['joinedAt']),
+      leftAt: serializer.fromJson<DateTime?>(json['leftAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'spaceId': serializer.toJson<String>(spaceId),
+      'role': serializer.toJson<String>(role),
+      'status': serializer.toJson<String>(status),
+      'lastActiveAt': serializer.toJson<DateTime?>(lastActiveAt),
+      'joinedAt': serializer.toJson<DateTime>(joinedAt),
+      'leftAt': serializer.toJson<DateTime?>(leftAt),
+    };
+  }
+
+  Membership copyWith({
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? syncStatus,
+    String? id,
+    String? userId,
+    String? spaceId,
+    String? role,
+    String? status,
+    Value<DateTime?> lastActiveAt = const Value.absent(),
+    DateTime? joinedAt,
+    Value<DateTime?> leftAt = const Value.absent(),
+  }) => Membership(
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    spaceId: spaceId ?? this.spaceId,
+    role: role ?? this.role,
+    status: status ?? this.status,
+    lastActiveAt: lastActiveAt.present ? lastActiveAt.value : this.lastActiveAt,
+    joinedAt: joinedAt ?? this.joinedAt,
+    leftAt: leftAt.present ? leftAt.value : this.leftAt,
+  );
+  Membership copyWithCompanion(MembershipsCompanion data) {
+    return Membership(
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
+      role: data.role.present ? data.role.value : this.role,
+      status: data.status.present ? data.status.value : this.status,
+      lastActiveAt: data.lastActiveAt.present
+          ? data.lastActiveAt.value
+          : this.lastActiveAt,
+      joinedAt: data.joinedAt.present ? data.joinedAt.value : this.joinedAt,
+      leftAt: data.leftAt.present ? data.leftAt.value : this.leftAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Membership(')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncStatus: $syncStatus, ')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('role: $role, ')
+          ..write('status: $status, ')
+          ..write('lastActiveAt: $lastActiveAt, ')
+          ..write('joinedAt: $joinedAt, ')
+          ..write('leftAt: $leftAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    createdAt,
+    updatedAt,
+    syncStatus,
+    id,
+    userId,
+    spaceId,
+    role,
+    status,
+    lastActiveAt,
+    joinedAt,
+    leftAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Membership &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncStatus == this.syncStatus &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.spaceId == this.spaceId &&
+          other.role == this.role &&
+          other.status == this.status &&
+          other.lastActiveAt == this.lastActiveAt &&
+          other.joinedAt == this.joinedAt &&
+          other.leftAt == this.leftAt);
+}
+
+class MembershipsCompanion extends UpdateCompanion<Membership> {
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<String> syncStatus;
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> spaceId;
+  final Value<String> role;
+  final Value<String> status;
+  final Value<DateTime?> lastActiveAt;
+  final Value<DateTime> joinedAt;
+  final Value<DateTime?> leftAt;
+  final Value<int> rowid;
+  const MembershipsCompanion({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.spaceId = const Value.absent(),
+    this.role = const Value.absent(),
+    this.status = const Value.absent(),
+    this.lastActiveAt = const Value.absent(),
+    this.joinedAt = const Value.absent(),
+    this.leftAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MembershipsCompanion.insert({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required String id,
+    required String userId,
+    required String spaceId,
+    this.role = const Value.absent(),
+    this.status = const Value.absent(),
+    this.lastActiveAt = const Value.absent(),
+    required DateTime joinedAt,
+    this.leftAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       spaceId = Value(spaceId),
+       joinedAt = Value(joinedAt);
+  static Insertable<Membership> custom({
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? syncStatus,
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? spaceId,
+    Expression<String>? role,
+    Expression<String>? status,
+    Expression<DateTime>? lastActiveAt,
+    Expression<DateTime>? joinedAt,
+    Expression<DateTime>? leftAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (spaceId != null) 'space_id': spaceId,
+      if (role != null) 'role': role,
+      if (status != null) 'status': status,
+      if (lastActiveAt != null) 'last_active_at': lastActiveAt,
+      if (joinedAt != null) 'joined_at': joinedAt,
+      if (leftAt != null) 'left_at': leftAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MembershipsCompanion copyWith({
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<String>? syncStatus,
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? spaceId,
+    Value<String>? role,
+    Value<String>? status,
+    Value<DateTime?>? lastActiveAt,
+    Value<DateTime>? joinedAt,
+    Value<DateTime?>? leftAt,
+    Value<int>? rowid,
+  }) {
+    return MembershipsCompanion(
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      spaceId: spaceId ?? this.spaceId,
+      role: role ?? this.role,
+      status: status ?? this.status,
+      lastActiveAt: lastActiveAt ?? this.lastActiveAt,
+      joinedAt: joinedAt ?? this.joinedAt,
+      leftAt: leftAt ?? this.leftAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (spaceId.present) {
+      map['space_id'] = Variable<String>(spaceId.value);
+    }
+    if (role.present) {
+      map['role'] = Variable<String>(role.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (lastActiveAt.present) {
+      map['last_active_at'] = Variable<DateTime>(lastActiveAt.value);
+    }
+    if (joinedAt.present) {
+      map['joined_at'] = Variable<DateTime>(joinedAt.value);
+    }
+    if (leftAt.present) {
+      map['left_at'] = Variable<DateTime>(leftAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MembershipsCompanion(')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('role: $role, ')
+          ..write('status: $status, ')
+          ..write('lastActiveAt: $lastActiveAt, ')
+          ..write('joinedAt: $joinedAt, ')
+          ..write('leftAt: $leftAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AppSettingsTable extends AppSettings
+    with TableInfo<$AppSettingsTable, AppSetting> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AppSettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _baseCurrencyMeta = const VerificationMeta(
+    'baseCurrency',
+  );
+  @override
+  late final GeneratedColumn<String> baseCurrency = GeneratedColumn<String>(
+    'base_currency',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('RUB'),
+  );
+  static const VerificationMeta _useHistoricalExchangeRateMeta =
+      const VerificationMeta('useHistoricalExchangeRate');
+  @override
+  late final GeneratedColumn<bool> useHistoricalExchangeRate =
+      GeneratedColumn<bool>(
+        'use_historical_exchange_rate',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("use_historical_exchange_rate" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
+  static const VerificationMeta _inheritLimitFromPreviousMonthMeta =
+      const VerificationMeta('inheritLimitFromPreviousMonth');
+  @override
+  late final GeneratedColumn<bool> inheritLimitFromPreviousMonth =
+      GeneratedColumn<bool>(
+        'inherit_limit_from_previous_month',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("inherit_limit_from_previous_month" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _carryOverUnusedLimitMeta =
+      const VerificationMeta('carryOverUnusedLimit');
+  @override
+  late final GeneratedColumn<bool> carryOverUnusedLimit = GeneratedColumn<bool>(
+    'carry_over_unused_limit',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("carry_over_unused_limit" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _limitAlertModeMeta = const VerificationMeta(
+    'limitAlertMode',
+  );
+  @override
+  late final GeneratedColumn<String> limitAlertMode = GeneratedColumn<String>(
+    'limit_alert_mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('global_percent'),
+  );
+  static const VerificationMeta _globalAlertPercentMeta =
+      const VerificationMeta('globalAlertPercent');
+  @override
+  late final GeneratedColumn<int> globalAlertPercent = GeneratedColumn<int>(
+    'global_alert_percent',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(80),
+  );
+  static const VerificationMeta _globalAlertAmountMeta = const VerificationMeta(
+    'globalAlertAmount',
+  );
+  @override
+  late final GeneratedColumn<int> globalAlertAmount = GeneratedColumn<int>(
+    'global_alert_amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _enableSecrecyModeMeta = const VerificationMeta(
+    'enableSecrecyMode',
+  );
+  @override
+  late final GeneratedColumn<bool> enableSecrecyMode = GeneratedColumn<bool>(
+    'enable_secrecy_mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("enable_secrecy_mode" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _secrecyDaysBeforeMeta = const VerificationMeta(
+    'secrecyDaysBefore',
+  );
+  @override
+  late final GeneratedColumn<int> secrecyDaysBefore = GeneratedColumn<int>(
+    'secrecy_days_before',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(14),
+  );
+  static const VerificationMeta _secrecyTimeoutSecondsMeta =
+      const VerificationMeta('secrecyTimeoutSeconds');
+  @override
+  late final GeneratedColumn<int> secrecyTimeoutSeconds = GeneratedColumn<int>(
+    'secrecy_timeout_seconds',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(120),
+  );
+  static const VerificationMeta _largeTransactionThresholdMeta =
+      const VerificationMeta('largeTransactionThreshold');
+  @override
+  late final GeneratedColumn<int> largeTransactionThreshold =
+      GeneratedColumn<int>(
+        'large_transaction_threshold',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(10000000),
+      );
+  static const VerificationMeta _autoHideGiftsOnImportMeta =
+      const VerificationMeta('autoHideGiftsOnImport');
+  @override
+  late final GeneratedColumn<bool> autoHideGiftsOnImport =
+      GeneratedColumn<bool>(
+        'auto_hide_gifts_on_import',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("auto_hide_gifts_on_import" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
+  static const VerificationMeta _defaultBalanceVisibilityMeta =
+      const VerificationMeta('defaultBalanceVisibility');
+  @override
+  late final GeneratedColumn<String> defaultBalanceVisibility =
+      GeneratedColumn<String>(
+        'default_balance_visibility',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('visible'),
+      );
+  static const VerificationMeta _enableShakeToHideMeta = const VerificationMeta(
+    'enableShakeToHide',
+  );
+  @override
+  late final GeneratedColumn<bool> enableShakeToHide = GeneratedColumn<bool>(
+    'enable_shake_to_hide',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("enable_shake_to_hide" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _enableFaceDownHideMeta =
+      const VerificationMeta('enableFaceDownHide');
+  @override
+  late final GeneratedColumn<bool> enableFaceDownHide = GeneratedColumn<bool>(
+    'enable_face_down_hide',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("enable_face_down_hide" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _enableAutoHideTimeoutMeta =
+      const VerificationMeta('enableAutoHideTimeout');
+  @override
+  late final GeneratedColumn<bool> enableAutoHideTimeout =
+      GeneratedColumn<bool>(
+        'enable_auto_hide_timeout',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("enable_auto_hide_timeout" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
+  static const VerificationMeta _enableScreenCaptureProtectionMeta =
+      const VerificationMeta('enableScreenCaptureProtection');
+  @override
+  late final GeneratedColumn<bool> enableScreenCaptureProtection =
+      GeneratedColumn<bool>(
+        'enable_screen_capture_protection',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("enable_screen_capture_protection" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _requireBiometricsToUnhideMeta =
+      const VerificationMeta('requireBiometricsToUnhide');
+  @override
+  late final GeneratedColumn<bool> requireBiometricsToUnhide =
+      GeneratedColumn<bool>(
+        'require_biometrics_to_unhide',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("require_biometrics_to_unhide" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _enablePinCodeMeta = const VerificationMeta(
+    'enablePinCode',
+  );
+  @override
+  late final GeneratedColumn<bool> enablePinCode = GeneratedColumn<bool>(
+    'enable_pin_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("enable_pin_code" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _enableBiometricLoginMeta =
+      const VerificationMeta('enableBiometricLogin');
+  @override
+  late final GeneratedColumn<bool> enableBiometricLogin = GeneratedColumn<bool>(
+    'enable_biometric_login',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("enable_biometric_login" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _enableAutoDetectDuplicatesMeta =
+      const VerificationMeta('enableAutoDetectDuplicates');
+  @override
+  late final GeneratedColumn<bool> enableAutoDetectDuplicates =
+      GeneratedColumn<bool>(
+        'enable_auto_detect_duplicates',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("enable_auto_detect_duplicates" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
+  static const VerificationMeta _enableAutoDetectTransfersMeta =
+      const VerificationMeta('enableAutoDetectTransfers');
+  @override
+  late final GeneratedColumn<bool> enableAutoDetectTransfers =
+      GeneratedColumn<bool>(
+        'enable_auto_detect_transfers',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("enable_auto_detect_transfers" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
+  static const VerificationMeta _duplicateDateToleranceDaysMeta =
+      const VerificationMeta('duplicateDateToleranceDays');
+  @override
+  late final GeneratedColumn<int> duplicateDateToleranceDays =
+      GeneratedColumn<int>(
+        'duplicate_date_tolerance_days',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(1),
+      );
+  static const VerificationMeta _transferTimeToleranceMinutesMeta =
+      const VerificationMeta('transferTimeToleranceMinutes');
+  @override
+  late final GeneratedColumn<int> transferTimeToleranceMinutes =
+      GeneratedColumn<int>(
+        'transfer_time_tolerance_minutes',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(5),
+      );
+  static const VerificationMeta _autoOfferReceiptSplitMeta =
+      const VerificationMeta('autoOfferReceiptSplit');
+  @override
+  late final GeneratedColumn<bool> autoOfferReceiptSplit =
+      GeneratedColumn<bool>(
+        'auto_offer_receipt_split',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("auto_offer_receipt_split" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
+  static const VerificationMeta _offerReceiptSplitCountMeta =
+      const VerificationMeta('offerReceiptSplitCount');
+  @override
+  late final GeneratedColumn<int> offerReceiptSplitCount = GeneratedColumn<int>(
+    'offer_receipt_split_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _autoOfferProductNamingMeta =
+      const VerificationMeta('autoOfferProductNaming');
+  @override
+  late final GeneratedColumn<bool> autoOfferProductNaming =
+      GeneratedColumn<bool>(
+        'auto_offer_product_naming',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("auto_offer_product_naming" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
+  static const VerificationMeta _offerProductNamingCountMeta =
+      const VerificationMeta('offerProductNamingCount');
+  @override
+  late final GeneratedColumn<int> offerProductNamingCount =
+      GeneratedColumn<int>(
+        'offer_product_naming_count',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(0),
+      );
+  static const VerificationMeta _syncImagesToCloudMeta = const VerificationMeta(
+    'syncImagesToCloud',
+  );
+  @override
+  late final GeneratedColumn<bool> syncImagesToCloud = GeneratedColumn<bool>(
+    'sync_images_to_cloud',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("sync_images_to_cloud" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _enableBankStatementReminderMeta =
+      const VerificationMeta('enableBankStatementReminder');
+  @override
+  late final GeneratedColumn<bool> enableBankStatementReminder =
+      GeneratedColumn<bool>(
+        'enable_bank_statement_reminder',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("enable_bank_statement_reminder" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
+  static const VerificationMeta _enableGroupActivityAlertsMeta =
+      const VerificationMeta('enableGroupActivityAlerts');
+  @override
+  late final GeneratedColumn<bool> enableGroupActivityAlerts =
+      GeneratedColumn<bool>(
+        'enable_group_activity_alerts',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("enable_group_activity_alerts" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
+  static const VerificationMeta _enableDeficitForecastAlertsMeta =
+      const VerificationMeta('enableDeficitForecastAlerts');
+  @override
+  late final GeneratedColumn<bool> enableDeficitForecastAlerts =
+      GeneratedColumn<bool>(
+        'enable_deficit_forecast_alerts',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("enable_deficit_forecast_alerts" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
+  static const VerificationMeta _enableYearInReviewAlertsMeta =
+      const VerificationMeta('enableYearInReviewAlerts');
+  @override
+  late final GeneratedColumn<bool> enableYearInReviewAlerts =
+      GeneratedColumn<bool>(
+        'enable_year_in_review_alerts',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("enable_year_in_review_alerts" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
+  static const VerificationMeta _enableDebtAlertsMeta = const VerificationMeta(
+    'enableDebtAlerts',
+  );
+  @override
+  late final GeneratedColumn<bool> enableDebtAlerts = GeneratedColumn<bool>(
+    'enable_debt_alerts',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("enable_debt_alerts" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _enableReminderNotificationsMeta =
+      const VerificationMeta('enableReminderNotifications');
+  @override
+  late final GeneratedColumn<bool> enableReminderNotifications =
+      GeneratedColumn<bool>(
+        'enable_reminder_notifications',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("enable_reminder_notifications" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
+  static const VerificationMeta _reminderAdvanceDaysMeta =
+      const VerificationMeta('reminderAdvanceDays');
+  @override
+  late final GeneratedColumn<int> reminderAdvanceDays = GeneratedColumn<int>(
+    'reminder_advance_days',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _reminderTimeOfDayMeta = const VerificationMeta(
+    'reminderTimeOfDay',
+  );
+  @override
+  late final GeneratedColumn<String> reminderTimeOfDay =
+      GeneratedColumn<String>(
+        'reminder_time_of_day',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('17:00'),
+      );
+  static const VerificationMeta _autoCreateRemindersForRecurringMeta =
+      const VerificationMeta('autoCreateRemindersForRecurring');
+  @override
+  late final GeneratedColumn<bool> autoCreateRemindersForRecurring =
+      GeneratedColumn<bool>(
+        'auto_create_reminders_for_recurring',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("auto_create_reminders_for_recurring" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
+  static const VerificationMeta _digestConfigMeta = const VerificationMeta(
+    'digestConfig',
+  );
+  @override
+  late final GeneratedColumn<String> digestConfig = GeneratedColumn<String>(
+    'digest_config',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    createdAt,
+    updatedAt,
+    syncStatus,
+    id,
+    userId,
+    baseCurrency,
+    useHistoricalExchangeRate,
+    inheritLimitFromPreviousMonth,
+    carryOverUnusedLimit,
+    limitAlertMode,
+    globalAlertPercent,
+    globalAlertAmount,
+    enableSecrecyMode,
+    secrecyDaysBefore,
+    secrecyTimeoutSeconds,
+    largeTransactionThreshold,
+    autoHideGiftsOnImport,
+    defaultBalanceVisibility,
+    enableShakeToHide,
+    enableFaceDownHide,
+    enableAutoHideTimeout,
+    enableScreenCaptureProtection,
+    requireBiometricsToUnhide,
+    enablePinCode,
+    enableBiometricLogin,
+    enableAutoDetectDuplicates,
+    enableAutoDetectTransfers,
+    duplicateDateToleranceDays,
+    transferTimeToleranceMinutes,
+    autoOfferReceiptSplit,
+    offerReceiptSplitCount,
+    autoOfferProductNaming,
+    offerProductNamingCount,
+    syncImagesToCloud,
+    enableBankStatementReminder,
+    enableGroupActivityAlerts,
+    enableDeficitForecastAlerts,
+    enableYearInReviewAlerts,
+    enableDebtAlerts,
+    enableReminderNotifications,
+    reminderAdvanceDays,
+    reminderTimeOfDay,
+    autoCreateRemindersForRecurring,
+    digestConfig,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'app_settings';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AppSetting> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('base_currency')) {
+      context.handle(
+        _baseCurrencyMeta,
+        baseCurrency.isAcceptableOrUnknown(
+          data['base_currency']!,
+          _baseCurrencyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('use_historical_exchange_rate')) {
+      context.handle(
+        _useHistoricalExchangeRateMeta,
+        useHistoricalExchangeRate.isAcceptableOrUnknown(
+          data['use_historical_exchange_rate']!,
+          _useHistoricalExchangeRateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('inherit_limit_from_previous_month')) {
+      context.handle(
+        _inheritLimitFromPreviousMonthMeta,
+        inheritLimitFromPreviousMonth.isAcceptableOrUnknown(
+          data['inherit_limit_from_previous_month']!,
+          _inheritLimitFromPreviousMonthMeta,
+        ),
+      );
+    }
+    if (data.containsKey('carry_over_unused_limit')) {
+      context.handle(
+        _carryOverUnusedLimitMeta,
+        carryOverUnusedLimit.isAcceptableOrUnknown(
+          data['carry_over_unused_limit']!,
+          _carryOverUnusedLimitMeta,
+        ),
+      );
+    }
+    if (data.containsKey('limit_alert_mode')) {
+      context.handle(
+        _limitAlertModeMeta,
+        limitAlertMode.isAcceptableOrUnknown(
+          data['limit_alert_mode']!,
+          _limitAlertModeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('global_alert_percent')) {
+      context.handle(
+        _globalAlertPercentMeta,
+        globalAlertPercent.isAcceptableOrUnknown(
+          data['global_alert_percent']!,
+          _globalAlertPercentMeta,
+        ),
+      );
+    }
+    if (data.containsKey('global_alert_amount')) {
+      context.handle(
+        _globalAlertAmountMeta,
+        globalAlertAmount.isAcceptableOrUnknown(
+          data['global_alert_amount']!,
+          _globalAlertAmountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_secrecy_mode')) {
+      context.handle(
+        _enableSecrecyModeMeta,
+        enableSecrecyMode.isAcceptableOrUnknown(
+          data['enable_secrecy_mode']!,
+          _enableSecrecyModeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('secrecy_days_before')) {
+      context.handle(
+        _secrecyDaysBeforeMeta,
+        secrecyDaysBefore.isAcceptableOrUnknown(
+          data['secrecy_days_before']!,
+          _secrecyDaysBeforeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('secrecy_timeout_seconds')) {
+      context.handle(
+        _secrecyTimeoutSecondsMeta,
+        secrecyTimeoutSeconds.isAcceptableOrUnknown(
+          data['secrecy_timeout_seconds']!,
+          _secrecyTimeoutSecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('large_transaction_threshold')) {
+      context.handle(
+        _largeTransactionThresholdMeta,
+        largeTransactionThreshold.isAcceptableOrUnknown(
+          data['large_transaction_threshold']!,
+          _largeTransactionThresholdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('auto_hide_gifts_on_import')) {
+      context.handle(
+        _autoHideGiftsOnImportMeta,
+        autoHideGiftsOnImport.isAcceptableOrUnknown(
+          data['auto_hide_gifts_on_import']!,
+          _autoHideGiftsOnImportMeta,
+        ),
+      );
+    }
+    if (data.containsKey('default_balance_visibility')) {
+      context.handle(
+        _defaultBalanceVisibilityMeta,
+        defaultBalanceVisibility.isAcceptableOrUnknown(
+          data['default_balance_visibility']!,
+          _defaultBalanceVisibilityMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_shake_to_hide')) {
+      context.handle(
+        _enableShakeToHideMeta,
+        enableShakeToHide.isAcceptableOrUnknown(
+          data['enable_shake_to_hide']!,
+          _enableShakeToHideMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_face_down_hide')) {
+      context.handle(
+        _enableFaceDownHideMeta,
+        enableFaceDownHide.isAcceptableOrUnknown(
+          data['enable_face_down_hide']!,
+          _enableFaceDownHideMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_auto_hide_timeout')) {
+      context.handle(
+        _enableAutoHideTimeoutMeta,
+        enableAutoHideTimeout.isAcceptableOrUnknown(
+          data['enable_auto_hide_timeout']!,
+          _enableAutoHideTimeoutMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_screen_capture_protection')) {
+      context.handle(
+        _enableScreenCaptureProtectionMeta,
+        enableScreenCaptureProtection.isAcceptableOrUnknown(
+          data['enable_screen_capture_protection']!,
+          _enableScreenCaptureProtectionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('require_biometrics_to_unhide')) {
+      context.handle(
+        _requireBiometricsToUnhideMeta,
+        requireBiometricsToUnhide.isAcceptableOrUnknown(
+          data['require_biometrics_to_unhide']!,
+          _requireBiometricsToUnhideMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_pin_code')) {
+      context.handle(
+        _enablePinCodeMeta,
+        enablePinCode.isAcceptableOrUnknown(
+          data['enable_pin_code']!,
+          _enablePinCodeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_biometric_login')) {
+      context.handle(
+        _enableBiometricLoginMeta,
+        enableBiometricLogin.isAcceptableOrUnknown(
+          data['enable_biometric_login']!,
+          _enableBiometricLoginMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_auto_detect_duplicates')) {
+      context.handle(
+        _enableAutoDetectDuplicatesMeta,
+        enableAutoDetectDuplicates.isAcceptableOrUnknown(
+          data['enable_auto_detect_duplicates']!,
+          _enableAutoDetectDuplicatesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_auto_detect_transfers')) {
+      context.handle(
+        _enableAutoDetectTransfersMeta,
+        enableAutoDetectTransfers.isAcceptableOrUnknown(
+          data['enable_auto_detect_transfers']!,
+          _enableAutoDetectTransfersMeta,
+        ),
+      );
+    }
+    if (data.containsKey('duplicate_date_tolerance_days')) {
+      context.handle(
+        _duplicateDateToleranceDaysMeta,
+        duplicateDateToleranceDays.isAcceptableOrUnknown(
+          data['duplicate_date_tolerance_days']!,
+          _duplicateDateToleranceDaysMeta,
+        ),
+      );
+    }
+    if (data.containsKey('transfer_time_tolerance_minutes')) {
+      context.handle(
+        _transferTimeToleranceMinutesMeta,
+        transferTimeToleranceMinutes.isAcceptableOrUnknown(
+          data['transfer_time_tolerance_minutes']!,
+          _transferTimeToleranceMinutesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('auto_offer_receipt_split')) {
+      context.handle(
+        _autoOfferReceiptSplitMeta,
+        autoOfferReceiptSplit.isAcceptableOrUnknown(
+          data['auto_offer_receipt_split']!,
+          _autoOfferReceiptSplitMeta,
+        ),
+      );
+    }
+    if (data.containsKey('offer_receipt_split_count')) {
+      context.handle(
+        _offerReceiptSplitCountMeta,
+        offerReceiptSplitCount.isAcceptableOrUnknown(
+          data['offer_receipt_split_count']!,
+          _offerReceiptSplitCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('auto_offer_product_naming')) {
+      context.handle(
+        _autoOfferProductNamingMeta,
+        autoOfferProductNaming.isAcceptableOrUnknown(
+          data['auto_offer_product_naming']!,
+          _autoOfferProductNamingMeta,
+        ),
+      );
+    }
+    if (data.containsKey('offer_product_naming_count')) {
+      context.handle(
+        _offerProductNamingCountMeta,
+        offerProductNamingCount.isAcceptableOrUnknown(
+          data['offer_product_naming_count']!,
+          _offerProductNamingCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sync_images_to_cloud')) {
+      context.handle(
+        _syncImagesToCloudMeta,
+        syncImagesToCloud.isAcceptableOrUnknown(
+          data['sync_images_to_cloud']!,
+          _syncImagesToCloudMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_bank_statement_reminder')) {
+      context.handle(
+        _enableBankStatementReminderMeta,
+        enableBankStatementReminder.isAcceptableOrUnknown(
+          data['enable_bank_statement_reminder']!,
+          _enableBankStatementReminderMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_group_activity_alerts')) {
+      context.handle(
+        _enableGroupActivityAlertsMeta,
+        enableGroupActivityAlerts.isAcceptableOrUnknown(
+          data['enable_group_activity_alerts']!,
+          _enableGroupActivityAlertsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_deficit_forecast_alerts')) {
+      context.handle(
+        _enableDeficitForecastAlertsMeta,
+        enableDeficitForecastAlerts.isAcceptableOrUnknown(
+          data['enable_deficit_forecast_alerts']!,
+          _enableDeficitForecastAlertsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_year_in_review_alerts')) {
+      context.handle(
+        _enableYearInReviewAlertsMeta,
+        enableYearInReviewAlerts.isAcceptableOrUnknown(
+          data['enable_year_in_review_alerts']!,
+          _enableYearInReviewAlertsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_debt_alerts')) {
+      context.handle(
+        _enableDebtAlertsMeta,
+        enableDebtAlerts.isAcceptableOrUnknown(
+          data['enable_debt_alerts']!,
+          _enableDebtAlertsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_reminder_notifications')) {
+      context.handle(
+        _enableReminderNotificationsMeta,
+        enableReminderNotifications.isAcceptableOrUnknown(
+          data['enable_reminder_notifications']!,
+          _enableReminderNotificationsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('reminder_advance_days')) {
+      context.handle(
+        _reminderAdvanceDaysMeta,
+        reminderAdvanceDays.isAcceptableOrUnknown(
+          data['reminder_advance_days']!,
+          _reminderAdvanceDaysMeta,
+        ),
+      );
+    }
+    if (data.containsKey('reminder_time_of_day')) {
+      context.handle(
+        _reminderTimeOfDayMeta,
+        reminderTimeOfDay.isAcceptableOrUnknown(
+          data['reminder_time_of_day']!,
+          _reminderTimeOfDayMeta,
+        ),
+      );
+    }
+    if (data.containsKey('auto_create_reminders_for_recurring')) {
+      context.handle(
+        _autoCreateRemindersForRecurringMeta,
+        autoCreateRemindersForRecurring.isAcceptableOrUnknown(
+          data['auto_create_reminders_for_recurring']!,
+          _autoCreateRemindersForRecurringMeta,
+        ),
+      );
+    }
+    if (data.containsKey('digest_config')) {
+      context.handle(
+        _digestConfigMeta,
+        digestConfig.isAcceptableOrUnknown(
+          data['digest_config']!,
+          _digestConfigMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AppSetting map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AppSetting(
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      baseCurrency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}base_currency'],
+      )!,
+      useHistoricalExchangeRate: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}use_historical_exchange_rate'],
+      )!,
+      inheritLimitFromPreviousMonth: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}inherit_limit_from_previous_month'],
+      )!,
+      carryOverUnusedLimit: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}carry_over_unused_limit'],
+      )!,
+      limitAlertMode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}limit_alert_mode'],
+      )!,
+      globalAlertPercent: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}global_alert_percent'],
+      )!,
+      globalAlertAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}global_alert_amount'],
+      )!,
+      enableSecrecyMode: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_secrecy_mode'],
+      )!,
+      secrecyDaysBefore: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}secrecy_days_before'],
+      )!,
+      secrecyTimeoutSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}secrecy_timeout_seconds'],
+      )!,
+      largeTransactionThreshold: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}large_transaction_threshold'],
+      )!,
+      autoHideGiftsOnImport: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}auto_hide_gifts_on_import'],
+      )!,
+      defaultBalanceVisibility: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}default_balance_visibility'],
+      )!,
+      enableShakeToHide: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_shake_to_hide'],
+      )!,
+      enableFaceDownHide: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_face_down_hide'],
+      )!,
+      enableAutoHideTimeout: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_auto_hide_timeout'],
+      )!,
+      enableScreenCaptureProtection: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_screen_capture_protection'],
+      )!,
+      requireBiometricsToUnhide: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}require_biometrics_to_unhide'],
+      )!,
+      enablePinCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_pin_code'],
+      )!,
+      enableBiometricLogin: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_biometric_login'],
+      )!,
+      enableAutoDetectDuplicates: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_auto_detect_duplicates'],
+      )!,
+      enableAutoDetectTransfers: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_auto_detect_transfers'],
+      )!,
+      duplicateDateToleranceDays: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duplicate_date_tolerance_days'],
+      )!,
+      transferTimeToleranceMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}transfer_time_tolerance_minutes'],
+      )!,
+      autoOfferReceiptSplit: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}auto_offer_receipt_split'],
+      )!,
+      offerReceiptSplitCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}offer_receipt_split_count'],
+      )!,
+      autoOfferProductNaming: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}auto_offer_product_naming'],
+      )!,
+      offerProductNamingCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}offer_product_naming_count'],
+      )!,
+      syncImagesToCloud: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}sync_images_to_cloud'],
+      )!,
+      enableBankStatementReminder: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_bank_statement_reminder'],
+      )!,
+      enableGroupActivityAlerts: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_group_activity_alerts'],
+      )!,
+      enableDeficitForecastAlerts: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_deficit_forecast_alerts'],
+      )!,
+      enableYearInReviewAlerts: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_year_in_review_alerts'],
+      )!,
+      enableDebtAlerts: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_debt_alerts'],
+      )!,
+      enableReminderNotifications: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_reminder_notifications'],
+      )!,
+      reminderAdvanceDays: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}reminder_advance_days'],
+      )!,
+      reminderTimeOfDay: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reminder_time_of_day'],
+      )!,
+      autoCreateRemindersForRecurring: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}auto_create_reminders_for_recurring'],
+      )!,
+      digestConfig: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}digest_config'],
+      )!,
+    );
+  }
+
+  @override
+  $AppSettingsTable createAlias(String alias) {
+    return $AppSettingsTable(attachedDatabase, alias);
+  }
+}
+
+class AppSetting extends DataClass implements Insertable<AppSetting> {
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String syncStatus;
+  final String id;
+  final String userId;
+  final String baseCurrency;
+  final bool useHistoricalExchangeRate;
+  final bool inheritLimitFromPreviousMonth;
+  final bool carryOverUnusedLimit;
+  final String limitAlertMode;
+  final int globalAlertPercent;
+  final int globalAlertAmount;
+  final bool enableSecrecyMode;
+  final int secrecyDaysBefore;
+  final int secrecyTimeoutSeconds;
+  final int largeTransactionThreshold;
+  final bool autoHideGiftsOnImport;
+  final String defaultBalanceVisibility;
+  final bool enableShakeToHide;
+  final bool enableFaceDownHide;
+  final bool enableAutoHideTimeout;
+  final bool enableScreenCaptureProtection;
+  final bool requireBiometricsToUnhide;
+  final bool enablePinCode;
+  final bool enableBiometricLogin;
+  final bool enableAutoDetectDuplicates;
+  final bool enableAutoDetectTransfers;
+  final int duplicateDateToleranceDays;
+  final int transferTimeToleranceMinutes;
+  final bool autoOfferReceiptSplit;
+  final int offerReceiptSplitCount;
+  final bool autoOfferProductNaming;
+  final int offerProductNamingCount;
+  final bool syncImagesToCloud;
+  final bool enableBankStatementReminder;
+  final bool enableGroupActivityAlerts;
+  final bool enableDeficitForecastAlerts;
+  final bool enableYearInReviewAlerts;
+  final bool enableDebtAlerts;
+  final bool enableReminderNotifications;
+  final int reminderAdvanceDays;
+  final String reminderTimeOfDay;
+  final bool autoCreateRemindersForRecurring;
+  final String digestConfig;
+  const AppSetting({
+    required this.createdAt,
+    required this.updatedAt,
+    required this.syncStatus,
+    required this.id,
+    required this.userId,
+    required this.baseCurrency,
+    required this.useHistoricalExchangeRate,
+    required this.inheritLimitFromPreviousMonth,
+    required this.carryOverUnusedLimit,
+    required this.limitAlertMode,
+    required this.globalAlertPercent,
+    required this.globalAlertAmount,
+    required this.enableSecrecyMode,
+    required this.secrecyDaysBefore,
+    required this.secrecyTimeoutSeconds,
+    required this.largeTransactionThreshold,
+    required this.autoHideGiftsOnImport,
+    required this.defaultBalanceVisibility,
+    required this.enableShakeToHide,
+    required this.enableFaceDownHide,
+    required this.enableAutoHideTimeout,
+    required this.enableScreenCaptureProtection,
+    required this.requireBiometricsToUnhide,
+    required this.enablePinCode,
+    required this.enableBiometricLogin,
+    required this.enableAutoDetectDuplicates,
+    required this.enableAutoDetectTransfers,
+    required this.duplicateDateToleranceDays,
+    required this.transferTimeToleranceMinutes,
+    required this.autoOfferReceiptSplit,
+    required this.offerReceiptSplitCount,
+    required this.autoOfferProductNaming,
+    required this.offerProductNamingCount,
+    required this.syncImagesToCloud,
+    required this.enableBankStatementReminder,
+    required this.enableGroupActivityAlerts,
+    required this.enableDeficitForecastAlerts,
+    required this.enableYearInReviewAlerts,
+    required this.enableDebtAlerts,
+    required this.enableReminderNotifications,
+    required this.reminderAdvanceDays,
+    required this.reminderTimeOfDay,
+    required this.autoCreateRemindersForRecurring,
+    required this.digestConfig,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['base_currency'] = Variable<String>(baseCurrency);
+    map['use_historical_exchange_rate'] = Variable<bool>(
+      useHistoricalExchangeRate,
+    );
+    map['inherit_limit_from_previous_month'] = Variable<bool>(
+      inheritLimitFromPreviousMonth,
+    );
+    map['carry_over_unused_limit'] = Variable<bool>(carryOverUnusedLimit);
+    map['limit_alert_mode'] = Variable<String>(limitAlertMode);
+    map['global_alert_percent'] = Variable<int>(globalAlertPercent);
+    map['global_alert_amount'] = Variable<int>(globalAlertAmount);
+    map['enable_secrecy_mode'] = Variable<bool>(enableSecrecyMode);
+    map['secrecy_days_before'] = Variable<int>(secrecyDaysBefore);
+    map['secrecy_timeout_seconds'] = Variable<int>(secrecyTimeoutSeconds);
+    map['large_transaction_threshold'] = Variable<int>(
+      largeTransactionThreshold,
+    );
+    map['auto_hide_gifts_on_import'] = Variable<bool>(autoHideGiftsOnImport);
+    map['default_balance_visibility'] = Variable<String>(
+      defaultBalanceVisibility,
+    );
+    map['enable_shake_to_hide'] = Variable<bool>(enableShakeToHide);
+    map['enable_face_down_hide'] = Variable<bool>(enableFaceDownHide);
+    map['enable_auto_hide_timeout'] = Variable<bool>(enableAutoHideTimeout);
+    map['enable_screen_capture_protection'] = Variable<bool>(
+      enableScreenCaptureProtection,
+    );
+    map['require_biometrics_to_unhide'] = Variable<bool>(
+      requireBiometricsToUnhide,
+    );
+    map['enable_pin_code'] = Variable<bool>(enablePinCode);
+    map['enable_biometric_login'] = Variable<bool>(enableBiometricLogin);
+    map['enable_auto_detect_duplicates'] = Variable<bool>(
+      enableAutoDetectDuplicates,
+    );
+    map['enable_auto_detect_transfers'] = Variable<bool>(
+      enableAutoDetectTransfers,
+    );
+    map['duplicate_date_tolerance_days'] = Variable<int>(
+      duplicateDateToleranceDays,
+    );
+    map['transfer_time_tolerance_minutes'] = Variable<int>(
+      transferTimeToleranceMinutes,
+    );
+    map['auto_offer_receipt_split'] = Variable<bool>(autoOfferReceiptSplit);
+    map['offer_receipt_split_count'] = Variable<int>(offerReceiptSplitCount);
+    map['auto_offer_product_naming'] = Variable<bool>(autoOfferProductNaming);
+    map['offer_product_naming_count'] = Variable<int>(offerProductNamingCount);
+    map['sync_images_to_cloud'] = Variable<bool>(syncImagesToCloud);
+    map['enable_bank_statement_reminder'] = Variable<bool>(
+      enableBankStatementReminder,
+    );
+    map['enable_group_activity_alerts'] = Variable<bool>(
+      enableGroupActivityAlerts,
+    );
+    map['enable_deficit_forecast_alerts'] = Variable<bool>(
+      enableDeficitForecastAlerts,
+    );
+    map['enable_year_in_review_alerts'] = Variable<bool>(
+      enableYearInReviewAlerts,
+    );
+    map['enable_debt_alerts'] = Variable<bool>(enableDebtAlerts);
+    map['enable_reminder_notifications'] = Variable<bool>(
+      enableReminderNotifications,
+    );
+    map['reminder_advance_days'] = Variable<int>(reminderAdvanceDays);
+    map['reminder_time_of_day'] = Variable<String>(reminderTimeOfDay);
+    map['auto_create_reminders_for_recurring'] = Variable<bool>(
+      autoCreateRemindersForRecurring,
+    );
+    map['digest_config'] = Variable<String>(digestConfig);
+    return map;
+  }
+
+  AppSettingsCompanion toCompanion(bool nullToAbsent) {
+    return AppSettingsCompanion(
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncStatus: Value(syncStatus),
+      id: Value(id),
+      userId: Value(userId),
+      baseCurrency: Value(baseCurrency),
+      useHistoricalExchangeRate: Value(useHistoricalExchangeRate),
+      inheritLimitFromPreviousMonth: Value(inheritLimitFromPreviousMonth),
+      carryOverUnusedLimit: Value(carryOverUnusedLimit),
+      limitAlertMode: Value(limitAlertMode),
+      globalAlertPercent: Value(globalAlertPercent),
+      globalAlertAmount: Value(globalAlertAmount),
+      enableSecrecyMode: Value(enableSecrecyMode),
+      secrecyDaysBefore: Value(secrecyDaysBefore),
+      secrecyTimeoutSeconds: Value(secrecyTimeoutSeconds),
+      largeTransactionThreshold: Value(largeTransactionThreshold),
+      autoHideGiftsOnImport: Value(autoHideGiftsOnImport),
+      defaultBalanceVisibility: Value(defaultBalanceVisibility),
+      enableShakeToHide: Value(enableShakeToHide),
+      enableFaceDownHide: Value(enableFaceDownHide),
+      enableAutoHideTimeout: Value(enableAutoHideTimeout),
+      enableScreenCaptureProtection: Value(enableScreenCaptureProtection),
+      requireBiometricsToUnhide: Value(requireBiometricsToUnhide),
+      enablePinCode: Value(enablePinCode),
+      enableBiometricLogin: Value(enableBiometricLogin),
+      enableAutoDetectDuplicates: Value(enableAutoDetectDuplicates),
+      enableAutoDetectTransfers: Value(enableAutoDetectTransfers),
+      duplicateDateToleranceDays: Value(duplicateDateToleranceDays),
+      transferTimeToleranceMinutes: Value(transferTimeToleranceMinutes),
+      autoOfferReceiptSplit: Value(autoOfferReceiptSplit),
+      offerReceiptSplitCount: Value(offerReceiptSplitCount),
+      autoOfferProductNaming: Value(autoOfferProductNaming),
+      offerProductNamingCount: Value(offerProductNamingCount),
+      syncImagesToCloud: Value(syncImagesToCloud),
+      enableBankStatementReminder: Value(enableBankStatementReminder),
+      enableGroupActivityAlerts: Value(enableGroupActivityAlerts),
+      enableDeficitForecastAlerts: Value(enableDeficitForecastAlerts),
+      enableYearInReviewAlerts: Value(enableYearInReviewAlerts),
+      enableDebtAlerts: Value(enableDebtAlerts),
+      enableReminderNotifications: Value(enableReminderNotifications),
+      reminderAdvanceDays: Value(reminderAdvanceDays),
+      reminderTimeOfDay: Value(reminderTimeOfDay),
+      autoCreateRemindersForRecurring: Value(autoCreateRemindersForRecurring),
+      digestConfig: Value(digestConfig),
+    );
+  }
+
+  factory AppSetting.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AppSetting(
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      baseCurrency: serializer.fromJson<String>(json['baseCurrency']),
+      useHistoricalExchangeRate: serializer.fromJson<bool>(
+        json['useHistoricalExchangeRate'],
+      ),
+      inheritLimitFromPreviousMonth: serializer.fromJson<bool>(
+        json['inheritLimitFromPreviousMonth'],
+      ),
+      carryOverUnusedLimit: serializer.fromJson<bool>(
+        json['carryOverUnusedLimit'],
+      ),
+      limitAlertMode: serializer.fromJson<String>(json['limitAlertMode']),
+      globalAlertPercent: serializer.fromJson<int>(json['globalAlertPercent']),
+      globalAlertAmount: serializer.fromJson<int>(json['globalAlertAmount']),
+      enableSecrecyMode: serializer.fromJson<bool>(json['enableSecrecyMode']),
+      secrecyDaysBefore: serializer.fromJson<int>(json['secrecyDaysBefore']),
+      secrecyTimeoutSeconds: serializer.fromJson<int>(
+        json['secrecyTimeoutSeconds'],
+      ),
+      largeTransactionThreshold: serializer.fromJson<int>(
+        json['largeTransactionThreshold'],
+      ),
+      autoHideGiftsOnImport: serializer.fromJson<bool>(
+        json['autoHideGiftsOnImport'],
+      ),
+      defaultBalanceVisibility: serializer.fromJson<String>(
+        json['defaultBalanceVisibility'],
+      ),
+      enableShakeToHide: serializer.fromJson<bool>(json['enableShakeToHide']),
+      enableFaceDownHide: serializer.fromJson<bool>(json['enableFaceDownHide']),
+      enableAutoHideTimeout: serializer.fromJson<bool>(
+        json['enableAutoHideTimeout'],
+      ),
+      enableScreenCaptureProtection: serializer.fromJson<bool>(
+        json['enableScreenCaptureProtection'],
+      ),
+      requireBiometricsToUnhide: serializer.fromJson<bool>(
+        json['requireBiometricsToUnhide'],
+      ),
+      enablePinCode: serializer.fromJson<bool>(json['enablePinCode']),
+      enableBiometricLogin: serializer.fromJson<bool>(
+        json['enableBiometricLogin'],
+      ),
+      enableAutoDetectDuplicates: serializer.fromJson<bool>(
+        json['enableAutoDetectDuplicates'],
+      ),
+      enableAutoDetectTransfers: serializer.fromJson<bool>(
+        json['enableAutoDetectTransfers'],
+      ),
+      duplicateDateToleranceDays: serializer.fromJson<int>(
+        json['duplicateDateToleranceDays'],
+      ),
+      transferTimeToleranceMinutes: serializer.fromJson<int>(
+        json['transferTimeToleranceMinutes'],
+      ),
+      autoOfferReceiptSplit: serializer.fromJson<bool>(
+        json['autoOfferReceiptSplit'],
+      ),
+      offerReceiptSplitCount: serializer.fromJson<int>(
+        json['offerReceiptSplitCount'],
+      ),
+      autoOfferProductNaming: serializer.fromJson<bool>(
+        json['autoOfferProductNaming'],
+      ),
+      offerProductNamingCount: serializer.fromJson<int>(
+        json['offerProductNamingCount'],
+      ),
+      syncImagesToCloud: serializer.fromJson<bool>(json['syncImagesToCloud']),
+      enableBankStatementReminder: serializer.fromJson<bool>(
+        json['enableBankStatementReminder'],
+      ),
+      enableGroupActivityAlerts: serializer.fromJson<bool>(
+        json['enableGroupActivityAlerts'],
+      ),
+      enableDeficitForecastAlerts: serializer.fromJson<bool>(
+        json['enableDeficitForecastAlerts'],
+      ),
+      enableYearInReviewAlerts: serializer.fromJson<bool>(
+        json['enableYearInReviewAlerts'],
+      ),
+      enableDebtAlerts: serializer.fromJson<bool>(json['enableDebtAlerts']),
+      enableReminderNotifications: serializer.fromJson<bool>(
+        json['enableReminderNotifications'],
+      ),
+      reminderAdvanceDays: serializer.fromJson<int>(
+        json['reminderAdvanceDays'],
+      ),
+      reminderTimeOfDay: serializer.fromJson<String>(json['reminderTimeOfDay']),
+      autoCreateRemindersForRecurring: serializer.fromJson<bool>(
+        json['autoCreateRemindersForRecurring'],
+      ),
+      digestConfig: serializer.fromJson<String>(json['digestConfig']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'baseCurrency': serializer.toJson<String>(baseCurrency),
+      'useHistoricalExchangeRate': serializer.toJson<bool>(
+        useHistoricalExchangeRate,
+      ),
+      'inheritLimitFromPreviousMonth': serializer.toJson<bool>(
+        inheritLimitFromPreviousMonth,
+      ),
+      'carryOverUnusedLimit': serializer.toJson<bool>(carryOverUnusedLimit),
+      'limitAlertMode': serializer.toJson<String>(limitAlertMode),
+      'globalAlertPercent': serializer.toJson<int>(globalAlertPercent),
+      'globalAlertAmount': serializer.toJson<int>(globalAlertAmount),
+      'enableSecrecyMode': serializer.toJson<bool>(enableSecrecyMode),
+      'secrecyDaysBefore': serializer.toJson<int>(secrecyDaysBefore),
+      'secrecyTimeoutSeconds': serializer.toJson<int>(secrecyTimeoutSeconds),
+      'largeTransactionThreshold': serializer.toJson<int>(
+        largeTransactionThreshold,
+      ),
+      'autoHideGiftsOnImport': serializer.toJson<bool>(autoHideGiftsOnImport),
+      'defaultBalanceVisibility': serializer.toJson<String>(
+        defaultBalanceVisibility,
+      ),
+      'enableShakeToHide': serializer.toJson<bool>(enableShakeToHide),
+      'enableFaceDownHide': serializer.toJson<bool>(enableFaceDownHide),
+      'enableAutoHideTimeout': serializer.toJson<bool>(enableAutoHideTimeout),
+      'enableScreenCaptureProtection': serializer.toJson<bool>(
+        enableScreenCaptureProtection,
+      ),
+      'requireBiometricsToUnhide': serializer.toJson<bool>(
+        requireBiometricsToUnhide,
+      ),
+      'enablePinCode': serializer.toJson<bool>(enablePinCode),
+      'enableBiometricLogin': serializer.toJson<bool>(enableBiometricLogin),
+      'enableAutoDetectDuplicates': serializer.toJson<bool>(
+        enableAutoDetectDuplicates,
+      ),
+      'enableAutoDetectTransfers': serializer.toJson<bool>(
+        enableAutoDetectTransfers,
+      ),
+      'duplicateDateToleranceDays': serializer.toJson<int>(
+        duplicateDateToleranceDays,
+      ),
+      'transferTimeToleranceMinutes': serializer.toJson<int>(
+        transferTimeToleranceMinutes,
+      ),
+      'autoOfferReceiptSplit': serializer.toJson<bool>(autoOfferReceiptSplit),
+      'offerReceiptSplitCount': serializer.toJson<int>(offerReceiptSplitCount),
+      'autoOfferProductNaming': serializer.toJson<bool>(autoOfferProductNaming),
+      'offerProductNamingCount': serializer.toJson<int>(
+        offerProductNamingCount,
+      ),
+      'syncImagesToCloud': serializer.toJson<bool>(syncImagesToCloud),
+      'enableBankStatementReminder': serializer.toJson<bool>(
+        enableBankStatementReminder,
+      ),
+      'enableGroupActivityAlerts': serializer.toJson<bool>(
+        enableGroupActivityAlerts,
+      ),
+      'enableDeficitForecastAlerts': serializer.toJson<bool>(
+        enableDeficitForecastAlerts,
+      ),
+      'enableYearInReviewAlerts': serializer.toJson<bool>(
+        enableYearInReviewAlerts,
+      ),
+      'enableDebtAlerts': serializer.toJson<bool>(enableDebtAlerts),
+      'enableReminderNotifications': serializer.toJson<bool>(
+        enableReminderNotifications,
+      ),
+      'reminderAdvanceDays': serializer.toJson<int>(reminderAdvanceDays),
+      'reminderTimeOfDay': serializer.toJson<String>(reminderTimeOfDay),
+      'autoCreateRemindersForRecurring': serializer.toJson<bool>(
+        autoCreateRemindersForRecurring,
+      ),
+      'digestConfig': serializer.toJson<String>(digestConfig),
+    };
+  }
+
+  AppSetting copyWith({
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? syncStatus,
+    String? id,
+    String? userId,
+    String? baseCurrency,
+    bool? useHistoricalExchangeRate,
+    bool? inheritLimitFromPreviousMonth,
+    bool? carryOverUnusedLimit,
+    String? limitAlertMode,
+    int? globalAlertPercent,
+    int? globalAlertAmount,
+    bool? enableSecrecyMode,
+    int? secrecyDaysBefore,
+    int? secrecyTimeoutSeconds,
+    int? largeTransactionThreshold,
+    bool? autoHideGiftsOnImport,
+    String? defaultBalanceVisibility,
+    bool? enableShakeToHide,
+    bool? enableFaceDownHide,
+    bool? enableAutoHideTimeout,
+    bool? enableScreenCaptureProtection,
+    bool? requireBiometricsToUnhide,
+    bool? enablePinCode,
+    bool? enableBiometricLogin,
+    bool? enableAutoDetectDuplicates,
+    bool? enableAutoDetectTransfers,
+    int? duplicateDateToleranceDays,
+    int? transferTimeToleranceMinutes,
+    bool? autoOfferReceiptSplit,
+    int? offerReceiptSplitCount,
+    bool? autoOfferProductNaming,
+    int? offerProductNamingCount,
+    bool? syncImagesToCloud,
+    bool? enableBankStatementReminder,
+    bool? enableGroupActivityAlerts,
+    bool? enableDeficitForecastAlerts,
+    bool? enableYearInReviewAlerts,
+    bool? enableDebtAlerts,
+    bool? enableReminderNotifications,
+    int? reminderAdvanceDays,
+    String? reminderTimeOfDay,
+    bool? autoCreateRemindersForRecurring,
+    String? digestConfig,
+  }) => AppSetting(
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    baseCurrency: baseCurrency ?? this.baseCurrency,
+    useHistoricalExchangeRate:
+        useHistoricalExchangeRate ?? this.useHistoricalExchangeRate,
+    inheritLimitFromPreviousMonth:
+        inheritLimitFromPreviousMonth ?? this.inheritLimitFromPreviousMonth,
+    carryOverUnusedLimit: carryOverUnusedLimit ?? this.carryOverUnusedLimit,
+    limitAlertMode: limitAlertMode ?? this.limitAlertMode,
+    globalAlertPercent: globalAlertPercent ?? this.globalAlertPercent,
+    globalAlertAmount: globalAlertAmount ?? this.globalAlertAmount,
+    enableSecrecyMode: enableSecrecyMode ?? this.enableSecrecyMode,
+    secrecyDaysBefore: secrecyDaysBefore ?? this.secrecyDaysBefore,
+    secrecyTimeoutSeconds: secrecyTimeoutSeconds ?? this.secrecyTimeoutSeconds,
+    largeTransactionThreshold:
+        largeTransactionThreshold ?? this.largeTransactionThreshold,
+    autoHideGiftsOnImport: autoHideGiftsOnImport ?? this.autoHideGiftsOnImport,
+    defaultBalanceVisibility:
+        defaultBalanceVisibility ?? this.defaultBalanceVisibility,
+    enableShakeToHide: enableShakeToHide ?? this.enableShakeToHide,
+    enableFaceDownHide: enableFaceDownHide ?? this.enableFaceDownHide,
+    enableAutoHideTimeout: enableAutoHideTimeout ?? this.enableAutoHideTimeout,
+    enableScreenCaptureProtection:
+        enableScreenCaptureProtection ?? this.enableScreenCaptureProtection,
+    requireBiometricsToUnhide:
+        requireBiometricsToUnhide ?? this.requireBiometricsToUnhide,
+    enablePinCode: enablePinCode ?? this.enablePinCode,
+    enableBiometricLogin: enableBiometricLogin ?? this.enableBiometricLogin,
+    enableAutoDetectDuplicates:
+        enableAutoDetectDuplicates ?? this.enableAutoDetectDuplicates,
+    enableAutoDetectTransfers:
+        enableAutoDetectTransfers ?? this.enableAutoDetectTransfers,
+    duplicateDateToleranceDays:
+        duplicateDateToleranceDays ?? this.duplicateDateToleranceDays,
+    transferTimeToleranceMinutes:
+        transferTimeToleranceMinutes ?? this.transferTimeToleranceMinutes,
+    autoOfferReceiptSplit: autoOfferReceiptSplit ?? this.autoOfferReceiptSplit,
+    offerReceiptSplitCount:
+        offerReceiptSplitCount ?? this.offerReceiptSplitCount,
+    autoOfferProductNaming:
+        autoOfferProductNaming ?? this.autoOfferProductNaming,
+    offerProductNamingCount:
+        offerProductNamingCount ?? this.offerProductNamingCount,
+    syncImagesToCloud: syncImagesToCloud ?? this.syncImagesToCloud,
+    enableBankStatementReminder:
+        enableBankStatementReminder ?? this.enableBankStatementReminder,
+    enableGroupActivityAlerts:
+        enableGroupActivityAlerts ?? this.enableGroupActivityAlerts,
+    enableDeficitForecastAlerts:
+        enableDeficitForecastAlerts ?? this.enableDeficitForecastAlerts,
+    enableYearInReviewAlerts:
+        enableYearInReviewAlerts ?? this.enableYearInReviewAlerts,
+    enableDebtAlerts: enableDebtAlerts ?? this.enableDebtAlerts,
+    enableReminderNotifications:
+        enableReminderNotifications ?? this.enableReminderNotifications,
+    reminderAdvanceDays: reminderAdvanceDays ?? this.reminderAdvanceDays,
+    reminderTimeOfDay: reminderTimeOfDay ?? this.reminderTimeOfDay,
+    autoCreateRemindersForRecurring:
+        autoCreateRemindersForRecurring ?? this.autoCreateRemindersForRecurring,
+    digestConfig: digestConfig ?? this.digestConfig,
+  );
+  AppSetting copyWithCompanion(AppSettingsCompanion data) {
+    return AppSetting(
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      baseCurrency: data.baseCurrency.present
+          ? data.baseCurrency.value
+          : this.baseCurrency,
+      useHistoricalExchangeRate: data.useHistoricalExchangeRate.present
+          ? data.useHistoricalExchangeRate.value
+          : this.useHistoricalExchangeRate,
+      inheritLimitFromPreviousMonth: data.inheritLimitFromPreviousMonth.present
+          ? data.inheritLimitFromPreviousMonth.value
+          : this.inheritLimitFromPreviousMonth,
+      carryOverUnusedLimit: data.carryOverUnusedLimit.present
+          ? data.carryOverUnusedLimit.value
+          : this.carryOverUnusedLimit,
+      limitAlertMode: data.limitAlertMode.present
+          ? data.limitAlertMode.value
+          : this.limitAlertMode,
+      globalAlertPercent: data.globalAlertPercent.present
+          ? data.globalAlertPercent.value
+          : this.globalAlertPercent,
+      globalAlertAmount: data.globalAlertAmount.present
+          ? data.globalAlertAmount.value
+          : this.globalAlertAmount,
+      enableSecrecyMode: data.enableSecrecyMode.present
+          ? data.enableSecrecyMode.value
+          : this.enableSecrecyMode,
+      secrecyDaysBefore: data.secrecyDaysBefore.present
+          ? data.secrecyDaysBefore.value
+          : this.secrecyDaysBefore,
+      secrecyTimeoutSeconds: data.secrecyTimeoutSeconds.present
+          ? data.secrecyTimeoutSeconds.value
+          : this.secrecyTimeoutSeconds,
+      largeTransactionThreshold: data.largeTransactionThreshold.present
+          ? data.largeTransactionThreshold.value
+          : this.largeTransactionThreshold,
+      autoHideGiftsOnImport: data.autoHideGiftsOnImport.present
+          ? data.autoHideGiftsOnImport.value
+          : this.autoHideGiftsOnImport,
+      defaultBalanceVisibility: data.defaultBalanceVisibility.present
+          ? data.defaultBalanceVisibility.value
+          : this.defaultBalanceVisibility,
+      enableShakeToHide: data.enableShakeToHide.present
+          ? data.enableShakeToHide.value
+          : this.enableShakeToHide,
+      enableFaceDownHide: data.enableFaceDownHide.present
+          ? data.enableFaceDownHide.value
+          : this.enableFaceDownHide,
+      enableAutoHideTimeout: data.enableAutoHideTimeout.present
+          ? data.enableAutoHideTimeout.value
+          : this.enableAutoHideTimeout,
+      enableScreenCaptureProtection: data.enableScreenCaptureProtection.present
+          ? data.enableScreenCaptureProtection.value
+          : this.enableScreenCaptureProtection,
+      requireBiometricsToUnhide: data.requireBiometricsToUnhide.present
+          ? data.requireBiometricsToUnhide.value
+          : this.requireBiometricsToUnhide,
+      enablePinCode: data.enablePinCode.present
+          ? data.enablePinCode.value
+          : this.enablePinCode,
+      enableBiometricLogin: data.enableBiometricLogin.present
+          ? data.enableBiometricLogin.value
+          : this.enableBiometricLogin,
+      enableAutoDetectDuplicates: data.enableAutoDetectDuplicates.present
+          ? data.enableAutoDetectDuplicates.value
+          : this.enableAutoDetectDuplicates,
+      enableAutoDetectTransfers: data.enableAutoDetectTransfers.present
+          ? data.enableAutoDetectTransfers.value
+          : this.enableAutoDetectTransfers,
+      duplicateDateToleranceDays: data.duplicateDateToleranceDays.present
+          ? data.duplicateDateToleranceDays.value
+          : this.duplicateDateToleranceDays,
+      transferTimeToleranceMinutes: data.transferTimeToleranceMinutes.present
+          ? data.transferTimeToleranceMinutes.value
+          : this.transferTimeToleranceMinutes,
+      autoOfferReceiptSplit: data.autoOfferReceiptSplit.present
+          ? data.autoOfferReceiptSplit.value
+          : this.autoOfferReceiptSplit,
+      offerReceiptSplitCount: data.offerReceiptSplitCount.present
+          ? data.offerReceiptSplitCount.value
+          : this.offerReceiptSplitCount,
+      autoOfferProductNaming: data.autoOfferProductNaming.present
+          ? data.autoOfferProductNaming.value
+          : this.autoOfferProductNaming,
+      offerProductNamingCount: data.offerProductNamingCount.present
+          ? data.offerProductNamingCount.value
+          : this.offerProductNamingCount,
+      syncImagesToCloud: data.syncImagesToCloud.present
+          ? data.syncImagesToCloud.value
+          : this.syncImagesToCloud,
+      enableBankStatementReminder: data.enableBankStatementReminder.present
+          ? data.enableBankStatementReminder.value
+          : this.enableBankStatementReminder,
+      enableGroupActivityAlerts: data.enableGroupActivityAlerts.present
+          ? data.enableGroupActivityAlerts.value
+          : this.enableGroupActivityAlerts,
+      enableDeficitForecastAlerts: data.enableDeficitForecastAlerts.present
+          ? data.enableDeficitForecastAlerts.value
+          : this.enableDeficitForecastAlerts,
+      enableYearInReviewAlerts: data.enableYearInReviewAlerts.present
+          ? data.enableYearInReviewAlerts.value
+          : this.enableYearInReviewAlerts,
+      enableDebtAlerts: data.enableDebtAlerts.present
+          ? data.enableDebtAlerts.value
+          : this.enableDebtAlerts,
+      enableReminderNotifications: data.enableReminderNotifications.present
+          ? data.enableReminderNotifications.value
+          : this.enableReminderNotifications,
+      reminderAdvanceDays: data.reminderAdvanceDays.present
+          ? data.reminderAdvanceDays.value
+          : this.reminderAdvanceDays,
+      reminderTimeOfDay: data.reminderTimeOfDay.present
+          ? data.reminderTimeOfDay.value
+          : this.reminderTimeOfDay,
+      autoCreateRemindersForRecurring:
+          data.autoCreateRemindersForRecurring.present
+          ? data.autoCreateRemindersForRecurring.value
+          : this.autoCreateRemindersForRecurring,
+      digestConfig: data.digestConfig.present
+          ? data.digestConfig.value
+          : this.digestConfig,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppSetting(')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('baseCurrency: $baseCurrency, ')
+          ..write('useHistoricalExchangeRate: $useHistoricalExchangeRate, ')
+          ..write(
+            'inheritLimitFromPreviousMonth: $inheritLimitFromPreviousMonth, ',
+          )
+          ..write('carryOverUnusedLimit: $carryOverUnusedLimit, ')
+          ..write('limitAlertMode: $limitAlertMode, ')
+          ..write('globalAlertPercent: $globalAlertPercent, ')
+          ..write('globalAlertAmount: $globalAlertAmount, ')
+          ..write('enableSecrecyMode: $enableSecrecyMode, ')
+          ..write('secrecyDaysBefore: $secrecyDaysBefore, ')
+          ..write('secrecyTimeoutSeconds: $secrecyTimeoutSeconds, ')
+          ..write('largeTransactionThreshold: $largeTransactionThreshold, ')
+          ..write('autoHideGiftsOnImport: $autoHideGiftsOnImport, ')
+          ..write('defaultBalanceVisibility: $defaultBalanceVisibility, ')
+          ..write('enableShakeToHide: $enableShakeToHide, ')
+          ..write('enableFaceDownHide: $enableFaceDownHide, ')
+          ..write('enableAutoHideTimeout: $enableAutoHideTimeout, ')
+          ..write(
+            'enableScreenCaptureProtection: $enableScreenCaptureProtection, ',
+          )
+          ..write('requireBiometricsToUnhide: $requireBiometricsToUnhide, ')
+          ..write('enablePinCode: $enablePinCode, ')
+          ..write('enableBiometricLogin: $enableBiometricLogin, ')
+          ..write('enableAutoDetectDuplicates: $enableAutoDetectDuplicates, ')
+          ..write('enableAutoDetectTransfers: $enableAutoDetectTransfers, ')
+          ..write('duplicateDateToleranceDays: $duplicateDateToleranceDays, ')
+          ..write(
+            'transferTimeToleranceMinutes: $transferTimeToleranceMinutes, ',
+          )
+          ..write('autoOfferReceiptSplit: $autoOfferReceiptSplit, ')
+          ..write('offerReceiptSplitCount: $offerReceiptSplitCount, ')
+          ..write('autoOfferProductNaming: $autoOfferProductNaming, ')
+          ..write('offerProductNamingCount: $offerProductNamingCount, ')
+          ..write('syncImagesToCloud: $syncImagesToCloud, ')
+          ..write('enableBankStatementReminder: $enableBankStatementReminder, ')
+          ..write('enableGroupActivityAlerts: $enableGroupActivityAlerts, ')
+          ..write('enableDeficitForecastAlerts: $enableDeficitForecastAlerts, ')
+          ..write('enableYearInReviewAlerts: $enableYearInReviewAlerts, ')
+          ..write('enableDebtAlerts: $enableDebtAlerts, ')
+          ..write('enableReminderNotifications: $enableReminderNotifications, ')
+          ..write('reminderAdvanceDays: $reminderAdvanceDays, ')
+          ..write('reminderTimeOfDay: $reminderTimeOfDay, ')
+          ..write(
+            'autoCreateRemindersForRecurring: $autoCreateRemindersForRecurring, ',
+          )
+          ..write('digestConfig: $digestConfig')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    createdAt,
+    updatedAt,
+    syncStatus,
+    id,
+    userId,
+    baseCurrency,
+    useHistoricalExchangeRate,
+    inheritLimitFromPreviousMonth,
+    carryOverUnusedLimit,
+    limitAlertMode,
+    globalAlertPercent,
+    globalAlertAmount,
+    enableSecrecyMode,
+    secrecyDaysBefore,
+    secrecyTimeoutSeconds,
+    largeTransactionThreshold,
+    autoHideGiftsOnImport,
+    defaultBalanceVisibility,
+    enableShakeToHide,
+    enableFaceDownHide,
+    enableAutoHideTimeout,
+    enableScreenCaptureProtection,
+    requireBiometricsToUnhide,
+    enablePinCode,
+    enableBiometricLogin,
+    enableAutoDetectDuplicates,
+    enableAutoDetectTransfers,
+    duplicateDateToleranceDays,
+    transferTimeToleranceMinutes,
+    autoOfferReceiptSplit,
+    offerReceiptSplitCount,
+    autoOfferProductNaming,
+    offerProductNamingCount,
+    syncImagesToCloud,
+    enableBankStatementReminder,
+    enableGroupActivityAlerts,
+    enableDeficitForecastAlerts,
+    enableYearInReviewAlerts,
+    enableDebtAlerts,
+    enableReminderNotifications,
+    reminderAdvanceDays,
+    reminderTimeOfDay,
+    autoCreateRemindersForRecurring,
+    digestConfig,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AppSetting &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncStatus == this.syncStatus &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.baseCurrency == this.baseCurrency &&
+          other.useHistoricalExchangeRate == this.useHistoricalExchangeRate &&
+          other.inheritLimitFromPreviousMonth ==
+              this.inheritLimitFromPreviousMonth &&
+          other.carryOverUnusedLimit == this.carryOverUnusedLimit &&
+          other.limitAlertMode == this.limitAlertMode &&
+          other.globalAlertPercent == this.globalAlertPercent &&
+          other.globalAlertAmount == this.globalAlertAmount &&
+          other.enableSecrecyMode == this.enableSecrecyMode &&
+          other.secrecyDaysBefore == this.secrecyDaysBefore &&
+          other.secrecyTimeoutSeconds == this.secrecyTimeoutSeconds &&
+          other.largeTransactionThreshold == this.largeTransactionThreshold &&
+          other.autoHideGiftsOnImport == this.autoHideGiftsOnImport &&
+          other.defaultBalanceVisibility == this.defaultBalanceVisibility &&
+          other.enableShakeToHide == this.enableShakeToHide &&
+          other.enableFaceDownHide == this.enableFaceDownHide &&
+          other.enableAutoHideTimeout == this.enableAutoHideTimeout &&
+          other.enableScreenCaptureProtection ==
+              this.enableScreenCaptureProtection &&
+          other.requireBiometricsToUnhide == this.requireBiometricsToUnhide &&
+          other.enablePinCode == this.enablePinCode &&
+          other.enableBiometricLogin == this.enableBiometricLogin &&
+          other.enableAutoDetectDuplicates == this.enableAutoDetectDuplicates &&
+          other.enableAutoDetectTransfers == this.enableAutoDetectTransfers &&
+          other.duplicateDateToleranceDays == this.duplicateDateToleranceDays &&
+          other.transferTimeToleranceMinutes ==
+              this.transferTimeToleranceMinutes &&
+          other.autoOfferReceiptSplit == this.autoOfferReceiptSplit &&
+          other.offerReceiptSplitCount == this.offerReceiptSplitCount &&
+          other.autoOfferProductNaming == this.autoOfferProductNaming &&
+          other.offerProductNamingCount == this.offerProductNamingCount &&
+          other.syncImagesToCloud == this.syncImagesToCloud &&
+          other.enableBankStatementReminder ==
+              this.enableBankStatementReminder &&
+          other.enableGroupActivityAlerts == this.enableGroupActivityAlerts &&
+          other.enableDeficitForecastAlerts ==
+              this.enableDeficitForecastAlerts &&
+          other.enableYearInReviewAlerts == this.enableYearInReviewAlerts &&
+          other.enableDebtAlerts == this.enableDebtAlerts &&
+          other.enableReminderNotifications ==
+              this.enableReminderNotifications &&
+          other.reminderAdvanceDays == this.reminderAdvanceDays &&
+          other.reminderTimeOfDay == this.reminderTimeOfDay &&
+          other.autoCreateRemindersForRecurring ==
+              this.autoCreateRemindersForRecurring &&
+          other.digestConfig == this.digestConfig);
+}
+
+class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<String> syncStatus;
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> baseCurrency;
+  final Value<bool> useHistoricalExchangeRate;
+  final Value<bool> inheritLimitFromPreviousMonth;
+  final Value<bool> carryOverUnusedLimit;
+  final Value<String> limitAlertMode;
+  final Value<int> globalAlertPercent;
+  final Value<int> globalAlertAmount;
+  final Value<bool> enableSecrecyMode;
+  final Value<int> secrecyDaysBefore;
+  final Value<int> secrecyTimeoutSeconds;
+  final Value<int> largeTransactionThreshold;
+  final Value<bool> autoHideGiftsOnImport;
+  final Value<String> defaultBalanceVisibility;
+  final Value<bool> enableShakeToHide;
+  final Value<bool> enableFaceDownHide;
+  final Value<bool> enableAutoHideTimeout;
+  final Value<bool> enableScreenCaptureProtection;
+  final Value<bool> requireBiometricsToUnhide;
+  final Value<bool> enablePinCode;
+  final Value<bool> enableBiometricLogin;
+  final Value<bool> enableAutoDetectDuplicates;
+  final Value<bool> enableAutoDetectTransfers;
+  final Value<int> duplicateDateToleranceDays;
+  final Value<int> transferTimeToleranceMinutes;
+  final Value<bool> autoOfferReceiptSplit;
+  final Value<int> offerReceiptSplitCount;
+  final Value<bool> autoOfferProductNaming;
+  final Value<int> offerProductNamingCount;
+  final Value<bool> syncImagesToCloud;
+  final Value<bool> enableBankStatementReminder;
+  final Value<bool> enableGroupActivityAlerts;
+  final Value<bool> enableDeficitForecastAlerts;
+  final Value<bool> enableYearInReviewAlerts;
+  final Value<bool> enableDebtAlerts;
+  final Value<bool> enableReminderNotifications;
+  final Value<int> reminderAdvanceDays;
+  final Value<String> reminderTimeOfDay;
+  final Value<bool> autoCreateRemindersForRecurring;
+  final Value<String> digestConfig;
+  final Value<int> rowid;
+  const AppSettingsCompanion({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.baseCurrency = const Value.absent(),
+    this.useHistoricalExchangeRate = const Value.absent(),
+    this.inheritLimitFromPreviousMonth = const Value.absent(),
+    this.carryOverUnusedLimit = const Value.absent(),
+    this.limitAlertMode = const Value.absent(),
+    this.globalAlertPercent = const Value.absent(),
+    this.globalAlertAmount = const Value.absent(),
+    this.enableSecrecyMode = const Value.absent(),
+    this.secrecyDaysBefore = const Value.absent(),
+    this.secrecyTimeoutSeconds = const Value.absent(),
+    this.largeTransactionThreshold = const Value.absent(),
+    this.autoHideGiftsOnImport = const Value.absent(),
+    this.defaultBalanceVisibility = const Value.absent(),
+    this.enableShakeToHide = const Value.absent(),
+    this.enableFaceDownHide = const Value.absent(),
+    this.enableAutoHideTimeout = const Value.absent(),
+    this.enableScreenCaptureProtection = const Value.absent(),
+    this.requireBiometricsToUnhide = const Value.absent(),
+    this.enablePinCode = const Value.absent(),
+    this.enableBiometricLogin = const Value.absent(),
+    this.enableAutoDetectDuplicates = const Value.absent(),
+    this.enableAutoDetectTransfers = const Value.absent(),
+    this.duplicateDateToleranceDays = const Value.absent(),
+    this.transferTimeToleranceMinutes = const Value.absent(),
+    this.autoOfferReceiptSplit = const Value.absent(),
+    this.offerReceiptSplitCount = const Value.absent(),
+    this.autoOfferProductNaming = const Value.absent(),
+    this.offerProductNamingCount = const Value.absent(),
+    this.syncImagesToCloud = const Value.absent(),
+    this.enableBankStatementReminder = const Value.absent(),
+    this.enableGroupActivityAlerts = const Value.absent(),
+    this.enableDeficitForecastAlerts = const Value.absent(),
+    this.enableYearInReviewAlerts = const Value.absent(),
+    this.enableDebtAlerts = const Value.absent(),
+    this.enableReminderNotifications = const Value.absent(),
+    this.reminderAdvanceDays = const Value.absent(),
+    this.reminderTimeOfDay = const Value.absent(),
+    this.autoCreateRemindersForRecurring = const Value.absent(),
+    this.digestConfig = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AppSettingsCompanion.insert({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required String id,
+    required String userId,
+    this.baseCurrency = const Value.absent(),
+    this.useHistoricalExchangeRate = const Value.absent(),
+    this.inheritLimitFromPreviousMonth = const Value.absent(),
+    this.carryOverUnusedLimit = const Value.absent(),
+    this.limitAlertMode = const Value.absent(),
+    this.globalAlertPercent = const Value.absent(),
+    this.globalAlertAmount = const Value.absent(),
+    this.enableSecrecyMode = const Value.absent(),
+    this.secrecyDaysBefore = const Value.absent(),
+    this.secrecyTimeoutSeconds = const Value.absent(),
+    this.largeTransactionThreshold = const Value.absent(),
+    this.autoHideGiftsOnImport = const Value.absent(),
+    this.defaultBalanceVisibility = const Value.absent(),
+    this.enableShakeToHide = const Value.absent(),
+    this.enableFaceDownHide = const Value.absent(),
+    this.enableAutoHideTimeout = const Value.absent(),
+    this.enableScreenCaptureProtection = const Value.absent(),
+    this.requireBiometricsToUnhide = const Value.absent(),
+    this.enablePinCode = const Value.absent(),
+    this.enableBiometricLogin = const Value.absent(),
+    this.enableAutoDetectDuplicates = const Value.absent(),
+    this.enableAutoDetectTransfers = const Value.absent(),
+    this.duplicateDateToleranceDays = const Value.absent(),
+    this.transferTimeToleranceMinutes = const Value.absent(),
+    this.autoOfferReceiptSplit = const Value.absent(),
+    this.offerReceiptSplitCount = const Value.absent(),
+    this.autoOfferProductNaming = const Value.absent(),
+    this.offerProductNamingCount = const Value.absent(),
+    this.syncImagesToCloud = const Value.absent(),
+    this.enableBankStatementReminder = const Value.absent(),
+    this.enableGroupActivityAlerts = const Value.absent(),
+    this.enableDeficitForecastAlerts = const Value.absent(),
+    this.enableYearInReviewAlerts = const Value.absent(),
+    this.enableDebtAlerts = const Value.absent(),
+    this.enableReminderNotifications = const Value.absent(),
+    this.reminderAdvanceDays = const Value.absent(),
+    this.reminderTimeOfDay = const Value.absent(),
+    this.autoCreateRemindersForRecurring = const Value.absent(),
+    this.digestConfig = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId);
+  static Insertable<AppSetting> custom({
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? syncStatus,
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? baseCurrency,
+    Expression<bool>? useHistoricalExchangeRate,
+    Expression<bool>? inheritLimitFromPreviousMonth,
+    Expression<bool>? carryOverUnusedLimit,
+    Expression<String>? limitAlertMode,
+    Expression<int>? globalAlertPercent,
+    Expression<int>? globalAlertAmount,
+    Expression<bool>? enableSecrecyMode,
+    Expression<int>? secrecyDaysBefore,
+    Expression<int>? secrecyTimeoutSeconds,
+    Expression<int>? largeTransactionThreshold,
+    Expression<bool>? autoHideGiftsOnImport,
+    Expression<String>? defaultBalanceVisibility,
+    Expression<bool>? enableShakeToHide,
+    Expression<bool>? enableFaceDownHide,
+    Expression<bool>? enableAutoHideTimeout,
+    Expression<bool>? enableScreenCaptureProtection,
+    Expression<bool>? requireBiometricsToUnhide,
+    Expression<bool>? enablePinCode,
+    Expression<bool>? enableBiometricLogin,
+    Expression<bool>? enableAutoDetectDuplicates,
+    Expression<bool>? enableAutoDetectTransfers,
+    Expression<int>? duplicateDateToleranceDays,
+    Expression<int>? transferTimeToleranceMinutes,
+    Expression<bool>? autoOfferReceiptSplit,
+    Expression<int>? offerReceiptSplitCount,
+    Expression<bool>? autoOfferProductNaming,
+    Expression<int>? offerProductNamingCount,
+    Expression<bool>? syncImagesToCloud,
+    Expression<bool>? enableBankStatementReminder,
+    Expression<bool>? enableGroupActivityAlerts,
+    Expression<bool>? enableDeficitForecastAlerts,
+    Expression<bool>? enableYearInReviewAlerts,
+    Expression<bool>? enableDebtAlerts,
+    Expression<bool>? enableReminderNotifications,
+    Expression<int>? reminderAdvanceDays,
+    Expression<String>? reminderTimeOfDay,
+    Expression<bool>? autoCreateRemindersForRecurring,
+    Expression<String>? digestConfig,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (baseCurrency != null) 'base_currency': baseCurrency,
+      if (useHistoricalExchangeRate != null)
+        'use_historical_exchange_rate': useHistoricalExchangeRate,
+      if (inheritLimitFromPreviousMonth != null)
+        'inherit_limit_from_previous_month': inheritLimitFromPreviousMonth,
+      if (carryOverUnusedLimit != null)
+        'carry_over_unused_limit': carryOverUnusedLimit,
+      if (limitAlertMode != null) 'limit_alert_mode': limitAlertMode,
+      if (globalAlertPercent != null)
+        'global_alert_percent': globalAlertPercent,
+      if (globalAlertAmount != null) 'global_alert_amount': globalAlertAmount,
+      if (enableSecrecyMode != null) 'enable_secrecy_mode': enableSecrecyMode,
+      if (secrecyDaysBefore != null) 'secrecy_days_before': secrecyDaysBefore,
+      if (secrecyTimeoutSeconds != null)
+        'secrecy_timeout_seconds': secrecyTimeoutSeconds,
+      if (largeTransactionThreshold != null)
+        'large_transaction_threshold': largeTransactionThreshold,
+      if (autoHideGiftsOnImport != null)
+        'auto_hide_gifts_on_import': autoHideGiftsOnImport,
+      if (defaultBalanceVisibility != null)
+        'default_balance_visibility': defaultBalanceVisibility,
+      if (enableShakeToHide != null) 'enable_shake_to_hide': enableShakeToHide,
+      if (enableFaceDownHide != null)
+        'enable_face_down_hide': enableFaceDownHide,
+      if (enableAutoHideTimeout != null)
+        'enable_auto_hide_timeout': enableAutoHideTimeout,
+      if (enableScreenCaptureProtection != null)
+        'enable_screen_capture_protection': enableScreenCaptureProtection,
+      if (requireBiometricsToUnhide != null)
+        'require_biometrics_to_unhide': requireBiometricsToUnhide,
+      if (enablePinCode != null) 'enable_pin_code': enablePinCode,
+      if (enableBiometricLogin != null)
+        'enable_biometric_login': enableBiometricLogin,
+      if (enableAutoDetectDuplicates != null)
+        'enable_auto_detect_duplicates': enableAutoDetectDuplicates,
+      if (enableAutoDetectTransfers != null)
+        'enable_auto_detect_transfers': enableAutoDetectTransfers,
+      if (duplicateDateToleranceDays != null)
+        'duplicate_date_tolerance_days': duplicateDateToleranceDays,
+      if (transferTimeToleranceMinutes != null)
+        'transfer_time_tolerance_minutes': transferTimeToleranceMinutes,
+      if (autoOfferReceiptSplit != null)
+        'auto_offer_receipt_split': autoOfferReceiptSplit,
+      if (offerReceiptSplitCount != null)
+        'offer_receipt_split_count': offerReceiptSplitCount,
+      if (autoOfferProductNaming != null)
+        'auto_offer_product_naming': autoOfferProductNaming,
+      if (offerProductNamingCount != null)
+        'offer_product_naming_count': offerProductNamingCount,
+      if (syncImagesToCloud != null) 'sync_images_to_cloud': syncImagesToCloud,
+      if (enableBankStatementReminder != null)
+        'enable_bank_statement_reminder': enableBankStatementReminder,
+      if (enableGroupActivityAlerts != null)
+        'enable_group_activity_alerts': enableGroupActivityAlerts,
+      if (enableDeficitForecastAlerts != null)
+        'enable_deficit_forecast_alerts': enableDeficitForecastAlerts,
+      if (enableYearInReviewAlerts != null)
+        'enable_year_in_review_alerts': enableYearInReviewAlerts,
+      if (enableDebtAlerts != null) 'enable_debt_alerts': enableDebtAlerts,
+      if (enableReminderNotifications != null)
+        'enable_reminder_notifications': enableReminderNotifications,
+      if (reminderAdvanceDays != null)
+        'reminder_advance_days': reminderAdvanceDays,
+      if (reminderTimeOfDay != null) 'reminder_time_of_day': reminderTimeOfDay,
+      if (autoCreateRemindersForRecurring != null)
+        'auto_create_reminders_for_recurring': autoCreateRemindersForRecurring,
+      if (digestConfig != null) 'digest_config': digestConfig,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AppSettingsCompanion copyWith({
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<String>? syncStatus,
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? baseCurrency,
+    Value<bool>? useHistoricalExchangeRate,
+    Value<bool>? inheritLimitFromPreviousMonth,
+    Value<bool>? carryOverUnusedLimit,
+    Value<String>? limitAlertMode,
+    Value<int>? globalAlertPercent,
+    Value<int>? globalAlertAmount,
+    Value<bool>? enableSecrecyMode,
+    Value<int>? secrecyDaysBefore,
+    Value<int>? secrecyTimeoutSeconds,
+    Value<int>? largeTransactionThreshold,
+    Value<bool>? autoHideGiftsOnImport,
+    Value<String>? defaultBalanceVisibility,
+    Value<bool>? enableShakeToHide,
+    Value<bool>? enableFaceDownHide,
+    Value<bool>? enableAutoHideTimeout,
+    Value<bool>? enableScreenCaptureProtection,
+    Value<bool>? requireBiometricsToUnhide,
+    Value<bool>? enablePinCode,
+    Value<bool>? enableBiometricLogin,
+    Value<bool>? enableAutoDetectDuplicates,
+    Value<bool>? enableAutoDetectTransfers,
+    Value<int>? duplicateDateToleranceDays,
+    Value<int>? transferTimeToleranceMinutes,
+    Value<bool>? autoOfferReceiptSplit,
+    Value<int>? offerReceiptSplitCount,
+    Value<bool>? autoOfferProductNaming,
+    Value<int>? offerProductNamingCount,
+    Value<bool>? syncImagesToCloud,
+    Value<bool>? enableBankStatementReminder,
+    Value<bool>? enableGroupActivityAlerts,
+    Value<bool>? enableDeficitForecastAlerts,
+    Value<bool>? enableYearInReviewAlerts,
+    Value<bool>? enableDebtAlerts,
+    Value<bool>? enableReminderNotifications,
+    Value<int>? reminderAdvanceDays,
+    Value<String>? reminderTimeOfDay,
+    Value<bool>? autoCreateRemindersForRecurring,
+    Value<String>? digestConfig,
+    Value<int>? rowid,
+  }) {
+    return AppSettingsCompanion(
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      baseCurrency: baseCurrency ?? this.baseCurrency,
+      useHistoricalExchangeRate:
+          useHistoricalExchangeRate ?? this.useHistoricalExchangeRate,
+      inheritLimitFromPreviousMonth:
+          inheritLimitFromPreviousMonth ?? this.inheritLimitFromPreviousMonth,
+      carryOverUnusedLimit: carryOverUnusedLimit ?? this.carryOverUnusedLimit,
+      limitAlertMode: limitAlertMode ?? this.limitAlertMode,
+      globalAlertPercent: globalAlertPercent ?? this.globalAlertPercent,
+      globalAlertAmount: globalAlertAmount ?? this.globalAlertAmount,
+      enableSecrecyMode: enableSecrecyMode ?? this.enableSecrecyMode,
+      secrecyDaysBefore: secrecyDaysBefore ?? this.secrecyDaysBefore,
+      secrecyTimeoutSeconds:
+          secrecyTimeoutSeconds ?? this.secrecyTimeoutSeconds,
+      largeTransactionThreshold:
+          largeTransactionThreshold ?? this.largeTransactionThreshold,
+      autoHideGiftsOnImport:
+          autoHideGiftsOnImport ?? this.autoHideGiftsOnImport,
+      defaultBalanceVisibility:
+          defaultBalanceVisibility ?? this.defaultBalanceVisibility,
+      enableShakeToHide: enableShakeToHide ?? this.enableShakeToHide,
+      enableFaceDownHide: enableFaceDownHide ?? this.enableFaceDownHide,
+      enableAutoHideTimeout:
+          enableAutoHideTimeout ?? this.enableAutoHideTimeout,
+      enableScreenCaptureProtection:
+          enableScreenCaptureProtection ?? this.enableScreenCaptureProtection,
+      requireBiometricsToUnhide:
+          requireBiometricsToUnhide ?? this.requireBiometricsToUnhide,
+      enablePinCode: enablePinCode ?? this.enablePinCode,
+      enableBiometricLogin: enableBiometricLogin ?? this.enableBiometricLogin,
+      enableAutoDetectDuplicates:
+          enableAutoDetectDuplicates ?? this.enableAutoDetectDuplicates,
+      enableAutoDetectTransfers:
+          enableAutoDetectTransfers ?? this.enableAutoDetectTransfers,
+      duplicateDateToleranceDays:
+          duplicateDateToleranceDays ?? this.duplicateDateToleranceDays,
+      transferTimeToleranceMinutes:
+          transferTimeToleranceMinutes ?? this.transferTimeToleranceMinutes,
+      autoOfferReceiptSplit:
+          autoOfferReceiptSplit ?? this.autoOfferReceiptSplit,
+      offerReceiptSplitCount:
+          offerReceiptSplitCount ?? this.offerReceiptSplitCount,
+      autoOfferProductNaming:
+          autoOfferProductNaming ?? this.autoOfferProductNaming,
+      offerProductNamingCount:
+          offerProductNamingCount ?? this.offerProductNamingCount,
+      syncImagesToCloud: syncImagesToCloud ?? this.syncImagesToCloud,
+      enableBankStatementReminder:
+          enableBankStatementReminder ?? this.enableBankStatementReminder,
+      enableGroupActivityAlerts:
+          enableGroupActivityAlerts ?? this.enableGroupActivityAlerts,
+      enableDeficitForecastAlerts:
+          enableDeficitForecastAlerts ?? this.enableDeficitForecastAlerts,
+      enableYearInReviewAlerts:
+          enableYearInReviewAlerts ?? this.enableYearInReviewAlerts,
+      enableDebtAlerts: enableDebtAlerts ?? this.enableDebtAlerts,
+      enableReminderNotifications:
+          enableReminderNotifications ?? this.enableReminderNotifications,
+      reminderAdvanceDays: reminderAdvanceDays ?? this.reminderAdvanceDays,
+      reminderTimeOfDay: reminderTimeOfDay ?? this.reminderTimeOfDay,
+      autoCreateRemindersForRecurring:
+          autoCreateRemindersForRecurring ??
+          this.autoCreateRemindersForRecurring,
+      digestConfig: digestConfig ?? this.digestConfig,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (baseCurrency.present) {
+      map['base_currency'] = Variable<String>(baseCurrency.value);
+    }
+    if (useHistoricalExchangeRate.present) {
+      map['use_historical_exchange_rate'] = Variable<bool>(
+        useHistoricalExchangeRate.value,
+      );
+    }
+    if (inheritLimitFromPreviousMonth.present) {
+      map['inherit_limit_from_previous_month'] = Variable<bool>(
+        inheritLimitFromPreviousMonth.value,
+      );
+    }
+    if (carryOverUnusedLimit.present) {
+      map['carry_over_unused_limit'] = Variable<bool>(
+        carryOverUnusedLimit.value,
+      );
+    }
+    if (limitAlertMode.present) {
+      map['limit_alert_mode'] = Variable<String>(limitAlertMode.value);
+    }
+    if (globalAlertPercent.present) {
+      map['global_alert_percent'] = Variable<int>(globalAlertPercent.value);
+    }
+    if (globalAlertAmount.present) {
+      map['global_alert_amount'] = Variable<int>(globalAlertAmount.value);
+    }
+    if (enableSecrecyMode.present) {
+      map['enable_secrecy_mode'] = Variable<bool>(enableSecrecyMode.value);
+    }
+    if (secrecyDaysBefore.present) {
+      map['secrecy_days_before'] = Variable<int>(secrecyDaysBefore.value);
+    }
+    if (secrecyTimeoutSeconds.present) {
+      map['secrecy_timeout_seconds'] = Variable<int>(
+        secrecyTimeoutSeconds.value,
+      );
+    }
+    if (largeTransactionThreshold.present) {
+      map['large_transaction_threshold'] = Variable<int>(
+        largeTransactionThreshold.value,
+      );
+    }
+    if (autoHideGiftsOnImport.present) {
+      map['auto_hide_gifts_on_import'] = Variable<bool>(
+        autoHideGiftsOnImport.value,
+      );
+    }
+    if (defaultBalanceVisibility.present) {
+      map['default_balance_visibility'] = Variable<String>(
+        defaultBalanceVisibility.value,
+      );
+    }
+    if (enableShakeToHide.present) {
+      map['enable_shake_to_hide'] = Variable<bool>(enableShakeToHide.value);
+    }
+    if (enableFaceDownHide.present) {
+      map['enable_face_down_hide'] = Variable<bool>(enableFaceDownHide.value);
+    }
+    if (enableAutoHideTimeout.present) {
+      map['enable_auto_hide_timeout'] = Variable<bool>(
+        enableAutoHideTimeout.value,
+      );
+    }
+    if (enableScreenCaptureProtection.present) {
+      map['enable_screen_capture_protection'] = Variable<bool>(
+        enableScreenCaptureProtection.value,
+      );
+    }
+    if (requireBiometricsToUnhide.present) {
+      map['require_biometrics_to_unhide'] = Variable<bool>(
+        requireBiometricsToUnhide.value,
+      );
+    }
+    if (enablePinCode.present) {
+      map['enable_pin_code'] = Variable<bool>(enablePinCode.value);
+    }
+    if (enableBiometricLogin.present) {
+      map['enable_biometric_login'] = Variable<bool>(
+        enableBiometricLogin.value,
+      );
+    }
+    if (enableAutoDetectDuplicates.present) {
+      map['enable_auto_detect_duplicates'] = Variable<bool>(
+        enableAutoDetectDuplicates.value,
+      );
+    }
+    if (enableAutoDetectTransfers.present) {
+      map['enable_auto_detect_transfers'] = Variable<bool>(
+        enableAutoDetectTransfers.value,
+      );
+    }
+    if (duplicateDateToleranceDays.present) {
+      map['duplicate_date_tolerance_days'] = Variable<int>(
+        duplicateDateToleranceDays.value,
+      );
+    }
+    if (transferTimeToleranceMinutes.present) {
+      map['transfer_time_tolerance_minutes'] = Variable<int>(
+        transferTimeToleranceMinutes.value,
+      );
+    }
+    if (autoOfferReceiptSplit.present) {
+      map['auto_offer_receipt_split'] = Variable<bool>(
+        autoOfferReceiptSplit.value,
+      );
+    }
+    if (offerReceiptSplitCount.present) {
+      map['offer_receipt_split_count'] = Variable<int>(
+        offerReceiptSplitCount.value,
+      );
+    }
+    if (autoOfferProductNaming.present) {
+      map['auto_offer_product_naming'] = Variable<bool>(
+        autoOfferProductNaming.value,
+      );
+    }
+    if (offerProductNamingCount.present) {
+      map['offer_product_naming_count'] = Variable<int>(
+        offerProductNamingCount.value,
+      );
+    }
+    if (syncImagesToCloud.present) {
+      map['sync_images_to_cloud'] = Variable<bool>(syncImagesToCloud.value);
+    }
+    if (enableBankStatementReminder.present) {
+      map['enable_bank_statement_reminder'] = Variable<bool>(
+        enableBankStatementReminder.value,
+      );
+    }
+    if (enableGroupActivityAlerts.present) {
+      map['enable_group_activity_alerts'] = Variable<bool>(
+        enableGroupActivityAlerts.value,
+      );
+    }
+    if (enableDeficitForecastAlerts.present) {
+      map['enable_deficit_forecast_alerts'] = Variable<bool>(
+        enableDeficitForecastAlerts.value,
+      );
+    }
+    if (enableYearInReviewAlerts.present) {
+      map['enable_year_in_review_alerts'] = Variable<bool>(
+        enableYearInReviewAlerts.value,
+      );
+    }
+    if (enableDebtAlerts.present) {
+      map['enable_debt_alerts'] = Variable<bool>(enableDebtAlerts.value);
+    }
+    if (enableReminderNotifications.present) {
+      map['enable_reminder_notifications'] = Variable<bool>(
+        enableReminderNotifications.value,
+      );
+    }
+    if (reminderAdvanceDays.present) {
+      map['reminder_advance_days'] = Variable<int>(reminderAdvanceDays.value);
+    }
+    if (reminderTimeOfDay.present) {
+      map['reminder_time_of_day'] = Variable<String>(reminderTimeOfDay.value);
+    }
+    if (autoCreateRemindersForRecurring.present) {
+      map['auto_create_reminders_for_recurring'] = Variable<bool>(
+        autoCreateRemindersForRecurring.value,
+      );
+    }
+    if (digestConfig.present) {
+      map['digest_config'] = Variable<String>(digestConfig.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppSettingsCompanion(')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('baseCurrency: $baseCurrency, ')
+          ..write('useHistoricalExchangeRate: $useHistoricalExchangeRate, ')
+          ..write(
+            'inheritLimitFromPreviousMonth: $inheritLimitFromPreviousMonth, ',
+          )
+          ..write('carryOverUnusedLimit: $carryOverUnusedLimit, ')
+          ..write('limitAlertMode: $limitAlertMode, ')
+          ..write('globalAlertPercent: $globalAlertPercent, ')
+          ..write('globalAlertAmount: $globalAlertAmount, ')
+          ..write('enableSecrecyMode: $enableSecrecyMode, ')
+          ..write('secrecyDaysBefore: $secrecyDaysBefore, ')
+          ..write('secrecyTimeoutSeconds: $secrecyTimeoutSeconds, ')
+          ..write('largeTransactionThreshold: $largeTransactionThreshold, ')
+          ..write('autoHideGiftsOnImport: $autoHideGiftsOnImport, ')
+          ..write('defaultBalanceVisibility: $defaultBalanceVisibility, ')
+          ..write('enableShakeToHide: $enableShakeToHide, ')
+          ..write('enableFaceDownHide: $enableFaceDownHide, ')
+          ..write('enableAutoHideTimeout: $enableAutoHideTimeout, ')
+          ..write(
+            'enableScreenCaptureProtection: $enableScreenCaptureProtection, ',
+          )
+          ..write('requireBiometricsToUnhide: $requireBiometricsToUnhide, ')
+          ..write('enablePinCode: $enablePinCode, ')
+          ..write('enableBiometricLogin: $enableBiometricLogin, ')
+          ..write('enableAutoDetectDuplicates: $enableAutoDetectDuplicates, ')
+          ..write('enableAutoDetectTransfers: $enableAutoDetectTransfers, ')
+          ..write('duplicateDateToleranceDays: $duplicateDateToleranceDays, ')
+          ..write(
+            'transferTimeToleranceMinutes: $transferTimeToleranceMinutes, ',
+          )
+          ..write('autoOfferReceiptSplit: $autoOfferReceiptSplit, ')
+          ..write('offerReceiptSplitCount: $offerReceiptSplitCount, ')
+          ..write('autoOfferProductNaming: $autoOfferProductNaming, ')
+          ..write('offerProductNamingCount: $offerProductNamingCount, ')
+          ..write('syncImagesToCloud: $syncImagesToCloud, ')
+          ..write('enableBankStatementReminder: $enableBankStatementReminder, ')
+          ..write('enableGroupActivityAlerts: $enableGroupActivityAlerts, ')
+          ..write('enableDeficitForecastAlerts: $enableDeficitForecastAlerts, ')
+          ..write('enableYearInReviewAlerts: $enableYearInReviewAlerts, ')
+          ..write('enableDebtAlerts: $enableDebtAlerts, ')
+          ..write('enableReminderNotifications: $enableReminderNotifications, ')
+          ..write('reminderAdvanceDays: $reminderAdvanceDays, ')
+          ..write('reminderTimeOfDay: $reminderTimeOfDay, ')
+          ..write(
+            'autoCreateRemindersForRecurring: $autoCreateRemindersForRecurring, ',
+          )
+          ..write('digestConfig: $digestConfig, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $NotificationsTable extends Notifications
+    with TableInfo<$NotificationsTable, Notification> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $NotificationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _spaceIdMeta = const VerificationMeta(
+    'spaceId',
+  );
+  @override
+  late final GeneratedColumn<String> spaceId = GeneratedColumn<String>(
+    'space_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES spaces (id)',
+    ),
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bodyMeta = const VerificationMeta('body');
+  @override
+  late final GeneratedColumn<String> body = GeneratedColumn<String>(
+    'body',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isReadMeta = const VerificationMeta('isRead');
+  @override
+  late final GeneratedColumn<bool> isRead = GeneratedColumn<bool>(
+    'is_read',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_read" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _relatedEntityIdMeta = const VerificationMeta(
+    'relatedEntityId',
+  );
+  @override
+  late final GeneratedColumn<String> relatedEntityId = GeneratedColumn<String>(
+    'related_entity_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _actionTakenMeta = const VerificationMeta(
+    'actionTaken',
+  );
+  @override
+  late final GeneratedColumn<String> actionTaken = GeneratedColumn<String>(
+    'action_taken',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    createdAt,
+    updatedAt,
+    syncStatus,
+    id,
+    userId,
+    spaceId,
+    type,
+    title,
+    body,
+    isRead,
+    relatedEntityId,
+    actionTaken,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'notifications';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Notification> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('space_id')) {
+      context.handle(
+        _spaceIdMeta,
+        spaceId.isAcceptableOrUnknown(data['space_id']!, _spaceIdMeta),
+      );
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('body')) {
+      context.handle(
+        _bodyMeta,
+        body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bodyMeta);
+    }
+    if (data.containsKey('is_read')) {
+      context.handle(
+        _isReadMeta,
+        isRead.isAcceptableOrUnknown(data['is_read']!, _isReadMeta),
+      );
+    }
+    if (data.containsKey('related_entity_id')) {
+      context.handle(
+        _relatedEntityIdMeta,
+        relatedEntityId.isAcceptableOrUnknown(
+          data['related_entity_id']!,
+          _relatedEntityIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('action_taken')) {
+      context.handle(
+        _actionTakenMeta,
+        actionTaken.isAcceptableOrUnknown(
+          data['action_taken']!,
+          _actionTakenMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Notification map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Notification(
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      spaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}space_id'],
+      ),
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      body: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body'],
+      )!,
+      isRead: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_read'],
+      )!,
+      relatedEntityId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}related_entity_id'],
+      ),
+      actionTaken: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}action_taken'],
+      ),
+    );
+  }
+
+  @override
+  $NotificationsTable createAlias(String alias) {
+    return $NotificationsTable(attachedDatabase, alias);
+  }
+}
+
+class Notification extends DataClass implements Insertable<Notification> {
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String syncStatus;
+  final String id;
+  final String userId;
+  final String? spaceId;
+  final String type;
+  final String title;
+  final String body;
+  final bool isRead;
+  final String? relatedEntityId;
+  final String? actionTaken;
+  const Notification({
+    required this.createdAt,
+    required this.updatedAt,
+    required this.syncStatus,
+    required this.id,
+    required this.userId,
+    this.spaceId,
+    required this.type,
+    required this.title,
+    required this.body,
+    required this.isRead,
+    this.relatedEntityId,
+    this.actionTaken,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || spaceId != null) {
+      map['space_id'] = Variable<String>(spaceId);
+    }
+    map['type'] = Variable<String>(type);
+    map['title'] = Variable<String>(title);
+    map['body'] = Variable<String>(body);
+    map['is_read'] = Variable<bool>(isRead);
+    if (!nullToAbsent || relatedEntityId != null) {
+      map['related_entity_id'] = Variable<String>(relatedEntityId);
+    }
+    if (!nullToAbsent || actionTaken != null) {
+      map['action_taken'] = Variable<String>(actionTaken);
+    }
+    return map;
+  }
+
+  NotificationsCompanion toCompanion(bool nullToAbsent) {
+    return NotificationsCompanion(
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncStatus: Value(syncStatus),
+      id: Value(id),
+      userId: Value(userId),
+      spaceId: spaceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(spaceId),
+      type: Value(type),
+      title: Value(title),
+      body: Value(body),
+      isRead: Value(isRead),
+      relatedEntityId: relatedEntityId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(relatedEntityId),
+      actionTaken: actionTaken == null && nullToAbsent
+          ? const Value.absent()
+          : Value(actionTaken),
+    );
+  }
+
+  factory Notification.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Notification(
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      spaceId: serializer.fromJson<String?>(json['spaceId']),
+      type: serializer.fromJson<String>(json['type']),
+      title: serializer.fromJson<String>(json['title']),
+      body: serializer.fromJson<String>(json['body']),
+      isRead: serializer.fromJson<bool>(json['isRead']),
+      relatedEntityId: serializer.fromJson<String?>(json['relatedEntityId']),
+      actionTaken: serializer.fromJson<String?>(json['actionTaken']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'spaceId': serializer.toJson<String?>(spaceId),
+      'type': serializer.toJson<String>(type),
+      'title': serializer.toJson<String>(title),
+      'body': serializer.toJson<String>(body),
+      'isRead': serializer.toJson<bool>(isRead),
+      'relatedEntityId': serializer.toJson<String?>(relatedEntityId),
+      'actionTaken': serializer.toJson<String?>(actionTaken),
+    };
+  }
+
+  Notification copyWith({
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? syncStatus,
+    String? id,
+    String? userId,
+    Value<String?> spaceId = const Value.absent(),
+    String? type,
+    String? title,
+    String? body,
+    bool? isRead,
+    Value<String?> relatedEntityId = const Value.absent(),
+    Value<String?> actionTaken = const Value.absent(),
+  }) => Notification(
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    spaceId: spaceId.present ? spaceId.value : this.spaceId,
+    type: type ?? this.type,
+    title: title ?? this.title,
+    body: body ?? this.body,
+    isRead: isRead ?? this.isRead,
+    relatedEntityId: relatedEntityId.present
+        ? relatedEntityId.value
+        : this.relatedEntityId,
+    actionTaken: actionTaken.present ? actionTaken.value : this.actionTaken,
+  );
+  Notification copyWithCompanion(NotificationsCompanion data) {
+    return Notification(
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
+      type: data.type.present ? data.type.value : this.type,
+      title: data.title.present ? data.title.value : this.title,
+      body: data.body.present ? data.body.value : this.body,
+      isRead: data.isRead.present ? data.isRead.value : this.isRead,
+      relatedEntityId: data.relatedEntityId.present
+          ? data.relatedEntityId.value
+          : this.relatedEntityId,
+      actionTaken: data.actionTaken.present
+          ? data.actionTaken.value
+          : this.actionTaken,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Notification(')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('type: $type, ')
+          ..write('title: $title, ')
+          ..write('body: $body, ')
+          ..write('isRead: $isRead, ')
+          ..write('relatedEntityId: $relatedEntityId, ')
+          ..write('actionTaken: $actionTaken')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    createdAt,
+    updatedAt,
+    syncStatus,
+    id,
+    userId,
+    spaceId,
+    type,
+    title,
+    body,
+    isRead,
+    relatedEntityId,
+    actionTaken,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Notification &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncStatus == this.syncStatus &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.spaceId == this.spaceId &&
+          other.type == this.type &&
+          other.title == this.title &&
+          other.body == this.body &&
+          other.isRead == this.isRead &&
+          other.relatedEntityId == this.relatedEntityId &&
+          other.actionTaken == this.actionTaken);
+}
+
+class NotificationsCompanion extends UpdateCompanion<Notification> {
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<String> syncStatus;
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String?> spaceId;
+  final Value<String> type;
+  final Value<String> title;
+  final Value<String> body;
+  final Value<bool> isRead;
+  final Value<String?> relatedEntityId;
+  final Value<String?> actionTaken;
+  final Value<int> rowid;
+  const NotificationsCompanion({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.spaceId = const Value.absent(),
+    this.type = const Value.absent(),
+    this.title = const Value.absent(),
+    this.body = const Value.absent(),
+    this.isRead = const Value.absent(),
+    this.relatedEntityId = const Value.absent(),
+    this.actionTaken = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  NotificationsCompanion.insert({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required String id,
+    required String userId,
+    this.spaceId = const Value.absent(),
+    required String type,
+    required String title,
+    required String body,
+    this.isRead = const Value.absent(),
+    this.relatedEntityId = const Value.absent(),
+    this.actionTaken = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       type = Value(type),
+       title = Value(title),
+       body = Value(body);
+  static Insertable<Notification> custom({
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? syncStatus,
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? spaceId,
+    Expression<String>? type,
+    Expression<String>? title,
+    Expression<String>? body,
+    Expression<bool>? isRead,
+    Expression<String>? relatedEntityId,
+    Expression<String>? actionTaken,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (spaceId != null) 'space_id': spaceId,
+      if (type != null) 'type': type,
+      if (title != null) 'title': title,
+      if (body != null) 'body': body,
+      if (isRead != null) 'is_read': isRead,
+      if (relatedEntityId != null) 'related_entity_id': relatedEntityId,
+      if (actionTaken != null) 'action_taken': actionTaken,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  NotificationsCompanion copyWith({
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<String>? syncStatus,
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String?>? spaceId,
+    Value<String>? type,
+    Value<String>? title,
+    Value<String>? body,
+    Value<bool>? isRead,
+    Value<String?>? relatedEntityId,
+    Value<String?>? actionTaken,
+    Value<int>? rowid,
+  }) {
+    return NotificationsCompanion(
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      spaceId: spaceId ?? this.spaceId,
+      type: type ?? this.type,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      isRead: isRead ?? this.isRead,
+      relatedEntityId: relatedEntityId ?? this.relatedEntityId,
+      actionTaken: actionTaken ?? this.actionTaken,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (spaceId.present) {
+      map['space_id'] = Variable<String>(spaceId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (body.present) {
+      map['body'] = Variable<String>(body.value);
+    }
+    if (isRead.present) {
+      map['is_read'] = Variable<bool>(isRead.value);
+    }
+    if (relatedEntityId.present) {
+      map['related_entity_id'] = Variable<String>(relatedEntityId.value);
+    }
+    if (actionTaken.present) {
+      map['action_taken'] = Variable<String>(actionTaken.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NotificationsCompanion(')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('type: $type, ')
+          ..write('title: $title, ')
+          ..write('body: $body, ')
+          ..write('isRead: $isRead, ')
+          ..write('relatedEntityId: $relatedEntityId, ')
+          ..write('actionTaken: $actionTaken, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncConflictsTable extends SyncConflicts
+    with TableInfo<$SyncConflictsTable, SyncConflict> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncConflictsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entityTypeMeta = const VerificationMeta(
+    'entityType',
+  );
+  @override
+  late final GeneratedColumn<String> entityType = GeneratedColumn<String>(
+    'entity_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _entityIdMeta = const VerificationMeta(
+    'entityId',
+  );
+  @override
+  late final GeneratedColumn<String> entityId = GeneratedColumn<String>(
+    'entity_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _localValueMeta = const VerificationMeta(
+    'localValue',
+  );
+  @override
+  late final GeneratedColumn<String> localValue = GeneratedColumn<String>(
+    'local_value',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _remoteValueMeta = const VerificationMeta(
+    'remoteValue',
+  );
+  @override
+  late final GeneratedColumn<String> remoteValue = GeneratedColumn<String>(
+    'remote_value',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _resolvedAtMeta = const VerificationMeta(
+    'resolvedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> resolvedAt = GeneratedColumn<DateTime>(
+    'resolved_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _resolutionMeta = const VerificationMeta(
+    'resolution',
+  );
+  @override
+  late final GeneratedColumn<String> resolution = GeneratedColumn<String>(
+    'resolution',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    entityType,
+    entityId,
+    localValue,
+    remoteValue,
+    createdAt,
+    resolvedAt,
+    resolution,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_conflicts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncConflict> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('entity_type')) {
+      context.handle(
+        _entityTypeMeta,
+        entityType.isAcceptableOrUnknown(data['entity_type']!, _entityTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityTypeMeta);
+    }
+    if (data.containsKey('entity_id')) {
+      context.handle(
+        _entityIdMeta,
+        entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_entityIdMeta);
+    }
+    if (data.containsKey('local_value')) {
+      context.handle(
+        _localValueMeta,
+        localValue.isAcceptableOrUnknown(data['local_value']!, _localValueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_localValueMeta);
+    }
+    if (data.containsKey('remote_value')) {
+      context.handle(
+        _remoteValueMeta,
+        remoteValue.isAcceptableOrUnknown(
+          data['remote_value']!,
+          _remoteValueMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_remoteValueMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('resolved_at')) {
+      context.handle(
+        _resolvedAtMeta,
+        resolvedAt.isAcceptableOrUnknown(data['resolved_at']!, _resolvedAtMeta),
+      );
+    }
+    if (data.containsKey('resolution')) {
+      context.handle(
+        _resolutionMeta,
+        resolution.isAcceptableOrUnknown(data['resolution']!, _resolutionMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SyncConflict map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncConflict(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      entityType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity_type'],
+      )!,
+      entityId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entity_id'],
+      )!,
+      localValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_value'],
+      )!,
+      remoteValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remote_value'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      resolvedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}resolved_at'],
+      ),
+      resolution: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}resolution'],
+      ),
+    );
+  }
+
+  @override
+  $SyncConflictsTable createAlias(String alias) {
+    return $SyncConflictsTable(attachedDatabase, alias);
+  }
+}
+
+class SyncConflict extends DataClass implements Insertable<SyncConflict> {
+  final String id;
+  final String entityType;
+  final String entityId;
+  final String localValue;
+  final String remoteValue;
+  final DateTime createdAt;
+  final DateTime? resolvedAt;
+  final String? resolution;
+  const SyncConflict({
+    required this.id,
+    required this.entityType,
+    required this.entityId,
+    required this.localValue,
+    required this.remoteValue,
+    required this.createdAt,
+    this.resolvedAt,
+    this.resolution,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['entity_type'] = Variable<String>(entityType);
+    map['entity_id'] = Variable<String>(entityId);
+    map['local_value'] = Variable<String>(localValue);
+    map['remote_value'] = Variable<String>(remoteValue);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || resolvedAt != null) {
+      map['resolved_at'] = Variable<DateTime>(resolvedAt);
+    }
+    if (!nullToAbsent || resolution != null) {
+      map['resolution'] = Variable<String>(resolution);
+    }
+    return map;
+  }
+
+  SyncConflictsCompanion toCompanion(bool nullToAbsent) {
+    return SyncConflictsCompanion(
+      id: Value(id),
+      entityType: Value(entityType),
+      entityId: Value(entityId),
+      localValue: Value(localValue),
+      remoteValue: Value(remoteValue),
+      createdAt: Value(createdAt),
+      resolvedAt: resolvedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolvedAt),
+      resolution: resolution == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolution),
+    );
+  }
+
+  factory SyncConflict.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncConflict(
+      id: serializer.fromJson<String>(json['id']),
+      entityType: serializer.fromJson<String>(json['entityType']),
+      entityId: serializer.fromJson<String>(json['entityId']),
+      localValue: serializer.fromJson<String>(json['localValue']),
+      remoteValue: serializer.fromJson<String>(json['remoteValue']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      resolvedAt: serializer.fromJson<DateTime?>(json['resolvedAt']),
+      resolution: serializer.fromJson<String?>(json['resolution']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'entityType': serializer.toJson<String>(entityType),
+      'entityId': serializer.toJson<String>(entityId),
+      'localValue': serializer.toJson<String>(localValue),
+      'remoteValue': serializer.toJson<String>(remoteValue),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'resolvedAt': serializer.toJson<DateTime?>(resolvedAt),
+      'resolution': serializer.toJson<String?>(resolution),
+    };
+  }
+
+  SyncConflict copyWith({
+    String? id,
+    String? entityType,
+    String? entityId,
+    String? localValue,
+    String? remoteValue,
+    DateTime? createdAt,
+    Value<DateTime?> resolvedAt = const Value.absent(),
+    Value<String?> resolution = const Value.absent(),
+  }) => SyncConflict(
+    id: id ?? this.id,
+    entityType: entityType ?? this.entityType,
+    entityId: entityId ?? this.entityId,
+    localValue: localValue ?? this.localValue,
+    remoteValue: remoteValue ?? this.remoteValue,
+    createdAt: createdAt ?? this.createdAt,
+    resolvedAt: resolvedAt.present ? resolvedAt.value : this.resolvedAt,
+    resolution: resolution.present ? resolution.value : this.resolution,
+  );
+  SyncConflict copyWithCompanion(SyncConflictsCompanion data) {
+    return SyncConflict(
+      id: data.id.present ? data.id.value : this.id,
+      entityType: data.entityType.present
+          ? data.entityType.value
+          : this.entityType,
+      entityId: data.entityId.present ? data.entityId.value : this.entityId,
+      localValue: data.localValue.present
+          ? data.localValue.value
+          : this.localValue,
+      remoteValue: data.remoteValue.present
+          ? data.remoteValue.value
+          : this.remoteValue,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      resolvedAt: data.resolvedAt.present
+          ? data.resolvedAt.value
+          : this.resolvedAt,
+      resolution: data.resolution.present
+          ? data.resolution.value
+          : this.resolution,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncConflict(')
+          ..write('id: $id, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('localValue: $localValue, ')
+          ..write('remoteValue: $remoteValue, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('resolvedAt: $resolvedAt, ')
+          ..write('resolution: $resolution')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    entityType,
+    entityId,
+    localValue,
+    remoteValue,
+    createdAt,
+    resolvedAt,
+    resolution,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncConflict &&
+          other.id == this.id &&
+          other.entityType == this.entityType &&
+          other.entityId == this.entityId &&
+          other.localValue == this.localValue &&
+          other.remoteValue == this.remoteValue &&
+          other.createdAt == this.createdAt &&
+          other.resolvedAt == this.resolvedAt &&
+          other.resolution == this.resolution);
+}
+
+class SyncConflictsCompanion extends UpdateCompanion<SyncConflict> {
+  final Value<String> id;
+  final Value<String> entityType;
+  final Value<String> entityId;
+  final Value<String> localValue;
+  final Value<String> remoteValue;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> resolvedAt;
+  final Value<String?> resolution;
+  final Value<int> rowid;
+  const SyncConflictsCompanion({
+    this.id = const Value.absent(),
+    this.entityType = const Value.absent(),
+    this.entityId = const Value.absent(),
+    this.localValue = const Value.absent(),
+    this.remoteValue = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.resolvedAt = const Value.absent(),
+    this.resolution = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncConflictsCompanion.insert({
+    required String id,
+    required String entityType,
+    required String entityId,
+    required String localValue,
+    required String remoteValue,
+    required DateTime createdAt,
+    this.resolvedAt = const Value.absent(),
+    this.resolution = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       entityType = Value(entityType),
+       entityId = Value(entityId),
+       localValue = Value(localValue),
+       remoteValue = Value(remoteValue),
+       createdAt = Value(createdAt);
+  static Insertable<SyncConflict> custom({
+    Expression<String>? id,
+    Expression<String>? entityType,
+    Expression<String>? entityId,
+    Expression<String>? localValue,
+    Expression<String>? remoteValue,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? resolvedAt,
+    Expression<String>? resolution,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (entityType != null) 'entity_type': entityType,
+      if (entityId != null) 'entity_id': entityId,
+      if (localValue != null) 'local_value': localValue,
+      if (remoteValue != null) 'remote_value': remoteValue,
+      if (createdAt != null) 'created_at': createdAt,
+      if (resolvedAt != null) 'resolved_at': resolvedAt,
+      if (resolution != null) 'resolution': resolution,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncConflictsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? entityType,
+    Value<String>? entityId,
+    Value<String>? localValue,
+    Value<String>? remoteValue,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? resolvedAt,
+    Value<String?>? resolution,
+    Value<int>? rowid,
+  }) {
+    return SyncConflictsCompanion(
+      id: id ?? this.id,
+      entityType: entityType ?? this.entityType,
+      entityId: entityId ?? this.entityId,
+      localValue: localValue ?? this.localValue,
+      remoteValue: remoteValue ?? this.remoteValue,
+      createdAt: createdAt ?? this.createdAt,
+      resolvedAt: resolvedAt ?? this.resolvedAt,
+      resolution: resolution ?? this.resolution,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (entityType.present) {
+      map['entity_type'] = Variable<String>(entityType.value);
+    }
+    if (entityId.present) {
+      map['entity_id'] = Variable<String>(entityId.value);
+    }
+    if (localValue.present) {
+      map['local_value'] = Variable<String>(localValue.value);
+    }
+    if (remoteValue.present) {
+      map['remote_value'] = Variable<String>(remoteValue.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (resolvedAt.present) {
+      map['resolved_at'] = Variable<DateTime>(resolvedAt.value);
+    }
+    if (resolution.present) {
+      map['resolution'] = Variable<String>(resolution.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncConflictsCompanion(')
+          ..write('id: $id, ')
+          ..write('entityType: $entityType, ')
+          ..write('entityId: $entityId, ')
+          ..write('localValue: $localValue, ')
+          ..write('remoteValue: $remoteValue, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('resolvedAt: $resolvedAt, ')
+          ..write('resolution: $resolution, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncLogsTable extends SyncLogs with TableInfo<$SyncLogsTable, SyncLog> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncLogsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _timestampMeta = const VerificationMeta(
+    'timestamp',
+  );
+  @override
+  late final GeneratedColumn<DateTime> timestamp = GeneratedColumn<DateTime>(
+    'timestamp',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _errorMessageMeta = const VerificationMeta(
+    'errorMessage',
+  );
+  @override
+  late final GeneratedColumn<String> errorMessage = GeneratedColumn<String>(
+    'error_message',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _entitiesSyncedCountMeta =
+      const VerificationMeta('entitiesSyncedCount');
+  @override
+  late final GeneratedColumn<int> entitiesSyncedCount = GeneratedColumn<int>(
+    'entities_synced_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    timestamp,
+    status,
+    errorMessage,
+    entitiesSyncedCount,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_logs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncLog> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('timestamp')) {
+      context.handle(
+        _timestampMeta,
+        timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_timestampMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('error_message')) {
+      context.handle(
+        _errorMessageMeta,
+        errorMessage.isAcceptableOrUnknown(
+          data['error_message']!,
+          _errorMessageMeta,
+        ),
+      );
+    }
+    if (data.containsKey('entities_synced_count')) {
+      context.handle(
+        _entitiesSyncedCountMeta,
+        entitiesSyncedCount.isAcceptableOrUnknown(
+          data['entities_synced_count']!,
+          _entitiesSyncedCountMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SyncLog map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncLog(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      timestamp: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}timestamp'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      errorMessage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}error_message'],
+      ),
+      entitiesSyncedCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}entities_synced_count'],
+      )!,
+    );
+  }
+
+  @override
+  $SyncLogsTable createAlias(String alias) {
+    return $SyncLogsTable(attachedDatabase, alias);
+  }
+}
+
+class SyncLog extends DataClass implements Insertable<SyncLog> {
+  final String id;
+  final String userId;
+  final DateTime timestamp;
+  final String status;
+  final String? errorMessage;
+  final int entitiesSyncedCount;
+  const SyncLog({
+    required this.id,
+    required this.userId,
+    required this.timestamp,
+    required this.status,
+    this.errorMessage,
+    required this.entitiesSyncedCount,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['timestamp'] = Variable<DateTime>(timestamp);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || errorMessage != null) {
+      map['error_message'] = Variable<String>(errorMessage);
+    }
+    map['entities_synced_count'] = Variable<int>(entitiesSyncedCount);
+    return map;
+  }
+
+  SyncLogsCompanion toCompanion(bool nullToAbsent) {
+    return SyncLogsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      timestamp: Value(timestamp),
+      status: Value(status),
+      errorMessage: errorMessage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(errorMessage),
+      entitiesSyncedCount: Value(entitiesSyncedCount),
+    );
+  }
+
+  factory SyncLog.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncLog(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      timestamp: serializer.fromJson<DateTime>(json['timestamp']),
+      status: serializer.fromJson<String>(json['status']),
+      errorMessage: serializer.fromJson<String?>(json['errorMessage']),
+      entitiesSyncedCount: serializer.fromJson<int>(
+        json['entitiesSyncedCount'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'timestamp': serializer.toJson<DateTime>(timestamp),
+      'status': serializer.toJson<String>(status),
+      'errorMessage': serializer.toJson<String?>(errorMessage),
+      'entitiesSyncedCount': serializer.toJson<int>(entitiesSyncedCount),
+    };
+  }
+
+  SyncLog copyWith({
+    String? id,
+    String? userId,
+    DateTime? timestamp,
+    String? status,
+    Value<String?> errorMessage = const Value.absent(),
+    int? entitiesSyncedCount,
+  }) => SyncLog(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    timestamp: timestamp ?? this.timestamp,
+    status: status ?? this.status,
+    errorMessage: errorMessage.present ? errorMessage.value : this.errorMessage,
+    entitiesSyncedCount: entitiesSyncedCount ?? this.entitiesSyncedCount,
+  );
+  SyncLog copyWithCompanion(SyncLogsCompanion data) {
+    return SyncLog(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
+      status: data.status.present ? data.status.value : this.status,
+      errorMessage: data.errorMessage.present
+          ? data.errorMessage.value
+          : this.errorMessage,
+      entitiesSyncedCount: data.entitiesSyncedCount.present
+          ? data.entitiesSyncedCount.value
+          : this.entitiesSyncedCount,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncLog(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('status: $status, ')
+          ..write('errorMessage: $errorMessage, ')
+          ..write('entitiesSyncedCount: $entitiesSyncedCount')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    timestamp,
+    status,
+    errorMessage,
+    entitiesSyncedCount,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncLog &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.timestamp == this.timestamp &&
+          other.status == this.status &&
+          other.errorMessage == this.errorMessage &&
+          other.entitiesSyncedCount == this.entitiesSyncedCount);
+}
+
+class SyncLogsCompanion extends UpdateCompanion<SyncLog> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<DateTime> timestamp;
+  final Value<String> status;
+  final Value<String?> errorMessage;
+  final Value<int> entitiesSyncedCount;
+  final Value<int> rowid;
+  const SyncLogsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.timestamp = const Value.absent(),
+    this.status = const Value.absent(),
+    this.errorMessage = const Value.absent(),
+    this.entitiesSyncedCount = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncLogsCompanion.insert({
+    required String id,
+    required String userId,
+    required DateTime timestamp,
+    required String status,
+    this.errorMessage = const Value.absent(),
+    this.entitiesSyncedCount = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       timestamp = Value(timestamp),
+       status = Value(status);
+  static Insertable<SyncLog> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<DateTime>? timestamp,
+    Expression<String>? status,
+    Expression<String>? errorMessage,
+    Expression<int>? entitiesSyncedCount,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (timestamp != null) 'timestamp': timestamp,
+      if (status != null) 'status': status,
+      if (errorMessage != null) 'error_message': errorMessage,
+      if (entitiesSyncedCount != null)
+        'entities_synced_count': entitiesSyncedCount,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncLogsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<DateTime>? timestamp,
+    Value<String>? status,
+    Value<String?>? errorMessage,
+    Value<int>? entitiesSyncedCount,
+    Value<int>? rowid,
+  }) {
+    return SyncLogsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      timestamp: timestamp ?? this.timestamp,
+      status: status ?? this.status,
+      errorMessage: errorMessage ?? this.errorMessage,
+      entitiesSyncedCount: entitiesSyncedCount ?? this.entitiesSyncedCount,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (timestamp.present) {
+      map['timestamp'] = Variable<DateTime>(timestamp.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (errorMessage.present) {
+      map['error_message'] = Variable<String>(errorMessage.value);
+    }
+    if (entitiesSyncedCount.present) {
+      map['entities_synced_count'] = Variable<int>(entitiesSyncedCount.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncLogsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('status: $status, ')
+          ..write('errorMessage: $errorMessage, ')
+          ..write('entitiesSyncedCount: $entitiesSyncedCount, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4524,10 +9571,30 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $UsersTable users = $UsersTable(this);
   late final $SpacesTable spaces = $SpacesTable(this);
+  late final $MembershipsTable memberships = $MembershipsTable(this);
+  late final $AppSettingsTable appSettings = $AppSettingsTable(this);
+  late final $NotificationsTable notifications = $NotificationsTable(this);
+  late final $SyncConflictsTable syncConflicts = $SyncConflictsTable(this);
+  late final $SyncLogsTable syncLogs = $SyncLogsTable(this);
   late final $AccountsTable accounts = $AccountsTable(this);
   late final $MortgagesTable mortgages = $MortgagesTable(this);
   late final $CategoriesTable categories = $CategoriesTable(this);
   late final $CategoryRulesTable categoryRules = $CategoryRulesTable(this);
+  late final UsersDao usersDao = UsersDao(this as AppDatabase);
+  late final SpacesDao spacesDao = SpacesDao(this as AppDatabase);
+  late final MembershipsDao membershipsDao = MembershipsDao(
+    this as AppDatabase,
+  );
+  late final AppSettingsDao appSettingsDao = AppSettingsDao(
+    this as AppDatabase,
+  );
+  late final NotificationsDao notificationsDao = NotificationsDao(
+    this as AppDatabase,
+  );
+  late final SyncConflictsDao syncConflictsDao = SyncConflictsDao(
+    this as AppDatabase,
+  );
+  late final SyncLogsDao syncLogsDao = SyncLogsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4535,6 +9602,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     users,
     spaces,
+    memberships,
+    appSettings,
+    notifications,
+    syncConflicts,
+    syncLogs,
     accounts,
     mortgages,
     categories,
@@ -4544,32 +9616,105 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 
 typedef $$UsersTableCreateCompanionBuilder =
     UsersCompanion Function({
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
       required String id,
-      required String displayName,
       required String email,
+      required String displayName,
       Value<String?> displayNameDative,
       Value<String?> avatarUrl,
-      required DateTime createdAt,
-      required DateTime updatedAt,
-      Value<String> syncStatus,
       Value<int> rowid,
     });
 typedef $$UsersTableUpdateCompanionBuilder =
     UsersCompanion Function({
-      Value<String> id,
-      Value<String> displayName,
-      Value<String> email,
-      Value<String?> displayNameDative,
-      Value<String?> avatarUrl,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<String> syncStatus,
+      Value<String> id,
+      Value<String> email,
+      Value<String> displayName,
+      Value<String?> displayNameDative,
+      Value<String?> avatarUrl,
       Value<int> rowid,
     });
 
 final class $$UsersTableReferences
     extends BaseReferences<_$AppDatabase, $UsersTable, User> {
   $$UsersTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$MembershipsTable, List<Membership>>
+  _membershipsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.memberships,
+    aliasName: 'users__id__memberships__user_id',
+  );
+
+  $$MembershipsTableProcessedTableManager get membershipsRefs {
+    final manager = $$MembershipsTableTableManager(
+      $_db,
+      $_db.memberships,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_membershipsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$AppSettingsTable, List<AppSetting>>
+  _appSettingsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.appSettings,
+    aliasName: 'users__id__app_settings__user_id',
+  );
+
+  $$AppSettingsTableProcessedTableManager get appSettingsRefs {
+    final manager = $$AppSettingsTableTableManager(
+      $_db,
+      $_db.appSettings,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_appSettingsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$NotificationsTable, List<Notification>>
+  _notificationsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.notifications,
+    aliasName: 'users__id__notifications__user_id',
+  );
+
+  $$NotificationsTableProcessedTableManager get notificationsRefs {
+    final manager = $$NotificationsTableTableManager(
+      $_db,
+      $_db.notifications,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_notificationsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$SyncLogsTable, List<SyncLog>> _syncLogsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.syncLogs,
+    aliasName: 'users__id__sync_logs__user_id',
+  );
+
+  $$SyncLogsTableProcessedTableManager get syncLogsRefs {
+    final manager = $$SyncLogsTableTableManager(
+      $_db,
+      $_db.syncLogs,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_syncLogsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 
   static MultiTypedResultKey<$AccountsTable, List<Account>> _accountsRefsTable(
     _$AppDatabase db,
@@ -4635,31 +9780,6 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get displayName => $composableBuilder(
-    column: $table.displayName,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get email => $composableBuilder(
-    column: $table.email,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get displayNameDative => $composableBuilder(
-    column: $table.displayNameDative,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get avatarUrl => $composableBuilder(
-    column: $table.avatarUrl,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnFilters(column),
@@ -4674,6 +9794,131 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
     column: $table.syncStatus,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get email => $composableBuilder(
+    column: $table.email,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayNameDative => $composableBuilder(
+    column: $table.displayNameDative,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get avatarUrl => $composableBuilder(
+    column: $table.avatarUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> membershipsRefs(
+    Expression<bool> Function($$MembershipsTableFilterComposer f) f,
+  ) {
+    final $$MembershipsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.memberships,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MembershipsTableFilterComposer(
+            $db: $db,
+            $table: $db.memberships,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> appSettingsRefs(
+    Expression<bool> Function($$AppSettingsTableFilterComposer f) f,
+  ) {
+    final $$AppSettingsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.appSettings,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AppSettingsTableFilterComposer(
+            $db: $db,
+            $table: $db.appSettings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> notificationsRefs(
+    Expression<bool> Function($$NotificationsTableFilterComposer f) f,
+  ) {
+    final $$NotificationsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.notifications,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$NotificationsTableFilterComposer(
+            $db: $db,
+            $table: $db.notifications,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> syncLogsRefs(
+    Expression<bool> Function($$SyncLogsTableFilterComposer f) f,
+  ) {
+    final $$SyncLogsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.syncLogs,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SyncLogsTableFilterComposer(
+            $db: $db,
+            $table: $db.syncLogs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<bool> accountsRefs(
     Expression<bool> Function($$AccountsTableFilterComposer f) f,
@@ -4760,31 +10005,6 @@ class $$UsersTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get displayName => $composableBuilder(
-    column: $table.displayName,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get email => $composableBuilder(
-    column: $table.email,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get displayNameDative => $composableBuilder(
-    column: $table.displayNameDative,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get avatarUrl => $composableBuilder(
-    column: $table.avatarUrl,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -4799,6 +10019,31 @@ class $$UsersTableOrderingComposer
     column: $table.syncStatus,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get email => $composableBuilder(
+    column: $table.email,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayNameDative => $composableBuilder(
+    column: $table.displayNameDative,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get avatarUrl => $composableBuilder(
+    column: $table.avatarUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UsersTableAnnotationComposer
@@ -4810,25 +10055,6 @@ class $$UsersTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get displayName => $composableBuilder(
-    column: $table.displayName,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get email =>
-      $composableBuilder(column: $table.email, builder: (column) => column);
-
-  GeneratedColumn<String> get displayNameDative => $composableBuilder(
-    column: $table.displayNameDative,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<String> get avatarUrl =>
-      $composableBuilder(column: $table.avatarUrl, builder: (column) => column);
-
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -4839,6 +10065,125 @@ class $$UsersTableAnnotationComposer
     column: $table.syncStatus,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get email =>
+      $composableBuilder(column: $table.email, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get displayNameDative => $composableBuilder(
+    column: $table.displayNameDative,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get avatarUrl =>
+      $composableBuilder(column: $table.avatarUrl, builder: (column) => column);
+
+  Expression<T> membershipsRefs<T extends Object>(
+    Expression<T> Function($$MembershipsTableAnnotationComposer a) f,
+  ) {
+    final $$MembershipsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.memberships,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MembershipsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.memberships,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> appSettingsRefs<T extends Object>(
+    Expression<T> Function($$AppSettingsTableAnnotationComposer a) f,
+  ) {
+    final $$AppSettingsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.appSettings,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AppSettingsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.appSettings,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> notificationsRefs<T extends Object>(
+    Expression<T> Function($$NotificationsTableAnnotationComposer a) f,
+  ) {
+    final $$NotificationsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.notifications,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$NotificationsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.notifications,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> syncLogsRefs<T extends Object>(
+    Expression<T> Function($$SyncLogsTableAnnotationComposer a) f,
+  ) {
+    final $$SyncLogsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.syncLogs,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SyncLogsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.syncLogs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<T> accountsRefs<T extends Object>(
     Expression<T> Function($$AccountsTableAnnotationComposer a) f,
@@ -4930,6 +10275,10 @@ class $$UsersTableTableManager
           (User, $$UsersTableReferences),
           User,
           PrefetchHooks Function({
+            bool membershipsRefs,
+            bool appSettingsRefs,
+            bool notificationsRefs,
+            bool syncLogsRefs,
             bool accountsRefs,
             bool categoriesRefs,
             bool categoryRulesRefs,
@@ -4948,46 +10297,46 @@ class $$UsersTableTableManager
               $$UsersTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<String> id = const Value.absent(),
-                Value<String> displayName = const Value.absent(),
-                Value<String> email = const Value.absent(),
-                Value<String?> displayNameDative = const Value.absent(),
-                Value<String?> avatarUrl = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<String> syncStatus = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> email = const Value.absent(),
+                Value<String> displayName = const Value.absent(),
+                Value<String?> displayNameDative = const Value.absent(),
+                Value<String?> avatarUrl = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UsersCompanion(
-                id: id,
-                displayName: displayName,
-                email: email,
-                displayNameDative: displayNameDative,
-                avatarUrl: avatarUrl,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 syncStatus: syncStatus,
+                id: id,
+                email: email,
+                displayName: displayName,
+                displayNameDative: displayNameDative,
+                avatarUrl: avatarUrl,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
                 required String id,
-                required String displayName,
                 required String email,
+                required String displayName,
                 Value<String?> displayNameDative = const Value.absent(),
                 Value<String?> avatarUrl = const Value.absent(),
-                required DateTime createdAt,
-                required DateTime updatedAt,
-                Value<String> syncStatus = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UsersCompanion.insert(
-                id: id,
-                displayName: displayName,
-                email: email,
-                displayNameDative: displayNameDative,
-                avatarUrl: avatarUrl,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 syncStatus: syncStatus,
+                id: id,
+                email: email,
+                displayName: displayName,
+                displayNameDative: displayNameDative,
+                avatarUrl: avatarUrl,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -4998,6 +10347,10 @@ class $$UsersTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
+                membershipsRefs = false,
+                appSettingsRefs = false,
+                notificationsRefs = false,
+                syncLogsRefs = false,
                 accountsRefs = false,
                 categoriesRefs = false,
                 categoryRulesRefs = false,
@@ -5005,6 +10358,10 @@ class $$UsersTableTableManager
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (membershipsRefs) db.memberships,
+                    if (appSettingsRefs) db.appSettings,
+                    if (notificationsRefs) db.notifications,
+                    if (syncLogsRefs) db.syncLogs,
                     if (accountsRefs) db.accounts,
                     if (categoriesRefs) db.categories,
                     if (categoryRulesRefs) db.categoryRules,
@@ -5012,6 +10369,86 @@ class $$UsersTableTableManager
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (membershipsRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          Membership
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._membershipsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).membershipsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (appSettingsRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          AppSetting
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._appSettingsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).appSettingsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (notificationsRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          Notification
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._notificationsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).notificationsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (syncLogsRefs)
+                        await $_getPrefetchedData<User, $UsersTable, SyncLog>(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._syncLogsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).syncLogsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (accountsRefs)
                         await $_getPrefetchedData<User, $UsersTable, Account>(
                           currentTable: table,
@@ -5088,6 +10525,10 @@ typedef $$UsersTableProcessedTableManager =
       (User, $$UsersTableReferences),
       User,
       PrefetchHooks Function({
+        bool membershipsRefs,
+        bool appSettingsRefs,
+        bool notificationsRefs,
+        bool syncLogsRefs,
         bool accountsRefs,
         bool categoriesRefs,
         bool categoryRulesRefs,
@@ -5095,30 +10536,68 @@ typedef $$UsersTableProcessedTableManager =
     >;
 typedef $$SpacesTableCreateCompanionBuilder =
     SpacesCompanion Function({
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
       required String id,
       required String name,
       required String encryptionSalt,
       Value<String> status,
-      required DateTime createdAt,
-      required DateTime updatedAt,
-      Value<String> syncStatus,
+      Value<String> currencyCode,
       Value<int> rowid,
     });
 typedef $$SpacesTableUpdateCompanionBuilder =
     SpacesCompanion Function({
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
       Value<String> id,
       Value<String> name,
       Value<String> encryptionSalt,
       Value<String> status,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<String> syncStatus,
+      Value<String> currencyCode,
       Value<int> rowid,
     });
 
 final class $$SpacesTableReferences
     extends BaseReferences<_$AppDatabase, $SpacesTable, Space> {
   $$SpacesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$MembershipsTable, List<Membership>>
+  _membershipsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.memberships,
+    aliasName: 'spaces__id__memberships__space_id',
+  );
+
+  $$MembershipsTableProcessedTableManager get membershipsRefs {
+    final manager = $$MembershipsTableTableManager(
+      $_db,
+      $_db.memberships,
+    ).filter((f) => f.spaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_membershipsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$NotificationsTable, List<Notification>>
+  _notificationsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.notifications,
+    aliasName: 'spaces__id__notifications__space_id',
+  );
+
+  $$NotificationsTableProcessedTableManager get notificationsRefs {
+    final manager = $$NotificationsTableTableManager(
+      $_db,
+      $_db.notifications,
+    ).filter((f) => f.spaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_notificationsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 
   static MultiTypedResultKey<$AccountsTable, List<Account>> _accountsRefsTable(
     _$AppDatabase db,
@@ -5185,6 +10664,21 @@ class $$SpacesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
@@ -5205,20 +10699,60 @@ class $$SpacesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
+  ColumnFilters<String> get currencyCode => $composableBuilder(
+    column: $table.currencyCode,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
+  Expression<bool> membershipsRefs(
+    Expression<bool> Function($$MembershipsTableFilterComposer f) f,
+  ) {
+    final $$MembershipsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.memberships,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MembershipsTableFilterComposer(
+            $db: $db,
+            $table: $db.memberships,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
-  ColumnFilters<String> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
-    builder: (column) => ColumnFilters(column),
-  );
+  Expression<bool> notificationsRefs(
+    Expression<bool> Function($$NotificationsTableFilterComposer f) f,
+  ) {
+    final $$NotificationsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.notifications,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$NotificationsTableFilterComposer(
+            $db: $db,
+            $table: $db.notifications,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<bool> accountsRefs(
     Expression<bool> Function($$AccountsTableFilterComposer f) f,
@@ -5305,6 +10839,21 @@ class $$SpacesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -5325,18 +10874,8 @@ class $$SpacesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
+  ColumnOrderings<String> get currencyCode => $composableBuilder(
+    column: $table.currencyCode,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -5350,6 +10889,17 @@ class $$SpacesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -5364,16 +10914,60 @@ class $$SpacesTableAnnotationComposer
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  GeneratedColumn<String> get syncStatus => $composableBuilder(
-    column: $table.syncStatus,
+  GeneratedColumn<String> get currencyCode => $composableBuilder(
+    column: $table.currencyCode,
     builder: (column) => column,
   );
+
+  Expression<T> membershipsRefs<T extends Object>(
+    Expression<T> Function($$MembershipsTableAnnotationComposer a) f,
+  ) {
+    final $$MembershipsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.memberships,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MembershipsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.memberships,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> notificationsRefs<T extends Object>(
+    Expression<T> Function($$NotificationsTableAnnotationComposer a) f,
+  ) {
+    final $$NotificationsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.notifications,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$NotificationsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.notifications,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<T> accountsRefs<T extends Object>(
     Expression<T> Function($$AccountsTableAnnotationComposer a) f,
@@ -5465,6 +11059,8 @@ class $$SpacesTableTableManager
           (Space, $$SpacesTableReferences),
           Space,
           PrefetchHooks Function({
+            bool membershipsRefs,
+            bool notificationsRefs,
             bool accountsRefs,
             bool categoriesRefs,
             bool categoryRulesRefs,
@@ -5483,42 +11079,46 @@ class $$SpacesTableTableManager
               $$SpacesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
                 Value<String> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> encryptionSalt = const Value.absent(),
                 Value<String> status = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<String> syncStatus = const Value.absent(),
+                Value<String> currencyCode = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SpacesCompanion(
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
                 id: id,
                 name: name,
                 encryptionSalt: encryptionSalt,
                 status: status,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                syncStatus: syncStatus,
+                currencyCode: currencyCode,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
                 required String id,
                 required String name,
                 required String encryptionSalt,
                 Value<String> status = const Value.absent(),
-                required DateTime createdAt,
-                required DateTime updatedAt,
-                Value<String> syncStatus = const Value.absent(),
+                Value<String> currencyCode = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SpacesCompanion.insert(
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
                 id: id,
                 name: name,
                 encryptionSalt: encryptionSalt,
                 status: status,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                syncStatus: syncStatus,
+                currencyCode: currencyCode,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -5529,6 +11129,8 @@ class $$SpacesTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
+                membershipsRefs = false,
+                notificationsRefs = false,
                 accountsRefs = false,
                 categoriesRefs = false,
                 categoryRulesRefs = false,
@@ -5536,6 +11138,8 @@ class $$SpacesTableTableManager
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (membershipsRefs) db.memberships,
+                    if (notificationsRefs) db.notifications,
                     if (accountsRefs) db.accounts,
                     if (categoriesRefs) db.categories,
                     if (categoryRulesRefs) db.categoryRules,
@@ -5543,6 +11147,48 @@ class $$SpacesTableTableManager
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (membershipsRefs)
+                        await $_getPrefetchedData<
+                          Space,
+                          $SpacesTable,
+                          Membership
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SpacesTableReferences
+                              ._membershipsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SpacesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).membershipsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.spaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (notificationsRefs)
+                        await $_getPrefetchedData<
+                          Space,
+                          $SpacesTable,
+                          Notification
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SpacesTableReferences
+                              ._notificationsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SpacesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).notificationsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.spaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (accountsRefs)
                         await $_getPrefetchedData<Space, $SpacesTable, Account>(
                           currentTable: table,
@@ -5623,10 +11269,2834 @@ typedef $$SpacesTableProcessedTableManager =
       (Space, $$SpacesTableReferences),
       Space,
       PrefetchHooks Function({
+        bool membershipsRefs,
+        bool notificationsRefs,
         bool accountsRefs,
         bool categoriesRefs,
         bool categoryRulesRefs,
       })
+    >;
+typedef $$MembershipsTableCreateCompanionBuilder =
+    MembershipsCompanion Function({
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
+      required String id,
+      required String userId,
+      required String spaceId,
+      Value<String> role,
+      Value<String> status,
+      Value<DateTime?> lastActiveAt,
+      required DateTime joinedAt,
+      Value<DateTime?> leftAt,
+      Value<int> rowid,
+    });
+typedef $$MembershipsTableUpdateCompanionBuilder =
+    MembershipsCompanion Function({
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
+      Value<String> id,
+      Value<String> userId,
+      Value<String> spaceId,
+      Value<String> role,
+      Value<String> status,
+      Value<DateTime?> lastActiveAt,
+      Value<DateTime> joinedAt,
+      Value<DateTime?> leftAt,
+      Value<int> rowid,
+    });
+
+final class $$MembershipsTableReferences
+    extends BaseReferences<_$AppDatabase, $MembershipsTable, Membership> {
+  $$MembershipsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('memberships__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SpacesTable _spaceIdTable(_$AppDatabase db) =>
+      db.spaces.createAlias('memberships__space_id__spaces__id');
+
+  $$SpacesTableProcessedTableManager get spaceId {
+    final $_column = $_itemColumn<String>('space_id')!;
+
+    final manager = $$SpacesTableTableManager(
+      $_db,
+      $_db.spaces,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_spaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$MembershipsTableFilterComposer
+    extends Composer<_$AppDatabase, $MembershipsTable> {
+  $$MembershipsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastActiveAt => $composableBuilder(
+    column: $table.lastActiveAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get joinedAt => $composableBuilder(
+    column: $table.joinedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get leftAt => $composableBuilder(
+    column: $table.leftAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableFilterComposer get spaceId {
+    final $$SpacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableFilterComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MembershipsTableOrderingComposer
+    extends Composer<_$AppDatabase, $MembershipsTable> {
+  $$MembershipsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastActiveAt => $composableBuilder(
+    column: $table.lastActiveAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get joinedAt => $composableBuilder(
+    column: $table.joinedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get leftAt => $composableBuilder(
+    column: $table.leftAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableOrderingComposer get spaceId {
+    final $$SpacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MembershipsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MembershipsTable> {
+  $$MembershipsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get role =>
+      $composableBuilder(column: $table.role, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastActiveAt => $composableBuilder(
+    column: $table.lastActiveAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get joinedAt =>
+      $composableBuilder(column: $table.joinedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get leftAt =>
+      $composableBuilder(column: $table.leftAt, builder: (column) => column);
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableAnnotationComposer get spaceId {
+    final $$SpacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MembershipsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MembershipsTable,
+          Membership,
+          $$MembershipsTableFilterComposer,
+          $$MembershipsTableOrderingComposer,
+          $$MembershipsTableAnnotationComposer,
+          $$MembershipsTableCreateCompanionBuilder,
+          $$MembershipsTableUpdateCompanionBuilder,
+          (Membership, $$MembershipsTableReferences),
+          Membership,
+          PrefetchHooks Function({bool userId, bool spaceId})
+        > {
+  $$MembershipsTableTableManager(_$AppDatabase db, $MembershipsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MembershipsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MembershipsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MembershipsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> spaceId = const Value.absent(),
+                Value<String> role = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime?> lastActiveAt = const Value.absent(),
+                Value<DateTime> joinedAt = const Value.absent(),
+                Value<DateTime?> leftAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MembershipsCompanion(
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                role: role,
+                status: status,
+                lastActiveAt: lastActiveAt,
+                joinedAt: joinedAt,
+                leftAt: leftAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                required String id,
+                required String userId,
+                required String spaceId,
+                Value<String> role = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime?> lastActiveAt = const Value.absent(),
+                required DateTime joinedAt,
+                Value<DateTime?> leftAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MembershipsCompanion.insert(
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                role: role,
+                status: status,
+                lastActiveAt: lastActiveAt,
+                joinedAt: joinedAt,
+                leftAt: leftAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$MembershipsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false, spaceId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.userId,
+                                referencedTable: $$MembershipsTableReferences
+                                    ._userIdTable(db),
+                                referencedColumn: $$MembershipsTableReferences
+                                    ._userIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+                    if (spaceId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.spaceId,
+                                referencedTable: $$MembershipsTableReferences
+                                    ._spaceIdTable(db),
+                                referencedColumn: $$MembershipsTableReferences
+                                    ._spaceIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$MembershipsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MembershipsTable,
+      Membership,
+      $$MembershipsTableFilterComposer,
+      $$MembershipsTableOrderingComposer,
+      $$MembershipsTableAnnotationComposer,
+      $$MembershipsTableCreateCompanionBuilder,
+      $$MembershipsTableUpdateCompanionBuilder,
+      (Membership, $$MembershipsTableReferences),
+      Membership,
+      PrefetchHooks Function({bool userId, bool spaceId})
+    >;
+typedef $$AppSettingsTableCreateCompanionBuilder =
+    AppSettingsCompanion Function({
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
+      required String id,
+      required String userId,
+      Value<String> baseCurrency,
+      Value<bool> useHistoricalExchangeRate,
+      Value<bool> inheritLimitFromPreviousMonth,
+      Value<bool> carryOverUnusedLimit,
+      Value<String> limitAlertMode,
+      Value<int> globalAlertPercent,
+      Value<int> globalAlertAmount,
+      Value<bool> enableSecrecyMode,
+      Value<int> secrecyDaysBefore,
+      Value<int> secrecyTimeoutSeconds,
+      Value<int> largeTransactionThreshold,
+      Value<bool> autoHideGiftsOnImport,
+      Value<String> defaultBalanceVisibility,
+      Value<bool> enableShakeToHide,
+      Value<bool> enableFaceDownHide,
+      Value<bool> enableAutoHideTimeout,
+      Value<bool> enableScreenCaptureProtection,
+      Value<bool> requireBiometricsToUnhide,
+      Value<bool> enablePinCode,
+      Value<bool> enableBiometricLogin,
+      Value<bool> enableAutoDetectDuplicates,
+      Value<bool> enableAutoDetectTransfers,
+      Value<int> duplicateDateToleranceDays,
+      Value<int> transferTimeToleranceMinutes,
+      Value<bool> autoOfferReceiptSplit,
+      Value<int> offerReceiptSplitCount,
+      Value<bool> autoOfferProductNaming,
+      Value<int> offerProductNamingCount,
+      Value<bool> syncImagesToCloud,
+      Value<bool> enableBankStatementReminder,
+      Value<bool> enableGroupActivityAlerts,
+      Value<bool> enableDeficitForecastAlerts,
+      Value<bool> enableYearInReviewAlerts,
+      Value<bool> enableDebtAlerts,
+      Value<bool> enableReminderNotifications,
+      Value<int> reminderAdvanceDays,
+      Value<String> reminderTimeOfDay,
+      Value<bool> autoCreateRemindersForRecurring,
+      Value<String> digestConfig,
+      Value<int> rowid,
+    });
+typedef $$AppSettingsTableUpdateCompanionBuilder =
+    AppSettingsCompanion Function({
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
+      Value<String> id,
+      Value<String> userId,
+      Value<String> baseCurrency,
+      Value<bool> useHistoricalExchangeRate,
+      Value<bool> inheritLimitFromPreviousMonth,
+      Value<bool> carryOverUnusedLimit,
+      Value<String> limitAlertMode,
+      Value<int> globalAlertPercent,
+      Value<int> globalAlertAmount,
+      Value<bool> enableSecrecyMode,
+      Value<int> secrecyDaysBefore,
+      Value<int> secrecyTimeoutSeconds,
+      Value<int> largeTransactionThreshold,
+      Value<bool> autoHideGiftsOnImport,
+      Value<String> defaultBalanceVisibility,
+      Value<bool> enableShakeToHide,
+      Value<bool> enableFaceDownHide,
+      Value<bool> enableAutoHideTimeout,
+      Value<bool> enableScreenCaptureProtection,
+      Value<bool> requireBiometricsToUnhide,
+      Value<bool> enablePinCode,
+      Value<bool> enableBiometricLogin,
+      Value<bool> enableAutoDetectDuplicates,
+      Value<bool> enableAutoDetectTransfers,
+      Value<int> duplicateDateToleranceDays,
+      Value<int> transferTimeToleranceMinutes,
+      Value<bool> autoOfferReceiptSplit,
+      Value<int> offerReceiptSplitCount,
+      Value<bool> autoOfferProductNaming,
+      Value<int> offerProductNamingCount,
+      Value<bool> syncImagesToCloud,
+      Value<bool> enableBankStatementReminder,
+      Value<bool> enableGroupActivityAlerts,
+      Value<bool> enableDeficitForecastAlerts,
+      Value<bool> enableYearInReviewAlerts,
+      Value<bool> enableDebtAlerts,
+      Value<bool> enableReminderNotifications,
+      Value<int> reminderAdvanceDays,
+      Value<String> reminderTimeOfDay,
+      Value<bool> autoCreateRemindersForRecurring,
+      Value<String> digestConfig,
+      Value<int> rowid,
+    });
+
+final class $$AppSettingsTableReferences
+    extends BaseReferences<_$AppDatabase, $AppSettingsTable, AppSetting> {
+  $$AppSettingsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('app_settings__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AppSettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $AppSettingsTable> {
+  $$AppSettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get baseCurrency => $composableBuilder(
+    column: $table.baseCurrency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get useHistoricalExchangeRate => $composableBuilder(
+    column: $table.useHistoricalExchangeRate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get inheritLimitFromPreviousMonth => $composableBuilder(
+    column: $table.inheritLimitFromPreviousMonth,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get carryOverUnusedLimit => $composableBuilder(
+    column: $table.carryOverUnusedLimit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get limitAlertMode => $composableBuilder(
+    column: $table.limitAlertMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get globalAlertPercent => $composableBuilder(
+    column: $table.globalAlertPercent,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get globalAlertAmount => $composableBuilder(
+    column: $table.globalAlertAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableSecrecyMode => $composableBuilder(
+    column: $table.enableSecrecyMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get secrecyDaysBefore => $composableBuilder(
+    column: $table.secrecyDaysBefore,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get secrecyTimeoutSeconds => $composableBuilder(
+    column: $table.secrecyTimeoutSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get largeTransactionThreshold => $composableBuilder(
+    column: $table.largeTransactionThreshold,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get autoHideGiftsOnImport => $composableBuilder(
+    column: $table.autoHideGiftsOnImport,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get defaultBalanceVisibility => $composableBuilder(
+    column: $table.defaultBalanceVisibility,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableShakeToHide => $composableBuilder(
+    column: $table.enableShakeToHide,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableFaceDownHide => $composableBuilder(
+    column: $table.enableFaceDownHide,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableAutoHideTimeout => $composableBuilder(
+    column: $table.enableAutoHideTimeout,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableScreenCaptureProtection => $composableBuilder(
+    column: $table.enableScreenCaptureProtection,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get requireBiometricsToUnhide => $composableBuilder(
+    column: $table.requireBiometricsToUnhide,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enablePinCode => $composableBuilder(
+    column: $table.enablePinCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableBiometricLogin => $composableBuilder(
+    column: $table.enableBiometricLogin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableAutoDetectDuplicates => $composableBuilder(
+    column: $table.enableAutoDetectDuplicates,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableAutoDetectTransfers => $composableBuilder(
+    column: $table.enableAutoDetectTransfers,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get duplicateDateToleranceDays => $composableBuilder(
+    column: $table.duplicateDateToleranceDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get transferTimeToleranceMinutes => $composableBuilder(
+    column: $table.transferTimeToleranceMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get autoOfferReceiptSplit => $composableBuilder(
+    column: $table.autoOfferReceiptSplit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get offerReceiptSplitCount => $composableBuilder(
+    column: $table.offerReceiptSplitCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get autoOfferProductNaming => $composableBuilder(
+    column: $table.autoOfferProductNaming,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get offerProductNamingCount => $composableBuilder(
+    column: $table.offerProductNamingCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get syncImagesToCloud => $composableBuilder(
+    column: $table.syncImagesToCloud,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableBankStatementReminder => $composableBuilder(
+    column: $table.enableBankStatementReminder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableGroupActivityAlerts => $composableBuilder(
+    column: $table.enableGroupActivityAlerts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableDeficitForecastAlerts => $composableBuilder(
+    column: $table.enableDeficitForecastAlerts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableYearInReviewAlerts => $composableBuilder(
+    column: $table.enableYearInReviewAlerts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableDebtAlerts => $composableBuilder(
+    column: $table.enableDebtAlerts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableReminderNotifications => $composableBuilder(
+    column: $table.enableReminderNotifications,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get reminderAdvanceDays => $composableBuilder(
+    column: $table.reminderAdvanceDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reminderTimeOfDay => $composableBuilder(
+    column: $table.reminderTimeOfDay,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get autoCreateRemindersForRecurring => $composableBuilder(
+    column: $table.autoCreateRemindersForRecurring,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get digestConfig => $composableBuilder(
+    column: $table.digestConfig,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AppSettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AppSettingsTable> {
+  $$AppSettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get baseCurrency => $composableBuilder(
+    column: $table.baseCurrency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get useHistoricalExchangeRate => $composableBuilder(
+    column: $table.useHistoricalExchangeRate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get inheritLimitFromPreviousMonth => $composableBuilder(
+    column: $table.inheritLimitFromPreviousMonth,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get carryOverUnusedLimit => $composableBuilder(
+    column: $table.carryOverUnusedLimit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get limitAlertMode => $composableBuilder(
+    column: $table.limitAlertMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get globalAlertPercent => $composableBuilder(
+    column: $table.globalAlertPercent,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get globalAlertAmount => $composableBuilder(
+    column: $table.globalAlertAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enableSecrecyMode => $composableBuilder(
+    column: $table.enableSecrecyMode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get secrecyDaysBefore => $composableBuilder(
+    column: $table.secrecyDaysBefore,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get secrecyTimeoutSeconds => $composableBuilder(
+    column: $table.secrecyTimeoutSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get largeTransactionThreshold => $composableBuilder(
+    column: $table.largeTransactionThreshold,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get autoHideGiftsOnImport => $composableBuilder(
+    column: $table.autoHideGiftsOnImport,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get defaultBalanceVisibility => $composableBuilder(
+    column: $table.defaultBalanceVisibility,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enableShakeToHide => $composableBuilder(
+    column: $table.enableShakeToHide,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enableFaceDownHide => $composableBuilder(
+    column: $table.enableFaceDownHide,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enableAutoHideTimeout => $composableBuilder(
+    column: $table.enableAutoHideTimeout,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enableScreenCaptureProtection => $composableBuilder(
+    column: $table.enableScreenCaptureProtection,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get requireBiometricsToUnhide => $composableBuilder(
+    column: $table.requireBiometricsToUnhide,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enablePinCode => $composableBuilder(
+    column: $table.enablePinCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enableBiometricLogin => $composableBuilder(
+    column: $table.enableBiometricLogin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enableAutoDetectDuplicates => $composableBuilder(
+    column: $table.enableAutoDetectDuplicates,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enableAutoDetectTransfers => $composableBuilder(
+    column: $table.enableAutoDetectTransfers,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get duplicateDateToleranceDays => $composableBuilder(
+    column: $table.duplicateDateToleranceDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get transferTimeToleranceMinutes => $composableBuilder(
+    column: $table.transferTimeToleranceMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get autoOfferReceiptSplit => $composableBuilder(
+    column: $table.autoOfferReceiptSplit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get offerReceiptSplitCount => $composableBuilder(
+    column: $table.offerReceiptSplitCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get autoOfferProductNaming => $composableBuilder(
+    column: $table.autoOfferProductNaming,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get offerProductNamingCount => $composableBuilder(
+    column: $table.offerProductNamingCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get syncImagesToCloud => $composableBuilder(
+    column: $table.syncImagesToCloud,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enableBankStatementReminder => $composableBuilder(
+    column: $table.enableBankStatementReminder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enableGroupActivityAlerts => $composableBuilder(
+    column: $table.enableGroupActivityAlerts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enableDeficitForecastAlerts => $composableBuilder(
+    column: $table.enableDeficitForecastAlerts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enableYearInReviewAlerts => $composableBuilder(
+    column: $table.enableYearInReviewAlerts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enableDebtAlerts => $composableBuilder(
+    column: $table.enableDebtAlerts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enableReminderNotifications => $composableBuilder(
+    column: $table.enableReminderNotifications,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get reminderAdvanceDays => $composableBuilder(
+    column: $table.reminderAdvanceDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reminderTimeOfDay => $composableBuilder(
+    column: $table.reminderTimeOfDay,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get autoCreateRemindersForRecurring =>
+      $composableBuilder(
+        column: $table.autoCreateRemindersForRecurring,
+        builder: (column) => ColumnOrderings(column),
+      );
+
+  ColumnOrderings<String> get digestConfig => $composableBuilder(
+    column: $table.digestConfig,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AppSettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AppSettingsTable> {
+  $$AppSettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get baseCurrency => $composableBuilder(
+    column: $table.baseCurrency,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get useHistoricalExchangeRate => $composableBuilder(
+    column: $table.useHistoricalExchangeRate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get inheritLimitFromPreviousMonth => $composableBuilder(
+    column: $table.inheritLimitFromPreviousMonth,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get carryOverUnusedLimit => $composableBuilder(
+    column: $table.carryOverUnusedLimit,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get limitAlertMode => $composableBuilder(
+    column: $table.limitAlertMode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get globalAlertPercent => $composableBuilder(
+    column: $table.globalAlertPercent,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get globalAlertAmount => $composableBuilder(
+    column: $table.globalAlertAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enableSecrecyMode => $composableBuilder(
+    column: $table.enableSecrecyMode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get secrecyDaysBefore => $composableBuilder(
+    column: $table.secrecyDaysBefore,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get secrecyTimeoutSeconds => $composableBuilder(
+    column: $table.secrecyTimeoutSeconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get largeTransactionThreshold => $composableBuilder(
+    column: $table.largeTransactionThreshold,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get autoHideGiftsOnImport => $composableBuilder(
+    column: $table.autoHideGiftsOnImport,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get defaultBalanceVisibility => $composableBuilder(
+    column: $table.defaultBalanceVisibility,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enableShakeToHide => $composableBuilder(
+    column: $table.enableShakeToHide,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enableFaceDownHide => $composableBuilder(
+    column: $table.enableFaceDownHide,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enableAutoHideTimeout => $composableBuilder(
+    column: $table.enableAutoHideTimeout,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enableScreenCaptureProtection => $composableBuilder(
+    column: $table.enableScreenCaptureProtection,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get requireBiometricsToUnhide => $composableBuilder(
+    column: $table.requireBiometricsToUnhide,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enablePinCode => $composableBuilder(
+    column: $table.enablePinCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enableBiometricLogin => $composableBuilder(
+    column: $table.enableBiometricLogin,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enableAutoDetectDuplicates => $composableBuilder(
+    column: $table.enableAutoDetectDuplicates,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enableAutoDetectTransfers => $composableBuilder(
+    column: $table.enableAutoDetectTransfers,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get duplicateDateToleranceDays => $composableBuilder(
+    column: $table.duplicateDateToleranceDays,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get transferTimeToleranceMinutes => $composableBuilder(
+    column: $table.transferTimeToleranceMinutes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get autoOfferReceiptSplit => $composableBuilder(
+    column: $table.autoOfferReceiptSplit,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get offerReceiptSplitCount => $composableBuilder(
+    column: $table.offerReceiptSplitCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get autoOfferProductNaming => $composableBuilder(
+    column: $table.autoOfferProductNaming,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get offerProductNamingCount => $composableBuilder(
+    column: $table.offerProductNamingCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get syncImagesToCloud => $composableBuilder(
+    column: $table.syncImagesToCloud,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enableBankStatementReminder => $composableBuilder(
+    column: $table.enableBankStatementReminder,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enableGroupActivityAlerts => $composableBuilder(
+    column: $table.enableGroupActivityAlerts,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enableDeficitForecastAlerts => $composableBuilder(
+    column: $table.enableDeficitForecastAlerts,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enableYearInReviewAlerts => $composableBuilder(
+    column: $table.enableYearInReviewAlerts,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enableDebtAlerts => $composableBuilder(
+    column: $table.enableDebtAlerts,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enableReminderNotifications => $composableBuilder(
+    column: $table.enableReminderNotifications,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get reminderAdvanceDays => $composableBuilder(
+    column: $table.reminderAdvanceDays,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get reminderTimeOfDay => $composableBuilder(
+    column: $table.reminderTimeOfDay,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get autoCreateRemindersForRecurring =>
+      $composableBuilder(
+        column: $table.autoCreateRemindersForRecurring,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<String> get digestConfig => $composableBuilder(
+    column: $table.digestConfig,
+    builder: (column) => column,
+  );
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AppSettingsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AppSettingsTable,
+          AppSetting,
+          $$AppSettingsTableFilterComposer,
+          $$AppSettingsTableOrderingComposer,
+          $$AppSettingsTableAnnotationComposer,
+          $$AppSettingsTableCreateCompanionBuilder,
+          $$AppSettingsTableUpdateCompanionBuilder,
+          (AppSetting, $$AppSettingsTableReferences),
+          AppSetting,
+          PrefetchHooks Function({bool userId})
+        > {
+  $$AppSettingsTableTableManager(_$AppDatabase db, $AppSettingsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AppSettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AppSettingsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AppSettingsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> baseCurrency = const Value.absent(),
+                Value<bool> useHistoricalExchangeRate = const Value.absent(),
+                Value<bool> inheritLimitFromPreviousMonth =
+                    const Value.absent(),
+                Value<bool> carryOverUnusedLimit = const Value.absent(),
+                Value<String> limitAlertMode = const Value.absent(),
+                Value<int> globalAlertPercent = const Value.absent(),
+                Value<int> globalAlertAmount = const Value.absent(),
+                Value<bool> enableSecrecyMode = const Value.absent(),
+                Value<int> secrecyDaysBefore = const Value.absent(),
+                Value<int> secrecyTimeoutSeconds = const Value.absent(),
+                Value<int> largeTransactionThreshold = const Value.absent(),
+                Value<bool> autoHideGiftsOnImport = const Value.absent(),
+                Value<String> defaultBalanceVisibility = const Value.absent(),
+                Value<bool> enableShakeToHide = const Value.absent(),
+                Value<bool> enableFaceDownHide = const Value.absent(),
+                Value<bool> enableAutoHideTimeout = const Value.absent(),
+                Value<bool> enableScreenCaptureProtection =
+                    const Value.absent(),
+                Value<bool> requireBiometricsToUnhide = const Value.absent(),
+                Value<bool> enablePinCode = const Value.absent(),
+                Value<bool> enableBiometricLogin = const Value.absent(),
+                Value<bool> enableAutoDetectDuplicates = const Value.absent(),
+                Value<bool> enableAutoDetectTransfers = const Value.absent(),
+                Value<int> duplicateDateToleranceDays = const Value.absent(),
+                Value<int> transferTimeToleranceMinutes = const Value.absent(),
+                Value<bool> autoOfferReceiptSplit = const Value.absent(),
+                Value<int> offerReceiptSplitCount = const Value.absent(),
+                Value<bool> autoOfferProductNaming = const Value.absent(),
+                Value<int> offerProductNamingCount = const Value.absent(),
+                Value<bool> syncImagesToCloud = const Value.absent(),
+                Value<bool> enableBankStatementReminder = const Value.absent(),
+                Value<bool> enableGroupActivityAlerts = const Value.absent(),
+                Value<bool> enableDeficitForecastAlerts = const Value.absent(),
+                Value<bool> enableYearInReviewAlerts = const Value.absent(),
+                Value<bool> enableDebtAlerts = const Value.absent(),
+                Value<bool> enableReminderNotifications = const Value.absent(),
+                Value<int> reminderAdvanceDays = const Value.absent(),
+                Value<String> reminderTimeOfDay = const Value.absent(),
+                Value<bool> autoCreateRemindersForRecurring =
+                    const Value.absent(),
+                Value<String> digestConfig = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AppSettingsCompanion(
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                id: id,
+                userId: userId,
+                baseCurrency: baseCurrency,
+                useHistoricalExchangeRate: useHistoricalExchangeRate,
+                inheritLimitFromPreviousMonth: inheritLimitFromPreviousMonth,
+                carryOverUnusedLimit: carryOverUnusedLimit,
+                limitAlertMode: limitAlertMode,
+                globalAlertPercent: globalAlertPercent,
+                globalAlertAmount: globalAlertAmount,
+                enableSecrecyMode: enableSecrecyMode,
+                secrecyDaysBefore: secrecyDaysBefore,
+                secrecyTimeoutSeconds: secrecyTimeoutSeconds,
+                largeTransactionThreshold: largeTransactionThreshold,
+                autoHideGiftsOnImport: autoHideGiftsOnImport,
+                defaultBalanceVisibility: defaultBalanceVisibility,
+                enableShakeToHide: enableShakeToHide,
+                enableFaceDownHide: enableFaceDownHide,
+                enableAutoHideTimeout: enableAutoHideTimeout,
+                enableScreenCaptureProtection: enableScreenCaptureProtection,
+                requireBiometricsToUnhide: requireBiometricsToUnhide,
+                enablePinCode: enablePinCode,
+                enableBiometricLogin: enableBiometricLogin,
+                enableAutoDetectDuplicates: enableAutoDetectDuplicates,
+                enableAutoDetectTransfers: enableAutoDetectTransfers,
+                duplicateDateToleranceDays: duplicateDateToleranceDays,
+                transferTimeToleranceMinutes: transferTimeToleranceMinutes,
+                autoOfferReceiptSplit: autoOfferReceiptSplit,
+                offerReceiptSplitCount: offerReceiptSplitCount,
+                autoOfferProductNaming: autoOfferProductNaming,
+                offerProductNamingCount: offerProductNamingCount,
+                syncImagesToCloud: syncImagesToCloud,
+                enableBankStatementReminder: enableBankStatementReminder,
+                enableGroupActivityAlerts: enableGroupActivityAlerts,
+                enableDeficitForecastAlerts: enableDeficitForecastAlerts,
+                enableYearInReviewAlerts: enableYearInReviewAlerts,
+                enableDebtAlerts: enableDebtAlerts,
+                enableReminderNotifications: enableReminderNotifications,
+                reminderAdvanceDays: reminderAdvanceDays,
+                reminderTimeOfDay: reminderTimeOfDay,
+                autoCreateRemindersForRecurring:
+                    autoCreateRemindersForRecurring,
+                digestConfig: digestConfig,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                required String id,
+                required String userId,
+                Value<String> baseCurrency = const Value.absent(),
+                Value<bool> useHistoricalExchangeRate = const Value.absent(),
+                Value<bool> inheritLimitFromPreviousMonth =
+                    const Value.absent(),
+                Value<bool> carryOverUnusedLimit = const Value.absent(),
+                Value<String> limitAlertMode = const Value.absent(),
+                Value<int> globalAlertPercent = const Value.absent(),
+                Value<int> globalAlertAmount = const Value.absent(),
+                Value<bool> enableSecrecyMode = const Value.absent(),
+                Value<int> secrecyDaysBefore = const Value.absent(),
+                Value<int> secrecyTimeoutSeconds = const Value.absent(),
+                Value<int> largeTransactionThreshold = const Value.absent(),
+                Value<bool> autoHideGiftsOnImport = const Value.absent(),
+                Value<String> defaultBalanceVisibility = const Value.absent(),
+                Value<bool> enableShakeToHide = const Value.absent(),
+                Value<bool> enableFaceDownHide = const Value.absent(),
+                Value<bool> enableAutoHideTimeout = const Value.absent(),
+                Value<bool> enableScreenCaptureProtection =
+                    const Value.absent(),
+                Value<bool> requireBiometricsToUnhide = const Value.absent(),
+                Value<bool> enablePinCode = const Value.absent(),
+                Value<bool> enableBiometricLogin = const Value.absent(),
+                Value<bool> enableAutoDetectDuplicates = const Value.absent(),
+                Value<bool> enableAutoDetectTransfers = const Value.absent(),
+                Value<int> duplicateDateToleranceDays = const Value.absent(),
+                Value<int> transferTimeToleranceMinutes = const Value.absent(),
+                Value<bool> autoOfferReceiptSplit = const Value.absent(),
+                Value<int> offerReceiptSplitCount = const Value.absent(),
+                Value<bool> autoOfferProductNaming = const Value.absent(),
+                Value<int> offerProductNamingCount = const Value.absent(),
+                Value<bool> syncImagesToCloud = const Value.absent(),
+                Value<bool> enableBankStatementReminder = const Value.absent(),
+                Value<bool> enableGroupActivityAlerts = const Value.absent(),
+                Value<bool> enableDeficitForecastAlerts = const Value.absent(),
+                Value<bool> enableYearInReviewAlerts = const Value.absent(),
+                Value<bool> enableDebtAlerts = const Value.absent(),
+                Value<bool> enableReminderNotifications = const Value.absent(),
+                Value<int> reminderAdvanceDays = const Value.absent(),
+                Value<String> reminderTimeOfDay = const Value.absent(),
+                Value<bool> autoCreateRemindersForRecurring =
+                    const Value.absent(),
+                Value<String> digestConfig = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AppSettingsCompanion.insert(
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                id: id,
+                userId: userId,
+                baseCurrency: baseCurrency,
+                useHistoricalExchangeRate: useHistoricalExchangeRate,
+                inheritLimitFromPreviousMonth: inheritLimitFromPreviousMonth,
+                carryOverUnusedLimit: carryOverUnusedLimit,
+                limitAlertMode: limitAlertMode,
+                globalAlertPercent: globalAlertPercent,
+                globalAlertAmount: globalAlertAmount,
+                enableSecrecyMode: enableSecrecyMode,
+                secrecyDaysBefore: secrecyDaysBefore,
+                secrecyTimeoutSeconds: secrecyTimeoutSeconds,
+                largeTransactionThreshold: largeTransactionThreshold,
+                autoHideGiftsOnImport: autoHideGiftsOnImport,
+                defaultBalanceVisibility: defaultBalanceVisibility,
+                enableShakeToHide: enableShakeToHide,
+                enableFaceDownHide: enableFaceDownHide,
+                enableAutoHideTimeout: enableAutoHideTimeout,
+                enableScreenCaptureProtection: enableScreenCaptureProtection,
+                requireBiometricsToUnhide: requireBiometricsToUnhide,
+                enablePinCode: enablePinCode,
+                enableBiometricLogin: enableBiometricLogin,
+                enableAutoDetectDuplicates: enableAutoDetectDuplicates,
+                enableAutoDetectTransfers: enableAutoDetectTransfers,
+                duplicateDateToleranceDays: duplicateDateToleranceDays,
+                transferTimeToleranceMinutes: transferTimeToleranceMinutes,
+                autoOfferReceiptSplit: autoOfferReceiptSplit,
+                offerReceiptSplitCount: offerReceiptSplitCount,
+                autoOfferProductNaming: autoOfferProductNaming,
+                offerProductNamingCount: offerProductNamingCount,
+                syncImagesToCloud: syncImagesToCloud,
+                enableBankStatementReminder: enableBankStatementReminder,
+                enableGroupActivityAlerts: enableGroupActivityAlerts,
+                enableDeficitForecastAlerts: enableDeficitForecastAlerts,
+                enableYearInReviewAlerts: enableYearInReviewAlerts,
+                enableDebtAlerts: enableDebtAlerts,
+                enableReminderNotifications: enableReminderNotifications,
+                reminderAdvanceDays: reminderAdvanceDays,
+                reminderTimeOfDay: reminderTimeOfDay,
+                autoCreateRemindersForRecurring:
+                    autoCreateRemindersForRecurring,
+                digestConfig: digestConfig,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$AppSettingsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.userId,
+                                referencedTable: $$AppSettingsTableReferences
+                                    ._userIdTable(db),
+                                referencedColumn: $$AppSettingsTableReferences
+                                    ._userIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AppSettingsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AppSettingsTable,
+      AppSetting,
+      $$AppSettingsTableFilterComposer,
+      $$AppSettingsTableOrderingComposer,
+      $$AppSettingsTableAnnotationComposer,
+      $$AppSettingsTableCreateCompanionBuilder,
+      $$AppSettingsTableUpdateCompanionBuilder,
+      (AppSetting, $$AppSettingsTableReferences),
+      AppSetting,
+      PrefetchHooks Function({bool userId})
+    >;
+typedef $$NotificationsTableCreateCompanionBuilder =
+    NotificationsCompanion Function({
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
+      required String id,
+      required String userId,
+      Value<String?> spaceId,
+      required String type,
+      required String title,
+      required String body,
+      Value<bool> isRead,
+      Value<String?> relatedEntityId,
+      Value<String?> actionTaken,
+      Value<int> rowid,
+    });
+typedef $$NotificationsTableUpdateCompanionBuilder =
+    NotificationsCompanion Function({
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
+      Value<String> id,
+      Value<String> userId,
+      Value<String?> spaceId,
+      Value<String> type,
+      Value<String> title,
+      Value<String> body,
+      Value<bool> isRead,
+      Value<String?> relatedEntityId,
+      Value<String?> actionTaken,
+      Value<int> rowid,
+    });
+
+final class $$NotificationsTableReferences
+    extends BaseReferences<_$AppDatabase, $NotificationsTable, Notification> {
+  $$NotificationsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('notifications__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SpacesTable _spaceIdTable(_$AppDatabase db) =>
+      db.spaces.createAlias('notifications__space_id__spaces__id');
+
+  $$SpacesTableProcessedTableManager? get spaceId {
+    final $_column = $_itemColumn<String>('space_id');
+    if ($_column == null) return null;
+    final manager = $$SpacesTableTableManager(
+      $_db,
+      $_db.spaces,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_spaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$NotificationsTableFilterComposer
+    extends Composer<_$AppDatabase, $NotificationsTable> {
+  $$NotificationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isRead => $composableBuilder(
+    column: $table.isRead,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get relatedEntityId => $composableBuilder(
+    column: $table.relatedEntityId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get actionTaken => $composableBuilder(
+    column: $table.actionTaken,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableFilterComposer get spaceId {
+    final $$SpacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableFilterComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$NotificationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $NotificationsTable> {
+  $$NotificationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isRead => $composableBuilder(
+    column: $table.isRead,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get relatedEntityId => $composableBuilder(
+    column: $table.relatedEntityId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get actionTaken => $composableBuilder(
+    column: $table.actionTaken,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableOrderingComposer get spaceId {
+    final $$SpacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$NotificationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $NotificationsTable> {
+  $$NotificationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get body =>
+      $composableBuilder(column: $table.body, builder: (column) => column);
+
+  GeneratedColumn<bool> get isRead =>
+      $composableBuilder(column: $table.isRead, builder: (column) => column);
+
+  GeneratedColumn<String> get relatedEntityId => $composableBuilder(
+    column: $table.relatedEntityId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get actionTaken => $composableBuilder(
+    column: $table.actionTaken,
+    builder: (column) => column,
+  );
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableAnnotationComposer get spaceId {
+    final $$SpacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$NotificationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $NotificationsTable,
+          Notification,
+          $$NotificationsTableFilterComposer,
+          $$NotificationsTableOrderingComposer,
+          $$NotificationsTableAnnotationComposer,
+          $$NotificationsTableCreateCompanionBuilder,
+          $$NotificationsTableUpdateCompanionBuilder,
+          (Notification, $$NotificationsTableReferences),
+          Notification,
+          PrefetchHooks Function({bool userId, bool spaceId})
+        > {
+  $$NotificationsTableTableManager(_$AppDatabase db, $NotificationsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$NotificationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$NotificationsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$NotificationsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String?> spaceId = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> body = const Value.absent(),
+                Value<bool> isRead = const Value.absent(),
+                Value<String?> relatedEntityId = const Value.absent(),
+                Value<String?> actionTaken = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => NotificationsCompanion(
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                type: type,
+                title: title,
+                body: body,
+                isRead: isRead,
+                relatedEntityId: relatedEntityId,
+                actionTaken: actionTaken,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                required String id,
+                required String userId,
+                Value<String?> spaceId = const Value.absent(),
+                required String type,
+                required String title,
+                required String body,
+                Value<bool> isRead = const Value.absent(),
+                Value<String?> relatedEntityId = const Value.absent(),
+                Value<String?> actionTaken = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => NotificationsCompanion.insert(
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                type: type,
+                title: title,
+                body: body,
+                isRead: isRead,
+                relatedEntityId: relatedEntityId,
+                actionTaken: actionTaken,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$NotificationsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false, spaceId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.userId,
+                                referencedTable: $$NotificationsTableReferences
+                                    ._userIdTable(db),
+                                referencedColumn: $$NotificationsTableReferences
+                                    ._userIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+                    if (spaceId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.spaceId,
+                                referencedTable: $$NotificationsTableReferences
+                                    ._spaceIdTable(db),
+                                referencedColumn: $$NotificationsTableReferences
+                                    ._spaceIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$NotificationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $NotificationsTable,
+      Notification,
+      $$NotificationsTableFilterComposer,
+      $$NotificationsTableOrderingComposer,
+      $$NotificationsTableAnnotationComposer,
+      $$NotificationsTableCreateCompanionBuilder,
+      $$NotificationsTableUpdateCompanionBuilder,
+      (Notification, $$NotificationsTableReferences),
+      Notification,
+      PrefetchHooks Function({bool userId, bool spaceId})
+    >;
+typedef $$SyncConflictsTableCreateCompanionBuilder =
+    SyncConflictsCompanion Function({
+      required String id,
+      required String entityType,
+      required String entityId,
+      required String localValue,
+      required String remoteValue,
+      required DateTime createdAt,
+      Value<DateTime?> resolvedAt,
+      Value<String?> resolution,
+      Value<int> rowid,
+    });
+typedef $$SyncConflictsTableUpdateCompanionBuilder =
+    SyncConflictsCompanion Function({
+      Value<String> id,
+      Value<String> entityType,
+      Value<String> entityId,
+      Value<String> localValue,
+      Value<String> remoteValue,
+      Value<DateTime> createdAt,
+      Value<DateTime?> resolvedAt,
+      Value<String?> resolution,
+      Value<int> rowid,
+    });
+
+class $$SyncConflictsTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncConflictsTable> {
+  $$SyncConflictsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localValue => $composableBuilder(
+    column: $table.localValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remoteValue => $composableBuilder(
+    column: $table.remoteValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get resolvedAt => $composableBuilder(
+    column: $table.resolvedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resolution => $composableBuilder(
+    column: $table.resolution,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncConflictsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncConflictsTable> {
+  $$SyncConflictsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get entityId => $composableBuilder(
+    column: $table.entityId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localValue => $composableBuilder(
+    column: $table.localValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remoteValue => $composableBuilder(
+    column: $table.remoteValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get resolvedAt => $composableBuilder(
+    column: $table.resolvedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resolution => $composableBuilder(
+    column: $table.resolution,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncConflictsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncConflictsTable> {
+  $$SyncConflictsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get entityType => $composableBuilder(
+    column: $table.entityType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => column);
+
+  GeneratedColumn<String> get localValue => $composableBuilder(
+    column: $table.localValue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get remoteValue => $composableBuilder(
+    column: $table.remoteValue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get resolvedAt => $composableBuilder(
+    column: $table.resolvedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get resolution => $composableBuilder(
+    column: $table.resolution,
+    builder: (column) => column,
+  );
+}
+
+class $$SyncConflictsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncConflictsTable,
+          SyncConflict,
+          $$SyncConflictsTableFilterComposer,
+          $$SyncConflictsTableOrderingComposer,
+          $$SyncConflictsTableAnnotationComposer,
+          $$SyncConflictsTableCreateCompanionBuilder,
+          $$SyncConflictsTableUpdateCompanionBuilder,
+          (
+            SyncConflict,
+            BaseReferences<_$AppDatabase, $SyncConflictsTable, SyncConflict>,
+          ),
+          SyncConflict,
+          PrefetchHooks Function()
+        > {
+  $$SyncConflictsTableTableManager(_$AppDatabase db, $SyncConflictsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncConflictsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SyncConflictsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SyncConflictsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> entityType = const Value.absent(),
+                Value<String> entityId = const Value.absent(),
+                Value<String> localValue = const Value.absent(),
+                Value<String> remoteValue = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> resolvedAt = const Value.absent(),
+                Value<String?> resolution = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncConflictsCompanion(
+                id: id,
+                entityType: entityType,
+                entityId: entityId,
+                localValue: localValue,
+                remoteValue: remoteValue,
+                createdAt: createdAt,
+                resolvedAt: resolvedAt,
+                resolution: resolution,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String entityType,
+                required String entityId,
+                required String localValue,
+                required String remoteValue,
+                required DateTime createdAt,
+                Value<DateTime?> resolvedAt = const Value.absent(),
+                Value<String?> resolution = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncConflictsCompanion.insert(
+                id: id,
+                entityType: entityType,
+                entityId: entityId,
+                localValue: localValue,
+                remoteValue: remoteValue,
+                createdAt: createdAt,
+                resolvedAt: resolvedAt,
+                resolution: resolution,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncConflictsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncConflictsTable,
+      SyncConflict,
+      $$SyncConflictsTableFilterComposer,
+      $$SyncConflictsTableOrderingComposer,
+      $$SyncConflictsTableAnnotationComposer,
+      $$SyncConflictsTableCreateCompanionBuilder,
+      $$SyncConflictsTableUpdateCompanionBuilder,
+      (
+        SyncConflict,
+        BaseReferences<_$AppDatabase, $SyncConflictsTable, SyncConflict>,
+      ),
+      SyncConflict,
+      PrefetchHooks Function()
+    >;
+typedef $$SyncLogsTableCreateCompanionBuilder =
+    SyncLogsCompanion Function({
+      required String id,
+      required String userId,
+      required DateTime timestamp,
+      required String status,
+      Value<String?> errorMessage,
+      Value<int> entitiesSyncedCount,
+      Value<int> rowid,
+    });
+typedef $$SyncLogsTableUpdateCompanionBuilder =
+    SyncLogsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<DateTime> timestamp,
+      Value<String> status,
+      Value<String?> errorMessage,
+      Value<int> entitiesSyncedCount,
+      Value<int> rowid,
+    });
+
+final class $$SyncLogsTableReferences
+    extends BaseReferences<_$AppDatabase, $SyncLogsTable, SyncLog> {
+  $$SyncLogsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('sync_logs__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$SyncLogsTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncLogsTable> {
+  $$SyncLogsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get timestamp => $composableBuilder(
+    column: $table.timestamp,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get entitiesSyncedCount => $composableBuilder(
+    column: $table.entitiesSyncedCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SyncLogsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncLogsTable> {
+  $$SyncLogsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get timestamp => $composableBuilder(
+    column: $table.timestamp,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get entitiesSyncedCount => $composableBuilder(
+    column: $table.entitiesSyncedCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SyncLogsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncLogsTable> {
+  $$SyncLogsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get timestamp =>
+      $composableBuilder(column: $table.timestamp, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get entitiesSyncedCount => $composableBuilder(
+    column: $table.entitiesSyncedCount,
+    builder: (column) => column,
+  );
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SyncLogsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncLogsTable,
+          SyncLog,
+          $$SyncLogsTableFilterComposer,
+          $$SyncLogsTableOrderingComposer,
+          $$SyncLogsTableAnnotationComposer,
+          $$SyncLogsTableCreateCompanionBuilder,
+          $$SyncLogsTableUpdateCompanionBuilder,
+          (SyncLog, $$SyncLogsTableReferences),
+          SyncLog,
+          PrefetchHooks Function({bool userId})
+        > {
+  $$SyncLogsTableTableManager(_$AppDatabase db, $SyncLogsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncLogsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SyncLogsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SyncLogsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<DateTime> timestamp = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> errorMessage = const Value.absent(),
+                Value<int> entitiesSyncedCount = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncLogsCompanion(
+                id: id,
+                userId: userId,
+                timestamp: timestamp,
+                status: status,
+                errorMessage: errorMessage,
+                entitiesSyncedCount: entitiesSyncedCount,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                required DateTime timestamp,
+                required String status,
+                Value<String?> errorMessage = const Value.absent(),
+                Value<int> entitiesSyncedCount = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncLogsCompanion.insert(
+                id: id,
+                userId: userId,
+                timestamp: timestamp,
+                status: status,
+                errorMessage: errorMessage,
+                entitiesSyncedCount: entitiesSyncedCount,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$SyncLogsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.userId,
+                                referencedTable: $$SyncLogsTableReferences
+                                    ._userIdTable(db),
+                                referencedColumn: $$SyncLogsTableReferences
+                                    ._userIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$SyncLogsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncLogsTable,
+      SyncLog,
+      $$SyncLogsTableFilterComposer,
+      $$SyncLogsTableOrderingComposer,
+      $$SyncLogsTableAnnotationComposer,
+      $$SyncLogsTableCreateCompanionBuilder,
+      $$SyncLogsTableUpdateCompanionBuilder,
+      (SyncLog, $$SyncLogsTableReferences),
+      SyncLog,
+      PrefetchHooks Function({bool userId})
     >;
 typedef $$AccountsTableCreateCompanionBuilder =
     AccountsCompanion Function({
@@ -8351,6 +16821,16 @@ class $AppDatabaseManager {
       $$UsersTableTableManager(_db, _db.users);
   $$SpacesTableTableManager get spaces =>
       $$SpacesTableTableManager(_db, _db.spaces);
+  $$MembershipsTableTableManager get memberships =>
+      $$MembershipsTableTableManager(_db, _db.memberships);
+  $$AppSettingsTableTableManager get appSettings =>
+      $$AppSettingsTableTableManager(_db, _db.appSettings);
+  $$NotificationsTableTableManager get notifications =>
+      $$NotificationsTableTableManager(_db, _db.notifications);
+  $$SyncConflictsTableTableManager get syncConflicts =>
+      $$SyncConflictsTableTableManager(_db, _db.syncConflicts);
+  $$SyncLogsTableTableManager get syncLogs =>
+      $$SyncLogsTableTableManager(_db, _db.syncLogs);
   $$AccountsTableTableManager get accounts =>
       $$AccountsTableTableManager(_db, _db.accounts);
   $$MortgagesTableTableManager get mortgages =>

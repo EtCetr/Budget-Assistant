@@ -31,12 +31,19 @@
           "nameInDart": "createdAt",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/tables/syncable_mixin.dart",
-            "offset": 140,
+            "offset": 91,
             "name": "createdAt"
           },
           "typeConverter": null,
           "clientDefaultCode": null,
-          "defaultArgument": null,
+          "defaultArgument": {
+            "elements": [
+              {
+                "lexeme": "currentDateAndTime",
+                "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+              }
+            ]
+          },
           "overriddenJsonName": null,
           "referenceName": null,
           "documentationComment": null,
@@ -52,12 +59,19 @@
           "nameInDart": "updatedAt",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/tables/syncable_mixin.dart",
-            "offset": 209,
+            "offset": 172,
             "name": "updatedAt"
           },
           "typeConverter": null,
           "clientDefaultCode": null,
-          "defaultArgument": null,
+          "defaultArgument": {
+            "elements": [
+              {
+                "lexeme": "currentDateAndTime",
+                "import_uri": "package:drift/src/runtime/query_builder/query_builder.dart"
+              }
+            ]
+          },
           "overriddenJsonName": null,
           "referenceName": null,
           "documentationComment": null,
@@ -73,7 +87,7 @@
           "nameInDart": "syncStatus",
           "declaration": {
             "source_uri": "package:budget_assistant/core/database/tables/syncable_mixin.dart",
-            "offset": 274,
+            "offset": 249,
             "name": "syncStatus"
           },
           "typeConverter": null,
