@@ -9,13 +9,12 @@ part of 'account_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(accountDao)
-final accountDaoProvider = AccountDaoProvider._();
+@ProviderFor(AccountDaoNotifier)
+final accountDaoProvider = AccountDaoNotifierProvider._();
 
-final class AccountDaoProvider
-    extends $FunctionalProvider<AccountDao, AccountDao, AccountDao>
-    with $Provider<AccountDao> {
-  AccountDaoProvider._()
+final class AccountDaoNotifierProvider
+    extends $NotifierProvider<AccountDaoNotifier, AccountDao> {
+  AccountDaoNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -27,17 +26,11 @@ final class AccountDaoProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$accountDaoHash();
+  String debugGetCreateSourceHash() => _$accountDaoNotifierHash();
 
   @$internal
   @override
-  $ProviderElement<AccountDao> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  AccountDao create(Ref ref) {
-    return accountDao(ref);
-  }
+  AccountDaoNotifier create() => AccountDaoNotifier();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AccountDao value) {
@@ -48,15 +41,33 @@ final class AccountDaoProvider
   }
 }
 
-String _$accountDaoHash() => r'96e41bb5f96f9637bb3ffebd344a47b3a3526194';
+String _$accountDaoNotifierHash() =>
+    r'553a41603974df95ea3f9bf984255bd089cce609';
 
-@ProviderFor(mortgageDao)
-final mortgageDaoProvider = MortgageDaoProvider._();
+abstract class _$AccountDaoNotifier extends $Notifier<AccountDao> {
+  AccountDao build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AccountDao, AccountDao>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AccountDao, AccountDao>,
+              AccountDao,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
 
-final class MortgageDaoProvider
-    extends $FunctionalProvider<MortgageDao, MortgageDao, MortgageDao>
-    with $Provider<MortgageDao> {
-  MortgageDaoProvider._()
+@ProviderFor(MortgageDaoNotifier)
+final mortgageDaoProvider = MortgageDaoNotifierProvider._();
+
+final class MortgageDaoNotifierProvider
+    extends $NotifierProvider<MortgageDaoNotifier, MortgageDao> {
+  MortgageDaoNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -68,17 +79,11 @@ final class MortgageDaoProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$mortgageDaoHash();
+  String debugGetCreateSourceHash() => _$mortgageDaoNotifierHash();
 
   @$internal
   @override
-  $ProviderElement<MortgageDao> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  MortgageDao create(Ref ref) {
-    return mortgageDao(ref);
-  }
+  MortgageDaoNotifier create() => MortgageDaoNotifier();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(MortgageDao value) {
@@ -89,20 +94,33 @@ final class MortgageDaoProvider
   }
 }
 
-String _$mortgageDaoHash() => r'51736d84b3679a2bd0b87c78dd458f29738858cd';
+String _$mortgageDaoNotifierHash() =>
+    r'703cfbc9151ea6aca127d40f74998fd046f966a9';
 
-@ProviderFor(accountRepository)
-final accountRepositoryProvider = AccountRepositoryProvider._();
+abstract class _$MortgageDaoNotifier extends $Notifier<MortgageDao> {
+  MortgageDao build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<MortgageDao, MortgageDao>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<MortgageDao, MortgageDao>,
+              MortgageDao,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
 
-final class AccountRepositoryProvider
-    extends
-        $FunctionalProvider<
-          AccountRepository,
-          AccountRepository,
-          AccountRepository
-        >
-    with $Provider<AccountRepository> {
-  AccountRepositoryProvider._()
+@ProviderFor(AccountRepositoryNotifier)
+final accountRepositoryProvider = AccountRepositoryNotifierProvider._();
+
+final class AccountRepositoryNotifierProvider
+    extends $NotifierProvider<AccountRepositoryNotifier, AccountRepository> {
+  AccountRepositoryNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -114,18 +132,11 @@ final class AccountRepositoryProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$accountRepositoryHash();
+  String debugGetCreateSourceHash() => _$accountRepositoryNotifierHash();
 
   @$internal
   @override
-  $ProviderElement<AccountRepository> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  AccountRepository create(Ref ref) {
-    return accountRepository(ref);
-  }
+  AccountRepositoryNotifier create() => AccountRepositoryNotifier();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AccountRepository value) {
@@ -136,20 +147,35 @@ final class AccountRepositoryProvider
   }
 }
 
-String _$accountRepositoryHash() => r'766d164d6cdbd511e9f444c00454b38f7af45e90';
+String _$accountRepositoryNotifierHash() =>
+    r'f989215de8c874fe49c54484fe62a587e1840d4e';
 
-@ProviderFor(createAccountUseCase)
-final createAccountUseCaseProvider = CreateAccountUseCaseProvider._();
+abstract class _$AccountRepositoryNotifier
+    extends $Notifier<AccountRepository> {
+  AccountRepository build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AccountRepository, AccountRepository>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AccountRepository, AccountRepository>,
+              AccountRepository,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
 
-final class CreateAccountUseCaseProvider
+@ProviderFor(CreateAccountUseCaseNotifier)
+final createAccountUseCaseProvider = CreateAccountUseCaseNotifierProvider._();
+
+final class CreateAccountUseCaseNotifierProvider
     extends
-        $FunctionalProvider<
-          CreateAccountUseCase,
-          CreateAccountUseCase,
-          CreateAccountUseCase
-        >
-    with $Provider<CreateAccountUseCase> {
-  CreateAccountUseCaseProvider._()
+        $NotifierProvider<CreateAccountUseCaseNotifier, CreateAccountUseCase> {
+  CreateAccountUseCaseNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -161,18 +187,11 @@ final class CreateAccountUseCaseProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$createAccountUseCaseHash();
+  String debugGetCreateSourceHash() => _$createAccountUseCaseNotifierHash();
 
   @$internal
   @override
-  $ProviderElement<CreateAccountUseCase> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  CreateAccountUseCase create(Ref ref) {
-    return createAccountUseCase(ref);
-  }
+  CreateAccountUseCaseNotifier create() => CreateAccountUseCaseNotifier();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(CreateAccountUseCase value) {
@@ -183,22 +202,94 @@ final class CreateAccountUseCaseProvider
   }
 }
 
-String _$createAccountUseCaseHash() =>
-    r'7585180dac3ad5aa70ffbf5d02d826e0b96918b9';
+String _$createAccountUseCaseNotifierHash() =>
+    r'c5160a049bf4c238c0013b7b06c6033785f71e7a';
 
-@ProviderFor(updateAccountSortOrderUseCase)
-final updateAccountSortOrderUseCaseProvider =
-    UpdateAccountSortOrderUseCaseProvider._();
+abstract class _$CreateAccountUseCaseNotifier
+    extends $Notifier<CreateAccountUseCase> {
+  CreateAccountUseCase build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<CreateAccountUseCase, CreateAccountUseCase>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<CreateAccountUseCase, CreateAccountUseCase>,
+              CreateAccountUseCase,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
 
-final class UpdateAccountSortOrderUseCaseProvider
+@ProviderFor(DeleteAccountUseCaseNotifier)
+final deleteAccountUseCaseProvider = DeleteAccountUseCaseNotifierProvider._();
+
+final class DeleteAccountUseCaseNotifierProvider
     extends
-        $FunctionalProvider<
-          UpdateAccountSortOrderUseCase,
-          UpdateAccountSortOrderUseCase,
+        $NotifierProvider<DeleteAccountUseCaseNotifier, DeleteAccountUseCase> {
+  DeleteAccountUseCaseNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'deleteAccountUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$deleteAccountUseCaseNotifierHash();
+
+  @$internal
+  @override
+  DeleteAccountUseCaseNotifier create() => DeleteAccountUseCaseNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DeleteAccountUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DeleteAccountUseCase>(value),
+    );
+  }
+}
+
+String _$deleteAccountUseCaseNotifierHash() =>
+    r'b2d4d6d46142eb4706bdd8ee0606799321a0875d';
+
+abstract class _$DeleteAccountUseCaseNotifier
+    extends $Notifier<DeleteAccountUseCase> {
+  DeleteAccountUseCase build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<DeleteAccountUseCase, DeleteAccountUseCase>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<DeleteAccountUseCase, DeleteAccountUseCase>,
+              DeleteAccountUseCase,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(UpdateAccountSortOrderUseCaseNotifier)
+final updateAccountSortOrderUseCaseProvider =
+    UpdateAccountSortOrderUseCaseNotifierProvider._();
+
+final class UpdateAccountSortOrderUseCaseNotifierProvider
+    extends
+        $NotifierProvider<
+          UpdateAccountSortOrderUseCaseNotifier,
           UpdateAccountSortOrderUseCase
-        >
-    with $Provider<UpdateAccountSortOrderUseCase> {
-  UpdateAccountSortOrderUseCaseProvider._()
+        > {
+  UpdateAccountSortOrderUseCaseNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -210,18 +301,13 @@ final class UpdateAccountSortOrderUseCaseProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$updateAccountSortOrderUseCaseHash();
+  String debugGetCreateSourceHash() =>
+      _$updateAccountSortOrderUseCaseNotifierHash();
 
   @$internal
   @override
-  $ProviderElement<UpdateAccountSortOrderUseCase> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  UpdateAccountSortOrderUseCase create(Ref ref) {
-    return updateAccountSortOrderUseCase(ref);
-  }
+  UpdateAccountSortOrderUseCaseNotifier create() =>
+      UpdateAccountSortOrderUseCaseNotifier();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(UpdateAccountSortOrderUseCase value) {
@@ -234,21 +320,47 @@ final class UpdateAccountSortOrderUseCaseProvider
   }
 }
 
-String _$updateAccountSortOrderUseCaseHash() =>
-    r'6bd84fd701dc0396dd8deafc4762c1b081ec4bdd';
+String _$updateAccountSortOrderUseCaseNotifierHash() =>
+    r'0b424164e4fb9122d84d6ddbf2de96da9392f7dd';
 
-@ProviderFor(calculateNetWorthUseCase)
-final calculateNetWorthUseCaseProvider = CalculateNetWorthUseCaseProvider._();
+abstract class _$UpdateAccountSortOrderUseCaseNotifier
+    extends $Notifier<UpdateAccountSortOrderUseCase> {
+  UpdateAccountSortOrderUseCase build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref
+            as $Ref<
+              UpdateAccountSortOrderUseCase,
+              UpdateAccountSortOrderUseCase
+            >;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                UpdateAccountSortOrderUseCase,
+                UpdateAccountSortOrderUseCase
+              >,
+              UpdateAccountSortOrderUseCase,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
 
-final class CalculateNetWorthUseCaseProvider
+@ProviderFor(CalculateNetWorthUseCaseNotifier)
+final calculateNetWorthUseCaseProvider =
+    CalculateNetWorthUseCaseNotifierProvider._();
+
+final class CalculateNetWorthUseCaseNotifierProvider
     extends
-        $FunctionalProvider<
-          CalculateNetWorthUseCase,
-          CalculateNetWorthUseCase,
+        $NotifierProvider<
+          CalculateNetWorthUseCaseNotifier,
           CalculateNetWorthUseCase
-        >
-    with $Provider<CalculateNetWorthUseCase> {
-  CalculateNetWorthUseCaseProvider._()
+        > {
+  CalculateNetWorthUseCaseNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -260,18 +372,12 @@ final class CalculateNetWorthUseCaseProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$calculateNetWorthUseCaseHash();
+  String debugGetCreateSourceHash() => _$calculateNetWorthUseCaseNotifierHash();
 
   @$internal
   @override
-  $ProviderElement<CalculateNetWorthUseCase> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  CalculateNetWorthUseCase create(Ref ref) {
-    return calculateNetWorthUseCase(ref);
-  }
+  CalculateNetWorthUseCaseNotifier create() =>
+      CalculateNetWorthUseCaseNotifier();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(CalculateNetWorthUseCase value) {
@@ -282,22 +388,36 @@ final class CalculateNetWorthUseCaseProvider
   }
 }
 
-String _$calculateNetWorthUseCaseHash() =>
-    r'c78666c2bd388a1f1222d87101e096a94612210a';
+String _$calculateNetWorthUseCaseNotifierHash() =>
+    r'd183984a341cf8dca06f23617a662471f0e1c198';
 
-@ProviderFor(accountsList)
-final accountsListProvider = AccountsListFamily._();
+abstract class _$CalculateNetWorthUseCaseNotifier
+    extends $Notifier<CalculateNetWorthUseCase> {
+  CalculateNetWorthUseCase build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref as $Ref<CalculateNetWorthUseCase, CalculateNetWorthUseCase>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<CalculateNetWorthUseCase, CalculateNetWorthUseCase>,
+              CalculateNetWorthUseCase,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
 
-final class AccountsListProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<Account>>,
-          List<Account>,
-          FutureOr<List<Account>>
-        >
-    with $FutureModifier<List<Account>>, $FutureProvider<List<Account>> {
-  AccountsListProvider._({
-    required AccountsListFamily super.from,
+@ProviderFor(AccountsListNotifier)
+final accountsListProvider = AccountsListNotifierFamily._();
+
+final class AccountsListNotifierProvider
+    extends $AsyncNotifierProvider<AccountsListNotifier, List<Account>> {
+  AccountsListNotifierProvider._({
+    required AccountsListNotifierFamily super.from,
     required String super.argument,
   }) : super(
          retry: null,
@@ -308,7 +428,7 @@ final class AccountsListProvider
        );
 
   @override
-  String debugGetCreateSourceHash() => _$accountsListHash();
+  String debugGetCreateSourceHash() => _$accountsListNotifierHash();
 
   @override
   String toString() {
@@ -319,19 +439,11 @@ final class AccountsListProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<Account>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<Account>> create(Ref ref) {
-    final argument = this.argument as String;
-    return accountsList(ref, argument);
-  }
+  AccountsListNotifier create() => AccountsListNotifier();
 
   @override
   bool operator ==(Object other) {
-    return other is AccountsListProvider && other.argument == argument;
+    return other is AccountsListNotifierProvider && other.argument == argument;
   }
 
   @override
@@ -340,11 +452,19 @@ final class AccountsListProvider
   }
 }
 
-String _$accountsListHash() => r'376676ac0b51739cf2caa000ced9cfed0f7351a8';
+String _$accountsListNotifierHash() =>
+    r'2a7f9aa1aa086783c05d559d3f69adb641ac0cbf';
 
-final class AccountsListFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<List<Account>>, String> {
-  AccountsListFamily._()
+final class AccountsListNotifierFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          AccountsListNotifier,
+          AsyncValue<List<Account>>,
+          List<Account>,
+          FutureOr<List<Account>>,
+          String
+        > {
+  AccountsListNotifierFamily._()
     : super(
         retry: null,
         name: r'accountsListProvider',
@@ -353,21 +473,41 @@ final class AccountsListFamily extends $Family
         isAutoDispose: true,
       );
 
-  AccountsListProvider call(String userId) =>
-      AccountsListProvider._(argument: userId, from: this);
+  AccountsListNotifierProvider call(String userId) =>
+      AccountsListNotifierProvider._(argument: userId, from: this);
 
   @override
   String toString() => r'accountsListProvider';
 }
 
-@ProviderFor(netWorth)
-final netWorthProvider = NetWorthFamily._();
+abstract class _$AccountsListNotifier extends $AsyncNotifier<List<Account>> {
+  late final _$args = ref.$arg as String;
+  String get userId => _$args;
 
-final class NetWorthProvider
-    extends $FunctionalProvider<AsyncValue<int>, int, FutureOr<int>>
-    with $FutureModifier<int>, $FutureProvider<int> {
-  NetWorthProvider._({
-    required NetWorthFamily super.from,
+  FutureOr<List<Account>> build(String userId);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<List<Account>>, List<Account>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<Account>>, List<Account>>,
+              AsyncValue<List<Account>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
+}
+
+@ProviderFor(NetWorthNotifier)
+final netWorthProvider = NetWorthNotifierFamily._();
+
+final class NetWorthNotifierProvider
+    extends $AsyncNotifierProvider<NetWorthNotifier, int> {
+  NetWorthNotifierProvider._({
+    required NetWorthNotifierFamily super.from,
     required String super.argument,
   }) : super(
          retry: null,
@@ -378,7 +518,7 @@ final class NetWorthProvider
        );
 
   @override
-  String debugGetCreateSourceHash() => _$netWorthHash();
+  String debugGetCreateSourceHash() => _$netWorthNotifierHash();
 
   @override
   String toString() {
@@ -389,18 +529,11 @@ final class NetWorthProvider
 
   @$internal
   @override
-  $FutureProviderElement<int> $createElement($ProviderPointer pointer) =>
-      $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<int> create(Ref ref) {
-    final argument = this.argument as String;
-    return netWorth(ref, argument);
-  }
+  NetWorthNotifier create() => NetWorthNotifier();
 
   @override
   bool operator ==(Object other) {
-    return other is NetWorthProvider && other.argument == argument;
+    return other is NetWorthNotifierProvider && other.argument == argument;
   }
 
   @override
@@ -409,11 +542,18 @@ final class NetWorthProvider
   }
 }
 
-String _$netWorthHash() => r'b85470a2345fd1e4225bc279b8690571adf1afba';
+String _$netWorthNotifierHash() => r'8502ecd121943e39e14a9aff4595f807c9eb857a';
 
-final class NetWorthFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<int>, String> {
-  NetWorthFamily._()
+final class NetWorthNotifierFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          NetWorthNotifier,
+          AsyncValue<int>,
+          int,
+          FutureOr<int>,
+          String
+        > {
+  NetWorthNotifierFamily._()
     : super(
         retry: null,
         name: r'netWorthProvider',
@@ -422,9 +562,30 @@ final class NetWorthFamily extends $Family
         isAutoDispose: true,
       );
 
-  NetWorthProvider call(String userId) =>
-      NetWorthProvider._(argument: userId, from: this);
+  NetWorthNotifierProvider call(String userId) =>
+      NetWorthNotifierProvider._(argument: userId, from: this);
 
   @override
   String toString() => r'netWorthProvider';
+}
+
+abstract class _$NetWorthNotifier extends $AsyncNotifier<int> {
+  late final _$args = ref.$arg as String;
+  String get userId => _$args;
+
+  FutureOr<int> build(String userId);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<int>, int>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<int>, int>,
+              AsyncValue<int>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
 }

@@ -1,16 +1,18 @@
+// lib/features/security/presentation/screens/pin_onboarding_screen.dart
 import 'dart:async';
-import 'package:budget_assistant/core/errors/failures.dart';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
-import 'package:budget_assistant/core/utils/result.dart';
-import 'package:budget_assistant/features/security/presentation/widgets/pin_indicators.dart';
-import 'package:budget_assistant/features/security/presentation/widgets/custom_pin_keypad.dart';
-import 'package:budget_assistant/features/security/domain/usecases/validate_pin_strength_usecase.dart';
-import 'package:budget_assistant/features/security/domain/usecases/set_pin_code_usecase.dart';
-import 'package:budget_assistant/features/security/data/repositories/pin_code_repository.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:budget_assistant/core/logger.dart';
+import 'package:budget_assistant/core/services/secure_storage_service.dart';
+import 'package:budget_assistant/features/onboarding/domain/notifiers/onboarding_notifier.dart';
+import 'package:budget_assistant/features/security/data/repositories/pin_code_repository.dart';
+import 'package:budget_assistant/features/security/domain/usecases/set_pin_code_usecase.dart';
+import 'package:budget_assistant/features/security/domain/usecases/validate_pin_strength_usecase.dart';
+import 'package:budget_assistant/features/security/presentation/widgets/custom_pin_keypad.dart';
+import 'package:budget_assistant/features/security/presentation/widgets/pin_indicators.dart';
 
 enum PinOnboardingStep { welcome, enterPin, confirmPin, success }
 
@@ -32,12 +34,15 @@ class _PinOnboardingScreenState extends ConsumerState<PinOnboardingScreen> {
 
   final _validateUseCase = ValidatePinStrengthUseCase();
   late final _setPinUseCase = SetPinCodeUseCase(
-    PinCodeRepositoryImpl(const FlutterSecureStorage()),
+    PinCodeRepositoryImpl(SecureStorageService()),
   );
 
   @override
   void dispose() {
     _clearTimer?.cancel();
+    // Очищаем PIN из памяти при закрытии экрана
+    _enteredPin = '';
+    _firstPin = '';
     super.dispose();
   }
 
@@ -108,27 +113,52 @@ class _PinOnboardingScreenState extends ConsumerState<PinOnboardingScreen> {
   }
 
   Future<void> _savePin() async {
-    final result = await _setPinUseCase(_enteredPin);
+    final pin = _firstPin;
+    final confirm = _enteredPin;
 
-    if (result.isSuccess) {
-      HapticFeedback.heavyImpact();
-      setState(() {
-        _currentStep = PinOnboardingStep.success;
-        _enteredPin = '';
-      });
+    try {
+      final result = await _setPinUseCase(pin, confirm);
 
-      Timer(const Duration(seconds: 3), () {
-        if (mounted) {
-          Navigator.of(context).pop(true);
-        }
-      });
-    } else {
-      AppLogger.e(
-        'Failed to save PIN: ${Result.failure.message ?? "Unknown error"}',
+      result.when(
+        success: (_) async {
+          if (!mounted) return;
+          AppLogger.i('PIN установлен в онбординге');
+
+          setState(() {
+            _currentStep = PinOnboardingStep.success;
+            _enteredPin = '';
+            _firstPin = '';
+            _errorMessage = null;
+          });
+
+          await Future.delayed(const Duration(seconds: 3));
+          if (!mounted) return;
+
+          // Если экран открыт поверх стека — возвращаем результат вызвавшему,
+          // иначе (внутри онбординга) — двигаем онбординг на следующий шаг
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop(true);
+          } else {
+            ref.read(onboardingProvider.notifier).goToNextStep();
+          }
+        },
+        failure: (failure) {
+          if (!mounted) return;
+          AppLogger.e('Не удалось сохранить PIN', failure, StackTrace.current);
+          setState(() {
+            _errorMessage = failure.message;
+            _enteredPin = '';
+          });
+        },
       );
-      setState(() {
-        _errorMessage = 'Не удалось сохранить PIN. Попробуйте снова';
-      });
+    } catch (e, stackTrace) {
+      AppLogger.e('Unexpected error in _savePin', e, stackTrace);
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Ошибка сохранения PIN. Попробуйте снова';
+          _enteredPin = '';
+        });
+      }
     }
   }
 
@@ -143,6 +173,14 @@ class _PinOnboardingScreenState extends ConsumerState<PinOnboardingScreen> {
     });
   }
 
+  void _skipOrBack() {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop(false);
+    } else {
+      ref.read(onboardingProvider.notifier).goToNextStep();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -152,10 +190,7 @@ class _PinOnboardingScreenState extends ConsumerState<PinOnboardingScreen> {
             _currentStep == PinOnboardingStep.welcome ||
                 _currentStep == PinOnboardingStep.success
             ? null
-            : IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.of(context).pop(false),
-              ),
+            : IconButton(icon: const Icon(Icons.close), onPressed: _skipOrBack),
       ),
       body: SafeArea(
         child: Column(
@@ -240,10 +275,7 @@ class _PinOnboardingScreenState extends ConsumerState<PinOnboardingScreen> {
             child: const Text('Начать'),
           ),
           const SizedBox(height: 16),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Пропустить'),
-          ),
+          TextButton(onPressed: _skipOrBack, child: const Text('Пропустить')),
         ],
       ),
     );
@@ -270,8 +302,4 @@ class _PinOnboardingScreenState extends ConsumerState<PinOnboardingScreen> {
       ),
     );
   }
-}
-
-extension on Result<T> Function<T>(Failure failure) {
-  String? get message => null;
 }

@@ -1,8 +1,0 @@
-{
-  "elements": {},
-  "imports": [
-    "package:riverpod_annotation/riverpod_annotation.dart",
-    "package:budget_assistant/features/onboarding/domain/state/onboarding_state.dart",
-    "package:budget_assistant/features/onboarding/domain/enums/onboarding_step.dart"
-  ]
-}

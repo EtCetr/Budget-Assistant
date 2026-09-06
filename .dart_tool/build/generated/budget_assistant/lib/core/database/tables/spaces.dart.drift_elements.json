@@ -1,1 +1,0 @@
-{"valid_import":true,"imports":[{"uri":"package:drift/drift.dart","transitive":false},{"uri":"package:budget_assistant/core/database/tables/syncable_mixin.dart","transitive":false}],"elements":[{"kind":"table","name":"spaces","dart_name":"Spaces"}]}

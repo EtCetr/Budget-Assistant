@@ -10,6 +10,33 @@ class CategoryDao extends DatabaseAccessor<AppDatabase>
     with _$CategoryDaoMixin {
   CategoryDao(super.db);
 
+  // ✅ НОВЫЙ МЕТОД: Stream для автообновления UI
+  Stream<List<CategoryModel>> watchCategoriesByUserId(String userId) {
+    final query = select(categories)
+      ..where((t) => t.userId.equals(userId))
+      ..orderBy([(t) => OrderingTerm(expression: t.type, mode: OrderingMode.asc),
+                 (t) => OrderingTerm(expression: t.name, mode: OrderingMode.asc)]);
+    
+    return query.watch().map((results) => results
+        .map((row) => CategoryModel(
+              id: row.id,
+              spaceId: row.spaceId,
+              userId: row.userId,
+              parentId: row.parentId,
+              name: row.name,
+              type: row.type,
+              iconEmoji: row.iconEmoji,
+              colorHex: row.colorHex,
+              isPinnedForCashback: row.isPinnedForCashback,
+              isSystem: row.isSystem,
+              sortOrder: row.sortOrder,
+              createdAt: row.createdAt,
+              updatedAt: row.updatedAt,
+              syncStatus: row.syncStatus,
+            ))
+        .toList());
+  }
+
   Future<List<CategoryModel>> getCategoriesByUserId(String userId) async {
     try {
       final query = select(categories)..where((t) => t.userId.equals(userId));

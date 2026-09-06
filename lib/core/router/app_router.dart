@@ -14,6 +14,12 @@ import 'package:budget_assistant/features/security/presentation/screens/pin_onbo
 import 'package:budget_assistant/features/security/presentation/screens/pin_entry_screen.dart';
 import 'package:budget_assistant/features/security/presentation/screens/biometric_onboarding_screen.dart';
 import 'package:budget_assistant/core/router/routes.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:budget_assistant/features/accounts/presentation/screens/accounts_screen.dart';
+import 'package:budget_assistant/features/categories/presentation/screens/categories_screen.dart';
+import 'package:budget_assistant/core/bootstrap/app_bootstrap_flags.dart';
+import 'package:budget_assistant/core/services/secure_storage_service.dart';
+import 'package:budget_assistant/core/logger.dart';
 
 part 'app_router.g.dart';
 
@@ -29,10 +35,30 @@ class AppLock extends _$AppLock {
 @riverpod
 class OnboardingStatus extends _$OnboardingStatus {
   @override
-  String build() => 'not_started';
+  String build() => AppBootstrapFlags.onboardingStatus;
 
-  void complete() => state = 'completed';
-  void setStatus(String status) => state = status;
+  void complete() {
+    state = 'completed';
+    AppBootstrapFlags.onboardingStatus = 'completed';
+    _persist();
+  }
+
+  void setStatus(String status) {
+    state = status;
+    AppBootstrapFlags.onboardingStatus = status;
+    _persist();
+  }
+
+  Future<void> _persist() async {
+    try {
+      await SecureStorageService().write(
+        'onboarding_completed',
+        state == 'completed' ? 'true' : 'false',
+      );
+    } catch (e, st) {
+      AppLogger.e('Failed to persist onboarding flag', e, st);
+    }
+  }
 }
 
 @riverpod
@@ -72,7 +98,6 @@ class _AuthRefreshNotifier extends ChangeNotifier {
 
 @riverpod
 GoRouter appRouter(Ref ref) {
-  // ИСПРАВЛЕНО: authProvider -> authNotifierProvider
   final authStatus = ref.watch(authProvider);
   final refreshNotifier = _AuthRefreshNotifier(ref);
 
@@ -118,7 +143,6 @@ GoRouter appRouter(Ref ref) {
           return AcceptInviteScreen(token: token);
         },
       ),
-      // --- НОВЫЕ МАРШРУТЫ ДЛЯ БЕЗОПАСНОСТИ ---
       GoRoute(
         path: '/security/pin-onboarding',
         name: 'pin_onboarding',
@@ -127,47 +151,64 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/security/pin-entry',
         name: 'pin_entry',
-        builder: (context, state) {
-          final mode = state.uri.queryParameters['mode'] ?? 'unlock';
-          return PinEntryScreen(mode: mode);
-        },
+        builder: (context, state) => const PinEntryScreen(),
       ),
       GoRoute(
         path: '/security/biometric-onboarding',
         name: 'biometric_onboarding',
         builder: (context, state) => const BiometricOnboardingScreen(),
       ),
+      GoRoute(
+        path: '/accounts',
+        name: 'accounts',
+        builder: (context, state) => AccountsScreen(
+          userId: Supabase.instance.client.auth.currentUser?.id ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/categories',
+        name: 'categories',
+        builder: (context, state) => CategoriesScreen(
+          userId: Supabase.instance.client.auth.currentUser?.id ?? '',
+        ),
+      ),
     ],
-    redirect: (BuildContext context, GoRouterState state) {
+    redirect: (context, state) {
+      final location = state.uri.toString();
       final isAppLocked = ref.read(appLockProvider);
-      final location = state.uri.path;
+      final onboardingCompleted =
+          ref.read(onboardingStatusProvider) == 'completed';
 
-      // 1. Приоритет: Блокировка приложения
+      // 1. Блокировка приложения
       if (isAppLocked && location != AppRoutes.lock) {
         return AppRoutes.lock;
       }
 
-      // 2. Не авторизован -> Auth
+      // 2. Не авторизован -> Auth (кроме invite-роутов)
       if (authStatus == AuthStatus.unauthenticated) {
         if (!location.startsWith(AppRoutes.auth) &&
             !location.startsWith(AppRoutes.invite)) {
           return AppRoutes.auth;
         }
+        return null; // Остаёмся на auth-роутах
       }
 
-      // 3. Авторизован -> Проверка онбординга
+      // 3. Авторизован -> Проверяем онбординг
       if (authStatus == AuthStatus.authenticated) {
-        if (location.startsWith(AppRoutes.auth)) {
-          final onboardingCompleted =
-              ref.read(onboardingStatusProvider) == 'completed';
-          if (!onboardingCompleted) {
-            return AppRoutes.onboarding;
-          }
+        // Если онбординг не завершён и мы НЕ на онбординг-роутах -> redirect
+        if (!onboardingCompleted &&
+            !location.startsWith(AppRoutes.onboarding) &&
+            !location.startsWith('/security/')) {
+          return AppRoutes.onboarding;
+        }
+
+        // Если онбординг завершён и мы на auth -> redirect на home
+        if (onboardingCompleted && location.startsWith(AppRoutes.auth)) {
           return AppRoutes.home;
         }
       }
 
-      return null;
+      return null; // Остаёмся на текущем роуте
     },
   );
 }

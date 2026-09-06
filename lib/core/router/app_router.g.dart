@@ -92,7 +92,7 @@ final class OnboardingStatusProvider
   }
 }
 
-String _$onboardingStatusHash() => r'a7a726ef3319fe84a4cff60c3e0ee262ef66e0f7';
+String _$onboardingStatusHash() => r'0e6d4c0b37c3fe22f10aca3bae71bc46c86dcb1f';
 
 abstract class _$OnboardingStatus extends $Notifier<String> {
   String build();
@@ -256,4 +256,4 @@ final class AppRouterProvider
   }
 }
 
-String _$appRouterHash() => r'8efce2f6e2ef6ccc8c279b2557fb4284072ed590';
+String _$appRouterHash() => r'3aa0e68ecc41b7445841cd97b2b00bbe52393b04';

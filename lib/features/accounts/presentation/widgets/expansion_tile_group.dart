@@ -1,6 +1,5 @@
 // lib/features/accounts/presentation/widgets/expansion_tile_group.dart
 import 'package:flutter/material.dart';
-// ✅ ИСПРАВЛЕНЫ пути импортов
 import '../../domain/entities/account.dart';
 import 'account_card.dart';
 
@@ -8,12 +7,14 @@ class ExpansionTileGroup extends StatelessWidget {
   final String title;
   final IconData icon;
   final List<Account> accounts;
+  final void Function(Account account)? onLongPress;
 
   const ExpansionTileGroup({
     super.key,
     required this.title,
     required this.icon,
     required this.accounts,
+    this.onLongPress,
   });
 
   @override
@@ -43,9 +44,14 @@ class ExpansionTileGroup extends StatelessWidget {
         ),
         initiallyExpanded: true,
         children: accounts.map((account) {
-          return Padding(
+          final card = Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: AccountCard(account: account),
+          );
+          if (onLongPress == null) return card;
+          return GestureDetector(
+            onLongPress: () => onLongPress!(account),
+            child: card,
           );
         }).toList(),
       ),

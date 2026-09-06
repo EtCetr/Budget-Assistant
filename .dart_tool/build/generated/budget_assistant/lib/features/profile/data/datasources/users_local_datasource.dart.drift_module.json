@@ -1,9 +1,0 @@
-{
-  "elements": {},
-  "imports": [
-    "package:drift/drift.dart",
-    "package:logger/logger.dart",
-    "package:budget_assistant/core/database/app_database.dart",
-    "package:budget_assistant/features/profile/domain/models/user_dto.dart"
-  ]
-}

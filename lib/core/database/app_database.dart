@@ -160,7 +160,11 @@ class CategoryRules extends Table {
   ],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase._internal() : super(_openConnection());
+
+  /// Единственный экземпляр на всё приложение (защита от race conditions)
+  static final AppDatabase _instance = AppDatabase._internal();
+  factory AppDatabase() => _instance;
 
   /// Конструктор для unit-тестов (in-memory БД)
   AppDatabase.forTesting(super.e);
@@ -320,6 +324,8 @@ LazyDatabase _openConnection() {
     final fileExists = await File(dbPath).exists();
     AppLogger.i('💾 DB file exists before open: $fileExists');
 
-    return NativeDatabase.createInBackground(File(dbPath));
+    // ✅ Синхронная БД в основном isolate: нет isolate-канала,
+    // нечему закрываться после hot restart
+    return NativeDatabase(File(dbPath));
   });
 }

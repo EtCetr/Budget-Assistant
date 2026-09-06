@@ -33,6 +33,9 @@ class CreateAccountUseCase {
     int? minPaymentAmount,
   }) async {
     try {
+      // ✅ ГАРАНТИЯ: локальный профиль существует до INSERT в accounts (FK)
+      await _repository.ensureLocalUser(userId);
+
       final now = DateTime.now().toUtc();
 
       final account = Account(

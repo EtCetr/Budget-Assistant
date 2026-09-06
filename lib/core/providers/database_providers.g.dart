@@ -9,13 +9,12 @@ part of 'database_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(appDatabase)
-final appDatabaseProvider = AppDatabaseProvider._();
+@ProviderFor(AppDatabaseNotifier)
+final appDatabaseProvider = AppDatabaseNotifierProvider._();
 
-final class AppDatabaseProvider
-    extends $FunctionalProvider<AppDatabase, AppDatabase, AppDatabase>
-    with $Provider<AppDatabase> {
-  AppDatabaseProvider._()
+final class AppDatabaseNotifierProvider
+    extends $NotifierProvider<AppDatabaseNotifier, AppDatabase> {
+  AppDatabaseNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -27,17 +26,11 @@ final class AppDatabaseProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$appDatabaseHash();
+  String debugGetCreateSourceHash() => _$appDatabaseNotifierHash();
 
   @$internal
   @override
-  $ProviderElement<AppDatabase> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  AppDatabase create(Ref ref) {
-    return appDatabase(ref);
-  }
+  AppDatabaseNotifier create() => AppDatabaseNotifier();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AppDatabase value) {
@@ -48,4 +41,23 @@ final class AppDatabaseProvider
   }
 }
 
-String _$appDatabaseHash() => r'18ce5c8c4d8ddbfe5a7d819d8fb7d5aca76bf416';
+String _$appDatabaseNotifierHash() =>
+    r'ce134379484150645b3ed53fe1a293ef013b991e';
+
+abstract class _$AppDatabaseNotifier extends $Notifier<AppDatabase> {
+  AppDatabase build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AppDatabase, AppDatabase>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AppDatabase, AppDatabase>,
+              AppDatabase,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

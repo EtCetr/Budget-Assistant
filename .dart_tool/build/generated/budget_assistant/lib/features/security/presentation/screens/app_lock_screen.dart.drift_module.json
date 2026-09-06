@@ -1,7 +1,0 @@
-{
-  "elements": {},
-  "imports": [
-    "package:flutter/material.dart",
-    "package:budget_assistant/features/security/presentation/screens/pin_entry_screen.dart"
-  ]
-}

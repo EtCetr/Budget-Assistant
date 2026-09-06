@@ -10,4 +10,6 @@ abstract class AccountRepository {
   Future<Account> getOrCreateSystemAccount(String accountType);
   Future<Mortgage?> getMortgageByAccountId(String accountId);
   Future<void> insertMortgage(Mortgage mortgage);
+  Future<void> ensureLocalUser(String userId, {String email = ''});
+    Future<void> deleteAccount(String accountId);
 }

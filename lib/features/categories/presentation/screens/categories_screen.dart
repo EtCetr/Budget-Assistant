@@ -1,6 +1,7 @@
 // lib/features/categories/presentation/screens/categories_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/category_providers.dart';
 import '../widgets/category_tree_view.dart';
 import '../../domain/entities/category.dart';
@@ -17,9 +18,20 @@ class CategoriesScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Categories'),
+        leading: IconButton(
+          icon: const Icon(Icons.home),
+          tooltip: 'Home',
+          onPressed: () => context.go('/'),
+        ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.account_balance_wallet),
+            tooltip: 'Accounts',
+            onPressed: () => context.go('/accounts'),
+          ),
+          IconButton(
             icon: const Icon(Icons.add),
+            tooltip: 'Create category',
             onPressed: () => _showCreateCategoryDialog(context, ref),
           ),
         ],
@@ -37,7 +49,7 @@ class CategoriesScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () =>
-                    ref.refresh(categoriesGroupedByTypeProvider(userId)),
+                    ref.invalidate(categoriesGroupedByTypeProvider(userId)),
                 child: const Text('Retry'),
               ),
             ],
@@ -211,29 +223,41 @@ class _CreateCategoryDialogState extends ConsumerState<_CreateCategoryDialog> {
 
     setState(() => _isLoading = true);
 
-    final useCase = ref.read(createCategoryUseCaseProvider);
-    final result = await useCase.execute(
-      userId: widget.userId,
-      name: name,
-      type: _selectedType,
-      iconEmoji: _selectedEmoji,
-    );
+    try {
+      final useCase = ref.read(createCategoryUseCaseProvider);
+      final result = await useCase.execute(
+        userId: widget.userId,
+        name: name,
+        type: _selectedType,
+        iconEmoji: _selectedEmoji,
+      );
 
-    setState(() => _isLoading = false);
-
-    result.when(
-      success: (category) {
-        Navigator.of(context).pop();
-        ref.invalidate(categoriesGroupedByTypeProvider(widget.userId));
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Category "${category.name}" created')),
-        );
-      },
-      failure: (failure) {
+      result.when(
+        success: (category) {
+          if (!mounted) return;
+          Navigator.of(context).pop();
+          // ✅ Инвалидируем ЛИСТОВОЙ провайдер-список:
+          // grouped пересоберётся сам как зависимый
+          ref.invalidate(categoriesListProvider(widget.userId));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Category "${category.name}" created')),
+          );
+        },
+        failure: (failure) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: ${failure.message}')));
+        },
+      );
+    } catch (e) {
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${failure.message}')));
-      },
-    );
+        ).showSnackBar(SnackBar(content: Text('Unexpected error: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 }

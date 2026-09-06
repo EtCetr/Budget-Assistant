@@ -145,4 +145,32 @@ class AccountRepositoryImpl implements AccountRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<void> ensureLocalUser(String userId, {String email = ''}) async {
+    try {
+      await _accountDao.ensureLocalUser(userId, email: email);
+    } catch (e, stackTrace) {
+      _logger.e(
+        'AccountRepository.ensureLocalUser',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+    @override
+  Future<void> deleteAccount(String accountId) async {
+    try {
+      await _accountDao.deleteAccount(accountId);
+    } catch (e, stackTrace) {
+      _logger.e(
+        'AccountRepository.deleteAccount',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
 }

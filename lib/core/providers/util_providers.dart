@@ -1,4 +1,3 @@
-// lib/core/providers/util_providers.dart
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:logger/logger.dart';
@@ -6,11 +5,25 @@ import 'package:logger/logger.dart';
 part 'util_providers.g.dart';
 
 @riverpod
-Logger logger(Ref ref) {
-  return Logger(); // Базовый логгер без конфликтующих параметров
+class LoggerNotifier extends _$LoggerNotifier {
+  @override
+  Logger build() {
+    return Logger(
+      printer: PrettyPrinter(
+        methodCount: 2,
+        errorMethodCount: 8,
+        lineLength: 120,
+        colors: true,
+        printEmojis: true,
+        // ✅ Фикс deprecated printTime
+        dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
+      ),
+    );
+  }
 }
 
 @riverpod
-Uuid uuid(Ref ref) {
-  return const Uuid();
+class UuidNotifier extends _$UuidNotifier {
+  @override
+  Uuid build() => const Uuid();
 }

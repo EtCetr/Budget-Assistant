@@ -9,12 +9,12 @@ part of 'util_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(logger)
-final loggerProvider = LoggerProvider._();
+@ProviderFor(LoggerNotifier)
+final loggerProvider = LoggerNotifierProvider._();
 
-final class LoggerProvider extends $FunctionalProvider<Logger, Logger, Logger>
-    with $Provider<Logger> {
-  LoggerProvider._()
+final class LoggerNotifierProvider
+    extends $NotifierProvider<LoggerNotifier, Logger> {
+  LoggerNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -26,17 +26,11 @@ final class LoggerProvider extends $FunctionalProvider<Logger, Logger, Logger>
       );
 
   @override
-  String debugGetCreateSourceHash() => _$loggerHash();
+  String debugGetCreateSourceHash() => _$loggerNotifierHash();
 
   @$internal
   @override
-  $ProviderElement<Logger> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  Logger create(Ref ref) {
-    return logger(ref);
-  }
+  LoggerNotifier create() => LoggerNotifier();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(Logger value) {
@@ -47,14 +41,31 @@ final class LoggerProvider extends $FunctionalProvider<Logger, Logger, Logger>
   }
 }
 
-String _$loggerHash() => r'e924b3a95e92172362ca2d61a41a6fa30c085925';
+String _$loggerNotifierHash() => r'e22743d4557c754f4edae475c1a55777e7871f27';
 
-@ProviderFor(uuid)
-final uuidProvider = UuidProvider._();
+abstract class _$LoggerNotifier extends $Notifier<Logger> {
+  Logger build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<Logger, Logger>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Logger, Logger>,
+              Logger,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
 
-final class UuidProvider extends $FunctionalProvider<Uuid, Uuid, Uuid>
-    with $Provider<Uuid> {
-  UuidProvider._()
+@ProviderFor(UuidNotifier)
+final uuidProvider = UuidNotifierProvider._();
+
+final class UuidNotifierProvider extends $NotifierProvider<UuidNotifier, Uuid> {
+  UuidNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -66,17 +77,11 @@ final class UuidProvider extends $FunctionalProvider<Uuid, Uuid, Uuid>
       );
 
   @override
-  String debugGetCreateSourceHash() => _$uuidHash();
+  String debugGetCreateSourceHash() => _$uuidNotifierHash();
 
   @$internal
   @override
-  $ProviderElement<Uuid> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  Uuid create(Ref ref) {
-    return uuid(ref);
-  }
+  UuidNotifier create() => UuidNotifier();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(Uuid value) {
@@ -87,4 +92,22 @@ final class UuidProvider extends $FunctionalProvider<Uuid, Uuid, Uuid>
   }
 }
 
-String _$uuidHash() => r'7d36c99cae36e2624dc33024b5799509300625ba';
+String _$uuidNotifierHash() => r'2654c0aa64e1c6b6630477464302ac9ad8f6a31c';
+
+abstract class _$UuidNotifier extends $Notifier<Uuid> {
+  Uuid build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<Uuid, Uuid>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Uuid, Uuid>,
+              Uuid,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

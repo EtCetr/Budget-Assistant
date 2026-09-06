@@ -1,1 +1,0 @@
-{"valid_import":true,"imports":[{"uri":"package:drift/drift.dart","transitive":false},{"uri":"package:logger/logger.dart","transitive":false},{"uri":"package:budget_assistant/core/database/app_database.dart","transitive":false},{"uri":"package:budget_assistant/features/profile/domain/models/user_dto.dart","transitive":false}],"elements":[]}

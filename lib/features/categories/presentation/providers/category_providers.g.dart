@@ -9,13 +9,12 @@ part of 'category_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(categoryDao)
-final categoryDaoProvider = CategoryDaoProvider._();
+@ProviderFor(CategoryDaoNotifier)
+final categoryDaoProvider = CategoryDaoNotifierProvider._();
 
-final class CategoryDaoProvider
-    extends $FunctionalProvider<CategoryDao, CategoryDao, CategoryDao>
-    with $Provider<CategoryDao> {
-  CategoryDaoProvider._()
+final class CategoryDaoNotifierProvider
+    extends $NotifierProvider<CategoryDaoNotifier, CategoryDao> {
+  CategoryDaoNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -27,17 +26,11 @@ final class CategoryDaoProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$categoryDaoHash();
+  String debugGetCreateSourceHash() => _$categoryDaoNotifierHash();
 
   @$internal
   @override
-  $ProviderElement<CategoryDao> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  CategoryDao create(Ref ref) {
-    return categoryDao(ref);
-  }
+  CategoryDaoNotifier create() => CategoryDaoNotifier();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(CategoryDao value) {
@@ -48,16 +41,33 @@ final class CategoryDaoProvider
   }
 }
 
-String _$categoryDaoHash() => r'18f9327b1de0cf114a1d95c297638bab8cb09ffa';
+String _$categoryDaoNotifierHash() =>
+    r'1ae6319f31e446ef73c9f956cff57f87439014c5';
 
-@ProviderFor(categoryRuleDao)
-final categoryRuleDaoProvider = CategoryRuleDaoProvider._();
+abstract class _$CategoryDaoNotifier extends $Notifier<CategoryDao> {
+  CategoryDao build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<CategoryDao, CategoryDao>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<CategoryDao, CategoryDao>,
+              CategoryDao,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
 
-final class CategoryRuleDaoProvider
-    extends
-        $FunctionalProvider<CategoryRuleDao, CategoryRuleDao, CategoryRuleDao>
-    with $Provider<CategoryRuleDao> {
-  CategoryRuleDaoProvider._()
+@ProviderFor(CategoryRuleDaoNotifier)
+final categoryRuleDaoProvider = CategoryRuleDaoNotifierProvider._();
+
+final class CategoryRuleDaoNotifierProvider
+    extends $NotifierProvider<CategoryRuleDaoNotifier, CategoryRuleDao> {
+  CategoryRuleDaoNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -69,17 +79,11 @@ final class CategoryRuleDaoProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$categoryRuleDaoHash();
+  String debugGetCreateSourceHash() => _$categoryRuleDaoNotifierHash();
 
   @$internal
   @override
-  $ProviderElement<CategoryRuleDao> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  CategoryRuleDao create(Ref ref) {
-    return categoryRuleDao(ref);
-  }
+  CategoryRuleDaoNotifier create() => CategoryRuleDaoNotifier();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(CategoryRuleDao value) {
@@ -90,20 +94,33 @@ final class CategoryRuleDaoProvider
   }
 }
 
-String _$categoryRuleDaoHash() => r'0d81108c7d330f8eb92fbb80b3b3282fe37f95ab';
+String _$categoryRuleDaoNotifierHash() =>
+    r'34da53a19f4ec191ce9f078a187f2485d5532272';
 
-@ProviderFor(categoryRepository)
-final categoryRepositoryProvider = CategoryRepositoryProvider._();
+abstract class _$CategoryRuleDaoNotifier extends $Notifier<CategoryRuleDao> {
+  CategoryRuleDao build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<CategoryRuleDao, CategoryRuleDao>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<CategoryRuleDao, CategoryRuleDao>,
+              CategoryRuleDao,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
 
-final class CategoryRepositoryProvider
-    extends
-        $FunctionalProvider<
-          CategoryRepository,
-          CategoryRepository,
-          CategoryRepository
-        >
-    with $Provider<CategoryRepository> {
-  CategoryRepositoryProvider._()
+@ProviderFor(CategoryRepositoryNotifier)
+final categoryRepositoryProvider = CategoryRepositoryNotifierProvider._();
+
+final class CategoryRepositoryNotifierProvider
+    extends $NotifierProvider<CategoryRepositoryNotifier, CategoryRepository> {
+  CategoryRepositoryNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -115,18 +132,11 @@ final class CategoryRepositoryProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$categoryRepositoryHash();
+  String debugGetCreateSourceHash() => _$categoryRepositoryNotifierHash();
 
   @$internal
   @override
-  $ProviderElement<CategoryRepository> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  CategoryRepository create(Ref ref) {
-    return categoryRepository(ref);
-  }
+  CategoryRepositoryNotifier create() => CategoryRepositoryNotifier();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(CategoryRepository value) {
@@ -137,21 +147,38 @@ final class CategoryRepositoryProvider
   }
 }
 
-String _$categoryRepositoryHash() =>
-    r'a77a9915fdc3f0dc4b02a55774aaa249dafd87ba';
+String _$categoryRepositoryNotifierHash() =>
+    r'1182a1452d021c9ceac002030f0805a9f371fdb1';
 
-@ProviderFor(createCategoryUseCase)
-final createCategoryUseCaseProvider = CreateCategoryUseCaseProvider._();
+abstract class _$CategoryRepositoryNotifier
+    extends $Notifier<CategoryRepository> {
+  CategoryRepository build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<CategoryRepository, CategoryRepository>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<CategoryRepository, CategoryRepository>,
+              CategoryRepository,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
 
-final class CreateCategoryUseCaseProvider
+@ProviderFor(CreateCategoryUseCaseNotifier)
+final createCategoryUseCaseProvider = CreateCategoryUseCaseNotifierProvider._();
+
+final class CreateCategoryUseCaseNotifierProvider
     extends
-        $FunctionalProvider<
-          CreateCategoryUseCase,
-          CreateCategoryUseCase,
+        $NotifierProvider<
+          CreateCategoryUseCaseNotifier,
           CreateCategoryUseCase
-        >
-    with $Provider<CreateCategoryUseCase> {
-  CreateCategoryUseCaseProvider._()
+        > {
+  CreateCategoryUseCaseNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -163,18 +190,11 @@ final class CreateCategoryUseCaseProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$createCategoryUseCaseHash();
+  String debugGetCreateSourceHash() => _$createCategoryUseCaseNotifierHash();
 
   @$internal
   @override
-  $ProviderElement<CreateCategoryUseCase> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  CreateCategoryUseCase create(Ref ref) {
-    return createCategoryUseCase(ref);
-  }
+  CreateCategoryUseCaseNotifier create() => CreateCategoryUseCaseNotifier();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(CreateCategoryUseCase value) {
@@ -185,22 +205,39 @@ final class CreateCategoryUseCaseProvider
   }
 }
 
-String _$createCategoryUseCaseHash() =>
-    r'9bf6c54a034a47131f887d6c84d1ce27e26f52b2';
+String _$createCategoryUseCaseNotifierHash() =>
+    r'41873a526ef532189171a22cddd07418d9487846';
 
-@ProviderFor(autoCategorizeTransactionUseCase)
+abstract class _$CreateCategoryUseCaseNotifier
+    extends $Notifier<CreateCategoryUseCase> {
+  CreateCategoryUseCase build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<CreateCategoryUseCase, CreateCategoryUseCase>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<CreateCategoryUseCase, CreateCategoryUseCase>,
+              CreateCategoryUseCase,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(AutoCategorizeTransactionUseCaseNotifier)
 final autoCategorizeTransactionUseCaseProvider =
-    AutoCategorizeTransactionUseCaseProvider._();
+    AutoCategorizeTransactionUseCaseNotifierProvider._();
 
-final class AutoCategorizeTransactionUseCaseProvider
+final class AutoCategorizeTransactionUseCaseNotifierProvider
     extends
-        $FunctionalProvider<
-          AutoCategorizeTransactionUseCase,
-          AutoCategorizeTransactionUseCase,
+        $NotifierProvider<
+          AutoCategorizeTransactionUseCaseNotifier,
           AutoCategorizeTransactionUseCase
-        >
-    with $Provider<AutoCategorizeTransactionUseCase> {
-  AutoCategorizeTransactionUseCaseProvider._()
+        > {
+  AutoCategorizeTransactionUseCaseNotifierProvider._()
     : super(
         from: null,
         argument: null,
@@ -212,18 +249,13 @@ final class AutoCategorizeTransactionUseCaseProvider
       );
 
   @override
-  String debugGetCreateSourceHash() => _$autoCategorizeTransactionUseCaseHash();
+  String debugGetCreateSourceHash() =>
+      _$autoCategorizeTransactionUseCaseNotifierHash();
 
   @$internal
   @override
-  $ProviderElement<AutoCategorizeTransactionUseCase> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  AutoCategorizeTransactionUseCase create(Ref ref) {
-    return autoCategorizeTransactionUseCase(ref);
-  }
+  AutoCategorizeTransactionUseCaseNotifier create() =>
+      AutoCategorizeTransactionUseCaseNotifier();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(AutoCategorizeTransactionUseCase value) {
@@ -236,22 +268,43 @@ final class AutoCategorizeTransactionUseCaseProvider
   }
 }
 
-String _$autoCategorizeTransactionUseCaseHash() =>
-    r'1973f901b7326d4f404d7102c47c876882928a12';
+String _$autoCategorizeTransactionUseCaseNotifierHash() =>
+    r'ef66e87d78fa8407ba6b5f038387ecef128e0d91';
 
-@ProviderFor(categoriesList)
-final categoriesListProvider = CategoriesListFamily._();
+abstract class _$AutoCategorizeTransactionUseCaseNotifier
+    extends $Notifier<AutoCategorizeTransactionUseCase> {
+  AutoCategorizeTransactionUseCase build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref
+            as $Ref<
+              AutoCategorizeTransactionUseCase,
+              AutoCategorizeTransactionUseCase
+            >;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                AutoCategorizeTransactionUseCase,
+                AutoCategorizeTransactionUseCase
+              >,
+              AutoCategorizeTransactionUseCase,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
 
-final class CategoriesListProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<Category>>,
-          List<Category>,
-          FutureOr<List<Category>>
-        >
-    with $FutureModifier<List<Category>>, $FutureProvider<List<Category>> {
-  CategoriesListProvider._({
-    required CategoriesListFamily super.from,
+@ProviderFor(CategoriesListNotifier)
+final categoriesListProvider = CategoriesListNotifierFamily._();
+
+final class CategoriesListNotifierProvider
+    extends $AsyncNotifierProvider<CategoriesListNotifier, List<Category>> {
+  CategoriesListNotifierProvider._({
+    required CategoriesListNotifierFamily super.from,
     required String super.argument,
   }) : super(
          retry: null,
@@ -262,7 +315,7 @@ final class CategoriesListProvider
        );
 
   @override
-  String debugGetCreateSourceHash() => _$categoriesListHash();
+  String debugGetCreateSourceHash() => _$categoriesListNotifierHash();
 
   @override
   String toString() {
@@ -273,19 +326,12 @@ final class CategoriesListProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<Category>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<Category>> create(Ref ref) {
-    final argument = this.argument as String;
-    return categoriesList(ref, argument);
-  }
+  CategoriesListNotifier create() => CategoriesListNotifier();
 
   @override
   bool operator ==(Object other) {
-    return other is CategoriesListProvider && other.argument == argument;
+    return other is CategoriesListNotifierProvider &&
+        other.argument == argument;
   }
 
   @override
@@ -294,11 +340,19 @@ final class CategoriesListProvider
   }
 }
 
-String _$categoriesListHash() => r'dbbdb21415c3ea895f3bac8fbf7c73cb12cb67f1';
+String _$categoriesListNotifierHash() =>
+    r'112010ebc33b718bf93cc93eb4eaded17fa46af8';
 
-final class CategoriesListFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<List<Category>>, String> {
-  CategoriesListFamily._()
+final class CategoriesListNotifierFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          CategoriesListNotifier,
+          AsyncValue<List<Category>>,
+          List<Category>,
+          FutureOr<List<Category>>,
+          String
+        > {
+  CategoriesListNotifierFamily._()
     : super(
         retry: null,
         name: r'categoriesListProvider',
@@ -307,26 +361,41 @@ final class CategoriesListFamily extends $Family
         isAutoDispose: true,
       );
 
-  CategoriesListProvider call(String userId) =>
-      CategoriesListProvider._(argument: userId, from: this);
+  CategoriesListNotifierProvider call(String userId) =>
+      CategoriesListNotifierProvider._(argument: userId, from: this);
 
   @override
   String toString() => r'categoriesListProvider';
 }
 
-@ProviderFor(rootCategories)
-final rootCategoriesProvider = RootCategoriesFamily._();
+abstract class _$CategoriesListNotifier extends $AsyncNotifier<List<Category>> {
+  late final _$args = ref.$arg as String;
+  String get userId => _$args;
 
-final class RootCategoriesProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<Category>>,
-          List<Category>,
-          FutureOr<List<Category>>
-        >
-    with $FutureModifier<List<Category>>, $FutureProvider<List<Category>> {
-  RootCategoriesProvider._({
-    required RootCategoriesFamily super.from,
+  FutureOr<List<Category>> build(String userId);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<List<Category>>, List<Category>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<Category>>, List<Category>>,
+              AsyncValue<List<Category>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
+}
+
+@ProviderFor(RootCategoriesNotifier)
+final rootCategoriesProvider = RootCategoriesNotifierFamily._();
+
+final class RootCategoriesNotifierProvider
+    extends $AsyncNotifierProvider<RootCategoriesNotifier, List<Category>> {
+  RootCategoriesNotifierProvider._({
+    required RootCategoriesNotifierFamily super.from,
     required String super.argument,
   }) : super(
          retry: null,
@@ -337,7 +406,7 @@ final class RootCategoriesProvider
        );
 
   @override
-  String debugGetCreateSourceHash() => _$rootCategoriesHash();
+  String debugGetCreateSourceHash() => _$rootCategoriesNotifierHash();
 
   @override
   String toString() {
@@ -348,19 +417,12 @@ final class RootCategoriesProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<Category>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<Category>> create(Ref ref) {
-    final argument = this.argument as String;
-    return rootCategories(ref, argument);
-  }
+  RootCategoriesNotifier create() => RootCategoriesNotifier();
 
   @override
   bool operator ==(Object other) {
-    return other is RootCategoriesProvider && other.argument == argument;
+    return other is RootCategoriesNotifierProvider &&
+        other.argument == argument;
   }
 
   @override
@@ -369,11 +431,19 @@ final class RootCategoriesProvider
   }
 }
 
-String _$rootCategoriesHash() => r'379d2556029ab0b619ca4d8dc7336688cdbf76f6';
+String _$rootCategoriesNotifierHash() =>
+    r'ccd6048ce0a8f4a3aee9db57e36f49c8c8e85137';
 
-final class RootCategoriesFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<List<Category>>, String> {
-  RootCategoriesFamily._()
+final class RootCategoriesNotifierFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          RootCategoriesNotifier,
+          AsyncValue<List<Category>>,
+          List<Category>,
+          FutureOr<List<Category>>,
+          String
+        > {
+  RootCategoriesNotifierFamily._()
     : super(
         retry: null,
         name: r'rootCategoriesProvider',
@@ -382,26 +452,41 @@ final class RootCategoriesFamily extends $Family
         isAutoDispose: true,
       );
 
-  RootCategoriesProvider call(String userId) =>
-      RootCategoriesProvider._(argument: userId, from: this);
+  RootCategoriesNotifierProvider call(String userId) =>
+      RootCategoriesNotifierProvider._(argument: userId, from: this);
 
   @override
   String toString() => r'rootCategoriesProvider';
 }
 
-@ProviderFor(childCategories)
-final childCategoriesProvider = ChildCategoriesFamily._();
+abstract class _$RootCategoriesNotifier extends $AsyncNotifier<List<Category>> {
+  late final _$args = ref.$arg as String;
+  String get userId => _$args;
 
-final class ChildCategoriesProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<Category>>,
-          List<Category>,
-          FutureOr<List<Category>>
-        >
-    with $FutureModifier<List<Category>>, $FutureProvider<List<Category>> {
-  ChildCategoriesProvider._({
-    required ChildCategoriesFamily super.from,
+  FutureOr<List<Category>> build(String userId);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<List<Category>>, List<Category>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<Category>>, List<Category>>,
+              AsyncValue<List<Category>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
+}
+
+@ProviderFor(ChildCategoriesNotifier)
+final childCategoriesProvider = ChildCategoriesNotifierFamily._();
+
+final class ChildCategoriesNotifierProvider
+    extends $AsyncNotifierProvider<ChildCategoriesNotifier, List<Category>> {
+  ChildCategoriesNotifierProvider._({
+    required ChildCategoriesNotifierFamily super.from,
     required String super.argument,
   }) : super(
          retry: null,
@@ -412,7 +497,7 @@ final class ChildCategoriesProvider
        );
 
   @override
-  String debugGetCreateSourceHash() => _$childCategoriesHash();
+  String debugGetCreateSourceHash() => _$childCategoriesNotifierHash();
 
   @override
   String toString() {
@@ -423,19 +508,12 @@ final class ChildCategoriesProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<Category>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<Category>> create(Ref ref) {
-    final argument = this.argument as String;
-    return childCategories(ref, argument);
-  }
+  ChildCategoriesNotifier create() => ChildCategoriesNotifier();
 
   @override
   bool operator ==(Object other) {
-    return other is ChildCategoriesProvider && other.argument == argument;
+    return other is ChildCategoriesNotifierProvider &&
+        other.argument == argument;
   }
 
   @override
@@ -444,11 +522,19 @@ final class ChildCategoriesProvider
   }
 }
 
-String _$childCategoriesHash() => r'd825681a9660945881daba98bc731827e4f9cc18';
+String _$childCategoriesNotifierHash() =>
+    r'da9f6c9cce9c1b19aafd0e1d507df836489718cb';
 
-final class ChildCategoriesFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<List<Category>>, String> {
-  ChildCategoriesFamily._()
+final class ChildCategoriesNotifierFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          ChildCategoriesNotifier,
+          AsyncValue<List<Category>>,
+          List<Category>,
+          FutureOr<List<Category>>,
+          String
+        > {
+  ChildCategoriesNotifierFamily._()
     : super(
         retry: null,
         name: r'childCategoriesProvider',
@@ -457,28 +543,46 @@ final class ChildCategoriesFamily extends $Family
         isAutoDispose: true,
       );
 
-  ChildCategoriesProvider call(String parentId) =>
-      ChildCategoriesProvider._(argument: parentId, from: this);
+  ChildCategoriesNotifierProvider call(String parentId) =>
+      ChildCategoriesNotifierProvider._(argument: parentId, from: this);
 
   @override
   String toString() => r'childCategoriesProvider';
 }
 
-@ProviderFor(categoryRulesByBank)
-final categoryRulesByBankProvider = CategoryRulesByBankFamily._();
+abstract class _$ChildCategoriesNotifier
+    extends $AsyncNotifier<List<Category>> {
+  late final _$args = ref.$arg as String;
+  String get parentId => _$args;
 
-final class CategoryRulesByBankProvider
+  FutureOr<List<Category>> build(String parentId);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<List<Category>>, List<Category>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<Category>>, List<Category>>,
+              AsyncValue<List<Category>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
+}
+
+@ProviderFor(CategoryRulesByBankNotifier)
+final categoryRulesByBankProvider = CategoryRulesByBankNotifierFamily._();
+
+final class CategoryRulesByBankNotifierProvider
     extends
-        $FunctionalProvider<
-          AsyncValue<List<CategoryRule>>,
-          List<CategoryRule>,
-          FutureOr<List<CategoryRule>>
-        >
-    with
-        $FutureModifier<List<CategoryRule>>,
-        $FutureProvider<List<CategoryRule>> {
-  CategoryRulesByBankProvider._({
-    required CategoryRulesByBankFamily super.from,
+        $AsyncNotifierProvider<
+          CategoryRulesByBankNotifier,
+          List<CategoryRule>
+        > {
+  CategoryRulesByBankNotifierProvider._({
+    required CategoryRulesByBankNotifierFamily super.from,
     required (String, String?) super.argument,
   }) : super(
          retry: null,
@@ -489,7 +593,7 @@ final class CategoryRulesByBankProvider
        );
 
   @override
-  String debugGetCreateSourceHash() => _$categoryRulesByBankHash();
+  String debugGetCreateSourceHash() => _$categoryRulesByBankNotifierHash();
 
   @override
   String toString() {
@@ -500,19 +604,12 @@ final class CategoryRulesByBankProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<CategoryRule>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<CategoryRule>> create(Ref ref) {
-    final argument = this.argument as (String, String?);
-    return categoryRulesByBank(ref, argument.$1, argument.$2);
-  }
+  CategoryRulesByBankNotifier create() => CategoryRulesByBankNotifier();
 
   @override
   bool operator ==(Object other) {
-    return other is CategoryRulesByBankProvider && other.argument == argument;
+    return other is CategoryRulesByBankNotifierProvider &&
+        other.argument == argument;
   }
 
   @override
@@ -521,16 +618,19 @@ final class CategoryRulesByBankProvider
   }
 }
 
-String _$categoryRulesByBankHash() =>
-    r'fe7ccf8e49c1c19fc054b089802d45d5d876231a';
+String _$categoryRulesByBankNotifierHash() =>
+    r'88bd60d8a14b836ca7add50c51e7e678907b65ed';
 
-final class CategoryRulesByBankFamily extends $Family
+final class CategoryRulesByBankNotifierFamily extends $Family
     with
-        $FunctionalFamilyOverride<
+        $ClassFamilyOverride<
+          CategoryRulesByBankNotifier,
+          AsyncValue<List<CategoryRule>>,
+          List<CategoryRule>,
           FutureOr<List<CategoryRule>>,
           (String, String?)
         > {
-  CategoryRulesByBankFamily._()
+  CategoryRulesByBankNotifierFamily._()
     : super(
         retry: null,
         name: r'categoryRulesByBankProvider',
@@ -539,28 +639,52 @@ final class CategoryRulesByBankFamily extends $Family
         isAutoDispose: true,
       );
 
-  CategoryRulesByBankProvider call(String bankName, String? spaceId) =>
-      CategoryRulesByBankProvider._(argument: (bankName, spaceId), from: this);
+  CategoryRulesByBankNotifierProvider call(String bankName, String? spaceId) =>
+      CategoryRulesByBankNotifierProvider._(
+        argument: (bankName, spaceId),
+        from: this,
+      );
 
   @override
   String toString() => r'categoryRulesByBankProvider';
 }
 
-@ProviderFor(categoriesGroupedByType)
-final categoriesGroupedByTypeProvider = CategoriesGroupedByTypeFamily._();
+abstract class _$CategoryRulesByBankNotifier
+    extends $AsyncNotifier<List<CategoryRule>> {
+  late final _$args = ref.$arg as (String, String?);
+  String get bankName => _$args.$1;
+  String? get spaceId => _$args.$2;
 
-final class CategoriesGroupedByTypeProvider
+  FutureOr<List<CategoryRule>> build(String bankName, String? spaceId);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref as $Ref<AsyncValue<List<CategoryRule>>, List<CategoryRule>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<CategoryRule>>, List<CategoryRule>>,
+              AsyncValue<List<CategoryRule>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args.$1, _$args.$2));
+  }
+}
+
+@ProviderFor(CategoriesGroupedByTypeNotifier)
+final categoriesGroupedByTypeProvider =
+    CategoriesGroupedByTypeNotifierFamily._();
+
+final class CategoriesGroupedByTypeNotifierProvider
     extends
-        $FunctionalProvider<
-          AsyncValue<Map<String, List<Category>>>,
-          Map<String, List<Category>>,
-          FutureOr<Map<String, List<Category>>>
-        >
-    with
-        $FutureModifier<Map<String, List<Category>>>,
-        $FutureProvider<Map<String, List<Category>>> {
-  CategoriesGroupedByTypeProvider._({
-    required CategoriesGroupedByTypeFamily super.from,
+        $AsyncNotifierProvider<
+          CategoriesGroupedByTypeNotifier,
+          Map<String, List<Category>>
+        > {
+  CategoriesGroupedByTypeNotifierProvider._({
+    required CategoriesGroupedByTypeNotifierFamily super.from,
     required String super.argument,
   }) : super(
          retry: null,
@@ -571,7 +695,7 @@ final class CategoriesGroupedByTypeProvider
        );
 
   @override
-  String debugGetCreateSourceHash() => _$categoriesGroupedByTypeHash();
+  String debugGetCreateSourceHash() => _$categoriesGroupedByTypeNotifierHash();
 
   @override
   String toString() {
@@ -582,19 +706,11 @@ final class CategoriesGroupedByTypeProvider
 
   @$internal
   @override
-  $FutureProviderElement<Map<String, List<Category>>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<Map<String, List<Category>>> create(Ref ref) {
-    final argument = this.argument as String;
-    return categoriesGroupedByType(ref, argument);
-  }
+  CategoriesGroupedByTypeNotifier create() => CategoriesGroupedByTypeNotifier();
 
   @override
   bool operator ==(Object other) {
-    return other is CategoriesGroupedByTypeProvider &&
+    return other is CategoriesGroupedByTypeNotifierProvider &&
         other.argument == argument;
   }
 
@@ -604,16 +720,19 @@ final class CategoriesGroupedByTypeProvider
   }
 }
 
-String _$categoriesGroupedByTypeHash() =>
-    r'e8d5daeb7e9e8537b6977fbdff5f7f29dcb24926';
+String _$categoriesGroupedByTypeNotifierHash() =>
+    r'092020a74b101dd2b74c66700a1245e318808857';
 
-final class CategoriesGroupedByTypeFamily extends $Family
+final class CategoriesGroupedByTypeNotifierFamily extends $Family
     with
-        $FunctionalFamilyOverride<
+        $ClassFamilyOverride<
+          CategoriesGroupedByTypeNotifier,
+          AsyncValue<Map<String, List<Category>>>,
+          Map<String, List<Category>>,
           FutureOr<Map<String, List<Category>>>,
           String
         > {
-  CategoriesGroupedByTypeFamily._()
+  CategoriesGroupedByTypeNotifierFamily._()
     : super(
         retry: null,
         name: r'categoriesGroupedByTypeProvider',
@@ -622,9 +741,39 @@ final class CategoriesGroupedByTypeFamily extends $Family
         isAutoDispose: true,
       );
 
-  CategoriesGroupedByTypeProvider call(String userId) =>
-      CategoriesGroupedByTypeProvider._(argument: userId, from: this);
+  CategoriesGroupedByTypeNotifierProvider call(String userId) =>
+      CategoriesGroupedByTypeNotifierProvider._(argument: userId, from: this);
 
   @override
   String toString() => r'categoriesGroupedByTypeProvider';
+}
+
+abstract class _$CategoriesGroupedByTypeNotifier
+    extends $AsyncNotifier<Map<String, List<Category>>> {
+  late final _$args = ref.$arg as String;
+  String get userId => _$args;
+
+  FutureOr<Map<String, List<Category>>> build(String userId);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref
+            as $Ref<
+              AsyncValue<Map<String, List<Category>>>,
+              Map<String, List<Category>>
+            >;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                AsyncValue<Map<String, List<Category>>>,
+                Map<String, List<Category>>
+              >,
+              AsyncValue<Map<String, List<Category>>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
 }

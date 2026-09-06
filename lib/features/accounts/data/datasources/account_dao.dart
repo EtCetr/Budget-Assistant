@@ -9,6 +9,57 @@ part 'account_dao.g.dart';
 class AccountDao extends DatabaseAccessor<AppDatabase> with _$AccountDaoMixin {
   AccountDao(super.db);
 
+  // ✅ НОВЫЙ МЕТОД: Stream для автообновления UI
+  Stream<List<AccountModel>> watchAccountsByUserId(String userId) {
+    final query = select(accounts)
+      ..where((t) => t.userId.equals(userId))
+      ..orderBy([(t) => OrderingTerm(expression: t.sortOrder, mode: OrderingMode.asc),
+                 (t) => OrderingTerm(expression: t.createdAt, mode: OrderingMode.desc)]);
+    
+    return query.watch().map((results) => results
+        .map((row) => AccountModel(
+              id: row.id,
+              userId: row.userId,
+              spaceId: row.spaceId,
+              bankName: row.bankName,
+              customName: row.customName,
+              cardNumberMask: row.cardNumberMask,
+              accountType: row.accountType,
+              currency: row.currency,
+              currentBalance: row.currentBalance,
+              creditLimit: row.creditLimit,
+              gracePeriodEnd: row.gracePeriodEnd,
+              minPaymentAmount: row.minPaymentAmount,
+              includeInPersonalBalance: row.includeInPersonalBalance,
+              includeInFamilyBalance: row.includeInFamilyBalance,
+              isSharedBalance: row.isSharedBalance,
+              isSharedExpenses: row.isSharedExpenses,
+              expenseDetailLevel: row.expenseDetailLevel,
+              isSharedIncomes: row.isSharedIncomes,
+              incomeDetailLevel: row.incomeDetailLevel,
+              sortOrder: row.sortOrder,
+              isArchived: row.isArchived,
+              isSystem: row.isSystem,
+              createdAt: row.createdAt,
+              updatedAt: row.updatedAt,
+              syncStatus: row.syncStatus,
+            ))
+        .toList());
+  }
+
+  // ✅ НОВЫЙ МЕТОД: Delete с каскадом для ипотеки
+    /// Удаление счёта с каскадным удалением ипотеки
+  Future<void> deleteAccount(String accountId) async {
+    try {
+      await (delete(
+        db.mortgages,
+      )..where((t) => t.accountId.equals(accountId))).go();
+      await (delete(accounts)..where((t) => t.id.equals(accountId))).go();
+    } catch (e) {
+      throw Exception('Failed to delete account: $e');
+    }
+  }
+
   Future<List<AccountModel>> getAccountsByUserId(String userId) async {
     try {
       final query = select(accounts)..where((t) => t.userId.equals(userId));
@@ -136,5 +187,27 @@ class AccountDao extends DatabaseAccessor<AppDatabase> with _$AccountDaoMixin {
     } catch (e) {
       throw Exception('Failed to get system account: $e');
     }
+  }
+
+  // Внутрь класса AccountDao (после существующих методов)
+
+  /// Идемпотентно создаёт локальную копию профиля пользователя.
+  /// Нужна, чтобы FK accounts.user_id не падал до первой синхронизации (Этап 8).
+  Future<void> ensureLocalUser(String userId, {String email = ''}) async {
+    final existing = await (select(
+      db.users,
+    )..where((u) => u.id.equals(userId))).getSingleOrNull();
+    if (existing != null) return;
+
+    final now = DateTime.now().toUtc();
+    await into(db.users).insert(
+      UsersCompanion(
+        id: Value(userId),
+        displayName: const Value(''),
+        email: Value(email),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    );
   }
 }

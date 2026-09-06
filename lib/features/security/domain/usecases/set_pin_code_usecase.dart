@@ -1,24 +1,34 @@
+// lib/features/security/domain/usecases/set_pin_code_usecase.dart
 import 'package:budget_assistant/core/errors/failures.dart';
+import 'package:budget_assistant/core/logger.dart';
 import 'package:budget_assistant/core/utils/result.dart';
-import 'package:budget_assistant/features/security/data/repositories/pin_code_repository.dart';
+// ✅ Репозиторий живёт в data-слое
+import '../../data/repositories/pin_code_repository.dart';
 
 class SetPinCodeUseCase {
   final PinCodeRepository _repository;
 
-  SetPinCodeUseCase(this._repository);
+  const SetPinCodeUseCase(this._repository);
 
-  Future<Result<void>> call(String pin) async {
+  Future<Result<void>> call(String pin, String confirmPin) async {
     try {
-      await _repository.savePin(pin);
-      return (data: null, failure: null) as Result<void>;
-    } on Failure catch (f) {
-      return (data: null, failure: f) as Result<void>;
-    } catch (e, st) {
-      return (
-            data: null,
-            failure: Failure.unexpected('Failed to set PIN: $e', st),
-          )
-          as Result<void>;
+      if (pin.length != 4) {
+        return Result.failure(
+          const Failure.validation('PIN-код должен содержать 4 цифры'),
+        );
+      }
+      if (pin != confirmPin) {
+        return Result.failure(const Failure.validation('PIN-коды не совпадают'));
+      }
+
+      final result = await _repository.savePin(pin);
+      return result.when(
+        success: (_) => Result.success(null),
+        failure: (f) => Result.failure(f),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.e('SetPinCodeUseCase failed', e, stackTrace);
+      return Result.failure(Failure.unexpected(e.toString(), stackTrace));
     }
   }
 }

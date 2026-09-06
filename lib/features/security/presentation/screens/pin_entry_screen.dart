@@ -9,7 +9,8 @@ import 'package:budget_assistant/features/security/presentation/widgets/custom_p
 import 'package:budget_assistant/features/security/domain/usecases/verify_pin_code_usecase.dart';
 import 'package:budget_assistant/features/security/data/repositories/pin_code_repository.dart';
 import 'package:budget_assistant/features/security/services/biometric_service.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:budget_assistant/core/services/secure_storage_service.dart';
+
 
 class PinEntryScreen extends ConsumerStatefulWidget {
   final String mode; // 'unlock' или 'verify'
@@ -31,7 +32,7 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
   bool _biometricAvailable = false;
 
   late final _verifyUseCase = VerifyPinCodeUseCase(
-    PinCodeRepositoryImpl(const FlutterSecureStorage()),
+    PinCodeRepositoryImpl(SecureStorageService()),
   );
 
   @override
