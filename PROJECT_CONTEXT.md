@@ -63,9 +63,21 @@
 4. **Используй `PROJECT_CONTEXT.md`** как быструю шпаргалку, чтобы не перечитывать все 7 томов.
 5. **При обнаружении противоречия** в ТЗ 6.0 — приоритет у `DECISIONS.md`. Если противоречие внутри ТЗ 6.0 — приоритет у более позднего Тома (Том 7 > Том 1).
 
-## Known Issues / Долги (после Этапа 5)
-- [ ] CRUD категорий: нет Update/Delete; нет Update счёта (микро-коммит после Этапа 6)
-- [ ] Drag-and-drop сортировка счетов в UI (UseCase готов)
-- [ ] enable_biometric_login не персистится в app_settings (Этап 21)
-- [ ] space_selector: заглушка вместо реального списка (Этап 17/21)
-- [ ] E2E payload счетов/категорий — реализуется в SyncService (Этап 8)
+## Known Issues / Долги (актуально после Этапа 5 + микро-коммита)
+
+### Закрыто
+- [x] Auth flow end-to-end (регистрация Supabase, онбординг, PIN, биометрия)
+- [x] Персист флага онбординга (onboarding_completed в SecureStorage + bootstrap в main)
+- [x] Полные 7 типов счетов в UI создания/редактирования (debit/credit/cash/savings/safe/investment_broker/mortgage)
+- [x] CRUD категорий: Update/Delete + дочерние категории (parent_id в диалоге, сплайс детей при удалении)
+- [x] Update счёта (Edit по тапу)
+
+### Открыто
+- [ ] **l10n-фундамент**: RU как основной язык (flutter_localizations + .arb, замена хардкода строк).
+      Решение: микро-коммит ПОСЛЕ Этапа 7 — переводить все экраны за один раз.
+- [ ] E2E-шифрование payload счетов/категорий/транзакций перед Supabase — Этап 8 (SyncService)
+- [ ] Drag-and-drop сортировка счетов в UI (UseCase UpdateAccountSortOrder готов) — Этап 21 (Cards & Wallets, ТЗ 6.3.4.4)
+- [ ] Форма создания ипотеки (account_type='mortgage' + поля mortgages) — Этап 21
+- [ ] Авто-создание системных счетов (is_system, напр. «Наличные») — Этап 21
+- [ ] enable_biometric_login не персистится в app_settings — Этап 21 (SecuritySettingsScreen)
+- [ ] space_selector: заглушка вместо реального списка пространств — Этап 17/21
