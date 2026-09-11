@@ -87,7 +87,7 @@ extension FailurePatterns on Failure {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( NetworkFailure value)?  network,TResult Function( ServerFailure value)?  server,TResult Function( AuthenticationFailure value)?  authentication,TResult Function( AuthorizationFailure value)?  authorization,TResult Function( ValidationFailure value)?  validation,TResult Function( DatabaseFailure value)?  database,TResult Function( EncryptionFailure value)?  encryption,TResult Function( BiometricFailure value)?  biometric,TResult Function( PinFailure value)?  pin,TResult Function( UnexpectedFailure value)?  unexpected,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( NetworkFailure value)?  network,TResult Function( ServerFailure value)?  server,TResult Function( AuthenticationFailure value)?  authentication,TResult Function( AuthorizationFailure value)?  authorization,TResult Function( ValidationFailure value)?  validation,TResult Function( NotFoundFailure value)?  notFound,TResult Function( DatabaseFailure value)?  database,TResult Function( EncryptionFailure value)?  encryption,TResult Function( BiometricFailure value)?  biometric,TResult Function( PinFailure value)?  pin,TResult Function( UnexpectedFailure value)?  unexpected,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case NetworkFailure() when network != null:
@@ -95,7 +95,8 @@ return network(_that);case ServerFailure() when server != null:
 return server(_that);case AuthenticationFailure() when authentication != null:
 return authentication(_that);case AuthorizationFailure() when authorization != null:
 return authorization(_that);case ValidationFailure() when validation != null:
-return validation(_that);case DatabaseFailure() when database != null:
+return validation(_that);case NotFoundFailure() when notFound != null:
+return notFound(_that);case DatabaseFailure() when database != null:
 return database(_that);case EncryptionFailure() when encryption != null:
 return encryption(_that);case BiometricFailure() when biometric != null:
 return biometric(_that);case PinFailure() when pin != null:
@@ -118,7 +119,7 @@ return unexpected(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( NetworkFailure value)  network,required TResult Function( ServerFailure value)  server,required TResult Function( AuthenticationFailure value)  authentication,required TResult Function( AuthorizationFailure value)  authorization,required TResult Function( ValidationFailure value)  validation,required TResult Function( DatabaseFailure value)  database,required TResult Function( EncryptionFailure value)  encryption,required TResult Function( BiometricFailure value)  biometric,required TResult Function( PinFailure value)  pin,required TResult Function( UnexpectedFailure value)  unexpected,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( NetworkFailure value)  network,required TResult Function( ServerFailure value)  server,required TResult Function( AuthenticationFailure value)  authentication,required TResult Function( AuthorizationFailure value)  authorization,required TResult Function( ValidationFailure value)  validation,required TResult Function( NotFoundFailure value)  notFound,required TResult Function( DatabaseFailure value)  database,required TResult Function( EncryptionFailure value)  encryption,required TResult Function( BiometricFailure value)  biometric,required TResult Function( PinFailure value)  pin,required TResult Function( UnexpectedFailure value)  unexpected,}){
 final _that = this;
 switch (_that) {
 case NetworkFailure():
@@ -126,7 +127,8 @@ return network(_that);case ServerFailure():
 return server(_that);case AuthenticationFailure():
 return authentication(_that);case AuthorizationFailure():
 return authorization(_that);case ValidationFailure():
-return validation(_that);case DatabaseFailure():
+return validation(_that);case NotFoundFailure():
+return notFound(_that);case DatabaseFailure():
 return database(_that);case EncryptionFailure():
 return encryption(_that);case BiometricFailure():
 return biometric(_that);case PinFailure():
@@ -148,7 +150,7 @@ return unexpected(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( NetworkFailure value)?  network,TResult? Function( ServerFailure value)?  server,TResult? Function( AuthenticationFailure value)?  authentication,TResult? Function( AuthorizationFailure value)?  authorization,TResult? Function( ValidationFailure value)?  validation,TResult? Function( DatabaseFailure value)?  database,TResult? Function( EncryptionFailure value)?  encryption,TResult? Function( BiometricFailure value)?  biometric,TResult? Function( PinFailure value)?  pin,TResult? Function( UnexpectedFailure value)?  unexpected,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( NetworkFailure value)?  network,TResult? Function( ServerFailure value)?  server,TResult? Function( AuthenticationFailure value)?  authentication,TResult? Function( AuthorizationFailure value)?  authorization,TResult? Function( ValidationFailure value)?  validation,TResult? Function( NotFoundFailure value)?  notFound,TResult? Function( DatabaseFailure value)?  database,TResult? Function( EncryptionFailure value)?  encryption,TResult? Function( BiometricFailure value)?  biometric,TResult? Function( PinFailure value)?  pin,TResult? Function( UnexpectedFailure value)?  unexpected,}){
 final _that = this;
 switch (_that) {
 case NetworkFailure() when network != null:
@@ -156,7 +158,8 @@ return network(_that);case ServerFailure() when server != null:
 return server(_that);case AuthenticationFailure() when authentication != null:
 return authentication(_that);case AuthorizationFailure() when authorization != null:
 return authorization(_that);case ValidationFailure() when validation != null:
-return validation(_that);case DatabaseFailure() when database != null:
+return validation(_that);case NotFoundFailure() when notFound != null:
+return notFound(_that);case DatabaseFailure() when database != null:
 return database(_that);case EncryptionFailure() when encryption != null:
 return encryption(_that);case BiometricFailure() when biometric != null:
 return biometric(_that);case PinFailure() when pin != null:
@@ -500,6 +503,74 @@ class _$ValidationFailureCopyWithImpl<$Res>
 /// with the given fields replaced by the non-null parameter values.
 @override @pragma('vm:prefer-inline') $Res call({Object? message = null,Object? stackTrace = freezed,}) {
   return _then(ValidationFailure(
+null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,freezed == stackTrace ? _self.stackTrace : stackTrace // ignore: cast_nullable_to_non_nullable
+as StackTrace?,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class NotFoundFailure implements Failure {
+  const NotFoundFailure(this.message, [this.stackTrace]);
+  
+
+@override final  String message;
+@override final  StackTrace? stackTrace;
+
+/// Create a copy of Failure
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$NotFoundFailureCopyWith<NotFoundFailure> get copyWith => _$NotFoundFailureCopyWithImpl<NotFoundFailure>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is NotFoundFailure&&(identical(other.message, message) || other.message == message)&&(identical(other.stackTrace, stackTrace) || other.stackTrace == stackTrace));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,message,stackTrace);
+
+@override
+String toString() {
+  return 'Failure.notFound(message: $message, stackTrace: $stackTrace)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $NotFoundFailureCopyWith<$Res> implements $FailureCopyWith<$Res> {
+  factory $NotFoundFailureCopyWith(NotFoundFailure value, $Res Function(NotFoundFailure) _then) = _$NotFoundFailureCopyWithImpl;
+@override @useResult
+$Res call({
+ String message, StackTrace? stackTrace
+});
+
+
+
+
+}
+/// @nodoc
+class _$NotFoundFailureCopyWithImpl<$Res>
+    implements $NotFoundFailureCopyWith<$Res> {
+  _$NotFoundFailureCopyWithImpl(this._self, this._then);
+
+  final NotFoundFailure _self;
+  final $Res Function(NotFoundFailure) _then;
+
+/// Create a copy of Failure
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? message = null,Object? stackTrace = freezed,}) {
+  return _then(NotFoundFailure(
 null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
 as String,freezed == stackTrace ? _self.stackTrace : stackTrace // ignore: cast_nullable_to_non_nullable
 as StackTrace?,

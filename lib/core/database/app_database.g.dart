@@ -9566,6 +9566,2362 @@ class CategoryRulesCompanion extends UpdateCompanion<CategoryRule> {
   }
 }
 
+class $TransactionsTable extends Transactions
+    with TableInfo<$TransactionsTable, TransactionDb> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TransactionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _accountIdMeta = const VerificationMeta(
+    'accountId',
+  );
+  @override
+  late final GeneratedColumn<String> accountId = GeneratedColumn<String>(
+    'account_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES accounts (id)',
+    ),
+  );
+  static const VerificationMeta _linkedAccountIdMeta = const VerificationMeta(
+    'linkedAccountId',
+  );
+  @override
+  late final GeneratedColumn<String> linkedAccountId = GeneratedColumn<String>(
+    'linked_account_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES accounts (id)',
+    ),
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _spaceIdMeta = const VerificationMeta(
+    'spaceId',
+  );
+  @override
+  late final GeneratedColumn<String> spaceId = GeneratedColumn<String>(
+    'space_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES spaces (id)',
+    ),
+  );
+  static const VerificationMeta _originalSpaceIdMeta = const VerificationMeta(
+    'originalSpaceId',
+  );
+  @override
+  late final GeneratedColumn<String> originalSpaceId = GeneratedColumn<String>(
+    'original_space_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES spaces (id)',
+    ),
+  );
+  static const VerificationMeta _bankTransactionIdMeta = const VerificationMeta(
+    'bankTransactionId',
+  );
+  @override
+  late final GeneratedColumn<String> bankTransactionId =
+      GeneratedColumn<String>(
+        'bank_transaction_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<int> amount = GeneratedColumn<int>(
+    'amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _originalCurrencyMeta = const VerificationMeta(
+    'originalCurrency',
+  );
+  @override
+  late final GeneratedColumn<String> originalCurrency = GeneratedColumn<String>(
+    'original_currency',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _originalAmountMeta = const VerificationMeta(
+    'originalAmount',
+  );
+  @override
+  late final GeneratedColumn<int> originalAmount = GeneratedColumn<int>(
+    'original_amount',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<TransactionType, String> type =
+      GeneratedColumn<String>(
+        'type',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<TransactionType>($TransactionsTable.$convertertype);
+  static const VerificationMeta _bankCategoryMeta = const VerificationMeta(
+    'bankCategory',
+  );
+  @override
+  late final GeneratedColumn<String> bankCategory = GeneratedColumn<String>(
+    'bank_category',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _customCategoryIdMeta = const VerificationMeta(
+    'customCategoryId',
+  );
+  @override
+  late final GeneratedColumn<String> customCategoryId = GeneratedColumn<String>(
+    'custom_category_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES categories (id)',
+    ),
+  );
+  static const VerificationMeta _merchantNameMeta = const VerificationMeta(
+    'merchantName',
+  );
+  @override
+  late final GeneratedColumn<String> merchantName = GeneratedColumn<String>(
+    'merchant_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _commentMeta = const VerificationMeta(
+    'comment',
+  );
+  @override
+  late final GeneratedColumn<String> comment = GeneratedColumn<String>(
+    'comment',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isUserEditedMeta = const VerificationMeta(
+    'isUserEdited',
+  );
+  @override
+  late final GeneratedColumn<bool> isUserEdited = GeneratedColumn<bool>(
+    'is_user_edited',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_user_edited" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<AuditStatus, String> auditStatus =
+      GeneratedColumn<String>(
+        'audit_status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('verified'),
+      ).withConverter<AuditStatus>($TransactionsTable.$converterauditStatus);
+  static const VerificationMeta _isHiddenByCalendarMeta =
+      const VerificationMeta('isHiddenByCalendar');
+  @override
+  late final GeneratedColumn<bool> isHiddenByCalendar = GeneratedColumn<bool>(
+    'is_hidden_by_calendar',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_hidden_by_calendar" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _hiddenUntilDateMeta = const VerificationMeta(
+    'hiddenUntilDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> hiddenUntilDate =
+      GeneratedColumn<DateTime>(
+        'hidden_until_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _syncLockedStartedAtMeta =
+      const VerificationMeta('syncLockedStartedAt');
+  @override
+  late final GeneratedColumn<int> syncLockedStartedAt = GeneratedColumn<int>(
+    'sync_locked_started_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncLockedDurationMsMeta =
+      const VerificationMeta('syncLockedDurationMs');
+  @override
+  late final GeneratedColumn<int> syncLockedDurationMs = GeneratedColumn<int>(
+    'sync_locked_duration_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isArchivedForSpaceMeta =
+      const VerificationMeta('isArchivedForSpace');
+  @override
+  late final GeneratedColumn<bool> isArchivedForSpace = GeneratedColumn<bool>(
+    'is_archived_for_space',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_archived_for_space" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _businessMirrorMeta = const VerificationMeta(
+    'businessMirror',
+  );
+  @override
+  late final GeneratedColumn<bool> businessMirror = GeneratedColumn<bool>(
+    'business_mirror',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("business_mirror" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _savingsGoalIdMeta = const VerificationMeta(
+    'savingsGoalId',
+  );
+  @override
+  late final GeneratedColumn<String> savingsGoalId = GeneratedColumn<String>(
+    'savings_goal_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isWithdrawalMeta = const VerificationMeta(
+    'isWithdrawal',
+  );
+  @override
+  late final GeneratedColumn<bool> isWithdrawal = GeneratedColumn<bool>(
+    'is_withdrawal',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_withdrawal" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isSplitMeta = const VerificationMeta(
+    'isSplit',
+  );
+  @override
+  late final GeneratedColumn<bool> isSplit = GeneratedColumn<bool>(
+    'is_split',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_split" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _receiptIdMeta = const VerificationMeta(
+    'receiptId',
+  );
+  @override
+  late final GeneratedColumn<String> receiptId = GeneratedColumn<String>(
+    'receipt_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
+      GeneratedColumn<String>(
+        'sync_status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('pending'),
+      ).withConverter<SyncStatus>($TransactionsTable.$convertersyncStatus);
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    accountId,
+    linkedAccountId,
+    userId,
+    spaceId,
+    originalSpaceId,
+    bankTransactionId,
+    date,
+    amount,
+    originalCurrency,
+    originalAmount,
+    type,
+    bankCategory,
+    customCategoryId,
+    merchantName,
+    comment,
+    isUserEdited,
+    auditStatus,
+    isHiddenByCalendar,
+    hiddenUntilDate,
+    syncLockedStartedAt,
+    syncLockedDurationMs,
+    isArchivedForSpace,
+    businessMirror,
+    savingsGoalId,
+    isWithdrawal,
+    isSplit,
+    receiptId,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'transactions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TransactionDb> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('account_id')) {
+      context.handle(
+        _accountIdMeta,
+        accountId.isAcceptableOrUnknown(data['account_id']!, _accountIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_accountIdMeta);
+    }
+    if (data.containsKey('linked_account_id')) {
+      context.handle(
+        _linkedAccountIdMeta,
+        linkedAccountId.isAcceptableOrUnknown(
+          data['linked_account_id']!,
+          _linkedAccountIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('space_id')) {
+      context.handle(
+        _spaceIdMeta,
+        spaceId.isAcceptableOrUnknown(data['space_id']!, _spaceIdMeta),
+      );
+    }
+    if (data.containsKey('original_space_id')) {
+      context.handle(
+        _originalSpaceIdMeta,
+        originalSpaceId.isAcceptableOrUnknown(
+          data['original_space_id']!,
+          _originalSpaceIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('bank_transaction_id')) {
+      context.handle(
+        _bankTransactionIdMeta,
+        bankTransactionId.isAcceptableOrUnknown(
+          data['bank_transaction_id']!,
+          _bankTransactionIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('amount')) {
+      context.handle(
+        _amountMeta,
+        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('original_currency')) {
+      context.handle(
+        _originalCurrencyMeta,
+        originalCurrency.isAcceptableOrUnknown(
+          data['original_currency']!,
+          _originalCurrencyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('original_amount')) {
+      context.handle(
+        _originalAmountMeta,
+        originalAmount.isAcceptableOrUnknown(
+          data['original_amount']!,
+          _originalAmountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('bank_category')) {
+      context.handle(
+        _bankCategoryMeta,
+        bankCategory.isAcceptableOrUnknown(
+          data['bank_category']!,
+          _bankCategoryMeta,
+        ),
+      );
+    }
+    if (data.containsKey('custom_category_id')) {
+      context.handle(
+        _customCategoryIdMeta,
+        customCategoryId.isAcceptableOrUnknown(
+          data['custom_category_id']!,
+          _customCategoryIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('merchant_name')) {
+      context.handle(
+        _merchantNameMeta,
+        merchantName.isAcceptableOrUnknown(
+          data['merchant_name']!,
+          _merchantNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('comment')) {
+      context.handle(
+        _commentMeta,
+        comment.isAcceptableOrUnknown(data['comment']!, _commentMeta),
+      );
+    }
+    if (data.containsKey('is_user_edited')) {
+      context.handle(
+        _isUserEditedMeta,
+        isUserEdited.isAcceptableOrUnknown(
+          data['is_user_edited']!,
+          _isUserEditedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_hidden_by_calendar')) {
+      context.handle(
+        _isHiddenByCalendarMeta,
+        isHiddenByCalendar.isAcceptableOrUnknown(
+          data['is_hidden_by_calendar']!,
+          _isHiddenByCalendarMeta,
+        ),
+      );
+    }
+    if (data.containsKey('hidden_until_date')) {
+      context.handle(
+        _hiddenUntilDateMeta,
+        hiddenUntilDate.isAcceptableOrUnknown(
+          data['hidden_until_date']!,
+          _hiddenUntilDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sync_locked_started_at')) {
+      context.handle(
+        _syncLockedStartedAtMeta,
+        syncLockedStartedAt.isAcceptableOrUnknown(
+          data['sync_locked_started_at']!,
+          _syncLockedStartedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sync_locked_duration_ms')) {
+      context.handle(
+        _syncLockedDurationMsMeta,
+        syncLockedDurationMs.isAcceptableOrUnknown(
+          data['sync_locked_duration_ms']!,
+          _syncLockedDurationMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_archived_for_space')) {
+      context.handle(
+        _isArchivedForSpaceMeta,
+        isArchivedForSpace.isAcceptableOrUnknown(
+          data['is_archived_for_space']!,
+          _isArchivedForSpaceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('business_mirror')) {
+      context.handle(
+        _businessMirrorMeta,
+        businessMirror.isAcceptableOrUnknown(
+          data['business_mirror']!,
+          _businessMirrorMeta,
+        ),
+      );
+    }
+    if (data.containsKey('savings_goal_id')) {
+      context.handle(
+        _savingsGoalIdMeta,
+        savingsGoalId.isAcceptableOrUnknown(
+          data['savings_goal_id']!,
+          _savingsGoalIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_withdrawal')) {
+      context.handle(
+        _isWithdrawalMeta,
+        isWithdrawal.isAcceptableOrUnknown(
+          data['is_withdrawal']!,
+          _isWithdrawalMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_split')) {
+      context.handle(
+        _isSplitMeta,
+        isSplit.isAcceptableOrUnknown(data['is_split']!, _isSplitMeta),
+      );
+    }
+    if (data.containsKey('receipt_id')) {
+      context.handle(
+        _receiptIdMeta,
+        receiptId.isAcceptableOrUnknown(data['receipt_id']!, _receiptIdMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TransactionDb map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TransactionDb(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      accountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}account_id'],
+      )!,
+      linkedAccountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}linked_account_id'],
+      ),
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      spaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}space_id'],
+      ),
+      originalSpaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}original_space_id'],
+      ),
+      bankTransactionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bank_transaction_id'],
+      ),
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      )!,
+      amount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount'],
+      )!,
+      originalCurrency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}original_currency'],
+      ),
+      originalAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}original_amount'],
+      ),
+      type: $TransactionsTable.$convertertype.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}type'],
+        )!,
+      ),
+      bankCategory: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bank_category'],
+      ),
+      customCategoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_category_id'],
+      ),
+      merchantName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}merchant_name'],
+      ),
+      comment: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}comment'],
+      ),
+      isUserEdited: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_user_edited'],
+      )!,
+      auditStatus: $TransactionsTable.$converterauditStatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}audit_status'],
+        )!,
+      ),
+      isHiddenByCalendar: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_hidden_by_calendar'],
+      )!,
+      hiddenUntilDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}hidden_until_date'],
+      ),
+      syncLockedStartedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sync_locked_started_at'],
+      ),
+      syncLockedDurationMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sync_locked_duration_ms'],
+      ),
+      isArchivedForSpace: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_archived_for_space'],
+      )!,
+      businessMirror: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}business_mirror'],
+      )!,
+      savingsGoalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}savings_goal_id'],
+      ),
+      isWithdrawal: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_withdrawal'],
+      )!,
+      isSplit: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_split'],
+      )!,
+      receiptId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}receipt_id'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncStatus: $TransactionsTable.$convertersyncStatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}sync_status'],
+        )!,
+      ),
+    );
+  }
+
+  @override
+  $TransactionsTable createAlias(String alias) {
+    return $TransactionsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<TransactionType, String, String> $convertertype =
+      const EnumNameConverter<TransactionType>(TransactionType.values);
+  static JsonTypeConverter2<AuditStatus, String, String> $converterauditStatus =
+      const EnumNameConverter<AuditStatus>(AuditStatus.values);
+  static JsonTypeConverter2<SyncStatus, String, String> $convertersyncStatus =
+      const EnumNameConverter<SyncStatus>(SyncStatus.values);
+}
+
+class TransactionDb extends DataClass implements Insertable<TransactionDb> {
+  final String id;
+
+  /// Счёт-источник/приёмник. Боевой FK на accounts.
+  final String accountId;
+
+  /// Счёт-получатель (только для type = 'transfer').
+  final String? linkedAccountId;
+  final String userId;
+  final String? spaceId;
+
+  /// Пространство создания (для кросс-группового шеринга).
+  final String? originalSpaceId;
+
+  /// ID от банка (защита от дублей при Batch-импорте).
+  final String? bankTransactionId;
+
+  /// Точное время операции, строго UTC.
+  final DateTime date;
+
+  /// Сумма в копейках, всегда > 0. Направление задаёт type.
+  final int amount;
+  final String? originalCurrency;
+
+  /// Сумма в валюте операции (копейки/минорные единицы).
+  final int? originalAmount;
+  final TransactionType type;
+
+  /// Сырая категория от банка.
+  final String? bankCategory;
+
+  /// Итоговая категория. Боевой FK на categories.
+  final String? customCategoryId;
+  final String? merchantName;
+  final String? comment;
+
+  /// Запрещает авто-категоризации перезаписывать выбор пользователя.
+  final bool isUserEdited;
+  final AuditStatus auditStatus;
+
+  /// Режим секретности (подарки).
+  final bool isHiddenByCalendar;
+  final DateTime? hiddenUntilDate;
+
+  /// Значение SystemClock.elapsedRealtime() в момент создания.
+  final int? syncLockedStartedAt;
+
+  /// Длительность блокировки в мс.
+  final int? syncLockedDurationMs;
+  final bool isArchivedForSpace;
+
+  /// Зеркалирование в кастомную вкладку (микро-P&L).
+  final bool businessMirror;
+
+  /// Привязка к цели накопления (таблица появится в Этапе 12, поле уже есть).
+  final String? savingsGoalId;
+
+  /// Флаг изъятия из цели (игнорируется в P&L).
+  final bool isWithdrawal;
+
+  /// Флаг наличия сплитов (чеков/долгов).
+  final bool isSplit;
+
+  /// Связь с прикреплённым чеком (таблица появится в Этапе 16).
+  final String? receiptId;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final SyncStatus syncStatus;
+  const TransactionDb({
+    required this.id,
+    required this.accountId,
+    this.linkedAccountId,
+    required this.userId,
+    this.spaceId,
+    this.originalSpaceId,
+    this.bankTransactionId,
+    required this.date,
+    required this.amount,
+    this.originalCurrency,
+    this.originalAmount,
+    required this.type,
+    this.bankCategory,
+    this.customCategoryId,
+    this.merchantName,
+    this.comment,
+    required this.isUserEdited,
+    required this.auditStatus,
+    required this.isHiddenByCalendar,
+    this.hiddenUntilDate,
+    this.syncLockedStartedAt,
+    this.syncLockedDurationMs,
+    required this.isArchivedForSpace,
+    required this.businessMirror,
+    this.savingsGoalId,
+    required this.isWithdrawal,
+    required this.isSplit,
+    this.receiptId,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.syncStatus,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['account_id'] = Variable<String>(accountId);
+    if (!nullToAbsent || linkedAccountId != null) {
+      map['linked_account_id'] = Variable<String>(linkedAccountId);
+    }
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || spaceId != null) {
+      map['space_id'] = Variable<String>(spaceId);
+    }
+    if (!nullToAbsent || originalSpaceId != null) {
+      map['original_space_id'] = Variable<String>(originalSpaceId);
+    }
+    if (!nullToAbsent || bankTransactionId != null) {
+      map['bank_transaction_id'] = Variable<String>(bankTransactionId);
+    }
+    map['date'] = Variable<DateTime>(date);
+    map['amount'] = Variable<int>(amount);
+    if (!nullToAbsent || originalCurrency != null) {
+      map['original_currency'] = Variable<String>(originalCurrency);
+    }
+    if (!nullToAbsent || originalAmount != null) {
+      map['original_amount'] = Variable<int>(originalAmount);
+    }
+    {
+      map['type'] = Variable<String>(
+        $TransactionsTable.$convertertype.toSql(type),
+      );
+    }
+    if (!nullToAbsent || bankCategory != null) {
+      map['bank_category'] = Variable<String>(bankCategory);
+    }
+    if (!nullToAbsent || customCategoryId != null) {
+      map['custom_category_id'] = Variable<String>(customCategoryId);
+    }
+    if (!nullToAbsent || merchantName != null) {
+      map['merchant_name'] = Variable<String>(merchantName);
+    }
+    if (!nullToAbsent || comment != null) {
+      map['comment'] = Variable<String>(comment);
+    }
+    map['is_user_edited'] = Variable<bool>(isUserEdited);
+    {
+      map['audit_status'] = Variable<String>(
+        $TransactionsTable.$converterauditStatus.toSql(auditStatus),
+      );
+    }
+    map['is_hidden_by_calendar'] = Variable<bool>(isHiddenByCalendar);
+    if (!nullToAbsent || hiddenUntilDate != null) {
+      map['hidden_until_date'] = Variable<DateTime>(hiddenUntilDate);
+    }
+    if (!nullToAbsent || syncLockedStartedAt != null) {
+      map['sync_locked_started_at'] = Variable<int>(syncLockedStartedAt);
+    }
+    if (!nullToAbsent || syncLockedDurationMs != null) {
+      map['sync_locked_duration_ms'] = Variable<int>(syncLockedDurationMs);
+    }
+    map['is_archived_for_space'] = Variable<bool>(isArchivedForSpace);
+    map['business_mirror'] = Variable<bool>(businessMirror);
+    if (!nullToAbsent || savingsGoalId != null) {
+      map['savings_goal_id'] = Variable<String>(savingsGoalId);
+    }
+    map['is_withdrawal'] = Variable<bool>(isWithdrawal);
+    map['is_split'] = Variable<bool>(isSplit);
+    if (!nullToAbsent || receiptId != null) {
+      map['receipt_id'] = Variable<String>(receiptId);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    {
+      map['sync_status'] = Variable<String>(
+        $TransactionsTable.$convertersyncStatus.toSql(syncStatus),
+      );
+    }
+    return map;
+  }
+
+  TransactionsCompanion toCompanion(bool nullToAbsent) {
+    return TransactionsCompanion(
+      id: Value(id),
+      accountId: Value(accountId),
+      linkedAccountId: linkedAccountId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(linkedAccountId),
+      userId: Value(userId),
+      spaceId: spaceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(spaceId),
+      originalSpaceId: originalSpaceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(originalSpaceId),
+      bankTransactionId: bankTransactionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bankTransactionId),
+      date: Value(date),
+      amount: Value(amount),
+      originalCurrency: originalCurrency == null && nullToAbsent
+          ? const Value.absent()
+          : Value(originalCurrency),
+      originalAmount: originalAmount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(originalAmount),
+      type: Value(type),
+      bankCategory: bankCategory == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bankCategory),
+      customCategoryId: customCategoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customCategoryId),
+      merchantName: merchantName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(merchantName),
+      comment: comment == null && nullToAbsent
+          ? const Value.absent()
+          : Value(comment),
+      isUserEdited: Value(isUserEdited),
+      auditStatus: Value(auditStatus),
+      isHiddenByCalendar: Value(isHiddenByCalendar),
+      hiddenUntilDate: hiddenUntilDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(hiddenUntilDate),
+      syncLockedStartedAt: syncLockedStartedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncLockedStartedAt),
+      syncLockedDurationMs: syncLockedDurationMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncLockedDurationMs),
+      isArchivedForSpace: Value(isArchivedForSpace),
+      businessMirror: Value(businessMirror),
+      savingsGoalId: savingsGoalId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(savingsGoalId),
+      isWithdrawal: Value(isWithdrawal),
+      isSplit: Value(isSplit),
+      receiptId: receiptId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(receiptId),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncStatus: Value(syncStatus),
+    );
+  }
+
+  factory TransactionDb.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TransactionDb(
+      id: serializer.fromJson<String>(json['id']),
+      accountId: serializer.fromJson<String>(json['accountId']),
+      linkedAccountId: serializer.fromJson<String?>(json['linkedAccountId']),
+      userId: serializer.fromJson<String>(json['userId']),
+      spaceId: serializer.fromJson<String?>(json['spaceId']),
+      originalSpaceId: serializer.fromJson<String?>(json['originalSpaceId']),
+      bankTransactionId: serializer.fromJson<String?>(
+        json['bankTransactionId'],
+      ),
+      date: serializer.fromJson<DateTime>(json['date']),
+      amount: serializer.fromJson<int>(json['amount']),
+      originalCurrency: serializer.fromJson<String?>(json['originalCurrency']),
+      originalAmount: serializer.fromJson<int?>(json['originalAmount']),
+      type: $TransactionsTable.$convertertype.fromJson(
+        serializer.fromJson<String>(json['type']),
+      ),
+      bankCategory: serializer.fromJson<String?>(json['bankCategory']),
+      customCategoryId: serializer.fromJson<String?>(json['customCategoryId']),
+      merchantName: serializer.fromJson<String?>(json['merchantName']),
+      comment: serializer.fromJson<String?>(json['comment']),
+      isUserEdited: serializer.fromJson<bool>(json['isUserEdited']),
+      auditStatus: $TransactionsTable.$converterauditStatus.fromJson(
+        serializer.fromJson<String>(json['auditStatus']),
+      ),
+      isHiddenByCalendar: serializer.fromJson<bool>(json['isHiddenByCalendar']),
+      hiddenUntilDate: serializer.fromJson<DateTime?>(json['hiddenUntilDate']),
+      syncLockedStartedAt: serializer.fromJson<int?>(
+        json['syncLockedStartedAt'],
+      ),
+      syncLockedDurationMs: serializer.fromJson<int?>(
+        json['syncLockedDurationMs'],
+      ),
+      isArchivedForSpace: serializer.fromJson<bool>(json['isArchivedForSpace']),
+      businessMirror: serializer.fromJson<bool>(json['businessMirror']),
+      savingsGoalId: serializer.fromJson<String?>(json['savingsGoalId']),
+      isWithdrawal: serializer.fromJson<bool>(json['isWithdrawal']),
+      isSplit: serializer.fromJson<bool>(json['isSplit']),
+      receiptId: serializer.fromJson<String?>(json['receiptId']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncStatus: $TransactionsTable.$convertersyncStatus.fromJson(
+        serializer.fromJson<String>(json['syncStatus']),
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'accountId': serializer.toJson<String>(accountId),
+      'linkedAccountId': serializer.toJson<String?>(linkedAccountId),
+      'userId': serializer.toJson<String>(userId),
+      'spaceId': serializer.toJson<String?>(spaceId),
+      'originalSpaceId': serializer.toJson<String?>(originalSpaceId),
+      'bankTransactionId': serializer.toJson<String?>(bankTransactionId),
+      'date': serializer.toJson<DateTime>(date),
+      'amount': serializer.toJson<int>(amount),
+      'originalCurrency': serializer.toJson<String?>(originalCurrency),
+      'originalAmount': serializer.toJson<int?>(originalAmount),
+      'type': serializer.toJson<String>(
+        $TransactionsTable.$convertertype.toJson(type),
+      ),
+      'bankCategory': serializer.toJson<String?>(bankCategory),
+      'customCategoryId': serializer.toJson<String?>(customCategoryId),
+      'merchantName': serializer.toJson<String?>(merchantName),
+      'comment': serializer.toJson<String?>(comment),
+      'isUserEdited': serializer.toJson<bool>(isUserEdited),
+      'auditStatus': serializer.toJson<String>(
+        $TransactionsTable.$converterauditStatus.toJson(auditStatus),
+      ),
+      'isHiddenByCalendar': serializer.toJson<bool>(isHiddenByCalendar),
+      'hiddenUntilDate': serializer.toJson<DateTime?>(hiddenUntilDate),
+      'syncLockedStartedAt': serializer.toJson<int?>(syncLockedStartedAt),
+      'syncLockedDurationMs': serializer.toJson<int?>(syncLockedDurationMs),
+      'isArchivedForSpace': serializer.toJson<bool>(isArchivedForSpace),
+      'businessMirror': serializer.toJson<bool>(businessMirror),
+      'savingsGoalId': serializer.toJson<String?>(savingsGoalId),
+      'isWithdrawal': serializer.toJson<bool>(isWithdrawal),
+      'isSplit': serializer.toJson<bool>(isSplit),
+      'receiptId': serializer.toJson<String?>(receiptId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncStatus': serializer.toJson<String>(
+        $TransactionsTable.$convertersyncStatus.toJson(syncStatus),
+      ),
+    };
+  }
+
+  TransactionDb copyWith({
+    String? id,
+    String? accountId,
+    Value<String?> linkedAccountId = const Value.absent(),
+    String? userId,
+    Value<String?> spaceId = const Value.absent(),
+    Value<String?> originalSpaceId = const Value.absent(),
+    Value<String?> bankTransactionId = const Value.absent(),
+    DateTime? date,
+    int? amount,
+    Value<String?> originalCurrency = const Value.absent(),
+    Value<int?> originalAmount = const Value.absent(),
+    TransactionType? type,
+    Value<String?> bankCategory = const Value.absent(),
+    Value<String?> customCategoryId = const Value.absent(),
+    Value<String?> merchantName = const Value.absent(),
+    Value<String?> comment = const Value.absent(),
+    bool? isUserEdited,
+    AuditStatus? auditStatus,
+    bool? isHiddenByCalendar,
+    Value<DateTime?> hiddenUntilDate = const Value.absent(),
+    Value<int?> syncLockedStartedAt = const Value.absent(),
+    Value<int?> syncLockedDurationMs = const Value.absent(),
+    bool? isArchivedForSpace,
+    bool? businessMirror,
+    Value<String?> savingsGoalId = const Value.absent(),
+    bool? isWithdrawal,
+    bool? isSplit,
+    Value<String?> receiptId = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    SyncStatus? syncStatus,
+  }) => TransactionDb(
+    id: id ?? this.id,
+    accountId: accountId ?? this.accountId,
+    linkedAccountId: linkedAccountId.present
+        ? linkedAccountId.value
+        : this.linkedAccountId,
+    userId: userId ?? this.userId,
+    spaceId: spaceId.present ? spaceId.value : this.spaceId,
+    originalSpaceId: originalSpaceId.present
+        ? originalSpaceId.value
+        : this.originalSpaceId,
+    bankTransactionId: bankTransactionId.present
+        ? bankTransactionId.value
+        : this.bankTransactionId,
+    date: date ?? this.date,
+    amount: amount ?? this.amount,
+    originalCurrency: originalCurrency.present
+        ? originalCurrency.value
+        : this.originalCurrency,
+    originalAmount: originalAmount.present
+        ? originalAmount.value
+        : this.originalAmount,
+    type: type ?? this.type,
+    bankCategory: bankCategory.present ? bankCategory.value : this.bankCategory,
+    customCategoryId: customCategoryId.present
+        ? customCategoryId.value
+        : this.customCategoryId,
+    merchantName: merchantName.present ? merchantName.value : this.merchantName,
+    comment: comment.present ? comment.value : this.comment,
+    isUserEdited: isUserEdited ?? this.isUserEdited,
+    auditStatus: auditStatus ?? this.auditStatus,
+    isHiddenByCalendar: isHiddenByCalendar ?? this.isHiddenByCalendar,
+    hiddenUntilDate: hiddenUntilDate.present
+        ? hiddenUntilDate.value
+        : this.hiddenUntilDate,
+    syncLockedStartedAt: syncLockedStartedAt.present
+        ? syncLockedStartedAt.value
+        : this.syncLockedStartedAt,
+    syncLockedDurationMs: syncLockedDurationMs.present
+        ? syncLockedDurationMs.value
+        : this.syncLockedDurationMs,
+    isArchivedForSpace: isArchivedForSpace ?? this.isArchivedForSpace,
+    businessMirror: businessMirror ?? this.businessMirror,
+    savingsGoalId: savingsGoalId.present
+        ? savingsGoalId.value
+        : this.savingsGoalId,
+    isWithdrawal: isWithdrawal ?? this.isWithdrawal,
+    isSplit: isSplit ?? this.isSplit,
+    receiptId: receiptId.present ? receiptId.value : this.receiptId,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+  );
+  TransactionDb copyWithCompanion(TransactionsCompanion data) {
+    return TransactionDb(
+      id: data.id.present ? data.id.value : this.id,
+      accountId: data.accountId.present ? data.accountId.value : this.accountId,
+      linkedAccountId: data.linkedAccountId.present
+          ? data.linkedAccountId.value
+          : this.linkedAccountId,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
+      originalSpaceId: data.originalSpaceId.present
+          ? data.originalSpaceId.value
+          : this.originalSpaceId,
+      bankTransactionId: data.bankTransactionId.present
+          ? data.bankTransactionId.value
+          : this.bankTransactionId,
+      date: data.date.present ? data.date.value : this.date,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      originalCurrency: data.originalCurrency.present
+          ? data.originalCurrency.value
+          : this.originalCurrency,
+      originalAmount: data.originalAmount.present
+          ? data.originalAmount.value
+          : this.originalAmount,
+      type: data.type.present ? data.type.value : this.type,
+      bankCategory: data.bankCategory.present
+          ? data.bankCategory.value
+          : this.bankCategory,
+      customCategoryId: data.customCategoryId.present
+          ? data.customCategoryId.value
+          : this.customCategoryId,
+      merchantName: data.merchantName.present
+          ? data.merchantName.value
+          : this.merchantName,
+      comment: data.comment.present ? data.comment.value : this.comment,
+      isUserEdited: data.isUserEdited.present
+          ? data.isUserEdited.value
+          : this.isUserEdited,
+      auditStatus: data.auditStatus.present
+          ? data.auditStatus.value
+          : this.auditStatus,
+      isHiddenByCalendar: data.isHiddenByCalendar.present
+          ? data.isHiddenByCalendar.value
+          : this.isHiddenByCalendar,
+      hiddenUntilDate: data.hiddenUntilDate.present
+          ? data.hiddenUntilDate.value
+          : this.hiddenUntilDate,
+      syncLockedStartedAt: data.syncLockedStartedAt.present
+          ? data.syncLockedStartedAt.value
+          : this.syncLockedStartedAt,
+      syncLockedDurationMs: data.syncLockedDurationMs.present
+          ? data.syncLockedDurationMs.value
+          : this.syncLockedDurationMs,
+      isArchivedForSpace: data.isArchivedForSpace.present
+          ? data.isArchivedForSpace.value
+          : this.isArchivedForSpace,
+      businessMirror: data.businessMirror.present
+          ? data.businessMirror.value
+          : this.businessMirror,
+      savingsGoalId: data.savingsGoalId.present
+          ? data.savingsGoalId.value
+          : this.savingsGoalId,
+      isWithdrawal: data.isWithdrawal.present
+          ? data.isWithdrawal.value
+          : this.isWithdrawal,
+      isSplit: data.isSplit.present ? data.isSplit.value : this.isSplit,
+      receiptId: data.receiptId.present ? data.receiptId.value : this.receiptId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransactionDb(')
+          ..write('id: $id, ')
+          ..write('accountId: $accountId, ')
+          ..write('linkedAccountId: $linkedAccountId, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('originalSpaceId: $originalSpaceId, ')
+          ..write('bankTransactionId: $bankTransactionId, ')
+          ..write('date: $date, ')
+          ..write('amount: $amount, ')
+          ..write('originalCurrency: $originalCurrency, ')
+          ..write('originalAmount: $originalAmount, ')
+          ..write('type: $type, ')
+          ..write('bankCategory: $bankCategory, ')
+          ..write('customCategoryId: $customCategoryId, ')
+          ..write('merchantName: $merchantName, ')
+          ..write('comment: $comment, ')
+          ..write('isUserEdited: $isUserEdited, ')
+          ..write('auditStatus: $auditStatus, ')
+          ..write('isHiddenByCalendar: $isHiddenByCalendar, ')
+          ..write('hiddenUntilDate: $hiddenUntilDate, ')
+          ..write('syncLockedStartedAt: $syncLockedStartedAt, ')
+          ..write('syncLockedDurationMs: $syncLockedDurationMs, ')
+          ..write('isArchivedForSpace: $isArchivedForSpace, ')
+          ..write('businessMirror: $businessMirror, ')
+          ..write('savingsGoalId: $savingsGoalId, ')
+          ..write('isWithdrawal: $isWithdrawal, ')
+          ..write('isSplit: $isSplit, ')
+          ..write('receiptId: $receiptId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    id,
+    accountId,
+    linkedAccountId,
+    userId,
+    spaceId,
+    originalSpaceId,
+    bankTransactionId,
+    date,
+    amount,
+    originalCurrency,
+    originalAmount,
+    type,
+    bankCategory,
+    customCategoryId,
+    merchantName,
+    comment,
+    isUserEdited,
+    auditStatus,
+    isHiddenByCalendar,
+    hiddenUntilDate,
+    syncLockedStartedAt,
+    syncLockedDurationMs,
+    isArchivedForSpace,
+    businessMirror,
+    savingsGoalId,
+    isWithdrawal,
+    isSplit,
+    receiptId,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TransactionDb &&
+          other.id == this.id &&
+          other.accountId == this.accountId &&
+          other.linkedAccountId == this.linkedAccountId &&
+          other.userId == this.userId &&
+          other.spaceId == this.spaceId &&
+          other.originalSpaceId == this.originalSpaceId &&
+          other.bankTransactionId == this.bankTransactionId &&
+          other.date == this.date &&
+          other.amount == this.amount &&
+          other.originalCurrency == this.originalCurrency &&
+          other.originalAmount == this.originalAmount &&
+          other.type == this.type &&
+          other.bankCategory == this.bankCategory &&
+          other.customCategoryId == this.customCategoryId &&
+          other.merchantName == this.merchantName &&
+          other.comment == this.comment &&
+          other.isUserEdited == this.isUserEdited &&
+          other.auditStatus == this.auditStatus &&
+          other.isHiddenByCalendar == this.isHiddenByCalendar &&
+          other.hiddenUntilDate == this.hiddenUntilDate &&
+          other.syncLockedStartedAt == this.syncLockedStartedAt &&
+          other.syncLockedDurationMs == this.syncLockedDurationMs &&
+          other.isArchivedForSpace == this.isArchivedForSpace &&
+          other.businessMirror == this.businessMirror &&
+          other.savingsGoalId == this.savingsGoalId &&
+          other.isWithdrawal == this.isWithdrawal &&
+          other.isSplit == this.isSplit &&
+          other.receiptId == this.receiptId &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncStatus == this.syncStatus);
+}
+
+class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
+  final Value<String> id;
+  final Value<String> accountId;
+  final Value<String?> linkedAccountId;
+  final Value<String> userId;
+  final Value<String?> spaceId;
+  final Value<String?> originalSpaceId;
+  final Value<String?> bankTransactionId;
+  final Value<DateTime> date;
+  final Value<int> amount;
+  final Value<String?> originalCurrency;
+  final Value<int?> originalAmount;
+  final Value<TransactionType> type;
+  final Value<String?> bankCategory;
+  final Value<String?> customCategoryId;
+  final Value<String?> merchantName;
+  final Value<String?> comment;
+  final Value<bool> isUserEdited;
+  final Value<AuditStatus> auditStatus;
+  final Value<bool> isHiddenByCalendar;
+  final Value<DateTime?> hiddenUntilDate;
+  final Value<int?> syncLockedStartedAt;
+  final Value<int?> syncLockedDurationMs;
+  final Value<bool> isArchivedForSpace;
+  final Value<bool> businessMirror;
+  final Value<String?> savingsGoalId;
+  final Value<bool> isWithdrawal;
+  final Value<bool> isSplit;
+  final Value<String?> receiptId;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<SyncStatus> syncStatus;
+  final Value<int> rowid;
+  const TransactionsCompanion({
+    this.id = const Value.absent(),
+    this.accountId = const Value.absent(),
+    this.linkedAccountId = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.spaceId = const Value.absent(),
+    this.originalSpaceId = const Value.absent(),
+    this.bankTransactionId = const Value.absent(),
+    this.date = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.originalCurrency = const Value.absent(),
+    this.originalAmount = const Value.absent(),
+    this.type = const Value.absent(),
+    this.bankCategory = const Value.absent(),
+    this.customCategoryId = const Value.absent(),
+    this.merchantName = const Value.absent(),
+    this.comment = const Value.absent(),
+    this.isUserEdited = const Value.absent(),
+    this.auditStatus = const Value.absent(),
+    this.isHiddenByCalendar = const Value.absent(),
+    this.hiddenUntilDate = const Value.absent(),
+    this.syncLockedStartedAt = const Value.absent(),
+    this.syncLockedDurationMs = const Value.absent(),
+    this.isArchivedForSpace = const Value.absent(),
+    this.businessMirror = const Value.absent(),
+    this.savingsGoalId = const Value.absent(),
+    this.isWithdrawal = const Value.absent(),
+    this.isSplit = const Value.absent(),
+    this.receiptId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TransactionsCompanion.insert({
+    required String id,
+    required String accountId,
+    this.linkedAccountId = const Value.absent(),
+    required String userId,
+    this.spaceId = const Value.absent(),
+    this.originalSpaceId = const Value.absent(),
+    this.bankTransactionId = const Value.absent(),
+    required DateTime date,
+    required int amount,
+    this.originalCurrency = const Value.absent(),
+    this.originalAmount = const Value.absent(),
+    required TransactionType type,
+    this.bankCategory = const Value.absent(),
+    this.customCategoryId = const Value.absent(),
+    this.merchantName = const Value.absent(),
+    this.comment = const Value.absent(),
+    this.isUserEdited = const Value.absent(),
+    this.auditStatus = const Value.absent(),
+    this.isHiddenByCalendar = const Value.absent(),
+    this.hiddenUntilDate = const Value.absent(),
+    this.syncLockedStartedAt = const Value.absent(),
+    this.syncLockedDurationMs = const Value.absent(),
+    this.isArchivedForSpace = const Value.absent(),
+    this.businessMirror = const Value.absent(),
+    this.savingsGoalId = const Value.absent(),
+    this.isWithdrawal = const Value.absent(),
+    this.isSplit = const Value.absent(),
+    this.receiptId = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       accountId = Value(accountId),
+       userId = Value(userId),
+       date = Value(date),
+       amount = Value(amount),
+       type = Value(type),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<TransactionDb> custom({
+    Expression<String>? id,
+    Expression<String>? accountId,
+    Expression<String>? linkedAccountId,
+    Expression<String>? userId,
+    Expression<String>? spaceId,
+    Expression<String>? originalSpaceId,
+    Expression<String>? bankTransactionId,
+    Expression<DateTime>? date,
+    Expression<int>? amount,
+    Expression<String>? originalCurrency,
+    Expression<int>? originalAmount,
+    Expression<String>? type,
+    Expression<String>? bankCategory,
+    Expression<String>? customCategoryId,
+    Expression<String>? merchantName,
+    Expression<String>? comment,
+    Expression<bool>? isUserEdited,
+    Expression<String>? auditStatus,
+    Expression<bool>? isHiddenByCalendar,
+    Expression<DateTime>? hiddenUntilDate,
+    Expression<int>? syncLockedStartedAt,
+    Expression<int>? syncLockedDurationMs,
+    Expression<bool>? isArchivedForSpace,
+    Expression<bool>? businessMirror,
+    Expression<String>? savingsGoalId,
+    Expression<bool>? isWithdrawal,
+    Expression<bool>? isSplit,
+    Expression<String>? receiptId,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? syncStatus,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (accountId != null) 'account_id': accountId,
+      if (linkedAccountId != null) 'linked_account_id': linkedAccountId,
+      if (userId != null) 'user_id': userId,
+      if (spaceId != null) 'space_id': spaceId,
+      if (originalSpaceId != null) 'original_space_id': originalSpaceId,
+      if (bankTransactionId != null) 'bank_transaction_id': bankTransactionId,
+      if (date != null) 'date': date,
+      if (amount != null) 'amount': amount,
+      if (originalCurrency != null) 'original_currency': originalCurrency,
+      if (originalAmount != null) 'original_amount': originalAmount,
+      if (type != null) 'type': type,
+      if (bankCategory != null) 'bank_category': bankCategory,
+      if (customCategoryId != null) 'custom_category_id': customCategoryId,
+      if (merchantName != null) 'merchant_name': merchantName,
+      if (comment != null) 'comment': comment,
+      if (isUserEdited != null) 'is_user_edited': isUserEdited,
+      if (auditStatus != null) 'audit_status': auditStatus,
+      if (isHiddenByCalendar != null)
+        'is_hidden_by_calendar': isHiddenByCalendar,
+      if (hiddenUntilDate != null) 'hidden_until_date': hiddenUntilDate,
+      if (syncLockedStartedAt != null)
+        'sync_locked_started_at': syncLockedStartedAt,
+      if (syncLockedDurationMs != null)
+        'sync_locked_duration_ms': syncLockedDurationMs,
+      if (isArchivedForSpace != null)
+        'is_archived_for_space': isArchivedForSpace,
+      if (businessMirror != null) 'business_mirror': businessMirror,
+      if (savingsGoalId != null) 'savings_goal_id': savingsGoalId,
+      if (isWithdrawal != null) 'is_withdrawal': isWithdrawal,
+      if (isSplit != null) 'is_split': isSplit,
+      if (receiptId != null) 'receipt_id': receiptId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TransactionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? accountId,
+    Value<String?>? linkedAccountId,
+    Value<String>? userId,
+    Value<String?>? spaceId,
+    Value<String?>? originalSpaceId,
+    Value<String?>? bankTransactionId,
+    Value<DateTime>? date,
+    Value<int>? amount,
+    Value<String?>? originalCurrency,
+    Value<int?>? originalAmount,
+    Value<TransactionType>? type,
+    Value<String?>? bankCategory,
+    Value<String?>? customCategoryId,
+    Value<String?>? merchantName,
+    Value<String?>? comment,
+    Value<bool>? isUserEdited,
+    Value<AuditStatus>? auditStatus,
+    Value<bool>? isHiddenByCalendar,
+    Value<DateTime?>? hiddenUntilDate,
+    Value<int?>? syncLockedStartedAt,
+    Value<int?>? syncLockedDurationMs,
+    Value<bool>? isArchivedForSpace,
+    Value<bool>? businessMirror,
+    Value<String?>? savingsGoalId,
+    Value<bool>? isWithdrawal,
+    Value<bool>? isSplit,
+    Value<String?>? receiptId,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<SyncStatus>? syncStatus,
+    Value<int>? rowid,
+  }) {
+    return TransactionsCompanion(
+      id: id ?? this.id,
+      accountId: accountId ?? this.accountId,
+      linkedAccountId: linkedAccountId ?? this.linkedAccountId,
+      userId: userId ?? this.userId,
+      spaceId: spaceId ?? this.spaceId,
+      originalSpaceId: originalSpaceId ?? this.originalSpaceId,
+      bankTransactionId: bankTransactionId ?? this.bankTransactionId,
+      date: date ?? this.date,
+      amount: amount ?? this.amount,
+      originalCurrency: originalCurrency ?? this.originalCurrency,
+      originalAmount: originalAmount ?? this.originalAmount,
+      type: type ?? this.type,
+      bankCategory: bankCategory ?? this.bankCategory,
+      customCategoryId: customCategoryId ?? this.customCategoryId,
+      merchantName: merchantName ?? this.merchantName,
+      comment: comment ?? this.comment,
+      isUserEdited: isUserEdited ?? this.isUserEdited,
+      auditStatus: auditStatus ?? this.auditStatus,
+      isHiddenByCalendar: isHiddenByCalendar ?? this.isHiddenByCalendar,
+      hiddenUntilDate: hiddenUntilDate ?? this.hiddenUntilDate,
+      syncLockedStartedAt: syncLockedStartedAt ?? this.syncLockedStartedAt,
+      syncLockedDurationMs: syncLockedDurationMs ?? this.syncLockedDurationMs,
+      isArchivedForSpace: isArchivedForSpace ?? this.isArchivedForSpace,
+      businessMirror: businessMirror ?? this.businessMirror,
+      savingsGoalId: savingsGoalId ?? this.savingsGoalId,
+      isWithdrawal: isWithdrawal ?? this.isWithdrawal,
+      isSplit: isSplit ?? this.isSplit,
+      receiptId: receiptId ?? this.receiptId,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (accountId.present) {
+      map['account_id'] = Variable<String>(accountId.value);
+    }
+    if (linkedAccountId.present) {
+      map['linked_account_id'] = Variable<String>(linkedAccountId.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (spaceId.present) {
+      map['space_id'] = Variable<String>(spaceId.value);
+    }
+    if (originalSpaceId.present) {
+      map['original_space_id'] = Variable<String>(originalSpaceId.value);
+    }
+    if (bankTransactionId.present) {
+      map['bank_transaction_id'] = Variable<String>(bankTransactionId.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<int>(amount.value);
+    }
+    if (originalCurrency.present) {
+      map['original_currency'] = Variable<String>(originalCurrency.value);
+    }
+    if (originalAmount.present) {
+      map['original_amount'] = Variable<int>(originalAmount.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(
+        $TransactionsTable.$convertertype.toSql(type.value),
+      );
+    }
+    if (bankCategory.present) {
+      map['bank_category'] = Variable<String>(bankCategory.value);
+    }
+    if (customCategoryId.present) {
+      map['custom_category_id'] = Variable<String>(customCategoryId.value);
+    }
+    if (merchantName.present) {
+      map['merchant_name'] = Variable<String>(merchantName.value);
+    }
+    if (comment.present) {
+      map['comment'] = Variable<String>(comment.value);
+    }
+    if (isUserEdited.present) {
+      map['is_user_edited'] = Variable<bool>(isUserEdited.value);
+    }
+    if (auditStatus.present) {
+      map['audit_status'] = Variable<String>(
+        $TransactionsTable.$converterauditStatus.toSql(auditStatus.value),
+      );
+    }
+    if (isHiddenByCalendar.present) {
+      map['is_hidden_by_calendar'] = Variable<bool>(isHiddenByCalendar.value);
+    }
+    if (hiddenUntilDate.present) {
+      map['hidden_until_date'] = Variable<DateTime>(hiddenUntilDate.value);
+    }
+    if (syncLockedStartedAt.present) {
+      map['sync_locked_started_at'] = Variable<int>(syncLockedStartedAt.value);
+    }
+    if (syncLockedDurationMs.present) {
+      map['sync_locked_duration_ms'] = Variable<int>(
+        syncLockedDurationMs.value,
+      );
+    }
+    if (isArchivedForSpace.present) {
+      map['is_archived_for_space'] = Variable<bool>(isArchivedForSpace.value);
+    }
+    if (businessMirror.present) {
+      map['business_mirror'] = Variable<bool>(businessMirror.value);
+    }
+    if (savingsGoalId.present) {
+      map['savings_goal_id'] = Variable<String>(savingsGoalId.value);
+    }
+    if (isWithdrawal.present) {
+      map['is_withdrawal'] = Variable<bool>(isWithdrawal.value);
+    }
+    if (isSplit.present) {
+      map['is_split'] = Variable<bool>(isSplit.value);
+    }
+    if (receiptId.present) {
+      map['receipt_id'] = Variable<String>(receiptId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(
+        $TransactionsTable.$convertersyncStatus.toSql(syncStatus.value),
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransactionsCompanion(')
+          ..write('id: $id, ')
+          ..write('accountId: $accountId, ')
+          ..write('linkedAccountId: $linkedAccountId, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('originalSpaceId: $originalSpaceId, ')
+          ..write('bankTransactionId: $bankTransactionId, ')
+          ..write('date: $date, ')
+          ..write('amount: $amount, ')
+          ..write('originalCurrency: $originalCurrency, ')
+          ..write('originalAmount: $originalAmount, ')
+          ..write('type: $type, ')
+          ..write('bankCategory: $bankCategory, ')
+          ..write('customCategoryId: $customCategoryId, ')
+          ..write('merchantName: $merchantName, ')
+          ..write('comment: $comment, ')
+          ..write('isUserEdited: $isUserEdited, ')
+          ..write('auditStatus: $auditStatus, ')
+          ..write('isHiddenByCalendar: $isHiddenByCalendar, ')
+          ..write('hiddenUntilDate: $hiddenUntilDate, ')
+          ..write('syncLockedStartedAt: $syncLockedStartedAt, ')
+          ..write('syncLockedDurationMs: $syncLockedDurationMs, ')
+          ..write('isArchivedForSpace: $isArchivedForSpace, ')
+          ..write('businessMirror: $businessMirror, ')
+          ..write('savingsGoalId: $savingsGoalId, ')
+          ..write('isWithdrawal: $isWithdrawal, ')
+          ..write('isSplit: $isSplit, ')
+          ..write('receiptId: $receiptId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TransactionSplitsTable extends TransactionSplits
+    with TableInfo<$TransactionSplitsTable, TransactionSplitDb> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TransactionSplitsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _transactionIdMeta = const VerificationMeta(
+    'transactionId',
+  );
+  @override
+  late final GeneratedColumn<String> transactionId = GeneratedColumn<String>(
+    'transaction_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES transactions (id)',
+    ),
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+    'category_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES categories (id)',
+    ),
+  );
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<int> amount = GeneratedColumn<int>(
+    'amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
+      GeneratedColumn<String>(
+        'sync_status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('pending'),
+      ).withConverter<SyncStatus>($TransactionSplitsTable.$convertersyncStatus);
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    transactionId,
+    categoryId,
+    amount,
+    description,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'transaction_splits';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TransactionSplitDb> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('transaction_id')) {
+      context.handle(
+        _transactionIdMeta,
+        transactionId.isAcceptableOrUnknown(
+          data['transaction_id']!,
+          _transactionIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_transactionIdMeta);
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryIdMeta);
+    }
+    if (data.containsKey('amount')) {
+      context.handle(
+        _amountMeta,
+        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TransactionSplitDb map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TransactionSplitDb(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      transactionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transaction_id'],
+      )!,
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_id'],
+      )!,
+      amount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncStatus: $TransactionSplitsTable.$convertersyncStatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}sync_status'],
+        )!,
+      ),
+    );
+  }
+
+  @override
+  $TransactionSplitsTable createAlias(String alias) {
+    return $TransactionSplitsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<SyncStatus, String, String> $convertersyncStatus =
+      const EnumNameConverter<SyncStatus>(SyncStatus.values);
+}
+
+class TransactionSplitDb extends DataClass
+    implements Insertable<TransactionSplitDb> {
+  final String id;
+  final String transactionId;
+  final String categoryId;
+
+  /// Сумма части в копейках.
+  final int amount;
+  final String? description;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final SyncStatus syncStatus;
+  const TransactionSplitDb({
+    required this.id,
+    required this.transactionId,
+    required this.categoryId,
+    required this.amount,
+    this.description,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.syncStatus,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['transaction_id'] = Variable<String>(transactionId);
+    map['category_id'] = Variable<String>(categoryId);
+    map['amount'] = Variable<int>(amount);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    {
+      map['sync_status'] = Variable<String>(
+        $TransactionSplitsTable.$convertersyncStatus.toSql(syncStatus),
+      );
+    }
+    return map;
+  }
+
+  TransactionSplitsCompanion toCompanion(bool nullToAbsent) {
+    return TransactionSplitsCompanion(
+      id: Value(id),
+      transactionId: Value(transactionId),
+      categoryId: Value(categoryId),
+      amount: Value(amount),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncStatus: Value(syncStatus),
+    );
+  }
+
+  factory TransactionSplitDb.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TransactionSplitDb(
+      id: serializer.fromJson<String>(json['id']),
+      transactionId: serializer.fromJson<String>(json['transactionId']),
+      categoryId: serializer.fromJson<String>(json['categoryId']),
+      amount: serializer.fromJson<int>(json['amount']),
+      description: serializer.fromJson<String?>(json['description']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncStatus: $TransactionSplitsTable.$convertersyncStatus.fromJson(
+        serializer.fromJson<String>(json['syncStatus']),
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'transactionId': serializer.toJson<String>(transactionId),
+      'categoryId': serializer.toJson<String>(categoryId),
+      'amount': serializer.toJson<int>(amount),
+      'description': serializer.toJson<String?>(description),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncStatus': serializer.toJson<String>(
+        $TransactionSplitsTable.$convertersyncStatus.toJson(syncStatus),
+      ),
+    };
+  }
+
+  TransactionSplitDb copyWith({
+    String? id,
+    String? transactionId,
+    String? categoryId,
+    int? amount,
+    Value<String?> description = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    SyncStatus? syncStatus,
+  }) => TransactionSplitDb(
+    id: id ?? this.id,
+    transactionId: transactionId ?? this.transactionId,
+    categoryId: categoryId ?? this.categoryId,
+    amount: amount ?? this.amount,
+    description: description.present ? description.value : this.description,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+  );
+  TransactionSplitDb copyWithCompanion(TransactionSplitsCompanion data) {
+    return TransactionSplitDb(
+      id: data.id.present ? data.id.value : this.id,
+      transactionId: data.transactionId.present
+          ? data.transactionId.value
+          : this.transactionId,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransactionSplitDb(')
+          ..write('id: $id, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('amount: $amount, ')
+          ..write('description: $description, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    transactionId,
+    categoryId,
+    amount,
+    description,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TransactionSplitDb &&
+          other.id == this.id &&
+          other.transactionId == this.transactionId &&
+          other.categoryId == this.categoryId &&
+          other.amount == this.amount &&
+          other.description == this.description &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncStatus == this.syncStatus);
+}
+
+class TransactionSplitsCompanion extends UpdateCompanion<TransactionSplitDb> {
+  final Value<String> id;
+  final Value<String> transactionId;
+  final Value<String> categoryId;
+  final Value<int> amount;
+  final Value<String?> description;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<SyncStatus> syncStatus;
+  final Value<int> rowid;
+  const TransactionSplitsCompanion({
+    this.id = const Value.absent(),
+    this.transactionId = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.description = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TransactionSplitsCompanion.insert({
+    required String id,
+    required String transactionId,
+    required String categoryId,
+    required int amount,
+    this.description = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       transactionId = Value(transactionId),
+       categoryId = Value(categoryId),
+       amount = Value(amount),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<TransactionSplitDb> custom({
+    Expression<String>? id,
+    Expression<String>? transactionId,
+    Expression<String>? categoryId,
+    Expression<int>? amount,
+    Expression<String>? description,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? syncStatus,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (transactionId != null) 'transaction_id': transactionId,
+      if (categoryId != null) 'category_id': categoryId,
+      if (amount != null) 'amount': amount,
+      if (description != null) 'description': description,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TransactionSplitsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? transactionId,
+    Value<String>? categoryId,
+    Value<int>? amount,
+    Value<String?>? description,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<SyncStatus>? syncStatus,
+    Value<int>? rowid,
+  }) {
+    return TransactionSplitsCompanion(
+      id: id ?? this.id,
+      transactionId: transactionId ?? this.transactionId,
+      categoryId: categoryId ?? this.categoryId,
+      amount: amount ?? this.amount,
+      description: description ?? this.description,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (transactionId.present) {
+      map['transaction_id'] = Variable<String>(transactionId.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<int>(amount.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(
+        $TransactionSplitsTable.$convertersyncStatus.toSql(syncStatus.value),
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransactionSplitsCompanion(')
+          ..write('id: $id, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('amount: $amount, ')
+          ..write('description: $description, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -9580,6 +11936,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $MortgagesTable mortgages = $MortgagesTable(this);
   late final $CategoriesTable categories = $CategoriesTable(this);
   late final $CategoryRulesTable categoryRules = $CategoryRulesTable(this);
+  late final $TransactionsTable transactions = $TransactionsTable(this);
+  late final $TransactionSplitsTable transactionSplits =
+      $TransactionSplitsTable(this);
   late final UsersDao usersDao = UsersDao(this as AppDatabase);
   late final SpacesDao spacesDao = SpacesDao(this as AppDatabase);
   late final MembershipsDao membershipsDao = MembershipsDao(
@@ -9611,6 +11970,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     mortgages,
     categories,
     categoryRules,
+    transactions,
+    transactionSplits,
   ];
 }
 
@@ -9766,6 +12127,24 @@ final class $$UsersTableReferences
     ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_categoryRulesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TransactionsTable, List<TransactionDb>>
+  _transactionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.transactions,
+    aliasName: 'users__id__transactions__user_id',
+  );
+
+  $$TransactionsTableProcessedTableManager get transactionsRefs {
+    final manager = $$TransactionsTableTableManager(
+      $_db,
+      $_db.transactions,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_transactionsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -9986,6 +12365,31 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
           }) => $$CategoryRulesTableFilterComposer(
             $db: $db,
             $table: $db.categoryRules,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> transactionsRefs(
+    Expression<bool> Function($$TransactionsTableFilterComposer f) f,
+  ) {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -10259,6 +12663,31 @@ class $$UsersTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> transactionsRefs<T extends Object>(
+    Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$UsersTableTableManager
@@ -10282,6 +12711,7 @@ class $$UsersTableTableManager
             bool accountsRefs,
             bool categoriesRefs,
             bool categoryRulesRefs,
+            bool transactionsRefs,
           })
         > {
   $$UsersTableTableManager(_$AppDatabase db, $UsersTable table)
@@ -10354,6 +12784,7 @@ class $$UsersTableTableManager
                 accountsRefs = false,
                 categoriesRefs = false,
                 categoryRulesRefs = false,
+                transactionsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -10365,6 +12796,7 @@ class $$UsersTableTableManager
                     if (accountsRefs) db.accounts,
                     if (categoriesRefs) db.categories,
                     if (categoryRulesRefs) db.categoryRules,
+                    if (transactionsRefs) db.transactions,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -10504,6 +12936,27 @@ class $$UsersTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (transactionsRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          TransactionDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._transactionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transactionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -10532,6 +12985,7 @@ typedef $$UsersTableProcessedTableManager =
         bool accountsRefs,
         bool categoriesRefs,
         bool categoryRulesRefs,
+        bool transactionsRefs,
       })
     >;
 typedef $$SpacesTableCreateCompanionBuilder =
@@ -15562,6 +18016,45 @@ final class $$CategoriesTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$TransactionsTable, List<TransactionDb>>
+  _transactionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.transactions,
+    aliasName: 'categories__id__transactions__custom_category_id',
+  );
+
+  $$TransactionsTableProcessedTableManager get transactionsRefs {
+    final manager = $$TransactionsTableTableManager($_db, $_db.transactions)
+        .filter(
+          (f) => f.customCategoryId.id.sqlEquals($_itemColumn<String>('id')!),
+        );
+
+    final cache = $_typedResult.readTableOrNull(_transactionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TransactionSplitsTable, List<TransactionSplitDb>>
+  _transactionSplitsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.transactionSplits,
+        aliasName: 'categories__id__transaction_splits__category_id',
+      );
+
+  $$TransactionSplitsTableProcessedTableManager get transactionSplitsRefs {
+    final manager = $$TransactionSplitsTableTableManager(
+      $_db,
+      $_db.transactionSplits,
+    ).filter((f) => f.categoryId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _transactionSplitsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$CategoriesTableFilterComposer
@@ -15713,6 +18206,56 @@ class $$CategoriesTableFilterComposer
           }) => $$CategoryRulesTableFilterComposer(
             $db: $db,
             $table: $db.categoryRules,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> transactionsRefs(
+    Expression<bool> Function($$TransactionsTableFilterComposer f) f,
+  ) {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.customCategoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> transactionSplitsRefs(
+    Expression<bool> Function($$TransactionSplitsTableFilterComposer f) f,
+  ) {
+    final $$TransactionSplitsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactionSplits,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionSplitsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactionSplits,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -15996,6 +18539,57 @@ class $$CategoriesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> transactionsRefs<T extends Object>(
+    Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.customCategoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> transactionSplitsRefs<T extends Object>(
+    Expression<T> Function($$TransactionSplitsTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionSplitsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.transactionSplits,
+          getReferencedColumn: (t) => t.categoryId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$TransactionSplitsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.transactionSplits,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$CategoriesTableTableManager
@@ -16016,6 +18610,8 @@ class $$CategoriesTableTableManager
             bool userId,
             bool parentId,
             bool categoryRulesRefs,
+            bool transactionsRefs,
+            bool transactionSplitsRefs,
           })
         > {
   $$CategoriesTableTableManager(_$AppDatabase db, $CategoriesTable table)
@@ -16111,11 +18707,15 @@ class $$CategoriesTableTableManager
                 userId = false,
                 parentId = false,
                 categoryRulesRefs = false,
+                transactionsRefs = false,
+                transactionSplitsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (categoryRulesRefs) db.categoryRules,
+                    if (transactionsRefs) db.transactions,
+                    if (transactionSplitsRefs) db.transactionSplits,
                   ],
                   addJoins:
                       <
@@ -16201,6 +18801,48 @@ class $$CategoriesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (transactionsRefs)
+                        await $_getPrefetchedData<
+                          Category,
+                          $CategoriesTable,
+                          TransactionDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CategoriesTableReferences
+                              ._transactionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CategoriesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transactionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.customCategoryId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (transactionSplitsRefs)
+                        await $_getPrefetchedData<
+                          Category,
+                          $CategoriesTable,
+                          TransactionSplitDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CategoriesTableReferences
+                              ._transactionSplitsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CategoriesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transactionSplitsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.categoryId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -16226,6 +18868,8 @@ typedef $$CategoriesTableProcessedTableManager =
         bool userId,
         bool parentId,
         bool categoryRulesRefs,
+        bool transactionsRefs,
+        bool transactionSplitsRefs,
       })
     >;
 typedef $$CategoryRulesTableCreateCompanionBuilder =
@@ -16813,6 +19457,1903 @@ typedef $$CategoryRulesTableProcessedTableManager =
       CategoryRule,
       PrefetchHooks Function({bool spaceId, bool userId, bool targetCategoryId})
     >;
+typedef $$TransactionsTableCreateCompanionBuilder =
+    TransactionsCompanion Function({
+      required String id,
+      required String accountId,
+      Value<String?> linkedAccountId,
+      required String userId,
+      Value<String?> spaceId,
+      Value<String?> originalSpaceId,
+      Value<String?> bankTransactionId,
+      required DateTime date,
+      required int amount,
+      Value<String?> originalCurrency,
+      Value<int?> originalAmount,
+      required TransactionType type,
+      Value<String?> bankCategory,
+      Value<String?> customCategoryId,
+      Value<String?> merchantName,
+      Value<String?> comment,
+      Value<bool> isUserEdited,
+      Value<AuditStatus> auditStatus,
+      Value<bool> isHiddenByCalendar,
+      Value<DateTime?> hiddenUntilDate,
+      Value<int?> syncLockedStartedAt,
+      Value<int?> syncLockedDurationMs,
+      Value<bool> isArchivedForSpace,
+      Value<bool> businessMirror,
+      Value<String?> savingsGoalId,
+      Value<bool> isWithdrawal,
+      Value<bool> isSplit,
+      Value<String?> receiptId,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<SyncStatus> syncStatus,
+      Value<int> rowid,
+    });
+typedef $$TransactionsTableUpdateCompanionBuilder =
+    TransactionsCompanion Function({
+      Value<String> id,
+      Value<String> accountId,
+      Value<String?> linkedAccountId,
+      Value<String> userId,
+      Value<String?> spaceId,
+      Value<String?> originalSpaceId,
+      Value<String?> bankTransactionId,
+      Value<DateTime> date,
+      Value<int> amount,
+      Value<String?> originalCurrency,
+      Value<int?> originalAmount,
+      Value<TransactionType> type,
+      Value<String?> bankCategory,
+      Value<String?> customCategoryId,
+      Value<String?> merchantName,
+      Value<String?> comment,
+      Value<bool> isUserEdited,
+      Value<AuditStatus> auditStatus,
+      Value<bool> isHiddenByCalendar,
+      Value<DateTime?> hiddenUntilDate,
+      Value<int?> syncLockedStartedAt,
+      Value<int?> syncLockedDurationMs,
+      Value<bool> isArchivedForSpace,
+      Value<bool> businessMirror,
+      Value<String?> savingsGoalId,
+      Value<bool> isWithdrawal,
+      Value<bool> isSplit,
+      Value<String?> receiptId,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<SyncStatus> syncStatus,
+      Value<int> rowid,
+    });
+
+final class $$TransactionsTableReferences
+    extends BaseReferences<_$AppDatabase, $TransactionsTable, TransactionDb> {
+  $$TransactionsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $AccountsTable _accountIdTable(_$AppDatabase db) =>
+      db.accounts.createAlias('transactions__account_id__accounts__id');
+
+  $$AccountsTableProcessedTableManager get accountId {
+    final $_column = $_itemColumn<String>('account_id')!;
+
+    final manager = $$AccountsTableTableManager(
+      $_db,
+      $_db.accounts,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_accountIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $AccountsTable _linkedAccountIdTable(_$AppDatabase db) =>
+      db.accounts.createAlias('transactions__linked_account_id__accounts__id');
+
+  $$AccountsTableProcessedTableManager? get linkedAccountId {
+    final $_column = $_itemColumn<String>('linked_account_id');
+    if ($_column == null) return null;
+    final manager = $$AccountsTableTableManager(
+      $_db,
+      $_db.accounts,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_linkedAccountIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('transactions__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SpacesTable _spaceIdTable(_$AppDatabase db) =>
+      db.spaces.createAlias('transactions__space_id__spaces__id');
+
+  $$SpacesTableProcessedTableManager? get spaceId {
+    final $_column = $_itemColumn<String>('space_id');
+    if ($_column == null) return null;
+    final manager = $$SpacesTableTableManager(
+      $_db,
+      $_db.spaces,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_spaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SpacesTable _originalSpaceIdTable(_$AppDatabase db) =>
+      db.spaces.createAlias('transactions__original_space_id__spaces__id');
+
+  $$SpacesTableProcessedTableManager? get originalSpaceId {
+    final $_column = $_itemColumn<String>('original_space_id');
+    if ($_column == null) return null;
+    final manager = $$SpacesTableTableManager(
+      $_db,
+      $_db.spaces,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_originalSpaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $CategoriesTable _customCategoryIdTable(_$AppDatabase db) => db
+      .categories
+      .createAlias('transactions__custom_category_id__categories__id');
+
+  $$CategoriesTableProcessedTableManager? get customCategoryId {
+    final $_column = $_itemColumn<String>('custom_category_id');
+    if ($_column == null) return null;
+    final manager = $$CategoriesTableTableManager(
+      $_db,
+      $_db.categories,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_customCategoryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$TransactionSplitsTable, List<TransactionSplitDb>>
+  _transactionSplitsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.transactionSplits,
+        aliasName: 'transactions__id__transaction_splits__transaction_id',
+      );
+
+  $$TransactionSplitsTableProcessedTableManager get transactionSplitsRefs {
+    final manager = $$TransactionSplitsTableTableManager(
+      $_db,
+      $_db.transactionSplits,
+    ).filter((f) => f.transactionId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _transactionSplitsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$TransactionsTableFilterComposer
+    extends Composer<_$AppDatabase, $TransactionsTable> {
+  $$TransactionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bankTransactionId => $composableBuilder(
+    column: $table.bankTransactionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get originalCurrency => $composableBuilder(
+    column: $table.originalCurrency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get originalAmount => $composableBuilder(
+    column: $table.originalAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<TransactionType, TransactionType, String>
+  get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<String> get bankCategory => $composableBuilder(
+    column: $table.bankCategory,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get merchantName => $composableBuilder(
+    column: $table.merchantName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get comment => $composableBuilder(
+    column: $table.comment,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isUserEdited => $composableBuilder(
+    column: $table.isUserEdited,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<AuditStatus, AuditStatus, String>
+  get auditStatus => $composableBuilder(
+    column: $table.auditStatus,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<bool> get isHiddenByCalendar => $composableBuilder(
+    column: $table.isHiddenByCalendar,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get hiddenUntilDate => $composableBuilder(
+    column: $table.hiddenUntilDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get syncLockedStartedAt => $composableBuilder(
+    column: $table.syncLockedStartedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get syncLockedDurationMs => $composableBuilder(
+    column: $table.syncLockedDurationMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isArchivedForSpace => $composableBuilder(
+    column: $table.isArchivedForSpace,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get businessMirror => $composableBuilder(
+    column: $table.businessMirror,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get savingsGoalId => $composableBuilder(
+    column: $table.savingsGoalId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isWithdrawal => $composableBuilder(
+    column: $table.isWithdrawal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isSplit => $composableBuilder(
+    column: $table.isSplit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get receiptId => $composableBuilder(
+    column: $table.receiptId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, String>
+  get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  $$AccountsTableFilterComposer get accountId {
+    final $$AccountsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.accountId,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableFilterComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$AccountsTableFilterComposer get linkedAccountId {
+    final $$AccountsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.linkedAccountId,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableFilterComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableFilterComposer get spaceId {
+    final $$SpacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableFilterComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableFilterComposer get originalSpaceId {
+    final $$SpacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.originalSpaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableFilterComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableFilterComposer get customCategoryId {
+    final $$CategoriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.customCategoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableFilterComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> transactionSplitsRefs(
+    Expression<bool> Function($$TransactionSplitsTableFilterComposer f) f,
+  ) {
+    final $$TransactionSplitsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactionSplits,
+      getReferencedColumn: (t) => t.transactionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionSplitsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactionSplits,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$TransactionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TransactionsTable> {
+  $$TransactionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bankTransactionId => $composableBuilder(
+    column: $table.bankTransactionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get originalCurrency => $composableBuilder(
+    column: $table.originalCurrency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get originalAmount => $composableBuilder(
+    column: $table.originalAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bankCategory => $composableBuilder(
+    column: $table.bankCategory,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get merchantName => $composableBuilder(
+    column: $table.merchantName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get comment => $composableBuilder(
+    column: $table.comment,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isUserEdited => $composableBuilder(
+    column: $table.isUserEdited,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get auditStatus => $composableBuilder(
+    column: $table.auditStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isHiddenByCalendar => $composableBuilder(
+    column: $table.isHiddenByCalendar,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get hiddenUntilDate => $composableBuilder(
+    column: $table.hiddenUntilDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get syncLockedStartedAt => $composableBuilder(
+    column: $table.syncLockedStartedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get syncLockedDurationMs => $composableBuilder(
+    column: $table.syncLockedDurationMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isArchivedForSpace => $composableBuilder(
+    column: $table.isArchivedForSpace,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get businessMirror => $composableBuilder(
+    column: $table.businessMirror,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get savingsGoalId => $composableBuilder(
+    column: $table.savingsGoalId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isWithdrawal => $composableBuilder(
+    column: $table.isWithdrawal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isSplit => $composableBuilder(
+    column: $table.isSplit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get receiptId => $composableBuilder(
+    column: $table.receiptId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$AccountsTableOrderingComposer get accountId {
+    final $$AccountsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.accountId,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableOrderingComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$AccountsTableOrderingComposer get linkedAccountId {
+    final $$AccountsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.linkedAccountId,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableOrderingComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableOrderingComposer get spaceId {
+    final $$SpacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableOrderingComposer get originalSpaceId {
+    final $$SpacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.originalSpaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableOrderingComposer get customCategoryId {
+    final $$CategoriesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.customCategoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableOrderingComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransactionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TransactionsTable> {
+  $$TransactionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get bankTransactionId => $composableBuilder(
+    column: $table.bankTransactionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<int> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get originalCurrency => $composableBuilder(
+    column: $table.originalCurrency,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get originalAmount => $composableBuilder(
+    column: $table.originalAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<TransactionType, String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get bankCategory => $composableBuilder(
+    column: $table.bankCategory,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get merchantName => $composableBuilder(
+    column: $table.merchantName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get comment =>
+      $composableBuilder(column: $table.comment, builder: (column) => column);
+
+  GeneratedColumn<bool> get isUserEdited => $composableBuilder(
+    column: $table.isUserEdited,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<AuditStatus, String> get auditStatus =>
+      $composableBuilder(
+        column: $table.auditStatus,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<bool> get isHiddenByCalendar => $composableBuilder(
+    column: $table.isHiddenByCalendar,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get hiddenUntilDate => $composableBuilder(
+    column: $table.hiddenUntilDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get syncLockedStartedAt => $composableBuilder(
+    column: $table.syncLockedStartedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get syncLockedDurationMs => $composableBuilder(
+    column: $table.syncLockedDurationMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isArchivedForSpace => $composableBuilder(
+    column: $table.isArchivedForSpace,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get businessMirror => $composableBuilder(
+    column: $table.businessMirror,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get savingsGoalId => $composableBuilder(
+    column: $table.savingsGoalId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isWithdrawal => $composableBuilder(
+    column: $table.isWithdrawal,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isSplit =>
+      $composableBuilder(column: $table.isSplit, builder: (column) => column);
+
+  GeneratedColumn<String> get receiptId =>
+      $composableBuilder(column: $table.receiptId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
+      $composableBuilder(
+        column: $table.syncStatus,
+        builder: (column) => column,
+      );
+
+  $$AccountsTableAnnotationComposer get accountId {
+    final $$AccountsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.accountId,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$AccountsTableAnnotationComposer get linkedAccountId {
+    final $$AccountsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.linkedAccountId,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableAnnotationComposer get spaceId {
+    final $$SpacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableAnnotationComposer get originalSpaceId {
+    final $$SpacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.originalSpaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableAnnotationComposer get customCategoryId {
+    final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.customCategoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> transactionSplitsRefs<T extends Object>(
+    Expression<T> Function($$TransactionSplitsTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionSplitsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.transactionSplits,
+          getReferencedColumn: (t) => t.transactionId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$TransactionSplitsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.transactionSplits,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$TransactionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TransactionsTable,
+          TransactionDb,
+          $$TransactionsTableFilterComposer,
+          $$TransactionsTableOrderingComposer,
+          $$TransactionsTableAnnotationComposer,
+          $$TransactionsTableCreateCompanionBuilder,
+          $$TransactionsTableUpdateCompanionBuilder,
+          (TransactionDb, $$TransactionsTableReferences),
+          TransactionDb,
+          PrefetchHooks Function({
+            bool accountId,
+            bool linkedAccountId,
+            bool userId,
+            bool spaceId,
+            bool originalSpaceId,
+            bool customCategoryId,
+            bool transactionSplitsRefs,
+          })
+        > {
+  $$TransactionsTableTableManager(_$AppDatabase db, $TransactionsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TransactionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TransactionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TransactionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> accountId = const Value.absent(),
+                Value<String?> linkedAccountId = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String?> spaceId = const Value.absent(),
+                Value<String?> originalSpaceId = const Value.absent(),
+                Value<String?> bankTransactionId = const Value.absent(),
+                Value<DateTime> date = const Value.absent(),
+                Value<int> amount = const Value.absent(),
+                Value<String?> originalCurrency = const Value.absent(),
+                Value<int?> originalAmount = const Value.absent(),
+                Value<TransactionType> type = const Value.absent(),
+                Value<String?> bankCategory = const Value.absent(),
+                Value<String?> customCategoryId = const Value.absent(),
+                Value<String?> merchantName = const Value.absent(),
+                Value<String?> comment = const Value.absent(),
+                Value<bool> isUserEdited = const Value.absent(),
+                Value<AuditStatus> auditStatus = const Value.absent(),
+                Value<bool> isHiddenByCalendar = const Value.absent(),
+                Value<DateTime?> hiddenUntilDate = const Value.absent(),
+                Value<int?> syncLockedStartedAt = const Value.absent(),
+                Value<int?> syncLockedDurationMs = const Value.absent(),
+                Value<bool> isArchivedForSpace = const Value.absent(),
+                Value<bool> businessMirror = const Value.absent(),
+                Value<String?> savingsGoalId = const Value.absent(),
+                Value<bool> isWithdrawal = const Value.absent(),
+                Value<bool> isSplit = const Value.absent(),
+                Value<String?> receiptId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TransactionsCompanion(
+                id: id,
+                accountId: accountId,
+                linkedAccountId: linkedAccountId,
+                userId: userId,
+                spaceId: spaceId,
+                originalSpaceId: originalSpaceId,
+                bankTransactionId: bankTransactionId,
+                date: date,
+                amount: amount,
+                originalCurrency: originalCurrency,
+                originalAmount: originalAmount,
+                type: type,
+                bankCategory: bankCategory,
+                customCategoryId: customCategoryId,
+                merchantName: merchantName,
+                comment: comment,
+                isUserEdited: isUserEdited,
+                auditStatus: auditStatus,
+                isHiddenByCalendar: isHiddenByCalendar,
+                hiddenUntilDate: hiddenUntilDate,
+                syncLockedStartedAt: syncLockedStartedAt,
+                syncLockedDurationMs: syncLockedDurationMs,
+                isArchivedForSpace: isArchivedForSpace,
+                businessMirror: businessMirror,
+                savingsGoalId: savingsGoalId,
+                isWithdrawal: isWithdrawal,
+                isSplit: isSplit,
+                receiptId: receiptId,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String accountId,
+                Value<String?> linkedAccountId = const Value.absent(),
+                required String userId,
+                Value<String?> spaceId = const Value.absent(),
+                Value<String?> originalSpaceId = const Value.absent(),
+                Value<String?> bankTransactionId = const Value.absent(),
+                required DateTime date,
+                required int amount,
+                Value<String?> originalCurrency = const Value.absent(),
+                Value<int?> originalAmount = const Value.absent(),
+                required TransactionType type,
+                Value<String?> bankCategory = const Value.absent(),
+                Value<String?> customCategoryId = const Value.absent(),
+                Value<String?> merchantName = const Value.absent(),
+                Value<String?> comment = const Value.absent(),
+                Value<bool> isUserEdited = const Value.absent(),
+                Value<AuditStatus> auditStatus = const Value.absent(),
+                Value<bool> isHiddenByCalendar = const Value.absent(),
+                Value<DateTime?> hiddenUntilDate = const Value.absent(),
+                Value<int?> syncLockedStartedAt = const Value.absent(),
+                Value<int?> syncLockedDurationMs = const Value.absent(),
+                Value<bool> isArchivedForSpace = const Value.absent(),
+                Value<bool> businessMirror = const Value.absent(),
+                Value<String?> savingsGoalId = const Value.absent(),
+                Value<bool> isWithdrawal = const Value.absent(),
+                Value<bool> isSplit = const Value.absent(),
+                Value<String?> receiptId = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TransactionsCompanion.insert(
+                id: id,
+                accountId: accountId,
+                linkedAccountId: linkedAccountId,
+                userId: userId,
+                spaceId: spaceId,
+                originalSpaceId: originalSpaceId,
+                bankTransactionId: bankTransactionId,
+                date: date,
+                amount: amount,
+                originalCurrency: originalCurrency,
+                originalAmount: originalAmount,
+                type: type,
+                bankCategory: bankCategory,
+                customCategoryId: customCategoryId,
+                merchantName: merchantName,
+                comment: comment,
+                isUserEdited: isUserEdited,
+                auditStatus: auditStatus,
+                isHiddenByCalendar: isHiddenByCalendar,
+                hiddenUntilDate: hiddenUntilDate,
+                syncLockedStartedAt: syncLockedStartedAt,
+                syncLockedDurationMs: syncLockedDurationMs,
+                isArchivedForSpace: isArchivedForSpace,
+                businessMirror: businessMirror,
+                savingsGoalId: savingsGoalId,
+                isWithdrawal: isWithdrawal,
+                isSplit: isSplit,
+                receiptId: receiptId,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$TransactionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                accountId = false,
+                linkedAccountId = false,
+                userId = false,
+                spaceId = false,
+                originalSpaceId = false,
+                customCategoryId = false,
+                transactionSplitsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (transactionSplitsRefs) db.transactionSplits,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (accountId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.accountId,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._accountIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._accountIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (linkedAccountId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.linkedAccountId,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._linkedAccountIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._linkedAccountIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (userId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.userId,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._userIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._userIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (spaceId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.spaceId,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._spaceIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._spaceIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (originalSpaceId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.originalSpaceId,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._originalSpaceIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._originalSpaceIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (customCategoryId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.customCategoryId,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._customCategoryIdTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._customCategoryIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (transactionSplitsRefs)
+                        await $_getPrefetchedData<
+                          TransactionDb,
+                          $TransactionsTable,
+                          TransactionSplitDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TransactionsTableReferences
+                              ._transactionSplitsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TransactionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transactionSplitsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.transactionId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$TransactionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TransactionsTable,
+      TransactionDb,
+      $$TransactionsTableFilterComposer,
+      $$TransactionsTableOrderingComposer,
+      $$TransactionsTableAnnotationComposer,
+      $$TransactionsTableCreateCompanionBuilder,
+      $$TransactionsTableUpdateCompanionBuilder,
+      (TransactionDb, $$TransactionsTableReferences),
+      TransactionDb,
+      PrefetchHooks Function({
+        bool accountId,
+        bool linkedAccountId,
+        bool userId,
+        bool spaceId,
+        bool originalSpaceId,
+        bool customCategoryId,
+        bool transactionSplitsRefs,
+      })
+    >;
+typedef $$TransactionSplitsTableCreateCompanionBuilder =
+    TransactionSplitsCompanion Function({
+      required String id,
+      required String transactionId,
+      required String categoryId,
+      required int amount,
+      Value<String?> description,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<SyncStatus> syncStatus,
+      Value<int> rowid,
+    });
+typedef $$TransactionSplitsTableUpdateCompanionBuilder =
+    TransactionSplitsCompanion Function({
+      Value<String> id,
+      Value<String> transactionId,
+      Value<String> categoryId,
+      Value<int> amount,
+      Value<String?> description,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<SyncStatus> syncStatus,
+      Value<int> rowid,
+    });
+
+final class $$TransactionSplitsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $TransactionSplitsTable,
+          TransactionSplitDb
+        > {
+  $$TransactionSplitsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $TransactionsTable _transactionIdTable(_$AppDatabase db) => db
+      .transactions
+      .createAlias('transaction_splits__transaction_id__transactions__id');
+
+  $$TransactionsTableProcessedTableManager get transactionId {
+    final $_column = $_itemColumn<String>('transaction_id')!;
+
+    final manager = $$TransactionsTableTableManager(
+      $_db,
+      $_db.transactions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_transactionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $CategoriesTable _categoryIdTable(_$AppDatabase db) => db.categories
+      .createAlias('transaction_splits__category_id__categories__id');
+
+  $$CategoriesTableProcessedTableManager get categoryId {
+    final $_column = $_itemColumn<String>('category_id')!;
+
+    final manager = $$CategoriesTableTableManager(
+      $_db,
+      $_db.categories,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TransactionSplitsTableFilterComposer
+    extends Composer<_$AppDatabase, $TransactionSplitsTable> {
+  $$TransactionSplitsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, String>
+  get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  $$TransactionsTableFilterComposer get transactionId {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transactionId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableFilterComposer get categoryId {
+    final $$CategoriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableFilterComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransactionSplitsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TransactionSplitsTable> {
+  $$TransactionSplitsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TransactionsTableOrderingComposer get transactionId {
+    final $$TransactionsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transactionId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableOrderingComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableOrderingComposer get categoryId {
+    final $$CategoriesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableOrderingComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransactionSplitsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TransactionSplitsTable> {
+  $$TransactionSplitsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
+      $composableBuilder(
+        column: $table.syncStatus,
+        builder: (column) => column,
+      );
+
+  $$TransactionsTableAnnotationComposer get transactionId {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transactionId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableAnnotationComposer get categoryId {
+    final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransactionSplitsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TransactionSplitsTable,
+          TransactionSplitDb,
+          $$TransactionSplitsTableFilterComposer,
+          $$TransactionSplitsTableOrderingComposer,
+          $$TransactionSplitsTableAnnotationComposer,
+          $$TransactionSplitsTableCreateCompanionBuilder,
+          $$TransactionSplitsTableUpdateCompanionBuilder,
+          (TransactionSplitDb, $$TransactionSplitsTableReferences),
+          TransactionSplitDb,
+          PrefetchHooks Function({bool transactionId, bool categoryId})
+        > {
+  $$TransactionSplitsTableTableManager(
+    _$AppDatabase db,
+    $TransactionSplitsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TransactionSplitsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TransactionSplitsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TransactionSplitsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> transactionId = const Value.absent(),
+                Value<String> categoryId = const Value.absent(),
+                Value<int> amount = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TransactionSplitsCompanion(
+                id: id,
+                transactionId: transactionId,
+                categoryId: categoryId,
+                amount: amount,
+                description: description,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String transactionId,
+                required String categoryId,
+                required int amount,
+                Value<String?> description = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TransactionSplitsCompanion.insert(
+                id: id,
+                transactionId: transactionId,
+                categoryId: categoryId,
+                amount: amount,
+                description: description,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$TransactionSplitsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({transactionId = false, categoryId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (transactionId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.transactionId,
+                                referencedTable:
+                                    $$TransactionSplitsTableReferences
+                                        ._transactionIdTable(db),
+                                referencedColumn:
+                                    $$TransactionSplitsTableReferences
+                                        ._transactionIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+                    if (categoryId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.categoryId,
+                                referencedTable:
+                                    $$TransactionSplitsTableReferences
+                                        ._categoryIdTable(db),
+                                referencedColumn:
+                                    $$TransactionSplitsTableReferences
+                                        ._categoryIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TransactionSplitsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TransactionSplitsTable,
+      TransactionSplitDb,
+      $$TransactionSplitsTableFilterComposer,
+      $$TransactionSplitsTableOrderingComposer,
+      $$TransactionSplitsTableAnnotationComposer,
+      $$TransactionSplitsTableCreateCompanionBuilder,
+      $$TransactionSplitsTableUpdateCompanionBuilder,
+      (TransactionSplitDb, $$TransactionSplitsTableReferences),
+      TransactionSplitDb,
+      PrefetchHooks Function({bool transactionId, bool categoryId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -16839,4 +21380,8 @@ class $AppDatabaseManager {
       $$CategoriesTableTableManager(_db, _db.categories);
   $$CategoryRulesTableTableManager get categoryRules =>
       $$CategoryRulesTableTableManager(_db, _db.categoryRules);
+  $$TransactionsTableTableManager get transactions =>
+      $$TransactionsTableTableManager(_db, _db.transactions);
+  $$TransactionSplitsTableTableManager get transactionSplits =>
+      $$TransactionSplitsTableTableManager(_db, _db.transactionSplits);
 }

@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+﻿import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -6,7 +6,6 @@ import 'dart:io';
 
 // ═══════════════════════════════════════════════════════════════
 // Таблицы из Этапа 3 (фундаментальные сущности)
-// Импортируем из tables/, так как там есть SyncableTable mixin
 // ═══════════════════════════════════════════════════════════════
 import 'tables/users.dart';
 import 'tables/spaces.dart';
@@ -15,6 +14,11 @@ import 'tables/app_settings.dart';
 import 'tables/notifications.dart';
 import 'tables/sync_conflicts.dart';
 import 'tables/sync_logs.dart';
+
+// ═══════════════════════════════════════════════════════════════
+// Enum'ы Этапа 6 (type, audit_status, sync_status)
+// ═══════════════════════════════════════════════════════════════
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // DAO (Data Access Objects) — типобезопасные запросы
@@ -27,15 +31,12 @@ import 'daos/notifications_dao.dart';
 import 'daos/sync_conflicts_dao.dart';
 import 'daos/sync_logs_dao.dart';
 
-
 import 'package:budget_assistant/core/logger.dart';
-
 
 part 'app_database.g.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // Таблицы из Этапа 5 (уже реализованы, остаются здесь)
-// В будущем можно вынести в tables/ для единообразия
 // ═══════════════════════════════════════════════════════════════
 
 class Accounts extends Table {
@@ -130,6 +131,132 @@ class CategoryRules extends Table {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// ЭТАП 6: Таблица транзакций
+//
+// Деньги: только IntColumn (копейки).
+// Даты: только UTC.
+// Внешние ключи: боевые (.references), т.к. все таблицы уже в области видимости.
+// sync_locked_*: монотонные часы Android (защита от перевода часов).
+// ═══════════════════════════════════════════════════════════════
+
+@DataClassName('TransactionDb')
+class Transactions extends Table {
+  TextColumn get id => text()();
+
+  /// Счёт-источник/приёмник. Боевой FK на accounts.
+  TextColumn get accountId => text().references(Accounts, #id)();
+
+  /// Счёт-получатель (только для type = 'transfer').
+  TextColumn get linkedAccountId =>
+      text().nullable().references(Accounts, #id)();
+
+  TextColumn get userId => text().references(Users, #id)();
+
+  TextColumn get spaceId => text().nullable().references(Spaces, #id)();
+
+  /// Пространство создания (для кросс-группового шеринга).
+  TextColumn get originalSpaceId => text().nullable().references(Spaces, #id)();
+
+  /// ID от банка (защита от дублей при Batch-импорте).
+  TextColumn get bankTransactionId => text().nullable()();
+
+  /// Точное время операции, строго UTC.
+  DateTimeColumn get date => dateTime()();
+
+  /// Сумма в копейках, всегда > 0. Направление задаёт type.
+  IntColumn get amount => integer()();
+
+  TextColumn get originalCurrency => text().nullable()();
+
+  /// Сумма в валюте операции (копейки/минорные единицы).
+  IntColumn get originalAmount => integer().nullable()();
+
+  TextColumn get type => textEnum<TransactionType>()();
+
+  /// Сырая категория от банка.
+  TextColumn get bankCategory => text().nullable()();
+
+  /// Итоговая категория. Боевой FK на categories.
+  TextColumn get customCategoryId =>
+      text().nullable().references(Categories, #id)();
+
+  TextColumn get merchantName => text().nullable()();
+
+  TextColumn get comment => text().nullable()();
+
+  /// Запрещает авто-категоризации перезаписывать выбор пользователя.
+  BoolColumn get isUserEdited => boolean().withDefault(const Constant(false))();
+
+    TextColumn get auditStatus =>
+      textEnum<AuditStatus>().withDefault(const Constant('verified'))();
+
+  /// Режим секретности (подарки).
+  BoolColumn get isHiddenByCalendar =>
+      boolean().withDefault(const Constant(false))();
+
+  DateTimeColumn get hiddenUntilDate => dateTime().nullable()();
+
+  /// Значение SystemClock.elapsedRealtime() в момент создания.
+  IntColumn get syncLockedStartedAt => integer().nullable()();
+
+  /// Длительность блокировки в мс.
+  IntColumn get syncLockedDurationMs => integer().nullable()();
+
+  BoolColumn get isArchivedForSpace =>
+      boolean().withDefault(const Constant(false))();
+
+  /// Зеркалирование в кастомную вкладку (микро-P&L).
+  BoolColumn get businessMirror =>
+      boolean().withDefault(const Constant(false))();
+
+  /// Привязка к цели накопления (таблица появится в Этапе 12, поле уже есть).
+  TextColumn get savingsGoalId => text().nullable()();
+
+  /// Флаг изъятия из цели (игнорируется в P&L).
+  BoolColumn get isWithdrawal => boolean().withDefault(const Constant(false))();
+
+  /// Флаг наличия сплитов (чеков/долгов).
+  BoolColumn get isSplit => boolean().withDefault(const Constant(false))();
+
+  /// Связь с прикреплённым чеком (таблица появится в Этапе 16).
+  TextColumn get receiptId => text().nullable()();
+
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  TextColumn get syncStatus =>
+    textEnum<SyncStatus>().withDefault(const Constant('pending'))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ЭТАП 6: Сплиты чека/долга
+// ═══════════════════════════════════════════════════════════════
+
+@DataClassName('TransactionSplitDb')
+class TransactionSplits extends Table {
+  TextColumn get id => text()();
+
+  TextColumn get transactionId => text().references(Transactions, #id)();
+
+  TextColumn get categoryId => text().references(Categories, #id)();
+
+  /// Сумма части в копейках.
+  IntColumn get amount => integer()();
+
+  TextColumn get description => text().nullable()();
+
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  TextColumn get syncStatus =>
+      textEnum<SyncStatus>().withDefault(const Constant('pending'))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+// ═══════════════════════════════════════════════════════════════
 // Основная конфигурация БД
 // ═══════════════════════════════════════════════════════════════
 
@@ -148,6 +275,9 @@ class CategoryRules extends Table {
     Mortgages,
     Categories,
     CategoryRules,
+    // Этап 6: Транзакции и сплиты
+    Transactions,
+    TransactionSplits,
   ],
   daos: [
     UsersDao,
@@ -169,8 +299,11 @@ class AppDatabase extends _$AppDatabase {
   /// Конструктор для unit-тестов (in-memory БД)
   AppDatabase.forTesting(super.e);
 
+  /// v1: старт (Этап 3)
+  /// v2: миграция SyncableTable (Этап 3/5)
+  /// v3: Этап 6 — таблицы transactions и transaction_splits
   @override
-  int get schemaVersion => 2; // ← УВЕЛИЧЕНО с 1 до 2 для миграции SyncableTable
+  int get schemaVersion => 3;
 
   /// Вспомогательный метод для создания всех индексов
   /// Вызывается и в onCreate, и в onUpgrade (после пересоздания таблиц)
@@ -179,7 +312,6 @@ class AppDatabase extends _$AppDatabase {
     // ИНДЕКСЫ ДЛЯ ЭТАПА 3 (фундаментальные таблицы)
     // ═══════════════════════════════════════════════════════
 
-    // Memberships: быстрый поиск пространств пользователя и участников пространства
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_memberships_user 
       ON memberships(user_id, status)
@@ -189,13 +321,11 @@ class AppDatabase extends _$AppDatabase {
       ON memberships(space_id, status)
     ''');
 
-    // AppSettings: поиск настроек пользователя
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_app_settings_user 
       ON app_settings(user_id)
     ''');
 
-    // Notifications: непрочитанные (для бейджа) + по пространству
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_notifications_user_read 
       ON notifications(user_id, is_read, created_at DESC)
@@ -205,14 +335,12 @@ class AppDatabase extends _$AppDatabase {
       ON notifications(space_id)
     ''');
 
-    // SyncConflicts: неразрешённые конфликты (partial index — только активные)
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_sync_conflicts_unresolved 
       ON sync_conflicts(entity_type, entity_id) 
       WHERE resolved_at IS NULL
     ''');
 
-    // SyncLogs: история синхронизации пользователя (последние сверху)
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_sync_logs_user_timestamp 
       ON sync_logs(user_id, timestamp DESC)
@@ -250,25 +378,85 @@ class AppDatabase extends _$AppDatabase {
       CREATE INDEX IF NOT EXISTS idx_category_rules_space_bank 
       ON category_rules(space_id, bank_name)
     ''');
+
+    // ═══════════════════════════════════════════════════════
+    // ИНДЕКСЫ ДЛЯ ЭТАПА 6 (транзакции и сплиты)
+    // ТОМ 2, раздел 22 + DECISIONS.md
+    // ═══════════════════════════════════════════════════════
+
+    // КРИТИЧНЫЙ индекс: P&L, календарь, batch sync.
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_transactions_user_space_date 
+      ON transactions(user_id, space_id, date)
+    ''');
+
+    // Календарь и дневная статистика (ORDER BY date).
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_transactions_date 
+      ON transactions(date)
+    ''');
+
+    // Фильтрация по счёту и категории.
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_transactions_account_category 
+      ON transactions(account_id, custom_category_id)
+    ''');
+
+    // Обязателен для Offline-First синхронизации.
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_transactions_sync_status 
+      ON transactions(sync_status)
+    ''');
+
+    // Фильтрация hold-операций (pending).
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_transactions_audit_status 
+      ON transactions(audit_status)
+    ''');
+
+    // Связь с копилками (Этап 12).
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_transactions_savings_goal 
+      ON transactions(savings_goal_id)
+    ''');
+
+    // Защита от дублей при Batch-импорте.
+    // Частичный уникальный: большинство ручных операций не имеют bank ID.
+    await customStatement('''
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_bank_tx_id 
+      ON transactions(bank_transaction_id) 
+      WHERE bank_transaction_id IS NOT NULL
+    ''');
+
+    // JOIN сплитов с родительской транзакцией.
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_transaction_splits_transaction 
+      ON transaction_splits(transaction_id)
+    ''');
+
+    // Pending-сплиты для синхронизации.
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_transaction_splits_sync_status 
+      ON transaction_splits(sync_status)
+    ''');
   }
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) async {
-      // 1. Создаём все таблицы (Drift сам обработает UniqueKeys из Memberships)
+      // 1. Создаём все таблицы
       await m.createAll();
 
       // 2. Создаём все индексы
       await _createAllIndexes();
     },
 
-    // ↓ ДОБАВЛЕН БЛОК МИГРАЦИИ С ВЕРСИИ 1 НА 2 ↓
     onUpgrade: (Migrator m, int from, int to) async {
       if (from < 2) {
         // Миграция v1 → v2: обновляем SyncableTable mixin
         // Drift не умеет изменять колонки "на лету", поэтому:
         // 1. Удаляем ВСЕ таблицы через raw SQL
-        // 2. Создаём их заново с новым mixin
+        // 2. Создаём их заново (createAll создаст и таблицы Этапа 6)
         // 3. Пересоздаём все индексы
 
         final tables = [
@@ -291,22 +479,33 @@ class AppDatabase extends _$AppDatabase {
 
         await m.createAll();
         await _createAllIndexes();
+      } else if (from < 3) {
+        // Миграция v2 → v3: Этап 6, таблицы транзакций и сплитов.
+        // Данные старых таблиц НЕ трогаем.
+        await m.createTable(transactions);
+        await m.createTable(transactionSplits);
+        await _createAllIndexes();
       }
     },
 
-    
     beforeOpen: (details) async {
-      AppLogger.i('🔧 Migration details: wasCreated=${details.wasCreated}, hadUpgrade=${details.hadUpgrade}, versionNow=${details.versionNow}, versionBefore=${details.versionBefore}');
+      AppLogger.i(
+        '🔧 Migration details: wasCreated=${details.wasCreated}, hadUpgrade=${details.hadUpgrade}, versionNow=${details.versionNow}, versionBefore=${details.versionBefore}',
+      );
       // Включаем Foreign Keys (SQLite по умолчанию их не проверяет!)
       await customStatement('PRAGMA foreign_keys = ON');
       // WAL-режим: позволяет читать БД во время записи (критично для UI)
       await customStatement('PRAGMA journal_mode = WAL');
       // NORMAL вместо FULL: уменьшает overhead от sync, безопасно при WAL
       await customStatement('PRAGMA synchronous = NORMAL');
-            // Проверяем список таблиц ПОСЛЕ миграции
-      final tables = await customSelect("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name").get();
-      AppLogger.i('📋 Tables in DB: ${tables.map((r) => r.read<String>('name')).join(', ')}');
-    }
+      // Проверяем список таблиц ПОСЛЕ миграции
+      final tables = await customSelect(
+        "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",
+      ).get();
+      AppLogger.i(
+        '📋 Tables in DB: ${tables.map((r) => r.read<String>('name')).join(', ')}',
+      );
+    },
   );
 }
 
