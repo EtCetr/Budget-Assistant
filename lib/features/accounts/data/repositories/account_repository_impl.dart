@@ -6,6 +6,8 @@ import '../datasources/account_dao.dart';
 import '../datasources/mortgage_dao.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
+import 'package:budget_assistant/core/utils/result.dart';
+import 'package:budget_assistant/core/errors/failures.dart';
 
 class AccountRepositoryImpl implements AccountRepository {
   final AccountDao _accountDao;
@@ -171,6 +173,37 @@ class AccountRepositoryImpl implements AccountRepository {
         stackTrace: stackTrace,
       );
       rethrow;
+    }
+  }
+
+    @override
+  Future<Result<void>> updateAccount({
+    required String accountId,
+    required String bankName,
+    required String customName,
+    required String accountType,
+    required String currency,
+    required int currentBalance,
+    String? cardNumberMask,
+    int? creditLimit,
+  }) async {
+    try {
+      await _accountDao.updateAccountFields(
+        accountId: accountId,
+        bankName: bankName,
+        customName: customName,
+        accountType: accountType,
+        currency: currency,
+        currentBalance: currentBalance,
+        cardNumberMask: cardNumberMask,
+        creditLimit: creditLimit,
+        updatedAt: DateTime.now().toUtc(),
+      );
+      _logger.i('Account updated: $accountId');
+      return Result.success(null);
+    } catch (e, stackTrace) {
+      _logger.e('AccountRepository.updateAccount', error: e, stackTrace: stackTrace);
+      return Result.failure(Failure.database(e.toString(), stackTrace));
     }
   }
 }

@@ -1,0 +1,2 @@
+@echo off
+flutter run --dart-define=SUPABASE_URL=https://aoecblorgoojrslpghjs.supabase.co --dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvZWNibG9yZ29vanJzbHBnaGpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3MDgzNTIsImV4cCI6MjEwNDI4NDM1Mn0.Qgotdv5cMPhz9WM24_RQw7bCv9czsJyuHeIcL8OGR2M

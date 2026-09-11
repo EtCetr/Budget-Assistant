@@ -10,6 +10,8 @@ import '../../domain/repositories/category_repository.dart';
 import '../../data/repositories/category_repository_impl.dart';
 import '../../data/datasources/category_dao.dart';
 import '../../data/datasources/category_rule_dao.dart';
+import '../../domain/usecases/update_category_usecase.dart';
+import '../../domain/usecases/delete_category_usecase.dart';
 
 part 'category_providers.g.dart';
 
@@ -131,5 +133,27 @@ class CategoriesGroupedByTypeNotifier
     }
 
     return grouped;
+  }
+}
+
+@riverpod
+class UpdateCategoryUseCaseNotifier extends _$UpdateCategoryUseCaseNotifier {
+  @override
+  UpdateCategoryUseCase build() {
+    return UpdateCategoryUseCase(
+      repository: ref.watch(categoryRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+    );
+  }
+}
+
+@riverpod
+class DeleteCategoryUseCaseNotifier extends _$DeleteCategoryUseCaseNotifier {
+  @override
+  DeleteCategoryUseCase build() {
+    return DeleteCategoryUseCase(
+      repository: ref.watch(categoryRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+    );
   }
 }

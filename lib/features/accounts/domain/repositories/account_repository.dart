@@ -1,6 +1,7 @@
 // lib/features/accounts/domain/repositories/account_repository.dart
 import '../entities/account.dart';
 import '../entities/mortgage.dart';
+import 'package:budget_assistant/core/utils/result.dart';
 
 abstract class AccountRepository {
   Future<List<Account>> getAccountsByUserId(String userId);
@@ -11,5 +12,15 @@ abstract class AccountRepository {
   Future<Mortgage?> getMortgageByAccountId(String accountId);
   Future<void> insertMortgage(Mortgage mortgage);
   Future<void> ensureLocalUser(String userId, {String email = ''});
-    Future<void> deleteAccount(String accountId);
+  Future<void> deleteAccount(String accountId);
+  Future<Result<void>> updateAccount({
+    required String accountId,
+    required String bankName,
+    required String customName,
+    required String accountType,
+    required String currency,
+    required int currentBalance,
+    String? cardNumberMask,
+    int? creditLimit,
+  });
 }

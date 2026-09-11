@@ -589,3 +589,58 @@ abstract class _$NetWorthNotifier extends $AsyncNotifier<int> {
     return element.handleCreate(ref, () => build(_$args));
   }
 }
+
+@ProviderFor(UpdateAccountUseCaseNotifier)
+final updateAccountUseCaseProvider = UpdateAccountUseCaseNotifierProvider._();
+
+final class UpdateAccountUseCaseNotifierProvider
+    extends
+        $NotifierProvider<UpdateAccountUseCaseNotifier, UpdateAccountUseCase> {
+  UpdateAccountUseCaseNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'updateAccountUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$updateAccountUseCaseNotifierHash();
+
+  @$internal
+  @override
+  UpdateAccountUseCaseNotifier create() => UpdateAccountUseCaseNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(UpdateAccountUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<UpdateAccountUseCase>(value),
+    );
+  }
+}
+
+String _$updateAccountUseCaseNotifierHash() =>
+    r'eb0530e7db118878137592fdebd3b9d74a9e9e82';
+
+abstract class _$UpdateAccountUseCaseNotifier
+    extends $Notifier<UpdateAccountUseCase> {
+  UpdateAccountUseCase build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<UpdateAccountUseCase, UpdateAccountUseCase>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<UpdateAccountUseCase, UpdateAccountUseCase>,
+              UpdateAccountUseCase,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

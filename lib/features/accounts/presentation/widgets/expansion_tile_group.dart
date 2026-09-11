@@ -7,6 +7,7 @@ class ExpansionTileGroup extends StatelessWidget {
   final String title;
   final IconData icon;
   final List<Account> accounts;
+  final void Function(Account account)? onTap;
   final void Function(Account account)? onLongPress;
 
   const ExpansionTileGroup({
@@ -14,6 +15,7 @@ class ExpansionTileGroup extends StatelessWidget {
     required this.title,
     required this.icon,
     required this.accounts,
+    this.onTap,
     this.onLongPress,
   });
 
@@ -44,14 +46,13 @@ class ExpansionTileGroup extends StatelessWidget {
         ),
         initiallyExpanded: true,
         children: accounts.map((account) {
-          final card = Padding(
+          return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: AccountCard(account: account),
-          );
-          if (onLongPress == null) return card;
-          return GestureDetector(
-            onLongPress: () => onLongPress!(account),
-            child: card,
+            child: GestureDetector(
+              onTap: onTap == null ? null : () => onTap!(account),
+              onLongPress: onLongPress == null ? null : () => onLongPress!(account),
+              child: AccountCard(account: account),
+            ),
           );
         }).toList(),
       ),

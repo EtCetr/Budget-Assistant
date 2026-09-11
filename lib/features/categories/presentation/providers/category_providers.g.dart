@@ -777,3 +777,119 @@ abstract class _$CategoriesGroupedByTypeNotifier
     return element.handleCreate(ref, () => build(_$args));
   }
 }
+
+@ProviderFor(UpdateCategoryUseCaseNotifier)
+final updateCategoryUseCaseProvider = UpdateCategoryUseCaseNotifierProvider._();
+
+final class UpdateCategoryUseCaseNotifierProvider
+    extends
+        $NotifierProvider<
+          UpdateCategoryUseCaseNotifier,
+          UpdateCategoryUseCase
+        > {
+  UpdateCategoryUseCaseNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'updateCategoryUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$updateCategoryUseCaseNotifierHash();
+
+  @$internal
+  @override
+  UpdateCategoryUseCaseNotifier create() => UpdateCategoryUseCaseNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(UpdateCategoryUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<UpdateCategoryUseCase>(value),
+    );
+  }
+}
+
+String _$updateCategoryUseCaseNotifierHash() =>
+    r'4288698c41eac154aefed3c21fe853f2715096e2';
+
+abstract class _$UpdateCategoryUseCaseNotifier
+    extends $Notifier<UpdateCategoryUseCase> {
+  UpdateCategoryUseCase build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<UpdateCategoryUseCase, UpdateCategoryUseCase>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<UpdateCategoryUseCase, UpdateCategoryUseCase>,
+              UpdateCategoryUseCase,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(DeleteCategoryUseCaseNotifier)
+final deleteCategoryUseCaseProvider = DeleteCategoryUseCaseNotifierProvider._();
+
+final class DeleteCategoryUseCaseNotifierProvider
+    extends
+        $NotifierProvider<
+          DeleteCategoryUseCaseNotifier,
+          DeleteCategoryUseCase
+        > {
+  DeleteCategoryUseCaseNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'deleteCategoryUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$deleteCategoryUseCaseNotifierHash();
+
+  @$internal
+  @override
+  DeleteCategoryUseCaseNotifier create() => DeleteCategoryUseCaseNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DeleteCategoryUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DeleteCategoryUseCase>(value),
+    );
+  }
+}
+
+String _$deleteCategoryUseCaseNotifierHash() =>
+    r'dec666c2c88460d9354046a577949b65c70f69b5';
+
+abstract class _$DeleteCategoryUseCaseNotifier
+    extends $Notifier<DeleteCategoryUseCase> {
+  DeleteCategoryUseCase build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<DeleteCategoryUseCase, DeleteCategoryUseCase>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<DeleteCategoryUseCase, DeleteCategoryUseCase>,
+              DeleteCategoryUseCase,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

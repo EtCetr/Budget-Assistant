@@ -210,4 +210,35 @@ class AccountDao extends DatabaseAccessor<AppDatabase> with _$AccountDaoMixin {
       ),
     );
   }
+
+    /// Обновление счёта (Edit): updatedAt + возврат в очередь sync
+  Future<void> updateAccountFields({
+    required String accountId,
+    required String bankName,
+    required String customName,
+    required String accountType,
+    required String currency,
+    required int currentBalance,
+    required String? cardNumberMask,
+    required int? creditLimit,
+    required DateTime updatedAt,
+  }) async {
+    try {
+      await (update(accounts)..where((t) => t.id.equals(accountId))).write(
+        AccountsCompanion(
+          bankName: Value(bankName),
+          customName: Value(customName),
+          accountType: Value(accountType),
+          currency: Value(currency),
+          currentBalance: Value(currentBalance),
+          cardNumberMask: Value(cardNumberMask),
+          creditLimit: Value(creditLimit),
+          updatedAt: Value(updatedAt),
+          syncStatus: const Value('pending'),
+        ),
+      );
+    } catch (e) {
+      throw Exception('Failed to update account: $e');
+    }
+  }
 }

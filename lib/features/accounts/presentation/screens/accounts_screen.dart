@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/account_providers.dart';
 import '../widgets/expansion_tile_group.dart';
+import '../widgets/account_type_ui.dart';
 import '../../domain/entities/account.dart';
+import '../../domain/entities/account_types.dart';
+import 'package:budget_assistant/core/utils/result.dart';
 
 class AccountsScreen extends ConsumerWidget {
   final String userId;
@@ -32,7 +35,7 @@ class AccountsScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.add),
             tooltip: 'Create account',
-            onPressed: () => _showCreateAccountDialog(context, ref),
+            onPressed: () => _showAccountDialog(context, ref),
           ),
         ],
       ),
@@ -68,16 +71,12 @@ class AccountsScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.account_balance_wallet,
-              size: 64,
-              color: Colors.grey,
-            ),
+            const Icon(Icons.account_balance_wallet, size: 64, color: Colors.grey),
             const SizedBox(height: 16),
             const Text('No accounts yet'),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => _showCreateAccountDialog(context, ref),
+              onPressed: () => _showAccountDialog(context, ref),
               child: const Text('Add your first account'),
             ),
           ],
@@ -85,40 +84,27 @@ class AccountsScreen extends ConsumerWidget {
       );
     }
 
-    final groupedAccounts = <String, List<Account>>{};
+    final grouped = <String, List<Account>>{};
     for (final account in accounts) {
-      groupedAccounts.putIfAbsent(account.accountType, () => []).add(account);
+      grouped.putIfAbsent(account.accountType, () => []).add(account);
     }
+
+    // Сначала известные типы в порядке ТЗ, затем прочие
+    final orderedTypes = [
+      ...AccountTypes.all.where(grouped.containsKey),
+      ...grouped.keys.where((t) => !AccountTypes.all.contains(t)),
+    ];
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        if (groupedAccounts.containsKey('debit'))
+        for (final type in orderedTypes)
           ExpansionTileGroup(
-            title: 'Debit Cards',
-            icon: Icons.credit_card,
-            accounts: groupedAccounts['debit']!,
-            onLongPress: (account) => _showDeleteDialog(context, ref, account),
-          ),
-        if (groupedAccounts.containsKey('credit'))
-          ExpansionTileGroup(
-            title: 'Credit Cards',
-            icon: Icons.credit_card,
-            accounts: groupedAccounts['credit']!,
-            onLongPress: (account) => _showDeleteDialog(context, ref, account),
-          ),
-        if (groupedAccounts.containsKey('savings'))
-          ExpansionTileGroup(
-            title: 'Savings',
-            icon: Icons.savings,
-            accounts: groupedAccounts['savings']!,
-            onLongPress: (account) => _showDeleteDialog(context, ref, account),
-          ),
-        if (groupedAccounts.containsKey('mortgage'))
-          ExpansionTileGroup(
-            title: 'Mortgages',
-            icon: Icons.home,
-            accounts: groupedAccounts['mortgage']!,
+            title: accountTypeMeta(type).label,
+            icon: accountTypeMeta(type).icon,
+            accounts: grouped[type]!,
+            onTap: (account) =>
+                _showAccountDialog(context, ref, account: account),
             onLongPress: (account) => _showDeleteDialog(context, ref, account),
           ),
       ],
@@ -146,9 +132,7 @@ class AccountsScreen extends ConsumerWidget {
                 success: (_) {
                   ref.invalidate(accountsListProvider(userId));
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Account "${account.customName}" deleted'),
-                    ),
+                    SnackBar(content: Text('Account "${account.customName}" deleted')),
                   );
                 },
                 failure: (failure) {
@@ -165,33 +149,50 @@ class AccountsScreen extends ConsumerWidget {
     );
   }
 
-  void _showCreateAccountDialog(BuildContext context, WidgetRef ref) {
+  void _showAccountDialog(BuildContext context, WidgetRef ref, {Account? account}) {
     showDialog(
       context: context,
-      builder: (context) => _CreateAccountDialog(userId: userId),
+      builder: (context) => _AccountDialog(userId: userId, account: account),
     );
   }
 }
 
-class _CreateAccountDialog extends ConsumerStatefulWidget {
+/// Диалог создания И редактирования счёта
+class _AccountDialog extends ConsumerStatefulWidget {
   final String userId;
+  final Account? account;
 
-  const _CreateAccountDialog({required this.userId});
+  const _AccountDialog({required this.userId, this.account});
 
   @override
-  ConsumerState<_CreateAccountDialog> createState() =>
-      _CreateAccountDialogState();
+  ConsumerState<_AccountDialog> createState() => _AccountDialogState();
 }
 
-class _CreateAccountDialogState extends ConsumerState<_CreateAccountDialog> {
-  final _nameController = TextEditingController();
-  final _balanceController = TextEditingController();
-  String _selectedType = 'debit';
+class _AccountDialogState extends ConsumerState<_AccountDialog> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _bankController;
+  late final TextEditingController _balanceController;
+  late String _selectedType;
   bool _isLoading = false;
+
+  bool get _isEdit => widget.account != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final a = widget.account;
+    _nameController = TextEditingController(text: a?.customName ?? '');
+    _bankController = TextEditingController(text: a?.bankName ?? '');
+    _balanceController = TextEditingController(
+      text: a == null ? '' : (a.currentBalance / 100).toStringAsFixed(2),
+    );
+    _selectedType = a?.accountType ?? AccountTypes.debit;
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _bankController.dispose();
     _balanceController.dispose();
     super.dispose();
   }
@@ -199,7 +200,7 @@ class _CreateAccountDialogState extends ConsumerState<_CreateAccountDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Create Account'),
+      title: Text(_isEdit ? 'Edit Account' : 'Create Account'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -209,29 +210,39 @@ class _CreateAccountDialogState extends ConsumerState<_CreateAccountDialog> {
               labelText: 'Account Name',
               hintText: 'e.g., My Card',
             ),
-            autofocus: true,
+            autofocus: !_isEdit,
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _bankController,
+            decoration: const InputDecoration(
+              labelText: 'Bank / Source',
+              hintText: 'e.g., T-Bank, Cash box',
+            ),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _balanceController,
             decoration: const InputDecoration(
-              labelText: 'Initial Balance (₽)',
+              labelText: 'Balance (₽)',
               hintText: '0.00',
             ),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
             initialValue: _selectedType,
             decoration: const InputDecoration(labelText: 'Type'),
-            items: const [
-              DropdownMenuItem(value: 'debit', child: Text('Debit Card')),
-              DropdownMenuItem(value: 'credit', child: Text('Credit Card')),
-              DropdownMenuItem(value: 'savings', child: Text('Savings')),
+            items: [
+              for (final type in AccountTypes.all)
+                DropdownMenuItem(
+                  value: type,
+                  child: Text(accountTypeMeta(type).label),
+                ),
             ],
             onChanged: (value) {
               setState(() {
-                _selectedType = value ?? 'debit';
+                _selectedType = value ?? AccountTypes.debit;
               });
             },
           ),
@@ -243,69 +254,80 @@ class _CreateAccountDialogState extends ConsumerState<_CreateAccountDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _isLoading ? null : _createAccount,
+          onPressed: _isLoading ? null : _save,
           child: _isLoading
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Create'),
+              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+              : Text(_isEdit ? 'Save' : 'Create'),
         ),
       ],
     );
   }
 
-  Future<void> _createAccount() async {
+  Future<void> _save() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Account name is required')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account name is required')),
+      );
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      // Деньги ТОЛЬКО в копейках: double используется лишь для парсинга ввода
+      // Деньги ТОЛЬКО в копейках: double — лишь для парсинга ввода
       final balanceKopecks =
-          ((double.tryParse(_balanceController.text.replaceAll(',', '.')) ??
-                      0.0) *
-                  100)
+          ((double.tryParse(_balanceController.text.replaceAll(',', '.')) ?? 0.0) * 100)
               .round();
+      final bank = _bankController.text.trim().isEmpty
+          ? 'Manual'
+          : _bankController.text.trim();
 
-      final useCase = ref.read(createAccountUseCaseProvider);
-      final result = await useCase.execute(
-        userId: widget.userId,
-        bankName: 'Manual',
-        customName: name,
-        accountType: _selectedType,
-        currency: 'RUB',
-        currentBalance: balanceKopecks,
-      );
+      final Result<void> result;
+      if (_isEdit) {
+        final a = widget.account!;
+        result = await ref.read(updateAccountUseCaseProvider).execute(
+              accountId: a.id,
+              bankName: bank,
+              customName: name,
+              accountType: _selectedType,
+              currency: a.currency,
+              currentBalance: balanceKopecks,
+              cardNumberMask: a.cardNumberMask,
+              creditLimit: a.creditLimit,
+            );
+      } else {
+        result = await ref.read(createAccountUseCaseProvider).execute(
+              userId: widget.userId,
+              bankName: bank,
+              customName: name,
+              accountType: _selectedType,
+              currency: 'RUB',
+              currentBalance: balanceKopecks,
+            );
+      }
 
       result.when(
-        success: (account) {
+        success: (_) {
           if (!mounted) return;
           Navigator.of(context).pop();
           ref.invalidate(accountsListProvider(widget.userId));
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Account "${account.customName}" created')),
+            SnackBar(content: Text('Account "$name" ${_isEdit ? 'updated' : 'created'}')),
           );
         },
         failure: (failure) {
           if (!mounted) return;
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: ${failure.message}')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${failure.message}')),
+          );
         },
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Invalid amount: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Invalid amount: $e')),
+        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

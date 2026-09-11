@@ -11,6 +11,7 @@ import '../../domain/repositories/account_repository.dart';
 import '../../data/repositories/account_repository_impl.dart';
 import '../../data/datasources/account_dao.dart';
 import '../../data/datasources/mortgage_dao.dart';
+import '../../domain/usecases/update_account_usecase.dart';
 
 part 'account_providers.g.dart';
 
@@ -109,5 +110,16 @@ class NetWorthNotifier extends _$NetWorthNotifier {
     final result = await useCase.execute(userId);
 
     return result.when(success: (value) => value, failure: (error) => 0);
+  }
+}
+
+@riverpod
+class UpdateAccountUseCaseNotifier extends _$UpdateAccountUseCaseNotifier {
+  @override
+  UpdateAccountUseCase build() {
+    return UpdateAccountUseCase(
+      repository: ref.watch(accountRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+    );
   }
 }

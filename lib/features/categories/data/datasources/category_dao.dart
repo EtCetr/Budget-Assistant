@@ -128,4 +128,50 @@ class CategoryDao extends DatabaseAccessor<AppDatabase>
       throw Exception('Failed to get categories by parent: $e');
     }
   }
+
+    /// Обновление категории: updatedAt + возврат в очередь sync
+  Future<void> updateCategoryFields({
+    required String categoryId,
+    required String name,
+    required String type,
+    required String? parentId,
+    required String? iconEmoji,
+    required String? colorHex,
+    required DateTime updatedAt,
+  }) async {
+    try {
+      await (update(categories)..where((t) => t.id.equals(categoryId))).write(
+        CategoriesCompanion(
+          name: Value(name),
+          type: Value(type),
+          parentId: Value(parentId),
+          iconEmoji: Value(iconEmoji),
+          colorHex: Value(colorHex),
+          updatedAt: Value(updatedAt),
+          syncStatus: const Value('pending'),
+        ),
+      );
+    } catch (e) {
+      throw Exception('Failed to update category: $e');
+    }
+  }
+
+  /// Удаление категории со сплайсом детей на её родителя (в транзакции)
+  Future<void> deleteCategory(String categoryId) async {
+    try {
+      await transaction(() async {
+        final row = await (select(categories)
+              ..where((t) => t.id.equals(categoryId)))
+            .getSingleOrNull();
+        if (row == null) return;
+
+        await (update(categories)..where((t) => t.parentId.equals(categoryId)))
+            .write(CategoriesCompanion(parentId: Value(row.parentId)));
+
+        await (delete(categories)..where((t) => t.id.equals(categoryId))).go();
+      });
+    } catch (e) {
+      throw Exception('Failed to delete category: $e');
+    }
+  }
 }
