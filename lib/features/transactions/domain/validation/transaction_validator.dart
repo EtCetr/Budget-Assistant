@@ -1,4 +1,4 @@
-import 'package:budget_assistant/core/enums/transaction_enums.dart';
+﻿import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import 'package:budget_assistant/features/transactions/domain/models/transaction_draft.dart';
 
 /// Валидация черновика транзакции.

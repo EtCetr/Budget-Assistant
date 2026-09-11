@@ -1,4 +1,4 @@
-// lib/features/categories/data/datasources/category_dao.dart
+﻿// lib/features/categories/data/datasources/category_dao.dart
 import 'package:drift/drift.dart';
 import '../../../../core/database/app_database.dart';
 import '../models/category_model.dart';

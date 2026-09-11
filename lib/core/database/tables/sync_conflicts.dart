@@ -1,4 +1,4 @@
-// lib/core/database/tables/sync_conflicts.dart
+﻿// lib/core/database/tables/sync_conflicts.dart
 import 'package:drift/drift.dart';
 
 class SyncConflicts extends Table {

@@ -1,4 +1,4 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+﻿import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budget_assistant/core/errors/failures.dart';
 import 'package:budget_assistant/core/logger.dart'; // Добавлен импорт
 

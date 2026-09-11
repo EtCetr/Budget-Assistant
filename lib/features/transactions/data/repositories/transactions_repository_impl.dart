@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+﻿import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 
 import 'package:budget_assistant/core/database/app_database.dart';

@@ -146,7 +146,7 @@ void main() {
     final result = await createUseCase(
       draft: draft(
         splits: [
-          TransactionSplitDraft(categoryId: 'cat-1', amount: 1000),
+          const TransactionSplitDraft(categoryId: 'cat-1', amount: 1000),
         ],
       ),
       userId: 'user-1',
@@ -160,7 +160,7 @@ void main() {
     final result = await createUseCase(
       draft: draft(amount: 15000000), // 150 000 ₽ > порога 100 000 ₽
       userId: 'user-1',
-      secrecyConfig: SecrecyConfig(
+      secrecyConfig: const SecrecyConfig(
         enabled: true,
         threshold: 10000000,
         timeoutSeconds: 120,

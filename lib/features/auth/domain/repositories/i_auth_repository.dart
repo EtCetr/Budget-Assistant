@@ -1,4 +1,4 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+﻿import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budget_assistant/core/utils/result.dart';
 
 abstract class IAuthRepository {

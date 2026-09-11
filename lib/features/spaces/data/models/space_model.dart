@@ -1,4 +1,4 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+﻿import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'space_model.freezed.dart';  // ← ТОЛЬКО имя файла!
 part 'space_model.g.dart';         // ← ТОЛЬКО имя файла!

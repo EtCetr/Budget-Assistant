@@ -1,4 +1,4 @@
-/// Базовый класс для всех исключений, связанных с безопасностью и шифрованием.
+﻿/// Базовый класс для всех исключений, связанных с безопасностью и шифрованием.
 class SecurityException implements Exception {
   final String message;
   final dynamic cause;

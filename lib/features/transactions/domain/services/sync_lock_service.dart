@@ -1,4 +1,4 @@
-import 'package:budget_assistant/core/ports/clock_port.dart';
+﻿import 'package:budget_assistant/core/ports/clock_port.dart';
 import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
 
 /// Проверка блокировки синхронизации крупных трат.

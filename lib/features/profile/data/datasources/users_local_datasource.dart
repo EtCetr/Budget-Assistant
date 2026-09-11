@@ -1,4 +1,4 @@
-// lib/features/profile/data/datasources/users_local_datasource.dart
+﻿// lib/features/profile/data/datasources/users_local_datasource.dart
 import 'package:drift/drift.dart'; // ✅ ДОБАВИТЬ для Value
 import 'package:logger/logger.dart'; // ✅ Заменить logging на logger
 import 'package:budget_assistant/core/database/app_database.dart';

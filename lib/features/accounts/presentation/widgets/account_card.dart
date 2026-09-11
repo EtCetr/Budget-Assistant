@@ -1,4 +1,4 @@
-// lib/features/accounts/presentation/widgets/account_card.dart
+﻿// lib/features/accounts/presentation/widgets/account_card.dart
 import 'package:flutter/material.dart';
 import '../../domain/entities/account.dart';
 

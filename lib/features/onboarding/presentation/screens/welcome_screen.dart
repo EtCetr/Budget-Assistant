@@ -1,4 +1,4 @@
-// lib/features/onboarding/presentation/screens/welcome_screen.dart
+﻿// lib/features/onboarding/presentation/screens/welcome_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/features/onboarding/domain/notifiers/onboarding_notifier.dart';

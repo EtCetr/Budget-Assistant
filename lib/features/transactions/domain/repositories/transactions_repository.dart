@@ -1,4 +1,4 @@
-import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
+﻿import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
 import 'package:budget_assistant/features/transactions/domain/models/transaction_split.dart';
 
 /// Контракт репозитория транзакций.

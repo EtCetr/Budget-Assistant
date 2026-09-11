@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -20,6 +20,10 @@ import 'package:budget_assistant/features/categories/presentation/screens/catego
 import 'package:budget_assistant/core/bootstrap/app_bootstrap_flags.dart';
 import 'package:budget_assistant/core/services/secure_storage_service.dart';
 import 'package:budget_assistant/core/logger.dart';
+import 'package:budget_assistant/features/transactions/presentation/screens/transactions_log_screen.dart';
+import 'package:budget_assistant/features/import/presentation/screens/import_onboarding_stub_screen.dart';
+import 'package:budget_assistant/features/transactions/presentation/screens/create_transaction_screen.dart';
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
 
 part 'app_router.g.dart';
 
@@ -171,6 +175,27 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) => CategoriesScreen(
           userId: Supabase.instance.client.auth.currentUser?.id ?? '',
         ),
+      ),
+      GoRoute(
+        path: '/transactions',
+        builder: (context, state) => const TransactionsLogScreen(),
+      ),
+      GoRoute(
+        path: '/import/onboarding',
+        name: 'import-onboarding',
+        builder: (context, state) => const ImportOnboardingStubScreen(),
+      ),
+      GoRoute(
+        path: '/transactions/create',
+        name: 'create-transaction',
+        builder: (context, state) {
+          final typeStr = state.uri.queryParameters['type'] ?? 'expense';
+          final type = TransactionType.values.firstWhere(
+            (t) => t.name == typeStr,
+            orElse: () => TransactionType.expense,
+          );
+          return CreateTransactionScreen(type: type);
+        },
       ),
     ],
     redirect: (context, state) {

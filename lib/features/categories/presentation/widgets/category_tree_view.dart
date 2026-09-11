@@ -1,4 +1,4 @@
-// lib/features/categories/presentation/widgets/category_tree_view.dart
+﻿// lib/features/categories/presentation/widgets/category_tree_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/category_providers.dart';

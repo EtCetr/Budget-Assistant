@@ -1,4 +1,4 @@
-// lib/features/accounts/domain/entities/mortgage.dart
+﻿// lib/features/accounts/domain/entities/mortgage.dart
 import '../../data/models/mortgage_model.dart';
 
 class Mortgage {

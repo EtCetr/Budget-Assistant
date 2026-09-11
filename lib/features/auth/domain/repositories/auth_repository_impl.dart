@@ -1,4 +1,4 @@
-// lib/features/auth/domain/repositories/auth_repository_impl.dart
+﻿// lib/features/auth/domain/repositories/auth_repository_impl.dart
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budget_assistant/core/utils/result.dart';
 import 'package:budget_assistant/core/errors/failures.dart';

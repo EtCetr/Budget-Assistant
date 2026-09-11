@@ -1,4 +1,4 @@
-// lib/features/auth/presentation/screens/auth_wrapper.dart
+﻿// lib/features/auth/presentation/screens/auth_wrapper.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/core/logger.dart';

@@ -1,4 +1,4 @@
-// lib/features/categories/domain/entities/category.dart
+﻿// lib/features/categories/domain/entities/category.dart
 import '../../data/models/category_model.dart';
 
 class Category {

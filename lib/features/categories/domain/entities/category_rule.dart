@@ -1,4 +1,4 @@
-// lib/features/categories/domain/entities/category_rule.dart
+﻿// lib/features/categories/domain/entities/category_rule.dart
 import '../../data/models/category_rule_model.dart';
 
 class CategoryRule {

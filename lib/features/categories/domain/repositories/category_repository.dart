@@ -1,4 +1,4 @@
-// lib/features/categories/domain/repositories/category_repository.dart
+﻿// lib/features/categories/domain/repositories/category_repository.dart
 import '../entities/category.dart';
 import '../entities/category_rule.dart';
 import 'package:budget_assistant/core/utils/result.dart';

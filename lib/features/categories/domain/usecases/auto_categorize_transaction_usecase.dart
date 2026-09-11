@@ -1,4 +1,4 @@
-// lib/features/categories/domain/usecases/auto_categorize_transaction_usecase.dart
+﻿// lib/features/categories/domain/usecases/auto_categorize_transaction_usecase.dart
 import 'package:budget_assistant/core/errors/failures.dart';
 import 'package:budget_assistant/core/utils/result.dart';
 import 'package:logger/logger.dart';

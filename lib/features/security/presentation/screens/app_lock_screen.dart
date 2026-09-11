@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:budget_assistant/features/security/presentation/screens/pin_entry_screen.dart';
 
 class AppLockScreen extends StatelessWidget {

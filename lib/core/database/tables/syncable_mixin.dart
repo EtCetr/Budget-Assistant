@@ -1,4 +1,4 @@
-import 'package:drift/drift.dart';
+﻿import 'package:drift/drift.dart';
 
 mixin SyncableTable on Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();

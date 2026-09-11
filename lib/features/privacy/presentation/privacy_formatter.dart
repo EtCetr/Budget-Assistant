@@ -1,4 +1,4 @@
-import 'package:intl/intl.dart';
+﻿import 'package:intl/intl.dart';
 
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 

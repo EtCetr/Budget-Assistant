@@ -1,4 +1,4 @@
-// lib/core/database/tables/notifications.dart
+﻿// lib/core/database/tables/notifications.dart
 import 'package:drift/drift.dart';
 import 'syncable_mixin.dart';
 import 'users.dart';

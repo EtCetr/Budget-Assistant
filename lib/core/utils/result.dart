@@ -1,4 +1,4 @@
-// lib/core/utils/result.dart
+﻿// lib/core/utils/result.dart
 import 'package:budget_assistant/core/errors/failures.dart';
 
 abstract class Result<T> {

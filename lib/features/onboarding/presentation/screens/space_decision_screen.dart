@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/features/onboarding/domain/notifiers/onboarding_notifier.dart';
 import 'package:budget_assistant/core/providers/encryption_providers.dart';

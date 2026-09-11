@@ -1,4 +1,4 @@
-// lib/core/router/routes.dart
+﻿// lib/core/router/routes.dart
 // Константы для маршрутов
 
 class AppRoutes {

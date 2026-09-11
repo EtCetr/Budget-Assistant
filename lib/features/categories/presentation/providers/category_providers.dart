@@ -1,4 +1,4 @@
-// lib/features/categories/presentation/providers/category_providers.dart
+﻿// lib/features/categories/presentation/providers/category_providers.dart
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/providers/database_providers.dart';
 import '../../../../core/providers/util_providers.dart';

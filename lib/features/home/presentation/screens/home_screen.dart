@@ -1,4 +1,4 @@
-// lib/features/home/presentation/screens/home_screen.dart
+﻿// lib/features/home/presentation/screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -37,6 +37,10 @@ class HomeScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () => context.go('/categories'),
               child: const Text('Категории (QA)'),
+            ),
+            ElevatedButton(
+              onPressed: () => context.push('/transactions'),
+              child: const Text('Транзакции (QA)'),
             ),
           ],
         ),

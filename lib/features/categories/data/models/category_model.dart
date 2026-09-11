@@ -1,4 +1,4 @@
-// lib/features/categories/data/models/category_model.dart
+﻿// lib/features/categories/data/models/category_model.dart
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'category_model.freezed.dart';

@@ -1,4 +1,4 @@
-enum OnboardingStep {
+﻿enum OnboardingStep {
   welcome,
   baseCurrency,
   securitySetup,

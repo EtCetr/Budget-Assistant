@@ -1,4 +1,4 @@
-// lib/features/accounts/domain/entities/account.dart
+﻿// lib/features/accounts/domain/entities/account.dart
 import '../../data/models/account_model.dart';
 
 class Account {

@@ -1,4 +1,4 @@
-import 'package:budget_assistant/core/ports/clock_port.dart';
+﻿import 'package:budget_assistant/core/ports/clock_port.dart';
 import 'package:budget_assistant/core/services/elapsed_realtime_service.dart';
 
 /// Адаптер: инфраструктурный сервис -> доменный порт.

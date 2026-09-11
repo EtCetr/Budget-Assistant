@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 
 /// Global provider for the Drift database instance.

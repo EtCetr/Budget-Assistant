@@ -1,4 +1,4 @@
-// lib/features/accounts/domain/repositories/account_repository.dart
+﻿// lib/features/accounts/domain/repositories/account_repository.dart
 import '../entities/account.dart';
 import '../entities/mortgage.dart';
 import 'package:budget_assistant/core/utils/result.dart';

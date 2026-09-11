@@ -1,4 +1,4 @@
-// lib/core/providers/auth_providers.dart
+﻿// lib/core/providers/auth_providers.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budget_assistant/features/auth/data/datasources/auth_remote_datasource.dart';

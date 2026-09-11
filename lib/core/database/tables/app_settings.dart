@@ -1,4 +1,4 @@
-// lib/core/database/tables/app_settings.dart
+﻿// lib/core/database/tables/app_settings.dart
 import 'package:drift/drift.dart';
 import 'syncable_mixin.dart';
 import 'users.dart';

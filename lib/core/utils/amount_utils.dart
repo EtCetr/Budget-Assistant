@@ -1,4 +1,4 @@
-int rublesToKopecks(double rubles) {
+﻿int rublesToKopecks(double rubles) {
   return (rubles * 100).round();
 }
 

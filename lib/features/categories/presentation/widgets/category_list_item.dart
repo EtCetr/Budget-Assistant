@@ -1,4 +1,4 @@
-// lib/features/categories/presentation/widgets/category_list_item.dart
+﻿// lib/features/categories/presentation/widgets/category_list_item.dart
 import 'package:flutter/material.dart';
 import '../../domain/entities/category.dart';
 

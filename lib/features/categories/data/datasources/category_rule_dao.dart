@@ -1,4 +1,4 @@
-// lib/features/categories/data/datasources/category_rule_dao.dart
+﻿// lib/features/categories/data/datasources/category_rule_dao.dart
 import 'package:drift/drift.dart';
 import '../../../../core/database/app_database.dart';
 import '../models/category_rule_model.dart';

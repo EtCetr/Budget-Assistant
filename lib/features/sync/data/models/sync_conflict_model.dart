@@ -1,4 +1,4 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+﻿import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'sync_conflict_model.freezed.dart';
 part 'sync_conflict_model.g.dart';

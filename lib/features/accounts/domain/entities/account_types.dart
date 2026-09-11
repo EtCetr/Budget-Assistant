@@ -1,4 +1,4 @@
-/// Типы счетов по ТЗ 6.0 (ТОМ 2, разд. 3).
+﻿/// Типы счетов по ТЗ 6.0 (ТОМ 2, разд. 3).
 /// Единственный источник правды для бизнес-логики и UI.
 /// lib/features/accounts/domain/entities/account_types.dart
 abstract class AccountTypes {

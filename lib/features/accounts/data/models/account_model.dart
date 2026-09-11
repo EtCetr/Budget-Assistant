@@ -1,4 +1,4 @@
-// lib/features/accounts/data/models/account_model.dart
+﻿// lib/features/accounts/data/models/account_model.dart
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 // ✅ ОБЯЗАТЕЛЬНО обе part директивы

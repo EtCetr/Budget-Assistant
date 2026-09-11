@@ -1,4 +1,4 @@
-// lib/core/database/tables/tables.dart
+﻿// lib/core/database/tables/tables.dart
 export 'syncable_mixin.dart';
 export 'users.dart';
 export 'spaces.dart';

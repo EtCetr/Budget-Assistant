@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import '../exceptions/security_exceptions.dart';
 

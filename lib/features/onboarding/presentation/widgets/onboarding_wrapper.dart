@@ -1,4 +1,4 @@
-// lib/features/onboarding/presentation/widgets/onboarding_wrapper.dart
+﻿// lib/features/onboarding/presentation/widgets/onboarding_wrapper.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/features/onboarding/domain/enums/onboarding_step.dart';

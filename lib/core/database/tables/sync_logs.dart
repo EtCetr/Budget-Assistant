@@ -1,4 +1,4 @@
-// lib/core/database/tables/sync_logs.dart
+﻿// lib/core/database/tables/sync_logs.dart
 import 'package:drift/drift.dart';
 import 'users.dart';
 

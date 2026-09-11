@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MockEncryptionService {
   Future<String> generateKey() async => 'mock_master_key_123';

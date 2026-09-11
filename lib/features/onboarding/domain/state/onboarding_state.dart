@@ -1,4 +1,4 @@
-// lib/features/onboarding/domain/state/onboarding_state.dart
+﻿// lib/features/onboarding/domain/state/onboarding_state.dart
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:budget_assistant/features/onboarding/domain/enums/onboarding_step.dart';
 

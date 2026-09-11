@@ -1,4 +1,4 @@
-/// Кэш флагов, загруженных в main() ДО runApp.
+﻿/// Кэш флагов, загруженных в main() ДО runApp.
 /// Riverpod-провайдеры не могут await в build(),
 /// поэтому SecureStorage читаем заранее.
 class AppBootstrapFlags {

@@ -1,4 +1,4 @@
-// lib/features/categories/data/repositories/category_repository_impl.dart
+﻿// lib/features/categories/data/repositories/category_repository_impl.dart
 import '../../domain/entities/category.dart';
 import '../../domain/entities/category_rule.dart';
 import '../../domain/repositories/category_repository.dart';

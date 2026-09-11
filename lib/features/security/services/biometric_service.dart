@@ -1,4 +1,4 @@
-import 'package:local_auth/local_auth.dart';
+﻿import 'package:local_auth/local_auth.dart';
 import 'package:budget_assistant/core/logger.dart';
 
 class BiometricService {

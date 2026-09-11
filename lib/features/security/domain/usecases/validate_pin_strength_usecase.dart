@@ -1,4 +1,4 @@
-import 'package:budget_assistant/core/errors/failures.dart';
+﻿import 'package:budget_assistant/core/errors/failures.dart';
 
 class PinValidationResult {
   final bool isValid;
