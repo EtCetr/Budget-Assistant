@@ -71,18 +71,20 @@
 - [x] Полные 7 типов счетов в UI создания/редактирования (debit/credit/cash/savings/safe/investment_broker/mortgage)
 - [x] CRUD категорий: Update/Delete + дочерние категории (parent_id в диалоге, сплайс детей при удалении)
 - [x] Update счёта (Edit по тапу)
+- [x] **Sync Service + WorkManager + Supabase** (Этап 8) — UPSERT пакетов, E2E-шифрование payload, LWW для транзакций, pull-to-refresh
+- [x] **Монотонные часы для sync_locked** — `SystemClock.elapsedRealtime()` через MethodChannel `budget_assistant/clock`
+- [x] **Автоматическая блокировка синхронизации** крупных расходов через `SecrecyConfig` из `app_settings`
 
 ### Открыто
 - [ ] **l10n-фундамент**: RU как основной язык (flutter_localizations + .arb, замена хардкода строк).
       Решение: микро-коммит ПОСЛЕ Этапа 7 — переводить все экраны за один раз.
-- [ ] E2E-шифрование payload счетов/категорий/транзакций перед Supabase — Этап 8 (SyncService)
 - [ ] Drag-and-drop сортировка счетов в UI (UseCase UpdateAccountSortOrder готов) — Этап 21 (Cards & Wallets, ТЗ 6.3.4.4)
 - [ ] Форма создания ипотеки (account_type='mortgage' + поля mortgages) — Этап 21
 - [ ] Авто-создание системных счетов (is_system, напр. «Наличные») — Этап 21
 - [ ] enable_biometric_login не персистится в app_settings — Этап 21 (SecuritySettingsScreen)
 - [ ] space_selector: заглушка вместо реального списка пространств — Этап 17/21
 - [ ] `onlyDebts`-фильтр в логе транзакций — включится на Этапе 13 (таблица debts)
-- [ ] `sync_locked_until`-логика для подарков в long-press — полная реализация на Этапе 8/15
+- [ ] `sync_locked_until`-логика для подарков в **long-press меню** — UI-кнопка «Засекретить» на Этапе 15 (авто-блокировка по порогу уже работает на Этапе 8)
 - [ ] l10n: перевод TransactionsLogLabels в .arb — микро-коммит после Этапа 7
 - [ ] `initializeDateFormatting()` + `Intl.defaultLocale = 'ru'` в main — временное решение до l10n-микро-коммита (после Этапа 7 переводим DateFormat на locale из контекста через easy_localization)
 - [ ] Продуктовое решение (после Этапа 7): сегмент «Семейные» = все транзакции активного пространства (включая мои); «только члены семьи» = чип «Без моих». Отклонение от ТЗ 6.3.2.3 согласовано владельцем.

@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/ports/clock_port.dart';
+import 'package:budget_assistant/core/services/elapsed_realtime_service.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 
 import '../../data/repositories/transactions_repository_impl.dart';
@@ -24,7 +25,7 @@ final createTransactionUseCaseProvider = Provider<CreateTransactionUseCase>(
   (ref) => CreateTransactionUseCase(
     repository: ref.watch(transactionsRepositoryProvider),
     logger: _logger,
-    clock: const _SystemClock(),
+    clock: ref.watch(elapsedRealtimeServiceProvider),
   ),
 );
 
@@ -33,13 +34,8 @@ final currentUserIdForCreateProvider = Provider<String>(
   (ref) => ref.watch(currentUserIdProvider),
 );
 
-/// Дефолтная реализация ClockPort: системные монотонные миллисекунды.
-/// TODO(Этап 8): заменить на SystemClock.elapsedRealtime через MethodChannel,
-/// чтобы sync_locked не сбивался при переводе часов пользователем.
-class _SystemClock implements ClockPort {
-  const _SystemClock();
-
-  @override
-  Future<int> elapsedRealtimeMs() async =>
-      DateTime.now().millisecondsSinceEpoch;
-}
+/// Боевая реализация монотонных часов через platform channel.
+/// Защита sync-lock от перевода часов пользователем.
+final elapsedRealtimeServiceProvider = Provider<ClockPort>(
+  (ref) => ElapsedRealtimeService(),
+);

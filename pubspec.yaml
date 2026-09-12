@@ -4,7 +4,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.10.0 <4.0.0' # Обновлено для поддержки analyzer 12.x и новых пакетов
+  sdk: '>=3.10.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -19,7 +19,7 @@ dependencies:
   # Local Database (Offline-First)
   drift: ^2.34.0
   drift_flutter: ^0.3.0
-  sqlite3: ^3.1.5 # ВАЖНО: drift 2.34.0 требует sqlite3 ^3.1.5
+  sqlite3: ^3.1.5
   path_provider: ^2.1.5
   path: ^1.9.1
 
@@ -43,6 +43,9 @@ dependencies:
   crypto: ^3.0.6
   pointycastle: ^3.9.1
 
+  # Background sync
+  workmanager: ^0.7.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -51,21 +54,13 @@ dev_dependencies:
   # Code Generation (Золотая комбинация для analyzer ^12.0.0)
   build_runner: ^2.4.14
   
-  # ВНИМАНИЕ: ТОЧНЫЕ ВЕРСИИ (без ^) для предотвращения подтягивания analyzer 13.x
-  freezed: 3.2.6-dev.1 # Поддерживает analyzer >=12.0.0 <13.0.0
+  freezed: 3.2.6-dev.1
   json_serializable: ^6.9.2
-  drift_dev: 2.34.0 # Поддерживает analyzer >=10.0.0 <13.0.0
+  drift_dev: 2.34.0
   
-  riverpod_generator: ^4.0.4 # Требует analyzer ^12.0.0
+  riverpod_generator: ^4.0.4
   
-  # Mocking (for tests)
   mocktail: ^1.0.4
-
-  # ВРЕМЕННО УДАЛЕНО ИЗ-ЗА КОНФЛИКТА analyzer:
-  # custom_lint и riverpod_lint требуют старых версий analyzer и блокируют build_runner.
-  # Это не влияет на генерацию кода и работу приложения.
-  # custom_lint: ^0.7.0
-  # riverpod_lint: ^3.0.0
 
 flutter:
   uses-material-design: true

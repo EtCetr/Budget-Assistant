@@ -299,6 +299,9 @@ class AppDatabase extends _$AppDatabase {
   /// Конструктор для unit-тестов (in-memory БД)
   AppDatabase.forTesting(super.e);
 
+  /// Конструктор для background isolate (WorkManager)
+  AppDatabase.forBackground(super.e);
+  
   /// v1: старт (Этап 3)
   /// v2: миграция SyncableTable (Этап 3/5)
   /// v3: Этап 6 — таблицы transactions и transaction_splits

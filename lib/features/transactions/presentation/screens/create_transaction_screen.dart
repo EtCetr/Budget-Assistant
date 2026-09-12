@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import 'package:budget_assistant/core/errors/result.dart';
 import 'package:budget_assistant/core/formatting/money_input_parser.dart';
@@ -13,6 +14,7 @@ import 'package:budget_assistant/core/theme/app_spacing.dart';
 
 import '../../../../core/providers/security_providers.dart';
 import '../../domain/entities/lookup_item.dart';
+import '../../domain/models/secrecy_config.dart';
 import '../../domain/models/transaction_draft.dart';
 import '../labels/transactions_log_labels.dart';
 import '../providers/create_transaction_providers.dart';
@@ -347,10 +349,13 @@ class _CreateTransactionScreenState
       final userId = ref.read(currentUserIdForCreateProvider);
       final spaceId = ref.read(currentSpaceIdProvider);
 
+      // Читаем настройки секретности из app_settings
+      final secrecyConfig = await _loadSecrecyConfig(userId);
+
       final result = await usecase.call(
         draft: _draft.copyWith(spaceId: spaceId),
         userId: userId,
-        secrecyConfig: null, // TODO(Этап 8): полная логика secrecy
+        secrecyConfig: secrecyConfig,
       );
 
       if (!mounted) return;
@@ -391,6 +396,30 @@ class _CreateTransactionScreenState
       if (mounted) {
         setState(() => _isSaving = false);
       }
+    }
+  }
+
+  /// Читает настройки режима секретности из app_settings.
+  ///
+  /// Возвращает SecrecyConfig, если режим включен и пользователь существует.
+  /// Иначе возвращает null (блокировка синхронизации не применяется).
+  Future<SecrecyConfig?> _loadSecrecyConfig(String userId) async {
+    try {
+      final db = AppDatabase();
+      final settings = await db.appSettingsDao.getForUser(userId);
+
+      if (!settings.enableSecrecyMode) {
+        return null;
+      }
+
+      return SecrecyConfig(
+        enabled: true,
+        threshold: settings.largeTransactionThreshold,
+        timeoutSeconds: settings.secrecyTimeoutSeconds,
+      );
+    } catch (e) {
+      // Если не удалось прочитать настройки, не блокируем сохранение
+      return null;
     }
   }
 }

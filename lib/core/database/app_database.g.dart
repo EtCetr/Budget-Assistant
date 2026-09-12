@@ -1893,7 +1893,7 @@ class $AppSettingsTable extends AppSettings
         false,
         type: DriftSqlType.int,
         requiredDuringInsert: false,
-        defaultValue: const Constant(10000000),
+        defaultValue: const Constant(1000000),
       );
   static const VerificationMeta _autoHideGiftsOnImportMeta =
       const VerificationMeta('autoHideGiftsOnImport');
