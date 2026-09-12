@@ -91,6 +91,13 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
         expressions.add(t.userId.equals(currentUserId).not());
       }
 
+      // Фильтр аналитики: «Без крупных трат».
+      // Применяется в P&L, Dashboard, Monthly Analytics.
+      // В лимитах по категориям не используется (там своя логика).
+      if (filter.excludeLargeExpenses) {
+        expressions.add(t.isLargeExpense.equals(false));
+      }
+
       final search = filter.search.trim();
       if (search.isNotEmpty) {
         final term = '%$search%';
@@ -167,25 +174,6 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
       );
     } catch (e, s) {
       AppLogger.e('hideAsGift failed: $e', e, s);
-      rethrow;
-    }
-  }
-
-  @override
-  Future<void> ignore(String transactionId) async {
-    try {
-      final now = DateTime.now().toUtc();
-      await (_db.update(
-        _db.transactions,
-      )..where((t) => t.id.equals(transactionId))).write(
-        TransactionsCompanion(
-          auditStatus: const Value(AuditStatus.ignored),
-          syncStatus: const Value(SyncStatus.pending),
-          updatedAt: Value(now),
-        ),
-      );
-    } catch (e, s) {
-      AppLogger.e('ignore failed: $e', e, s);
       rethrow;
     }
   }
@@ -279,25 +267,6 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
     }
   }
 
-  @override
-  Future<void> restoreFromIgnored(String transactionId) async {
-    try {
-      final now = DateTime.now().toUtc();
-      await (_db.update(
-        _db.transactions,
-      )..where((t) => t.id.equals(transactionId))).write(
-        TransactionsCompanion(
-          auditStatus: const Value(AuditStatus.verified),
-          syncStatus: const Value(SyncStatus.pending),
-          updatedAt: Value(now),
-        ),
-      );
-    } catch (e, s) {
-      AppLogger.e('restoreFromIgnored failed: $e', e, s);
-      rethrow;
-    }
-  }
-
   // ═══════════════════════════════════════════════════════════════
   // Helpers
   // ═══════════════════════════════════════════════════════════════
@@ -328,6 +297,7 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
       memberDisplayName: u?.displayName,
       memberColorHex: null,
       isHiddenByCalendar: t.isHiddenByCalendar,
+      isLargeExpense: t.isLargeExpense,
     );
   }
 
@@ -356,6 +326,30 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
         // Изоляция Multi-group сохранена: данные других пространств не попадают.
         if (currentSpaceId == null) return const Constant(false);
         return t.spaceId.equals(currentSpaceId);
+    }
+  }
+
+  @override
+  Future<void> toggleLargeExpense(String transactionId) async {
+    try {
+      final now = DateTime.now().toUtc();
+      // Инвертируем текущее значение флага
+      await _db.customUpdate(
+        '''
+          UPDATE transactions
+          SET is_large_expense = NOT is_large_expense,
+              sync_status = 'pending',
+              updated_at = ?
+          WHERE id = ?
+        ''',
+        variables: [
+          Variable.withDateTime(now),
+          Variable.withString(transactionId),
+        ],
+      );
+    } catch (e, s) {
+      AppLogger.e('toggleLargeExpense failed: $e', e, s);
+      rethrow;
     }
   }
 

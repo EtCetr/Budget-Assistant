@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 
@@ -13,8 +14,6 @@ import '../labels/transactions_log_labels.dart';
 import '../providers/transactions_log_providers.dart';
 
 /// Контекстное меню транзакции (long-press на TransactionRow).
-/// Действия-«переключатели»: подарок и сторно обратимы —
-/// пункт меню меняется на противоположный в зависимости от состояния записи.
 Future<void> showTransactionLongPressMenu({
   required BuildContext context,
   required WidgetRef ref,
@@ -43,6 +42,17 @@ Future<void> showTransactionLongPressMenu({
                 title,
                 style: Theme.of(sheetContext).textTheme.titleMedium,
               ),
+            ),
+
+            // ✏️ Редактировать
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text(TransactionsLogLabels.edit),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                HapticFeedback.lightImpact();
+                context.push('/transactions/edit/${transaction.id}');
+              },
             ),
 
             // 🎁 Подарок / отмена подарка (контекстно)
@@ -77,17 +87,17 @@ Future<void> showTransactionLongPressMenu({
                 },
               ),
 
-            // 🚫 Сторно / возврат в учёт (контекстно)
-            if (transaction.auditStatus == AuditStatus.ignored)
+            // 💎 Крупная трата / снять пометку (контекстно)
+            if (transaction.isLargeExpense)
               ListTile(
-                leading: const Icon(Icons.restore_from_trash),
-                title: const Text(TransactionsLogLabels.restoreFromIgnored),
+                leading: const Icon(Icons.diamond_outlined),
+                title: const Text(TransactionsLogLabels.unmarkAsLargeExpense),
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
                   HapticFeedback.lightImpact();
 
                   final result = await ref
-                      .read(restoreTransactionUseCaseProvider)
+                      .read(toggleLargeExpenseUseCaseProvider)
                       .call(transaction.id);
 
                   _invalidateAndNotify(messenger, ref, result);
@@ -95,14 +105,14 @@ Future<void> showTransactionLongPressMenu({
               )
             else
               ListTile(
-                leading: const Icon(Icons.block),
-                title: const Text(TransactionsLogLabels.ignore),
+                leading: const Icon(Icons.diamond),
+                title: const Text(TransactionsLogLabels.markAsLargeExpense),
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
                   HapticFeedback.lightImpact();
 
                   final result = await ref
-                      .read(ignoreTransactionUseCaseProvider)
+                      .read(toggleLargeExpenseUseCaseProvider)
                       .call(transaction.id);
 
                   _invalidateAndNotify(messenger, ref, result);

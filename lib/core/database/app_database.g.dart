@@ -1893,7 +1893,7 @@ class $AppSettingsTable extends AppSettings
         false,
         type: DriftSqlType.int,
         requiredDuringInsert: false,
-        defaultValue: const Constant(1000000),
+        defaultValue: const Constant(10000000),
       );
   static const VerificationMeta _autoHideGiftsOnImportMeta =
       const VerificationMeta('autoHideGiftsOnImport');
@@ -9909,6 +9909,21 @@ class $TransactionsTable extends Transactions
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _isLargeExpenseMeta = const VerificationMeta(
+    'isLargeExpense',
+  );
+  @override
+  late final GeneratedColumn<bool> isLargeExpense = GeneratedColumn<bool>(
+    'is_large_expense',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_large_expense" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -9971,6 +9986,7 @@ class $TransactionsTable extends Transactions
     isWithdrawal,
     isSplit,
     receiptId,
+    isLargeExpense,
     createdAt,
     updatedAt,
     syncStatus,
@@ -10201,6 +10217,15 @@ class $TransactionsTable extends Transactions
         receiptId.isAcceptableOrUnknown(data['receipt_id']!, _receiptIdMeta),
       );
     }
+    if (data.containsKey('is_large_expense')) {
+      context.handle(
+        _isLargeExpenseMeta,
+        isLargeExpense.isAcceptableOrUnknown(
+          data['is_large_expense']!,
+          _isLargeExpenseMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -10342,6 +10367,10 @@ class $TransactionsTable extends Transactions
         DriftSqlType.string,
         data['${effectivePrefix}receipt_id'],
       ),
+      isLargeExpense: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_large_expense'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -10437,6 +10466,11 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
 
   /// Связь с прикреплённым чеком (таблица появится в Этапе 16).
   final String? receiptId;
+
+  /// Флаг крупной траты для аналитического фильтра.
+  /// Используется в P&L / Dashboard / Monthly Analytics.
+  /// В лимитах по категориям не учитывается.
+  final bool isLargeExpense;
   final DateTime createdAt;
   final DateTime updatedAt;
   final SyncStatus syncStatus;
@@ -10469,6 +10503,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
     required this.isWithdrawal,
     required this.isSplit,
     this.receiptId,
+    required this.isLargeExpense,
     required this.createdAt,
     required this.updatedAt,
     required this.syncStatus,
@@ -10542,6 +10577,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
     if (!nullToAbsent || receiptId != null) {
       map['receipt_id'] = Variable<String>(receiptId);
     }
+    map['is_large_expense'] = Variable<bool>(isLargeExpense);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     {
@@ -10612,6 +10648,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
       receiptId: receiptId == null && nullToAbsent
           ? const Value.absent()
           : Value(receiptId),
+      isLargeExpense: Value(isLargeExpense),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       syncStatus: Value(syncStatus),
@@ -10662,6 +10699,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
       isWithdrawal: serializer.fromJson<bool>(json['isWithdrawal']),
       isSplit: serializer.fromJson<bool>(json['isSplit']),
       receiptId: serializer.fromJson<String?>(json['receiptId']),
+      isLargeExpense: serializer.fromJson<bool>(json['isLargeExpense']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       syncStatus: $TransactionsTable.$convertersyncStatus.fromJson(
@@ -10705,6 +10743,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
       'isWithdrawal': serializer.toJson<bool>(isWithdrawal),
       'isSplit': serializer.toJson<bool>(isSplit),
       'receiptId': serializer.toJson<String?>(receiptId),
+      'isLargeExpense': serializer.toJson<bool>(isLargeExpense),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'syncStatus': serializer.toJson<String>(
@@ -10742,6 +10781,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
     bool? isWithdrawal,
     bool? isSplit,
     Value<String?> receiptId = const Value.absent(),
+    bool? isLargeExpense,
     DateTime? createdAt,
     DateTime? updatedAt,
     SyncStatus? syncStatus,
@@ -10794,6 +10834,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
     isWithdrawal: isWithdrawal ?? this.isWithdrawal,
     isSplit: isSplit ?? this.isSplit,
     receiptId: receiptId.present ? receiptId.value : this.receiptId,
+    isLargeExpense: isLargeExpense ?? this.isLargeExpense,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     syncStatus: syncStatus ?? this.syncStatus,
@@ -10864,6 +10905,9 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
           : this.isWithdrawal,
       isSplit: data.isSplit.present ? data.isSplit.value : this.isSplit,
       receiptId: data.receiptId.present ? data.receiptId.value : this.receiptId,
+      isLargeExpense: data.isLargeExpense.present
+          ? data.isLargeExpense.value
+          : this.isLargeExpense,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncStatus: data.syncStatus.present
@@ -10903,6 +10947,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
           ..write('isWithdrawal: $isWithdrawal, ')
           ..write('isSplit: $isSplit, ')
           ..write('receiptId: $receiptId, ')
+          ..write('isLargeExpense: $isLargeExpense, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncStatus: $syncStatus')
@@ -10940,6 +10985,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
     isWithdrawal,
     isSplit,
     receiptId,
+    isLargeExpense,
     createdAt,
     updatedAt,
     syncStatus,
@@ -10976,6 +11022,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
           other.isWithdrawal == this.isWithdrawal &&
           other.isSplit == this.isSplit &&
           other.receiptId == this.receiptId &&
+          other.isLargeExpense == this.isLargeExpense &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.syncStatus == this.syncStatus);
@@ -11010,6 +11057,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
   final Value<bool> isWithdrawal;
   final Value<bool> isSplit;
   final Value<String?> receiptId;
+  final Value<bool> isLargeExpense;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<SyncStatus> syncStatus;
@@ -11043,6 +11091,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
     this.isWithdrawal = const Value.absent(),
     this.isSplit = const Value.absent(),
     this.receiptId = const Value.absent(),
+    this.isLargeExpense = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncStatus = const Value.absent(),
@@ -11077,6 +11126,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
     this.isWithdrawal = const Value.absent(),
     this.isSplit = const Value.absent(),
     this.receiptId = const Value.absent(),
+    this.isLargeExpense = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.syncStatus = const Value.absent(),
@@ -11118,6 +11168,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
     Expression<bool>? isWithdrawal,
     Expression<bool>? isSplit,
     Expression<String>? receiptId,
+    Expression<bool>? isLargeExpense,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<String>? syncStatus,
@@ -11156,6 +11207,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
       if (isWithdrawal != null) 'is_withdrawal': isWithdrawal,
       if (isSplit != null) 'is_split': isSplit,
       if (receiptId != null) 'receipt_id': receiptId,
+      if (isLargeExpense != null) 'is_large_expense': isLargeExpense,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncStatus != null) 'sync_status': syncStatus,
@@ -11192,6 +11244,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
     Value<bool>? isWithdrawal,
     Value<bool>? isSplit,
     Value<String?>? receiptId,
+    Value<bool>? isLargeExpense,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<SyncStatus>? syncStatus,
@@ -11226,6 +11279,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
       isWithdrawal: isWithdrawal ?? this.isWithdrawal,
       isSplit: isSplit ?? this.isSplit,
       receiptId: receiptId ?? this.receiptId,
+      isLargeExpense: isLargeExpense ?? this.isLargeExpense,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       syncStatus: syncStatus ?? this.syncStatus,
@@ -11326,6 +11380,9 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
     if (receiptId.present) {
       map['receipt_id'] = Variable<String>(receiptId.value);
     }
+    if (isLargeExpense.present) {
+      map['is_large_expense'] = Variable<bool>(isLargeExpense.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -11374,6 +11431,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
           ..write('isWithdrawal: $isWithdrawal, ')
           ..write('isSplit: $isSplit, ')
           ..write('receiptId: $receiptId, ')
+          ..write('isLargeExpense: $isLargeExpense, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncStatus: $syncStatus, ')
@@ -19487,6 +19545,7 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       Value<bool> isWithdrawal,
       Value<bool> isSplit,
       Value<String?> receiptId,
+      Value<bool> isLargeExpense,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<SyncStatus> syncStatus,
@@ -19522,6 +19581,7 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<bool> isWithdrawal,
       Value<bool> isSplit,
       Value<String?> receiptId,
+      Value<bool> isLargeExpense,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<SyncStatus> syncStatus,
@@ -19775,6 +19835,11 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<String> get receiptId => $composableBuilder(
     column: $table.receiptId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isLargeExpense => $composableBuilder(
+    column: $table.isLargeExpense,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -20077,6 +20142,11 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isLargeExpense => $composableBuilder(
+    column: $table.isLargeExpense,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -20337,6 +20407,11 @@ class $$TransactionsTableAnnotationComposer
   GeneratedColumn<String> get receiptId =>
       $composableBuilder(column: $table.receiptId, builder: (column) => column);
 
+  GeneratedColumn<bool> get isLargeExpense => $composableBuilder(
+    column: $table.isLargeExpense,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
@@ -20578,6 +20653,7 @@ class $$TransactionsTableTableManager
                 Value<bool> isWithdrawal = const Value.absent(),
                 Value<bool> isSplit = const Value.absent(),
                 Value<String?> receiptId = const Value.absent(),
+                Value<bool> isLargeExpense = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<SyncStatus> syncStatus = const Value.absent(),
@@ -20611,6 +20687,7 @@ class $$TransactionsTableTableManager
                 isWithdrawal: isWithdrawal,
                 isSplit: isSplit,
                 receiptId: receiptId,
+                isLargeExpense: isLargeExpense,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 syncStatus: syncStatus,
@@ -20646,6 +20723,7 @@ class $$TransactionsTableTableManager
                 Value<bool> isWithdrawal = const Value.absent(),
                 Value<bool> isSplit = const Value.absent(),
                 Value<String?> receiptId = const Value.absent(),
+                Value<bool> isLargeExpense = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<SyncStatus> syncStatus = const Value.absent(),
@@ -20679,6 +20757,7 @@ class $$TransactionsTableTableManager
                 isWithdrawal: isWithdrawal,
                 isSplit: isSplit,
                 receiptId: receiptId,
+                isLargeExpense: isLargeExpense,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 syncStatus: syncStatus,

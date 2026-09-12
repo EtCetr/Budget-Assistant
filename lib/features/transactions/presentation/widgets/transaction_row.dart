@@ -155,6 +155,25 @@ class TransactionRow extends ConsumerWidget {
                   size: 16,
                   color: AppColors.textSecondary,
                 ),
+                
+              ),
+            if (transaction.receiptId != null)
+              const Padding(
+                padding: EdgeInsets.only(right: 6),
+                child: Icon(
+                  Icons.receipt_long,
+                  size: 16,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            if (transaction.isLargeExpense)
+              const Padding(
+                padding: EdgeInsets.only(right: 6),
+                child: Icon(
+                  Icons.diamond,
+                  size: 16,
+                  color: Color(0xFF8B5CF6), // фиолетовый
+                ),
               ),
             if (isHold)
               const Padding(

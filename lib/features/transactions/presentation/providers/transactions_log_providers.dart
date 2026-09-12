@@ -16,11 +16,10 @@ import '../../domain/usecases/calculate_day_summary_usecase.dart';
 import '../../domain/usecases/get_transactions_log_page_usecase.dart';
 import '../../domain/usecases/group_transactions_by_day_usecase.dart';
 import '../../domain/usecases/hide_transaction_as_gift_usecase.dart';
-import '../../domain/usecases/ignore_transaction_usecase.dart';
 import '../../domain/usecases/mark_as_refund_usecase.dart';
 import '../../domain/usecases/update_transaction_category_usecase.dart';
 import '../../domain/usecases/unhide_transaction_as_gift_usecase.dart';
-import '../../domain/usecases/restore_transaction_usecase.dart';
+import '../../domain/usecases/toggle_large_expense_usecase.dart';
 abstract interface class SyncService {
   Future<int> forceSyncNow();
 }
@@ -65,11 +64,6 @@ final hideTransactionAsGiftUseCaseProvider = Provider(
   ),
 );
 
-final ignoreTransactionUseCaseProvider = Provider(
-  (ref) =>
-      IgnoreTransactionUseCase(ref.watch(transactionsLogRepositoryProvider)),
-);
-
 final markAsRefundUseCaseProvider = Provider(
   (ref) => MarkAsRefundUseCase(ref.watch(transactionsLogRepositoryProvider)),
 );
@@ -78,6 +72,11 @@ final updateTransactionCategoryUseCaseProvider = Provider(
   (ref) => UpdateTransactionCategoryUseCase(
     ref.watch(transactionsLogRepositoryProvider),
   ),
+);
+
+final toggleLargeExpenseUseCaseProvider = Provider(
+  (ref) =>
+      ToggleLargeExpenseUseCase(ref.watch(transactionsLogRepositoryProvider)),
 );
 
 final transactionCategoryLookupProvider = FutureProvider<List<LookupItem>>(
@@ -140,6 +139,9 @@ class TransactionsFilterNotifier extends Notifier<TransactionsFilterState> {
 
   void toggleExcludeOwn() =>
       state = state.copyWith(excludeOwn: !state.excludeOwn);  
+  
+  void toggleExcludeLargeExpenses() =>
+      state = state.copyWith(excludeLargeExpenses: !state.excludeLargeExpenses);
 }
 
 final transactionsFilterProvider =
@@ -302,11 +304,6 @@ final unhideTransactionAsGiftUseCaseProvider = Provider(
   (ref) => UnhideTransactionAsGiftUseCase(
     ref.watch(transactionsLogRepositoryProvider),
   ),
-);
-
-final restoreTransactionUseCaseProvider = Provider(
-  (ref) =>
-      RestoreTransactionUseCase(ref.watch(transactionsLogRepositoryProvider)),
 );
 
 final transactionsLogProvider =

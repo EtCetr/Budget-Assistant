@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TransactionsFilterState {
 
- TransactionsScope get scope; TransactionTypeFilter get type; List<String> get categoryIds; List<String> get accountIds; TransactionsPeriodPreset get period; DateTime? get customFrom; DateTime? get customTo; int? get amountFromKopecks; int? get amountToKopecks; bool get onlyWithReceipt; bool get onlySplit; bool get onlyDebts; bool get excludeOwn; String get search;
+ TransactionsScope get scope; TransactionTypeFilter get type; List<String> get categoryIds; List<String> get accountIds; TransactionsPeriodPreset get period; DateTime? get customFrom; DateTime? get customTo; int? get amountFromKopecks; int? get amountToKopecks; bool get onlyWithReceipt; bool get onlySplit; bool get onlyDebts; bool get excludeOwn; bool get excludeLargeExpenses; String get search;
 /// Create a copy of TransactionsFilterState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $TransactionsFilterStateCopyWith<TransactionsFilterState> get copyWith => _$Tran
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TransactionsFilterState&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.type, type) || other.type == type)&&const DeepCollectionEquality().equals(other.categoryIds, categoryIds)&&const DeepCollectionEquality().equals(other.accountIds, accountIds)&&(identical(other.period, period) || other.period == period)&&(identical(other.customFrom, customFrom) || other.customFrom == customFrom)&&(identical(other.customTo, customTo) || other.customTo == customTo)&&(identical(other.amountFromKopecks, amountFromKopecks) || other.amountFromKopecks == amountFromKopecks)&&(identical(other.amountToKopecks, amountToKopecks) || other.amountToKopecks == amountToKopecks)&&(identical(other.onlyWithReceipt, onlyWithReceipt) || other.onlyWithReceipt == onlyWithReceipt)&&(identical(other.onlySplit, onlySplit) || other.onlySplit == onlySplit)&&(identical(other.onlyDebts, onlyDebts) || other.onlyDebts == onlyDebts)&&(identical(other.excludeOwn, excludeOwn) || other.excludeOwn == excludeOwn)&&(identical(other.search, search) || other.search == search));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TransactionsFilterState&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.type, type) || other.type == type)&&const DeepCollectionEquality().equals(other.categoryIds, categoryIds)&&const DeepCollectionEquality().equals(other.accountIds, accountIds)&&(identical(other.period, period) || other.period == period)&&(identical(other.customFrom, customFrom) || other.customFrom == customFrom)&&(identical(other.customTo, customTo) || other.customTo == customTo)&&(identical(other.amountFromKopecks, amountFromKopecks) || other.amountFromKopecks == amountFromKopecks)&&(identical(other.amountToKopecks, amountToKopecks) || other.amountToKopecks == amountToKopecks)&&(identical(other.onlyWithReceipt, onlyWithReceipt) || other.onlyWithReceipt == onlyWithReceipt)&&(identical(other.onlySplit, onlySplit) || other.onlySplit == onlySplit)&&(identical(other.onlyDebts, onlyDebts) || other.onlyDebts == onlyDebts)&&(identical(other.excludeOwn, excludeOwn) || other.excludeOwn == excludeOwn)&&(identical(other.excludeLargeExpenses, excludeLargeExpenses) || other.excludeLargeExpenses == excludeLargeExpenses)&&(identical(other.search, search) || other.search == search));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,scope,type,const DeepCollectionEquality().hash(categoryIds),const DeepCollectionEquality().hash(accountIds),period,customFrom,customTo,amountFromKopecks,amountToKopecks,onlyWithReceipt,onlySplit,onlyDebts,excludeOwn,search);
+int get hashCode => Object.hash(runtimeType,scope,type,const DeepCollectionEquality().hash(categoryIds),const DeepCollectionEquality().hash(accountIds),period,customFrom,customTo,amountFromKopecks,amountToKopecks,onlyWithReceipt,onlySplit,onlyDebts,excludeOwn,excludeLargeExpenses,search);
 
 @override
 String toString() {
-  return 'TransactionsFilterState(scope: $scope, type: $type, categoryIds: $categoryIds, accountIds: $accountIds, period: $period, customFrom: $customFrom, customTo: $customTo, amountFromKopecks: $amountFromKopecks, amountToKopecks: $amountToKopecks, onlyWithReceipt: $onlyWithReceipt, onlySplit: $onlySplit, onlyDebts: $onlyDebts, excludeOwn: $excludeOwn, search: $search)';
+  return 'TransactionsFilterState(scope: $scope, type: $type, categoryIds: $categoryIds, accountIds: $accountIds, period: $period, customFrom: $customFrom, customTo: $customTo, amountFromKopecks: $amountFromKopecks, amountToKopecks: $amountToKopecks, onlyWithReceipt: $onlyWithReceipt, onlySplit: $onlySplit, onlyDebts: $onlyDebts, excludeOwn: $excludeOwn, excludeLargeExpenses: $excludeLargeExpenses, search: $search)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $TransactionsFilterStateCopyWith<$Res>  {
   factory $TransactionsFilterStateCopyWith(TransactionsFilterState value, $Res Function(TransactionsFilterState) _then) = _$TransactionsFilterStateCopyWithImpl;
 @useResult
 $Res call({
- TransactionsScope scope, TransactionTypeFilter type, List<String> categoryIds, List<String> accountIds, TransactionsPeriodPreset period, DateTime? customFrom, DateTime? customTo, int? amountFromKopecks, int? amountToKopecks, bool onlyWithReceipt, bool onlySplit, bool onlyDebts, bool excludeOwn, String search
+ TransactionsScope scope, TransactionTypeFilter type, List<String> categoryIds, List<String> accountIds, TransactionsPeriodPreset period, DateTime? customFrom, DateTime? customTo, int? amountFromKopecks, int? amountToKopecks, bool onlyWithReceipt, bool onlySplit, bool onlyDebts, bool excludeOwn, bool excludeLargeExpenses, String search
 });
 
 
@@ -62,7 +62,7 @@ class _$TransactionsFilterStateCopyWithImpl<$Res>
 
 /// Create a copy of TransactionsFilterState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? scope = null,Object? type = null,Object? categoryIds = null,Object? accountIds = null,Object? period = null,Object? customFrom = freezed,Object? customTo = freezed,Object? amountFromKopecks = freezed,Object? amountToKopecks = freezed,Object? onlyWithReceipt = null,Object? onlySplit = null,Object? onlyDebts = null,Object? excludeOwn = null,Object? search = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? scope = null,Object? type = null,Object? categoryIds = null,Object? accountIds = null,Object? period = null,Object? customFrom = freezed,Object? customTo = freezed,Object? amountFromKopecks = freezed,Object? amountToKopecks = freezed,Object? onlyWithReceipt = null,Object? onlySplit = null,Object? onlyDebts = null,Object? excludeOwn = null,Object? excludeLargeExpenses = null,Object? search = null,}) {
   return _then(_self.copyWith(
 scope: null == scope ? _self.scope : scope // ignore: cast_nullable_to_non_nullable
 as TransactionsScope,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
@@ -77,6 +77,7 @@ as int?,onlyWithReceipt: null == onlyWithReceipt ? _self.onlyWithReceipt : onlyW
 as bool,onlySplit: null == onlySplit ? _self.onlySplit : onlySplit // ignore: cast_nullable_to_non_nullable
 as bool,onlyDebts: null == onlyDebts ? _self.onlyDebts : onlyDebts // ignore: cast_nullable_to_non_nullable
 as bool,excludeOwn: null == excludeOwn ? _self.excludeOwn : excludeOwn // ignore: cast_nullable_to_non_nullable
+as bool,excludeLargeExpenses: null == excludeLargeExpenses ? _self.excludeLargeExpenses : excludeLargeExpenses // ignore: cast_nullable_to_non_nullable
 as bool,search: null == search ? _self.search : search // ignore: cast_nullable_to_non_nullable
 as String,
   ));
@@ -158,7 +159,7 @@ return $default(_that);case _:
 
 
 class _TransactionsFilterState implements TransactionsFilterState {
-  const _TransactionsFilterState({this.scope = TransactionsScope.all, this.type = TransactionTypeFilter.all, final  List<String> categoryIds = const <String>[], final  List<String> accountIds = const <String>[], this.period = TransactionsPeriodPreset.all, this.customFrom, this.customTo, this.amountFromKopecks, this.amountToKopecks, this.onlyWithReceipt = false, this.onlySplit = false, this.onlyDebts = false, this.excludeOwn = false, this.search = ''}): _categoryIds = categoryIds,_accountIds = accountIds;
+  const _TransactionsFilterState({this.scope = TransactionsScope.all, this.type = TransactionTypeFilter.all, final  List<String> categoryIds = const <String>[], final  List<String> accountIds = const <String>[], this.period = TransactionsPeriodPreset.all, this.customFrom, this.customTo, this.amountFromKopecks, this.amountToKopecks, this.onlyWithReceipt = false, this.onlySplit = false, this.onlyDebts = false, this.excludeOwn = false, this.excludeLargeExpenses = false, this.search = ''}): _categoryIds = categoryIds,_accountIds = accountIds;
   
 
 @override@JsonKey() final  TransactionsScope scope;
@@ -186,6 +187,7 @@ class _TransactionsFilterState implements TransactionsFilterState {
 @override@JsonKey() final  bool onlySplit;
 @override@JsonKey() final  bool onlyDebts;
 @override@JsonKey() final  bool excludeOwn;
+@override@JsonKey() final  bool excludeLargeExpenses;
 @override@JsonKey() final  String search;
 
 /// Create a copy of TransactionsFilterState
@@ -198,16 +200,16 @@ _$TransactionsFilterStateCopyWith<_TransactionsFilterState> get copyWith => __$T
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TransactionsFilterState&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.type, type) || other.type == type)&&const DeepCollectionEquality().equals(other._categoryIds, _categoryIds)&&const DeepCollectionEquality().equals(other._accountIds, _accountIds)&&(identical(other.period, period) || other.period == period)&&(identical(other.customFrom, customFrom) || other.customFrom == customFrom)&&(identical(other.customTo, customTo) || other.customTo == customTo)&&(identical(other.amountFromKopecks, amountFromKopecks) || other.amountFromKopecks == amountFromKopecks)&&(identical(other.amountToKopecks, amountToKopecks) || other.amountToKopecks == amountToKopecks)&&(identical(other.onlyWithReceipt, onlyWithReceipt) || other.onlyWithReceipt == onlyWithReceipt)&&(identical(other.onlySplit, onlySplit) || other.onlySplit == onlySplit)&&(identical(other.onlyDebts, onlyDebts) || other.onlyDebts == onlyDebts)&&(identical(other.excludeOwn, excludeOwn) || other.excludeOwn == excludeOwn)&&(identical(other.search, search) || other.search == search));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TransactionsFilterState&&(identical(other.scope, scope) || other.scope == scope)&&(identical(other.type, type) || other.type == type)&&const DeepCollectionEquality().equals(other._categoryIds, _categoryIds)&&const DeepCollectionEquality().equals(other._accountIds, _accountIds)&&(identical(other.period, period) || other.period == period)&&(identical(other.customFrom, customFrom) || other.customFrom == customFrom)&&(identical(other.customTo, customTo) || other.customTo == customTo)&&(identical(other.amountFromKopecks, amountFromKopecks) || other.amountFromKopecks == amountFromKopecks)&&(identical(other.amountToKopecks, amountToKopecks) || other.amountToKopecks == amountToKopecks)&&(identical(other.onlyWithReceipt, onlyWithReceipt) || other.onlyWithReceipt == onlyWithReceipt)&&(identical(other.onlySplit, onlySplit) || other.onlySplit == onlySplit)&&(identical(other.onlyDebts, onlyDebts) || other.onlyDebts == onlyDebts)&&(identical(other.excludeOwn, excludeOwn) || other.excludeOwn == excludeOwn)&&(identical(other.excludeLargeExpenses, excludeLargeExpenses) || other.excludeLargeExpenses == excludeLargeExpenses)&&(identical(other.search, search) || other.search == search));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,scope,type,const DeepCollectionEquality().hash(_categoryIds),const DeepCollectionEquality().hash(_accountIds),period,customFrom,customTo,amountFromKopecks,amountToKopecks,onlyWithReceipt,onlySplit,onlyDebts,excludeOwn,search);
+int get hashCode => Object.hash(runtimeType,scope,type,const DeepCollectionEquality().hash(_categoryIds),const DeepCollectionEquality().hash(_accountIds),period,customFrom,customTo,amountFromKopecks,amountToKopecks,onlyWithReceipt,onlySplit,onlyDebts,excludeOwn,excludeLargeExpenses,search);
 
 @override
 String toString() {
-  return 'TransactionsFilterState(scope: $scope, type: $type, categoryIds: $categoryIds, accountIds: $accountIds, period: $period, customFrom: $customFrom, customTo: $customTo, amountFromKopecks: $amountFromKopecks, amountToKopecks: $amountToKopecks, onlyWithReceipt: $onlyWithReceipt, onlySplit: $onlySplit, onlyDebts: $onlyDebts, excludeOwn: $excludeOwn, search: $search)';
+  return 'TransactionsFilterState(scope: $scope, type: $type, categoryIds: $categoryIds, accountIds: $accountIds, period: $period, customFrom: $customFrom, customTo: $customTo, amountFromKopecks: $amountFromKopecks, amountToKopecks: $amountToKopecks, onlyWithReceipt: $onlyWithReceipt, onlySplit: $onlySplit, onlyDebts: $onlyDebts, excludeOwn: $excludeOwn, excludeLargeExpenses: $excludeLargeExpenses, search: $search)';
 }
 
 
@@ -218,7 +220,7 @@ abstract mixin class _$TransactionsFilterStateCopyWith<$Res> implements $Transac
   factory _$TransactionsFilterStateCopyWith(_TransactionsFilterState value, $Res Function(_TransactionsFilterState) _then) = __$TransactionsFilterStateCopyWithImpl;
 @override @useResult
 $Res call({
- TransactionsScope scope, TransactionTypeFilter type, List<String> categoryIds, List<String> accountIds, TransactionsPeriodPreset period, DateTime? customFrom, DateTime? customTo, int? amountFromKopecks, int? amountToKopecks, bool onlyWithReceipt, bool onlySplit, bool onlyDebts, bool excludeOwn, String search
+ TransactionsScope scope, TransactionTypeFilter type, List<String> categoryIds, List<String> accountIds, TransactionsPeriodPreset period, DateTime? customFrom, DateTime? customTo, int? amountFromKopecks, int? amountToKopecks, bool onlyWithReceipt, bool onlySplit, bool onlyDebts, bool excludeOwn, bool excludeLargeExpenses, String search
 });
 
 
@@ -235,7 +237,7 @@ class __$TransactionsFilterStateCopyWithImpl<$Res>
 
 /// Create a copy of TransactionsFilterState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? scope = null,Object? type = null,Object? categoryIds = null,Object? accountIds = null,Object? period = null,Object? customFrom = freezed,Object? customTo = freezed,Object? amountFromKopecks = freezed,Object? amountToKopecks = freezed,Object? onlyWithReceipt = null,Object? onlySplit = null,Object? onlyDebts = null,Object? excludeOwn = null,Object? search = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? scope = null,Object? type = null,Object? categoryIds = null,Object? accountIds = null,Object? period = null,Object? customFrom = freezed,Object? customTo = freezed,Object? amountFromKopecks = freezed,Object? amountToKopecks = freezed,Object? onlyWithReceipt = null,Object? onlySplit = null,Object? onlyDebts = null,Object? excludeOwn = null,Object? excludeLargeExpenses = null,Object? search = null,}) {
   return _then(_TransactionsFilterState(
 scope: null == scope ? _self.scope : scope // ignore: cast_nullable_to_non_nullable
 as TransactionsScope,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
@@ -250,6 +252,7 @@ as int?,onlyWithReceipt: null == onlyWithReceipt ? _self.onlyWithReceipt : onlyW
 as bool,onlySplit: null == onlySplit ? _self.onlySplit : onlySplit // ignore: cast_nullable_to_non_nullable
 as bool,onlyDebts: null == onlyDebts ? _self.onlyDebts : onlyDebts // ignore: cast_nullable_to_non_nullable
 as bool,excludeOwn: null == excludeOwn ? _self.excludeOwn : excludeOwn // ignore: cast_nullable_to_non_nullable
+as bool,excludeLargeExpenses: null == excludeLargeExpenses ? _self.excludeLargeExpenses : excludeLargeExpenses // ignore: cast_nullable_to_non_nullable
 as bool,search: null == search ? _self.search : search // ignore: cast_nullable_to_non_nullable
 as String,
   ));

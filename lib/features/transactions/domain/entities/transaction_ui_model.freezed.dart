@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$TransactionUiModel {
 
- String get id; String get userId; String? get spaceId; String get accountId; String? get categoryId; TransactionType get type; int get amountKopecks; String get currencyCode; DateTime get date; String? get merchantName; String? get comment; String? get receiptId; bool get isSplit; AuditStatus get auditStatus; SyncStatus get syncStatus; String get categoryName; String get categoryColorHex; String? get memberDisplayName; String? get memberColorHex; bool get isHiddenByCalendar;
+ String get id; String get userId; String? get spaceId; String get accountId; String? get categoryId; TransactionType get type; int get amountKopecks; String get currencyCode; DateTime get date; String? get merchantName; String? get comment; String? get receiptId; bool get isSplit; AuditStatus get auditStatus; SyncStatus get syncStatus; String get categoryName; String get categoryColorHex; String? get memberDisplayName; String? get memberColorHex; bool get isHiddenByCalendar; bool get isLargeExpense;
 /// Create a copy of TransactionUiModel
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $TransactionUiModelCopyWith<TransactionUiModel> get copyWith => _$TransactionUiM
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TransactionUiModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.type, type) || other.type == type)&&(identical(other.amountKopecks, amountKopecks) || other.amountKopecks == amountKopecks)&&(identical(other.currencyCode, currencyCode) || other.currencyCode == currencyCode)&&(identical(other.date, date) || other.date == date)&&(identical(other.merchantName, merchantName) || other.merchantName == merchantName)&&(identical(other.comment, comment) || other.comment == comment)&&(identical(other.receiptId, receiptId) || other.receiptId == receiptId)&&(identical(other.isSplit, isSplit) || other.isSplit == isSplit)&&(identical(other.auditStatus, auditStatus) || other.auditStatus == auditStatus)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.categoryColorHex, categoryColorHex) || other.categoryColorHex == categoryColorHex)&&(identical(other.memberDisplayName, memberDisplayName) || other.memberDisplayName == memberDisplayName)&&(identical(other.memberColorHex, memberColorHex) || other.memberColorHex == memberColorHex)&&(identical(other.isHiddenByCalendar, isHiddenByCalendar) || other.isHiddenByCalendar == isHiddenByCalendar));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TransactionUiModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.type, type) || other.type == type)&&(identical(other.amountKopecks, amountKopecks) || other.amountKopecks == amountKopecks)&&(identical(other.currencyCode, currencyCode) || other.currencyCode == currencyCode)&&(identical(other.date, date) || other.date == date)&&(identical(other.merchantName, merchantName) || other.merchantName == merchantName)&&(identical(other.comment, comment) || other.comment == comment)&&(identical(other.receiptId, receiptId) || other.receiptId == receiptId)&&(identical(other.isSplit, isSplit) || other.isSplit == isSplit)&&(identical(other.auditStatus, auditStatus) || other.auditStatus == auditStatus)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.categoryColorHex, categoryColorHex) || other.categoryColorHex == categoryColorHex)&&(identical(other.memberDisplayName, memberDisplayName) || other.memberDisplayName == memberDisplayName)&&(identical(other.memberColorHex, memberColorHex) || other.memberColorHex == memberColorHex)&&(identical(other.isHiddenByCalendar, isHiddenByCalendar) || other.isHiddenByCalendar == isHiddenByCalendar)&&(identical(other.isLargeExpense, isLargeExpense) || other.isLargeExpense == isLargeExpense));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,id,userId,spaceId,accountId,categoryId,type,amountKopecks,currencyCode,date,merchantName,comment,receiptId,isSplit,auditStatus,syncStatus,categoryName,categoryColorHex,memberDisplayName,memberColorHex,isHiddenByCalendar]);
+int get hashCode => Object.hashAll([runtimeType,id,userId,spaceId,accountId,categoryId,type,amountKopecks,currencyCode,date,merchantName,comment,receiptId,isSplit,auditStatus,syncStatus,categoryName,categoryColorHex,memberDisplayName,memberColorHex,isHiddenByCalendar,isLargeExpense]);
 
 @override
 String toString() {
-  return 'TransactionUiModel(id: $id, userId: $userId, spaceId: $spaceId, accountId: $accountId, categoryId: $categoryId, type: $type, amountKopecks: $amountKopecks, currencyCode: $currencyCode, date: $date, merchantName: $merchantName, comment: $comment, receiptId: $receiptId, isSplit: $isSplit, auditStatus: $auditStatus, syncStatus: $syncStatus, categoryName: $categoryName, categoryColorHex: $categoryColorHex, memberDisplayName: $memberDisplayName, memberColorHex: $memberColorHex, isHiddenByCalendar: $isHiddenByCalendar)';
+  return 'TransactionUiModel(id: $id, userId: $userId, spaceId: $spaceId, accountId: $accountId, categoryId: $categoryId, type: $type, amountKopecks: $amountKopecks, currencyCode: $currencyCode, date: $date, merchantName: $merchantName, comment: $comment, receiptId: $receiptId, isSplit: $isSplit, auditStatus: $auditStatus, syncStatus: $syncStatus, categoryName: $categoryName, categoryColorHex: $categoryColorHex, memberDisplayName: $memberDisplayName, memberColorHex: $memberColorHex, isHiddenByCalendar: $isHiddenByCalendar, isLargeExpense: $isLargeExpense)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $TransactionUiModelCopyWith<$Res>  {
   factory $TransactionUiModelCopyWith(TransactionUiModel value, $Res Function(TransactionUiModel) _then) = _$TransactionUiModelCopyWithImpl;
 @useResult
 $Res call({
- String id, String userId, String? spaceId, String accountId, String? categoryId, TransactionType type, int amountKopecks, String currencyCode, DateTime date, String? merchantName, String? comment, String? receiptId, bool isSplit, AuditStatus auditStatus, SyncStatus syncStatus, String categoryName, String categoryColorHex, String? memberDisplayName, String? memberColorHex, bool isHiddenByCalendar
+ String id, String userId, String? spaceId, String accountId, String? categoryId, TransactionType type, int amountKopecks, String currencyCode, DateTime date, String? merchantName, String? comment, String? receiptId, bool isSplit, AuditStatus auditStatus, SyncStatus syncStatus, String categoryName, String categoryColorHex, String? memberDisplayName, String? memberColorHex, bool isHiddenByCalendar, bool isLargeExpense
 });
 
 
@@ -62,7 +62,7 @@ class _$TransactionUiModelCopyWithImpl<$Res>
 
 /// Create a copy of TransactionUiModel
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? spaceId = freezed,Object? accountId = null,Object? categoryId = freezed,Object? type = null,Object? amountKopecks = null,Object? currencyCode = null,Object? date = null,Object? merchantName = freezed,Object? comment = freezed,Object? receiptId = freezed,Object? isSplit = null,Object? auditStatus = null,Object? syncStatus = null,Object? categoryName = null,Object? categoryColorHex = null,Object? memberDisplayName = freezed,Object? memberColorHex = freezed,Object? isHiddenByCalendar = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? spaceId = freezed,Object? accountId = null,Object? categoryId = freezed,Object? type = null,Object? amountKopecks = null,Object? currencyCode = null,Object? date = null,Object? merchantName = freezed,Object? comment = freezed,Object? receiptId = freezed,Object? isSplit = null,Object? auditStatus = null,Object? syncStatus = null,Object? categoryName = null,Object? categoryColorHex = null,Object? memberDisplayName = freezed,Object? memberColorHex = freezed,Object? isHiddenByCalendar = null,Object? isLargeExpense = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -84,6 +84,7 @@ as String,categoryColorHex: null == categoryColorHex ? _self.categoryColorHex : 
 as String,memberDisplayName: freezed == memberDisplayName ? _self.memberDisplayName : memberDisplayName // ignore: cast_nullable_to_non_nullable
 as String?,memberColorHex: freezed == memberColorHex ? _self.memberColorHex : memberColorHex // ignore: cast_nullable_to_non_nullable
 as String?,isHiddenByCalendar: null == isHiddenByCalendar ? _self.isHiddenByCalendar : isHiddenByCalendar // ignore: cast_nullable_to_non_nullable
+as bool,isLargeExpense: null == isLargeExpense ? _self.isLargeExpense : isLargeExpense // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -164,7 +165,7 @@ return $default(_that);case _:
 
 
 class _TransactionUiModel implements TransactionUiModel {
-  const _TransactionUiModel({required this.id, required this.userId, required this.spaceId, required this.accountId, required this.categoryId, required this.type, required this.amountKopecks, required this.currencyCode, required this.date, required this.merchantName, required this.comment, required this.receiptId, required this.isSplit, required this.auditStatus, required this.syncStatus, required this.categoryName, required this.categoryColorHex, required this.memberDisplayName, required this.memberColorHex, this.isHiddenByCalendar = false});
+  const _TransactionUiModel({required this.id, required this.userId, required this.spaceId, required this.accountId, required this.categoryId, required this.type, required this.amountKopecks, required this.currencyCode, required this.date, required this.merchantName, required this.comment, required this.receiptId, required this.isSplit, required this.auditStatus, required this.syncStatus, required this.categoryName, required this.categoryColorHex, required this.memberDisplayName, required this.memberColorHex, this.isHiddenByCalendar = false, this.isLargeExpense = false});
   
 
 @override final  String id;
@@ -187,6 +188,7 @@ class _TransactionUiModel implements TransactionUiModel {
 @override final  String? memberDisplayName;
 @override final  String? memberColorHex;
 @override@JsonKey() final  bool isHiddenByCalendar;
+@override@JsonKey() final  bool isLargeExpense;
 
 /// Create a copy of TransactionUiModel
 /// with the given fields replaced by the non-null parameter values.
@@ -198,16 +200,16 @@ _$TransactionUiModelCopyWith<_TransactionUiModel> get copyWith => __$Transaction
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TransactionUiModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.type, type) || other.type == type)&&(identical(other.amountKopecks, amountKopecks) || other.amountKopecks == amountKopecks)&&(identical(other.currencyCode, currencyCode) || other.currencyCode == currencyCode)&&(identical(other.date, date) || other.date == date)&&(identical(other.merchantName, merchantName) || other.merchantName == merchantName)&&(identical(other.comment, comment) || other.comment == comment)&&(identical(other.receiptId, receiptId) || other.receiptId == receiptId)&&(identical(other.isSplit, isSplit) || other.isSplit == isSplit)&&(identical(other.auditStatus, auditStatus) || other.auditStatus == auditStatus)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.categoryColorHex, categoryColorHex) || other.categoryColorHex == categoryColorHex)&&(identical(other.memberDisplayName, memberDisplayName) || other.memberDisplayName == memberDisplayName)&&(identical(other.memberColorHex, memberColorHex) || other.memberColorHex == memberColorHex)&&(identical(other.isHiddenByCalendar, isHiddenByCalendar) || other.isHiddenByCalendar == isHiddenByCalendar));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TransactionUiModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.type, type) || other.type == type)&&(identical(other.amountKopecks, amountKopecks) || other.amountKopecks == amountKopecks)&&(identical(other.currencyCode, currencyCode) || other.currencyCode == currencyCode)&&(identical(other.date, date) || other.date == date)&&(identical(other.merchantName, merchantName) || other.merchantName == merchantName)&&(identical(other.comment, comment) || other.comment == comment)&&(identical(other.receiptId, receiptId) || other.receiptId == receiptId)&&(identical(other.isSplit, isSplit) || other.isSplit == isSplit)&&(identical(other.auditStatus, auditStatus) || other.auditStatus == auditStatus)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.categoryColorHex, categoryColorHex) || other.categoryColorHex == categoryColorHex)&&(identical(other.memberDisplayName, memberDisplayName) || other.memberDisplayName == memberDisplayName)&&(identical(other.memberColorHex, memberColorHex) || other.memberColorHex == memberColorHex)&&(identical(other.isHiddenByCalendar, isHiddenByCalendar) || other.isHiddenByCalendar == isHiddenByCalendar)&&(identical(other.isLargeExpense, isLargeExpense) || other.isLargeExpense == isLargeExpense));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,id,userId,spaceId,accountId,categoryId,type,amountKopecks,currencyCode,date,merchantName,comment,receiptId,isSplit,auditStatus,syncStatus,categoryName,categoryColorHex,memberDisplayName,memberColorHex,isHiddenByCalendar]);
+int get hashCode => Object.hashAll([runtimeType,id,userId,spaceId,accountId,categoryId,type,amountKopecks,currencyCode,date,merchantName,comment,receiptId,isSplit,auditStatus,syncStatus,categoryName,categoryColorHex,memberDisplayName,memberColorHex,isHiddenByCalendar,isLargeExpense]);
 
 @override
 String toString() {
-  return 'TransactionUiModel(id: $id, userId: $userId, spaceId: $spaceId, accountId: $accountId, categoryId: $categoryId, type: $type, amountKopecks: $amountKopecks, currencyCode: $currencyCode, date: $date, merchantName: $merchantName, comment: $comment, receiptId: $receiptId, isSplit: $isSplit, auditStatus: $auditStatus, syncStatus: $syncStatus, categoryName: $categoryName, categoryColorHex: $categoryColorHex, memberDisplayName: $memberDisplayName, memberColorHex: $memberColorHex, isHiddenByCalendar: $isHiddenByCalendar)';
+  return 'TransactionUiModel(id: $id, userId: $userId, spaceId: $spaceId, accountId: $accountId, categoryId: $categoryId, type: $type, amountKopecks: $amountKopecks, currencyCode: $currencyCode, date: $date, merchantName: $merchantName, comment: $comment, receiptId: $receiptId, isSplit: $isSplit, auditStatus: $auditStatus, syncStatus: $syncStatus, categoryName: $categoryName, categoryColorHex: $categoryColorHex, memberDisplayName: $memberDisplayName, memberColorHex: $memberColorHex, isHiddenByCalendar: $isHiddenByCalendar, isLargeExpense: $isLargeExpense)';
 }
 
 
@@ -218,7 +220,7 @@ abstract mixin class _$TransactionUiModelCopyWith<$Res> implements $TransactionU
   factory _$TransactionUiModelCopyWith(_TransactionUiModel value, $Res Function(_TransactionUiModel) _then) = __$TransactionUiModelCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String userId, String? spaceId, String accountId, String? categoryId, TransactionType type, int amountKopecks, String currencyCode, DateTime date, String? merchantName, String? comment, String? receiptId, bool isSplit, AuditStatus auditStatus, SyncStatus syncStatus, String categoryName, String categoryColorHex, String? memberDisplayName, String? memberColorHex, bool isHiddenByCalendar
+ String id, String userId, String? spaceId, String accountId, String? categoryId, TransactionType type, int amountKopecks, String currencyCode, DateTime date, String? merchantName, String? comment, String? receiptId, bool isSplit, AuditStatus auditStatus, SyncStatus syncStatus, String categoryName, String categoryColorHex, String? memberDisplayName, String? memberColorHex, bool isHiddenByCalendar, bool isLargeExpense
 });
 
 
@@ -235,7 +237,7 @@ class __$TransactionUiModelCopyWithImpl<$Res>
 
 /// Create a copy of TransactionUiModel
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? spaceId = freezed,Object? accountId = null,Object? categoryId = freezed,Object? type = null,Object? amountKopecks = null,Object? currencyCode = null,Object? date = null,Object? merchantName = freezed,Object? comment = freezed,Object? receiptId = freezed,Object? isSplit = null,Object? auditStatus = null,Object? syncStatus = null,Object? categoryName = null,Object? categoryColorHex = null,Object? memberDisplayName = freezed,Object? memberColorHex = freezed,Object? isHiddenByCalendar = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? spaceId = freezed,Object? accountId = null,Object? categoryId = freezed,Object? type = null,Object? amountKopecks = null,Object? currencyCode = null,Object? date = null,Object? merchantName = freezed,Object? comment = freezed,Object? receiptId = freezed,Object? isSplit = null,Object? auditStatus = null,Object? syncStatus = null,Object? categoryName = null,Object? categoryColorHex = null,Object? memberDisplayName = freezed,Object? memberColorHex = freezed,Object? isHiddenByCalendar = null,Object? isLargeExpense = null,}) {
   return _then(_TransactionUiModel(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -257,6 +259,7 @@ as String,categoryColorHex: null == categoryColorHex ? _self.categoryColorHex : 
 as String,memberDisplayName: freezed == memberDisplayName ? _self.memberDisplayName : memberDisplayName // ignore: cast_nullable_to_non_nullable
 as String?,memberColorHex: freezed == memberColorHex ? _self.memberColorHex : memberColorHex // ignore: cast_nullable_to_non_nullable
 as String?,isHiddenByCalendar: null == isHiddenByCalendar ? _self.isHiddenByCalendar : isHiddenByCalendar // ignore: cast_nullable_to_non_nullable
+as bool,isLargeExpense: null == isLargeExpense ? _self.isLargeExpense : isLargeExpense // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }

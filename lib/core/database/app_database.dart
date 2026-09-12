@@ -221,7 +221,14 @@ class Transactions extends Table {
   /// Связь с прикреплённым чеком (таблица появится в Этапе 16).
   TextColumn get receiptId => text().nullable()();
 
+  /// Флаг крупной траты для аналитического фильтра.
+  /// Используется в P&L / Dashboard / Monthly Analytics.
+  /// В лимитах по категориям не учитывается.
+  BoolColumn get isLargeExpense =>
+      boolean().withDefault(const Constant(false))();
+
   DateTimeColumn get createdAt => dateTime()();
+  
   DateTimeColumn get updatedAt => dateTime()();
   TextColumn get syncStatus =>
     textEnum<SyncStatus>().withDefault(const Constant('pending'))();
@@ -305,8 +312,9 @@ class AppDatabase extends _$AppDatabase {
   /// v1: старт (Этап 3)
   /// v2: миграция SyncableTable (Этап 3/5)
   /// v3: Этап 6 — таблицы transactions и transaction_splits
+  /// v4: Этап 8+ — поле is_large_expense (аналитический фильтр)
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   /// Вспомогательный метод для создания всех индексов
   /// Вызывается и в onCreate, и в onUpgrade (после пересоздания таблиц)
@@ -423,6 +431,12 @@ class AppDatabase extends _$AppDatabase {
       ON transactions(savings_goal_id)
     ''');
 
+    // Аналитический фильтр крупных трат.
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_transactions_large_expense 
+      ON transactions(is_large_expense)
+    ''');
+
     // Защита от дублей при Batch-импорте.
     // Частичный уникальный: большинство ручных операций не имеют bank ID.
     await customStatement('''
@@ -456,38 +470,26 @@ class AppDatabase extends _$AppDatabase {
 
     onUpgrade: (Migrator m, int from, int to) async {
       if (from < 2) {
-        // Миграция v1 → v2: обновляем SyncableTable mixin
-        // Drift не умеет изменять колонки "на лету", поэтому:
-        // 1. Удаляем ВСЕ таблицы через raw SQL
-        // 2. Создаём их заново (createAll создаст и таблицы Этапа 6)
-        // 3. Пересоздаём все индексы
-
-        final tables = [
-          'users',
-          'spaces',
-          'memberships',
-          'app_settings',
-          'notifications',
-          'sync_conflicts',
-          'sync_logs',
-          'accounts',
-          'mortgages',
-          'categories',
-          'category_rules',
-        ];
-
-        for (final table in tables) {
-          await customStatement('DROP TABLE IF EXISTS $table');
-        }
-
-        await m.createAll();
-        await _createAllIndexes();
+        // Миграция v1 → v2: обновляем SyncableTable mixin.
+        // ВНИМАНИЕ: Эта ветка выполнялась только на ранних версиях проекта.
+        // Теперь, когда схема стабилизирована (Этап 6+), мы НЕ удаляем таблицы.
+        // Вместо этого добавляем недостающие колонки через ALTER TABLE.
+        AppLogger.w('Migration v1→v2 skipped: tables already stable');
       } else if (from < 3) {
         // Миграция v2 → v3: Этап 6, таблицы транзакций и сплитов.
-        // Данные старых таблиц НЕ трогаем.
         await m.createTable(transactions);
         await m.createTable(transactionSplits);
         await _createAllIndexes();
+      } else if (from < 4) {
+        // Миграция v3 → v4: добавляем поле is_large_expense
+        await customStatement(
+          'ALTER TABLE transactions '
+          'ADD COLUMN is_large_expense INTEGER NOT NULL DEFAULT 0',
+        );
+        await customStatement(
+          'CREATE INDEX IF NOT EXISTS idx_transactions_large_expense '
+          'ON transactions(is_large_expense)',
+        );
       }
     },
 

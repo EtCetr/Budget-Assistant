@@ -24,6 +24,7 @@ abstract class TransactionsFilterState with _$TransactionsFilterState {
     @Default(false) bool onlySplit,
     @Default(false) bool onlyDebts,
     @Default(false) bool excludeOwn,
+    @Default(false) bool excludeLargeExpenses,
     @Default('') String search,
   }) = _TransactionsFilterState;
 }
@@ -40,6 +41,7 @@ extension TransactionsFilterStateX on TransactionsFilterState {
         onlySplit ||
         onlyDebts ||
         excludeOwn ||
+        excludeLargeExpenses ||
         search.trim().isNotEmpty;
   }
 }

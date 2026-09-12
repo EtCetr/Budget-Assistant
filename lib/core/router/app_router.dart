@@ -23,6 +23,7 @@ import 'package:budget_assistant/core/logger.dart';
 import 'package:budget_assistant/features/transactions/presentation/screens/transactions_log_screen.dart';
 import 'package:budget_assistant/features/import/presentation/screens/import_onboarding_stub_screen.dart';
 import 'package:budget_assistant/features/transactions/presentation/screens/create_transaction_screen.dart';
+import 'package:budget_assistant/features/transactions/presentation/screens/edit_transaction_screen.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 
 part 'app_router.g.dart';
@@ -87,7 +88,6 @@ class _AuthRefreshNotifier extends ChangeNotifier {
   late final ProviderSubscription _sub;
 
   _AuthRefreshNotifier(Ref ref) {
-    // ИСПРАВЛЕНО: authProvider -> authNotifierProvider
     _sub = ref.listen(authProvider, (_, __) {
       notifyListeners();
     });
@@ -197,6 +197,19 @@ GoRouter appRouter(Ref ref) {
           return CreateTransactionScreen(type: type);
         },
       ),
+      GoRoute(
+        path: '/transactions/edit/:id',
+        name: 'edit-transaction',
+        builder: (context, state) {
+          final id = state.pathParameters['id'];
+          if (id == null || id.isEmpty) {
+            return const Scaffold(
+              body: Center(child: Text('ID транзакции не указан')),
+            );
+          }
+          return EditTransactionScreen(transactionId: id);
+        },
+      ),
     ],
     redirect: (context, state) {
       final location = state.uri.toString();
@@ -204,36 +217,31 @@ GoRouter appRouter(Ref ref) {
       final onboardingCompleted =
           ref.read(onboardingStatusProvider) == 'completed';
 
-      // 1. Блокировка приложения
       if (isAppLocked && location != AppRoutes.lock) {
         return AppRoutes.lock;
       }
 
-      // 2. Не авторизован -> Auth (кроме invite-роутов)
       if (authStatus == AuthStatus.unauthenticated) {
         if (!location.startsWith(AppRoutes.auth) &&
             !location.startsWith(AppRoutes.invite)) {
           return AppRoutes.auth;
         }
-        return null; // Остаёмся на auth-роутах
+        return null;
       }
 
-      // 3. Авторизован -> Проверяем онбординг
       if (authStatus == AuthStatus.authenticated) {
-        // Если онбординг не завершён и мы НЕ на онбординг-роутах -> redirect
         if (!onboardingCompleted &&
             !location.startsWith(AppRoutes.onboarding) &&
             !location.startsWith('/security/')) {
           return AppRoutes.onboarding;
         }
 
-        // Если онбординг завершён и мы на auth -> redirect на home
         if (onboardingCompleted && location.startsWith(AppRoutes.auth)) {
           return AppRoutes.home;
         }
       }
 
-      return null; // Остаёмся на текущем роуте
+      return null;
     },
   );
 }

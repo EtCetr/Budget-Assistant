@@ -26,5 +26,6 @@ abstract class TransactionUiModel with _$TransactionUiModel {
     required String? memberDisplayName,
     required String? memberColorHex,
     @Default(false) bool isHiddenByCalendar,
+    @Default(false) bool isLargeExpense,
   }) = _TransactionUiModel;
 }

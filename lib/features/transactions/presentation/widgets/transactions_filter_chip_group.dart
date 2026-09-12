@@ -118,6 +118,27 @@ class TransactionsFilterChipGroup extends ConsumerWidget {
               ref.read(transactionsFilterProvider.notifier).toggleExcludeOwn();
             },
           ),
+          FilterChip(
+            label: const Text(TransactionsLogLabels.excludeOwn),
+            selected: filter.excludeOwn,
+            selectedColor: AppColors.colorTransfer.withValues(alpha: .25),
+            onSelected: (_) {
+              HapticFeedback.selectionClick();
+              ref.read(transactionsFilterProvider.notifier).toggleExcludeOwn();
+            },
+          ),
+          const SizedBox(width: 8),
+          FilterChip(
+            label: const Text(TransactionsLogLabels.excludeLargeExpenses),
+            selected: filter.excludeLargeExpenses,
+            selectedColor: const Color(0xFF8B5CF6).withValues(alpha: .25),
+            onSelected: (_) {
+              HapticFeedback.selectionClick();
+              ref
+                  .read(transactionsFilterProvider.notifier)
+                  .toggleExcludeLargeExpenses();
+            },
+          ),
         ],
       ),
     );

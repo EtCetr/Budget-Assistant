@@ -53,6 +53,10 @@ abstract class Transaction with _$Transaction {
     @Default(false) bool isWithdrawal,
     @Default(false) bool isSplit,
 
+    /// Флаг крупной траты. Используется в аналитике
+    /// (P&L / Dashboard / Monthly Analytics) через фильтр excludeLargeExpenses.
+    @Default(false) bool isLargeExpense,
+
     String? receiptId,
 
     required DateTime createdAt,

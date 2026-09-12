@@ -1,0 +1,348 @@
+﻿╥хъє∙р  ъюфютр  ёЄЁрэшЎр: 1251
+Launching lib\main.dart on sdk gphone64 x86 64 in debug mode...
+Running Gradle task 'assembleDebug'...                          
+я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜: 1251
+flutter : WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): workmanager
+строка:1 знак:1
++ flutter run --dart-define=SUPABASE_URL=https://aoecblorgoojrslpghjs.s ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (WARNING: Your a...P): workmanager:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Future versions of Flutter will fail to build if your app uses plugins that apply KGP.
+
+Please check the changelogs of these plugins and upgrade to a version that supports Built-in Kotlin.
+If no such version exists, report the issue to the plugin. If necessary, here is a guide on filing 
+an issue against a plugin: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-app-developers#report-incompatible-kotlin-gradle-plugin-usage-to-plugin-authors
+
+If you are a plugin author, please migrate your plugin to Built-in Kotlin using this guide: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors
+я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜ я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜я┐╜: 1251
+Running Gradle task 'assembleDebug'...                             20,8s
+тИЪ Built build\app\outputs\flutter-apk\app-debug.apk
+Installing build\app\outputs\flutter-apk\app-debug.apk...        1┬а134ms
+Error: ADB exited with exit code 1
+Performing Streamed Install
+
+adb.exe: failed to install D:\Et_Cetr\Budget Assistant\build\app\outputs\flutter-apk\app-debug.apk: Failure [INSTALL_FAILED_INSUFFICIENT_STORAGE: Failed to override installation location]
+Uninstalling old version...
+Installing build\app\outputs\flutter-apk\app-debug.apk...        2┬а075ms
+I/FlutterActivityAndFragmentDelegate(16703): If you are attempting to set --enable-dart-profiling via Intent extras to launch a Flutter component outside of using the Flutter CLI, note that support for setting engine flags on Android via Intent will soon be dropped; see https://github.com/flutter/flutter/issues/180686 for more information on this breaking change. To migrate, set --enable-dart-profiling or any other flags specified via Intent extras on the command line instead or see https://github.com/flutter/flutter/blob/main/docs/engine/Flutter-Android-Engine-Flags.md for alternative methods.
+D/FlutterJNI(16703): Beginning load of flutter...
+D/FlutterJNI(16703): flutter (null) was loaded normally!
+I/flutter (16703): [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(104)] Using the Impeller rendering backend (OpenGLES).
+D/FlutterRenderer(16703): Width is zero. 0,0
+Syncing files to device sdk gphone64 x86 64...                  
+I/flutter (16703): supabase.supabase_flutter: INFO: ***** Supabase init completed ***** 
+I/Choreographer(16703): Skipped 51 frames!  The application may be doing too much work on its main thread.
+I/WindowExtensionsImpl(16703): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
+I/udget_assistant(16703): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+D/FlutterRenderer(16703): Width is zero. 0,0
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+Syncing files to device sdk gphone64 x86 64...                     141ms
+
+Flutter run key commands.
+r Hot reload. 
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on sdk gphone64 x86 64 is available at: http://127.0.0.1:62589/xI60kiFbXYQ=/
+The Flutter DevTools debugger and profiler on sdk gphone64 x86 64 is available at: http://127.0.0.1:62589/xI60kiFbXYQ=/devtools/?uri=ws://127.0.0.1:62589/xI60kiFbXYQ=/ws
+I/Choreographer(16703): Skipped 40 frames!  The application may be doing too much work on its main thread.
+D/WindowLayoutComponentImpl(16703): Register WindowLayoutInfoListener on Context=com.example.budget_assistant.MainActivity@7b62c31, of which baseContext=android.app.ContextImpl@651e6a2
+V/Configuration(16703): Updating configuration, locales updated from [en_US,ru_RU] to [en]
+I/udget_assistant(16703): AssetManager2(0x72c48cedc8f8) locale list changing from [] to [en]
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+V/Configuration(16703): Updating configuration, locales updated from [en] to [en_US]
+I/udget_assistant(16703): AssetManager2(0x72c48cef1118) locale list changing from [] to [en-US]
+I/flutter (16703): [38;5;12mтФМтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФВ #0   AppLogger.i (package:budget_assistant/core/logger.dart:16:44)[0m
+I/flutter (16703): [38;5;12mтФВ #1   main.<anonymous closure> (package:budget_assistant/main.dart:44:15)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ 13:50:38.986 (+0:00:00.005297)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ ЁЯТб App bootstrap completed successfully[0m
+I/flutter (16703): [38;5;12mтФФтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФМтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФВ #0   AppLogger.i (package:budget_assistant/core/logger.dart:16:44)[0m
+I/flutter (16703): [38;5;12mтФВ #1   main.<anonymous closure> (package:budget_assistant/main.dart:45:15)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ 13:50:39.008 (+0:00:00.027421)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ ЁЯТб ЁЯЪА Forcing DB initialization...[0m
+I/flutter (16703): [38;5;12mтФФтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФМтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФВ #0   AppLogger.i (package:budget_assistant/core/logger.dart:16:44)[0m
+I/flutter (16703): [38;5;12mтФВ #1   _openConnection.<anonymous closure> (package:budget_assistant/core/database/app_database.dart:522:15)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ 13:50:39.189 (+0:00:00.209022)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ ЁЯТб ЁЯУБ DB Path: /data/user/0/com.example.budget_assistant/app_flutter/budget_assistant.sqlite[0m
+I/flutter (16703): [38;5;12mтФФтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФМтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФВ #0   AppLogger.i (package:budget_assistant/core/logger.dart:16:44)[0m
+I/flutter (16703): [38;5;12mтФВ #1   _openConnection.<anonymous closure> (package:budget_assistant/core/database/app_database.dart:523:15)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ 13:50:39.211 (+0:00:00.230442)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ ЁЯТб ЁЯУВ Directory exists: true[0m
+I/flutter (16703): [38;5;12mтФФтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФМтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФВ #0   AppLogger.i (package:budget_assistant/core/logger.dart:16:44)[0m
+I/flutter (16703): [38;5;12mтФВ #1   _openConnection.<anonymous closure> (package:budget_assistant/core/database/app_database.dart:529:15)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ 13:50:39.220 (+0:00:00.239674)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ ЁЯТб ЁЯТ╛ DB file exists before open: false[0m
+I/flutter (16703): [38;5;12mтФФтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФМтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФВ #0   AppLogger.i (package:budget_assistant/core/logger.dart:16:44)[0m
+I/flutter (16703): [38;5;12mтФВ #1   AppDatabase.migration.<anonymous closure> (package:budget_assistant/core/database/app_database.dart:497:17)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ 13:50:40.305 (+0:00:01.324548)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ ЁЯТб ЁЯФз Migration details: wasCreated=true, hadUpgrade=false, versionNow=4, versionBefore=null[0m
+I/flutter (16703): [38;5;12mтФФтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФМтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФВ #0   AppLogger.i (package:budget_assistant/core/logger.dart:16:44)[0m
+I/flutter (16703): [38;5;12mтФВ #1   AppDatabase.migration.<anonymous closure> (package:budget_assistant/core/database/app_database.dart:510:17)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ 13:50:40.380 (+0:00:01.399344)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ ЁЯТб ЁЯУЛ Tables in DB: accounts, app_settings, categories, category_rules, memberships, mortgages, notifications, spaces, sync_conflicts, sync_logs, transaction_splits, transactions, users[0m
+I/flutter (16703): [38;5;12mтФФтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФМтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФВ #0   AppLogger.i (package:budget_assistant/core/logger.dart:16:44)[0m
+I/flutter (16703): [38;5;12mтФВ #1   main.<anonymous closure> (package:budget_assistant/main.dart:49:15)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ 13:50:40.403 (+0:00:01.422234)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ ЁЯТб тЬЕ DB initialized successfully[0m
+I/flutter (16703): [38;5;12mтФФтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/Choreographer(16703): Skipped 71 frames!  The application may be doing too much work on its main thread.
+D/ProfileInstaller(16703): Installing profile for com.example.budget_assistant
+I/flutter (16703): [38;5;12mтФМтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФВ #0   AppLogger.i (package:budget_assistant/core/logger.dart:16:44)[0m
+I/flutter (16703): [38;5;12mтФВ #1   main.<anonymous closure> (package:budget_assistant/main.dart:66:17)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ 13:50:40.462 (+0:00:01.481446)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ ЁЯТб ЁЯЪж Onboarding status at boot: not_started[0m
+I/flutter (16703): [38;5;12mтФФтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФМтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФВ #0   AppLogger.i (package:budget_assistant/core/logger.dart:16:44)[0m
+I/flutter (16703): [38;5;12mтФВ #1   main.<anonymous closure> (package:budget_assistant/main.dart:75:17)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ 13:50:40.637 (+0:00:01.656440)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ ЁЯТб тЬЕ WorkManager initialized[0m
+I/flutter (16703): [38;5;12mтФФтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): GoRouter: INFO: Full paths for routes:
+I/flutter (16703): тФЬтФА/ (HomeScreen)
+I/flutter (16703): тФЬтФА/onboarding (OnboardingWrapper)
+I/flutter (16703): тФЬтФА/auth (AuthWrapper)
+I/flutter (16703): тФЬтФА/space-selector (SpaceSelectorScreen)
+I/flutter (16703): тФЬтФА/lock (AppLockScreen)
+I/flutter (16703): тФЬтФА/invite/accept (AcceptInviteScreen)
+I/flutter (16703): тФЬтФА/security/pin-onboarding (PinOnboardingScreen)
+I/flutter (16703): тФЬтФА/security/pin-entry (PinEntryScreen)
+I/flutter (16703): тФЬтФА/security/biometric-onboarding (BiometricOnboardingScreen)
+I/flutter (16703): тФЬтФА/accounts (AccountsScreen)
+I/flutter (16703): тФЬтФА/categories (CategoriesScreen)
+I/flutter (16703): тФЬтФА/transactions (TransactionsLogScreen)
+I/flutter (16703): тФЬтФА/import/onboarding (ImportOnboardingStubScreen)
+I/flutter (16703): тФЬтФА/transactions/create (CreateTransactionScreen)
+I/flutter (16703): тФФтФА/transactions/edit/:id (StatefulWidget)
+I/flutter (16703): known full paths for route names:
+I/flutter (16703):   home => /
+I/flutter (16703):   onboarding => /onboarding
+I/flutter (16703):   auth => /auth
+I/flutter (16703):   space_selector => /space-selector
+I/flutter (16703):   lock => /lock
+I/flutter (16703):   accept_invite => /invite/accept
+I/flutter (16703):   pin_onboarding => /security/pin-onboarding
+I/flutter (16703):   pin_entry => /security/pin-entry
+I/flutter (16703):   biometric_onboarding => /security/biometric-onboarding
+I/flutter (16703):   accounts => /accounts
+I/flutter (16703):   categories => /categories
+I/flutter (16703):   import-onboarding => /import/onboarding
+I/flutter (16703):   create-transaction => /transactions/create
+I/flutter (16703):   edit-transaction => /transactions/edit/:id
+I/flutter (16703):  
+I/flutter (16703): GoRouter: INFO: setting initial location / 
+I/flutter (16703): GoRouter: INFO: Using MaterialApp configuration 
+I/flutter (16703): GoRouter: INFO: Full paths for routes:
+I/flutter (16703): тФЬтФА/ (HomeScreen)
+I/flutter (16703): тФЬтФА/onboarding (OnboardingWrapper)
+I/flutter (16703): тФЬтФА/auth (AuthWrapper)
+I/flutter (16703): тФЬтФА/space-selector (SpaceSelectorScreen)
+I/flutter (16703): тФЬтФА/lock (AppLockScreen)
+I/flutter (16703): тФЬтФА/invite/accept (AcceptInviteScreen)
+I/flutter (16703): тФЬтФА/security/pin-onboarding (PinOnboardingScreen)
+I/flutter (16703): тФЬтФА/security/pin-entry (PinEntryScreen)
+I/flutter (16703): тФЬтФА/security/biometric-onboarding (BiometricOnboardingScreen)
+I/flutter (16703): тФЬтФА/accounts (AccountsScreen)
+I/flutter (16703): тФЬтФА/categories (CategoriesScreen)
+I/flutter (16703): тФЬтФА/transactions (TransactionsLogScreen)
+I/flutter (16703): тФЬтФА/import/onboarding (ImportOnboardingStubScreen)
+I/flutter (16703): тФЬтФА/transactions/create (CreateTransactionScreen)
+I/flutter (16703): тФФтФА/transactions/edit/:id (StatefulWidget)
+I/flutter (16703): known full paths for route names:
+I/flutter (16703):   home => /
+I/flutter (16703):   onboarding => /onboarding
+I/flutter (16703):   auth => /auth
+I/flutter (16703):   space_selector => /space-selector
+I/flutter (16703):   lock => /lock
+I/flutter (16703):   accept_invite => /invite/accept
+I/flutter (16703):   pin_onboarding => /security/pin-onboarding
+I/flutter (16703):   pin_entry => /security/pin-entry
+I/flutter (16703):   biometric_onboarding => /security/biometric-onboarding
+I/flutter (16703):   accounts => /accounts
+I/flutter (16703):   categories => /categories
+I/flutter (16703):   import-onboarding => /import/onboarding
+I/flutter (16703):   create-transaction => /transactions/create
+I/flutter (16703):   edit-transaction => /transactions/edit/:id
+I/flutter (16703):  
+I/flutter (16703): GoRouter: INFO: setting initial location / 
+I/flutter (16703): GoRouter: INFO: redirecting to RouteMatchList#97ac7(uri: /auth, matches: [RouteMatch#b406f(route: GoRoute#d0f89(name: "auth", path: "/auth"))]) 
+I/flutter (16703): GoRouter: INFO: Using MaterialApp configuration 
+I/Choreographer(16703): Skipped 199 frames!  The application may be doing too much work on its main thread.
+I/udget_assistant(16703): AssetManager2(0x72c48cee6218) locale list changing from [] to [en-US]
+I/udget_assistant(16703): Background concurrent mark compact GC freed 4837KB AllocSpace bytes, 54(2076KB) LOS objects, 49% free, 2960KB/5921KB, paused 2.330ms,5.175ms total 57.485ms
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/InsetsController(16703): hide(ime(), fromIme=false)
+I/ImeTracker(16703): com.example.budget_assistant:355e558d: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+
+I/ImeTracker(16703): com.example.budget_assistant:c68ed246: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(16703): show(ime(), fromIme=false)
+D/InsetsController(16703): Setting requestedVisibleTypes to -1 (was -9)
+D/InputConnectionAdaptor(16703): The input method toggled cursor monitoring on
+W/InteractionJankMonitor(16703): Initializing without READ_DEVICE_CONFIG permission. enabled=false, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=com.example.budget_assistant
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+I/ImeTracker(16703): com.example.budget_assistant:c68ed246: onShown
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+I/ImeTracker(16703): com.example.budget_assistant:31ec94f3: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(16703): show(ime(), fromIme=false)
+I/ImeTracker(16703): com.example.budget_assistant:31ec94f3: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+I/ImeTracker(16703): com.example.budget_assistant:c80f6798: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(16703): show(ime(), fromIme=false)
+I/ImeTracker(16703): com.example.budget_assistant:c80f6798: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+D/InputConnectionAdaptor(16703): The input method toggled cursor monitoring on
+I/flutter (16703): [38;5;12mтФМтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФВ #0   AppLogger.i (package:budget_assistant/core/logger.dart:16:44)[0m
+I/flutter (16703): [38;5;12mтФВ #1   AuthRepositoryImpl.signInWithEmailAndPassword (package:budget_assistant/features/auth/domain/repositories/auth_repository_impl.dart:40:17)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ 13:53:09.418 (+0:02:30.437531)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ ЁЯТб User signed in: c707931e-cf4f-49ef-a97e-8bf72d4af995[0m
+I/flutter (16703): [38;5;12mтФФтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): GoRouter: INFO: Full paths for routes:
+I/flutter (16703): тФЬтФА/ (HomeScreen)
+I/flutter (16703): тФЬтФА/onboarding (OnboardingWrapper)
+I/flutter (16703): тФЬтФА/auth (AuthWrapper)
+I/flutter (16703): тФЬтФА/space-selector (SpaceSelectorScreen)
+I/flutter (16703): тФЬтФА/lock (AppLockScreen)
+I/flutter (16703): тФЬтФА/invite/accept (AcceptInviteScreen)
+I/flutter (16703): тФЬтФА/security/pin-onboarding (PinOnboardingScreen)
+I/flutter (16703): тФЬтФА/security/pin-entry (PinEntryScreen)
+I/flutter (16703): тФЬтФА/security/biometric-onboarding (BiometricOnboardingScreen)
+I/flutter (16703): тФЬтФА/accounts (AccountsScreen)
+I/flutter (16703): тФЬтФА/categories (CategoriesScreen)
+I/flutter (16703): тФЬтФА/transactions (TransactionsLogScreen)
+I/flutter (16703): тФЬтФА/import/onboarding (ImportOnboardingStubScreen)
+I/flutter (16703): тФЬтФА/transactions/create (CreateTransactionScreen)
+I/flutter (16703): тФФтФА/transactions/edit/:id (StatefulWidget)
+I/flutter (16703): known full paths for route names:
+I/flutter (16703):   home => /
+I/flutter (16703):   onboarding => /onboarding
+I/flutter (16703):   auth => /auth
+I/flutter (16703):   space_selector => /space-selector
+I/flutter (16703):   lock => /lock
+I/flutter (16703):   accept_invite => /invite/accept
+I/flutter (16703):   pin_onboarding => /security/pin-onboarding
+I/flutter (16703):   pin_entry => /security/pin-entry
+I/flutter (16703):   biometric_onboarding => /security/biometric-onboarding
+I/flutter (16703):   accounts => /accounts
+I/flutter (16703):   categories => /categories
+I/flutter (16703):   import-onboarding => /import/onboarding
+I/flutter (16703):   create-transaction => /transactions/create
+I/flutter (16703):   edit-transaction => /transactions/edit/:id
+I/flutter (16703):  
+I/flutter (16703): GoRouter: INFO: setting initial location / 
+I/flutter (16703): GoRouter: INFO: redirecting to RouteMatchList#64cb3(uri: /onboarding, matches: [RouteMatch#0ef18(route: GoRoute#c9647(name: "onboarding", path: "/onboarding"))]) 
+I/flutter (16703): GoRouter: INFO: Using MaterialApp configuration 
+I/ImeTracker(16703): com.example.budget_assistant:d64b8259: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(16703): hide(ime(), fromIme=false)
+W/WindowOnBackDispatcher(16703): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@e93cb5b
+D/InsetsController(16703): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(16703): Compat change id reported: 395521150; UID 10224; state: ENABLED
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+I/ImeTracker(16703): system_server:a6225f52: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+I/ImeTracker(16703): com.example.budget_assistant:c6ae2023: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(16703): show(ime(), fromIme=false)
+D/InsetsController(16703): Setting requestedVisibleTypes to -1 (was -9)
+D/InputConnectionAdaptor(16703): The input method toggled cursor monitoring on
+I/AssistStructure(16703): Flattened final assist data: 436 bytes, containing 1 windows, 3 views
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+I/flutter (16703): Creating account with balance: 1200 kopecks
+I/flutter (16703): [38;5;12mтФМтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФВ #0   CreateAccountUseCase.execute (package:budget_assistant/features/accounts/domain/usecases/create_account_usecase.dart:60:15)[0m
+I/flutter (16703): [38;5;12mтФВ #1   <asynchronous suspension>[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ 13:53:15.984 (+0:02:37.003187)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ ЁЯТб Account created: 1e62105f-9c67-4c68-a137-047d9b07447b[0m
+I/flutter (16703): [38;5;12mтФФтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФМтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): [38;5;12mтФВ #0   AppLogger.i (package:budget_assistant/core/logger.dart:16:44)[0m
+I/flutter (16703): [38;5;12mтФВ #1   _FirstAccountScreenState._createAccountAndComplete.<anonymous closure> (package:budget_assistant/features/onboarding/presentation/screens/first_account_screen.dart:116:21)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ 13:53:15.989 (+0:02:37.008953)[0m
+I/flutter (16703): [38;5;12mтФЬтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФДтФД[0m
+I/flutter (16703): [38;5;12mтФВ ЁЯТб First account created: 1e62105f-9c67-4c68-a137-047d9b07447b[0m
+I/flutter (16703): [38;5;12mтФФтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА[0m
+I/flutter (16703): GoRouter: INFO: going to / 
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+I/ImeTracker(16703): com.example.budget_assistant:954f3aa2: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(16703): hide(ime(), fromIme=false)
+D/InsetsController(16703): Setting requestedVisibleTypes to -9 (was -1)
+I/ImeTracker(16703): com.example.budget_assistant:c6ae2023: onCancelled at PHASE_CLIENT_ANIMATION_CANCEL
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+W/WindowOnBackDispatcher(16703): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@6c48293
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+D/FlutterJNI(16703): Sending viewport metrics to the engine.
+I/ImeTracker(16703): system_server:62c8ce5d: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+I/udget_assistant(16703): Background concurrent mark compact GC freed 2141KB AllocSpace bytes, 16(640KB) LOS objects, 49% free, 3292KB/6585KB, paused 2.093ms,7.539ms total 198.464ms
+I/flutter (16703): GoRouter: INFO: pushing /transactions 
+I/Choreographer(16703): Skipped 35 frames!  The application may be doing too much work on its main thread.
+
+Application finished.

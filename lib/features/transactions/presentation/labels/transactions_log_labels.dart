@@ -17,6 +17,7 @@
   static const withReceipts = 'С чеками';
   static const onlySplit = 'Только split';
   static const onlyDebts = 'Только долги';
+  static const excludeLargeExpenses = 'Без крупных';
 
   static const periodAll = 'Все время';
   static const periodToday = 'Сегодня';
@@ -60,7 +61,14 @@
   static const syncError = 'Ошибка синхронизации. Проверьте интернет';
 
   static const hideAsGift = 'Засекретить (Подарок)';
-  static const ignore = 'Исключить из учёта (Сторно)';
+  static const unhideGift = 'Показать в календаре (отменить подарок)';
+
+  static const markAsLargeExpense = 'Отметить как крупную трату 💎';
+  static const unmarkAsLargeExpense = 'Снять пометку крупной траты';
+
+  static const edit = 'Редактировать';
+  static const editTitle = 'Редактирование транзакции';
+
   static const refund = 'Создать компенсирующую операцию (Доход)';
   static const changeCategory = 'Изменить категорию';
 
@@ -81,7 +89,5 @@
   static const actionDone = 'Действие выполнено';
   static const actionFailed = 'Не удалось выполнить действие';
 
-  static const unhideGift = 'Показать в календаре (отменить подарок)';
-  static const restoreFromIgnored = 'Вернуть в учёт';
   static const excludeOwn = 'Без моих';
 }

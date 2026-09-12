@@ -12,7 +12,6 @@ abstract interface class TransactionsLogRepository {
   });
 
   Future<void> unhideAsGift(String transactionId);
-  Future<void> restoreFromIgnored(String transactionId);
 
   Future<List<LookupItem>> fetchCategories();
 
@@ -20,14 +19,16 @@ abstract interface class TransactionsLogRepository {
 
   Future<void> hideAsGift(String transactionId);
 
-  Future<void> ignore(String transactionId);
-
   Future<void> updateCategory({
     required String transactionId,
     required String categoryId,
   });
 
   Future<void> createCompensatingIncome(String originalTransactionId);
+
+  /// Переключает флаг крупной траты (is_large_expense).
+  /// Используется для аналитического фильтра "Без крупных трат".
+  Future<void> toggleLargeExpense(String transactionId);
 
   Stream<int> watchPendingSyncCount();
 }
