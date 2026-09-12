@@ -48,6 +48,22 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
   String? _amountError;
 
   @override
+  void initState() {
+    super.initState();
+    _invalidateLookups();
+  }
+
+  /// Принудительно перечитывает списки счетов и категорий из БД,
+  /// чтобы новые записи были видны без перезапуска приложения.
+  void _invalidateLookups() {
+    Future.microtask(() {
+      if (!mounted) return;
+      ref.invalidate(transactionAccountLookupProvider);
+      ref.invalidate(transactionCategoryLookupProvider);
+    });
+  }
+
+  @override
   void dispose() {
     _amountController.dispose();
     _merchantController.dispose();

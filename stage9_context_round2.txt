@@ -1,0 +1,2200 @@
+﻿
+===== FILE: lib\core\router\routes.dart =====
+// lib/core/router/routes.dart
+// Константы для маршрутов
+
+class AppRoutes {
+  static const String home = '/';
+  static const String onboarding = '/onboarding';
+  static const String auth = '/auth';
+  static const String spaceSelector = '/space-selector';
+  static const String lock = '/lock';
+  static const String invite = '/invite';
+  static const String join = '/join'; // Для Deep Link
+
+  // Подпути для онбординга (может быть реализовано иначе, например, через индекс шага)
+  static const String onboardingWelcome = '$onboarding/welcome';
+  static const String onboardingCurrency = '$onboarding/currency';
+  static const String onboardingSecurity = '$onboarding/security';
+  static const String onboardingSpace = '$onboarding/space';
+  static const String onboardingAccount = '$onboarding/account';
+
+  // Подпути для auth (например, /auth/sign-in, /auth/sign-up)
+  // static const String authSignIn = '$auth/sign-in';
+  // static const String authSignUp = '$auth/sign-up';
+}
+===== FILE: lib\core\database\tables\syncable_mixin.dart =====
+import 'package:drift/drift.dart';
+
+mixin SyncableTable on Table {
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get syncStatus =>
+      text().named('sync_status').withDefault(const Constant('pending'))();
+}
+===== FILE: lib\core\database\tables\notifications.dart =====
+// lib/core/database/tables/notifications.dart
+import 'package:drift/drift.dart';
+import 'syncable_mixin.dart';
+import 'users.dart';
+import 'spaces.dart';
+
+class Notifications extends Table with SyncableTable {
+  TextColumn get id => text().named('id')();
+  TextColumn get userId => text().named('user_id').references(Users, #id)();
+  TextColumn get spaceId =>
+      text().named('space_id').references(Spaces, #id).nullable()();
+  TextColumn get type => text().named('type')(); // 27 типов из ТОМ 5
+  TextColumn get title => text().named('title')(); // [E2E]
+  TextColumn get body => text().named('body')(); // [E2E]
+  BoolColumn get isRead =>
+      boolean().named('is_read').withDefault(const Constant(false))();
+  TextColumn get relatedEntityId =>
+      text().named('related_entity_id').nullable()();
+  TextColumn get actionTaken =>
+      text().named('action_taken').nullable()(); // confirmed | dismissed
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+===== FILE: lib\core\database\daos\notifications_dao.dart =====
+import 'package:drift/drift.dart';
+import '../app_database.dart';
+import '../tables/notifications.dart';
+
+part 'notifications_dao.g.dart';
+
+@DriftAccessor(tables: [Notifications])
+class NotificationsDao extends DatabaseAccessor<AppDatabase>
+    with _$NotificationsDaoMixin {
+  NotificationsDao(super.db);
+
+  /// Получить непрочитанные уведомления пользователя
+  Future<List<Notification>> getUnread(String userId) {
+    return (select(notifications)
+          ..where((t) => t.userId.equals(userId) & t.isRead.equals(false))
+          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+        .get();
+  }
+
+  Stream<List<Notification>> watchUnread(String userId) {
+    return (select(notifications)
+          ..where((t) => t.userId.equals(userId) & t.isRead.equals(false))
+          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+        .watch();
+  }
+
+  /// Пометить как прочитанное
+  Future<int> markAsRead(String id) {
+    return (update(notifications)..where((t) => t.id.equals(id))).write(
+      const NotificationsCompanion(isRead: Value(true)),
+    );
+  }
+
+  /// Записать действие пользователя (confirmed/dismissed)
+  Future<int> recordAction(String id, String action) {
+    return (update(notifications)..where((t) => t.id.equals(id))).write(
+      NotificationsCompanion(actionTaken: Value(action)),
+    );
+  }
+
+  Future<void> insert(Notification notification) {
+    return into(notifications).insert(notification.toCompanion(true));
+  }
+
+  /// Удалить старые уведомления (старше 90 дней)
+  Future<int> cleanupOld() {
+    final cutoff = DateTime.now().toUtc().subtract(const Duration(days: 90));
+    return (delete(
+      notifications,
+    )..where((t) => t.createdAt.isSmallerThanValue(cutoff))).go();
+  }
+}
+===== FILE: lib\core\database\database_provider.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'app_database.dart';
+
+/// Провайдер базы данных (singleton, живёт всё время работы приложения)
+final appDatabaseProvider = Provider<AppDatabase>((ref) {
+  final db = AppDatabase();
+  ref.onDispose(() => db.close());
+  return db;
+});
+
+// ═══ Удобные провайдеры для DAO ═══
+
+final usersDaoProvider = Provider(
+  (ref) => ref.watch(appDatabaseProvider).usersDao,
+);
+
+final spacesDaoProvider = Provider(
+  (ref) => ref.watch(appDatabaseProvider).spacesDao,
+);
+
+final membershipsDaoProvider = Provider(
+  (ref) => ref.watch(appDatabaseProvider).membershipsDao,
+);
+
+final appSettingsDaoProvider = Provider(
+  (ref) => ref.watch(appDatabaseProvider).appSettingsDao,
+);
+
+final notificationsDaoProvider = Provider(
+  (ref) => ref.watch(appDatabaseProvider).notificationsDao,
+);
+
+final syncConflictsDaoProvider = Provider(
+  (ref) => ref.watch(appDatabaseProvider).syncConflictsDao,
+);
+
+final syncLogsDaoProvider = Provider(
+  (ref) => ref.watch(appDatabaseProvider).syncLogsDao,
+);
+===== FILE: lib\core\providers\database_providers.dart =====
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../database/app_database.dart';
+
+part 'database_providers.g.dart';
+
+@riverpod
+class AppDatabaseNotifier extends _$AppDatabaseNotifier {
+  @override
+  AppDatabase build() => AppDatabase();
+}
+===== FILE: lib\core\di\providers.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/core/database/app_database.dart';
+
+/// Global provider for the Drift database instance.
+/// Disposes the connection when the app is closed or provider is invalidated.
+final databaseProvider = Provider<AppDatabase>((ref) {
+  final db = AppDatabase();
+  ref.onDispose(() => db.close());
+  return db;
+});
+===== FILE: lib\core\providers\util_providers.dart =====
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
+import 'package:logger/logger.dart';
+
+part 'util_providers.g.dart';
+
+@riverpod
+class LoggerNotifier extends _$LoggerNotifier {
+  @override
+  Logger build() {
+    return Logger(
+      printer: PrettyPrinter(
+        methodCount: 2,
+        errorMethodCount: 8,
+        lineLength: 120,
+        colors: true,
+        printEmojis: true,
+        // ✅ Фикс deprecated printTime
+        dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
+      ),
+    );
+  }
+}
+
+@riverpod
+class UuidNotifier extends _$UuidNotifier {
+  @override
+  Uuid build() => const Uuid();
+}
+===== FILE: lib\core\errors\result.dart =====
+import 'package:budget_assistant/core/errors/failures.dart';
+
+/// Результат операции: либо успех со значением, либо ошибка с Failure.
+/// Нельзя использовать нигде, кроме как через switch / помощники ниже.
+sealed class Result<T> {
+  const Result();
+
+  bool get isSuccess => this is Success<T>;
+  bool get isError => this is Error<T>;
+
+  /// Значение, если успех. Иначе null.
+  T? get valueOrNull => switch (this) {
+    Success<T>(:final value) => value,
+    Error<T>() => null,
+  };
+
+  /// Ошибка, если неудача. Иначе null.
+  Failure? get failureOrNull => switch (this) {
+    Success<T>() => null,
+    Error<T>(:final failure) => failure,
+  };
+
+  /// «Развернуть» результат в одно из двух значений (удобно в провайдерах).
+  R fold<R>({
+    required R Function(T value) onSuccess,
+    required R Function(Failure failure) onError,
+  }) {
+    return switch (this) {
+      Success<T>(:final value) => onSuccess(value),
+      Error<T>(:final failure) => onError(failure),
+    };
+  }
+}
+
+/// Успех: внутри лежит готовое значение.
+final class Success<T> extends Result<T> {
+  const Success(this.value);
+
+  final T value;
+}
+
+/// Ошибка: внутри лежит описание причины (Failure).
+/// ВАЖНО: имя Error перекрывает встроенный Error из dart:core.
+/// Сейчас НЕ переименовываем, чтобы не трогать Этапы 1–6.
+/// Переименуем в FailureResult отдельным микро-коммитом после Этапа 7
+/// (глобальной заменой по проекту, вместе с l10n).
+final class Error<T> extends Result<T> {
+  const Error(this.failure);
+
+  final Failure failure;
+}
+===== FILE: lib\core\errors\failures.dart =====
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'failures.freezed.dart';
+
+@freezed
+abstract class Failure with _$Failure {
+  const factory Failure.network(String message, [StackTrace? stackTrace]) =
+      NetworkFailure;
+  const factory Failure.server(String message, [StackTrace? stackTrace]) =
+      ServerFailure;
+  const factory Failure.authentication(
+    String message, [
+    StackTrace? stackTrace,
+  ]) = AuthenticationFailure;
+  const factory Failure.authorization(
+    String message, [
+    StackTrace? stackTrace,
+  ]) = AuthorizationFailure;
+  const factory Failure.validation(String message, [StackTrace? stackTrace]) =
+      ValidationFailure;
+  const factory Failure.notFound(String message, [StackTrace? stackTrace]) =
+      NotFoundFailure;
+  const factory Failure.database(String message, [StackTrace? stackTrace]) =
+      DatabaseFailure;
+  const factory Failure.encryption(String message, [StackTrace? stackTrace]) =
+      EncryptionFailure;
+  const factory Failure.biometric(String message, [StackTrace? stackTrace]) =
+      BiometricFailure;
+  const factory Failure.pin(String message, [StackTrace? stackTrace]) =
+      PinFailure;
+  const factory Failure.unexpected(String message, [StackTrace? stackTrace]) =
+      UnexpectedFailure;
+}
+===== FILE: lib\core\logger.dart =====
+import 'package:logger/logger.dart';
+
+class AppLogger {
+  static final Logger _logger = Logger(
+    printer: PrettyPrinter(
+      methodCount: 2,
+      errorMethodCount: 8,
+      lineLength: 120,
+      colors: true,
+      printEmojis: true,
+      dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart, // Исправлено
+    ),
+  );
+
+  static void d(String message) => _logger.d(message);
+  static void i(String message) => _logger.i(message);
+  static void w(String message) => _logger.w(message);
+  static void e(String message, [dynamic error, StackTrace? stackTrace]) {
+    _logger.e(message, error: error, stackTrace: stackTrace);
+  }
+}
+===== FILE: lib\features\auth\presentation\providers\current_user_provider.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+/// «Кто я» — id текущего пользователя.
+/// Supabase хранит сессию на устройстве, поэтому работает офлайн.
+final currentUserIdProvider = Provider<String>((ref) {
+  final id = Supabase.instance.client.auth.currentUser?.id;
+
+  if (id == null) {
+    // Сюда не должно доходить: до экранов приложения
+    // пользователь проходит онбординг/логин (Этап 4).
+    throw StateError('Нет авторизованного пользователя');
+  }
+
+  return id;
+});
+===== FILE: lib\features\privacy\presentation\providers\privacy_mode_provider.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+import 'package:budget_assistant/features/privacy/presentation/privacy_formatter.dart';
+
+/// Нотификатор режима приватности (Riverpod 3.x, без StateProvider).
+///
+/// Источники режима (подключаются на этапах 21 и 23):
+/// - app_settings.default_balance_visibility;
+/// - shake-to-hide;
+/// - face-down;
+/// - auto-hide timeout;
+/// - biometric/PIN unhide.
+class PrivacyModeNotifier extends Notifier<BalanceVisibilityMode> {
+  @override
+  BalanceVisibilityMode build() {
+    // Базовое значение. Этап 21 заменит на чтение из app_settings.
+    return BalanceVisibilityMode.visible;
+  }
+
+  void setMode(BalanceVisibilityMode mode) {
+    state = mode;
+  }
+
+  void toggle() {
+    state = switch (state) {
+      BalanceVisibilityMode.visible => BalanceVisibilityMode.partial,
+      BalanceVisibilityMode.partial => BalanceVisibilityMode.hidden,
+      BalanceVisibilityMode.hidden => BalanceVisibilityMode.visible,
+    };
+  }
+}
+
+final privacyModeProvider =
+    NotifierProvider<PrivacyModeNotifier, BalanceVisibilityMode>(
+      PrivacyModeNotifier.new,
+    );
+
+/// Единственная точка доступа к PrivacyFormatter.
+/// Виджеты получают formatter ТОЛЬКО отсюда (ТОМ 6, раздел 6.6).
+final privacyFormatterProvider = Provider<PrivacyFormatter>((ref) {
+  return const PrivacyFormatter();
+});
+===== FILE: lib\features\notifications\data\models\notification_model.dart =====
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'notification_model.freezed.dart';
+part 'notification_model.g.dart';
+
+@freezed
+abstract class NotificationModel with _$NotificationModel {
+  const factory NotificationModel({
+    required String id,
+    required String userId,
+    String? spaceId,
+    required String type, // 27 типов из ТОМ 5
+    required String title, // [E2E]
+    required String body, // [E2E]
+    @Default(false) bool isRead,
+    String? relatedEntityId,
+    String? actionTaken, // confirmed | dismissed
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    @Default('pending') String syncStatus,
+  }) = _NotificationModel;
+
+  factory NotificationModel.fromJson(Map<String, dynamic> json) =>
+      _$NotificationModelFromJson(json);
+}
+===== FILE: lib\features\categories\domain\entities\category.dart =====
+// lib/features/categories/domain/entities/category.dart
+import '../../data/models/category_model.dart';
+
+class Category {
+  final String id;
+  final String? spaceId;
+  final String userId;
+  final String? parentId;
+  final String name;
+  final String type; // 'expense', 'income', 'transfer'
+  final String? iconEmoji;
+  final String? colorHex;
+  final bool isPinnedForCashback;
+  final bool isSystem;
+  final int? sortOrder;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String syncStatus;
+
+  Category({
+    required this.id,
+    this.spaceId,
+    required this.userId,
+    this.parentId,
+    required this.name,
+    required this.type,
+    this.iconEmoji,
+    this.colorHex,
+    this.isPinnedForCashback = false,
+    this.isSystem = false,
+    this.sortOrder,
+    required this.createdAt,
+    required this.updatedAt,
+    this.syncStatus = 'pending',
+  });
+
+  factory Category.fromModel(CategoryModel model) {
+    return Category(
+      id: model.id,
+      spaceId: model.spaceId,
+      userId: model.userId,
+      parentId: model.parentId,
+      name: model.name,
+      type: model.type,
+      iconEmoji: model.iconEmoji,
+      colorHex: model.colorHex,
+      isPinnedForCashback: model.isPinnedForCashback,
+      isSystem: model.isSystem,
+      sortOrder: model.sortOrder,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+      syncStatus: model.syncStatus,
+    );
+  }
+
+  CategoryModel toModel() {
+    return CategoryModel(
+      id: id,
+      spaceId: spaceId,
+      userId: userId,
+      parentId: parentId,
+      name: name,
+      type: type,
+      iconEmoji: iconEmoji,
+      colorHex: colorHex,
+      isPinnedForCashback: isPinnedForCashback,
+      isSystem: isSystem,
+      sortOrder: sortOrder,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      syncStatus: syncStatus,
+    );
+  }
+
+  Category copyWith({
+    String? id,
+    String? spaceId,
+    String? userId,
+    String? parentId,
+    String? name,
+    String? type,
+    String? iconEmoji,
+    String? colorHex,
+    bool? isPinnedForCashback,
+    bool? isSystem,
+    int? sortOrder,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? syncStatus,
+  }) {
+    return Category(
+      id: id ?? this.id,
+      spaceId: spaceId ?? this.spaceId,
+      userId: userId ?? this.userId,
+      parentId: parentId ?? this.parentId,
+      name: name ?? this.name,
+      type: type ?? this.type,
+      iconEmoji: iconEmoji ?? this.iconEmoji,
+      colorHex: colorHex ?? this.colorHex,
+      isPinnedForCashback: isPinnedForCashback ?? this.isPinnedForCashback,
+      isSystem: isSystem ?? this.isSystem,
+      sortOrder: sortOrder ?? this.sortOrder,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+    );
+  }
+
+  bool get isRoot => parentId == null;
+  bool get isExpense => type == 'expense';
+  bool get isIncome => type == 'income';
+  bool get isTransfer => type == 'transfer';
+}
+===== FILE: lib\features\categories\domain\repositories\category_repository.dart =====
+// lib/features/categories/domain/repositories/category_repository.dart
+import '../entities/category.dart';
+import '../entities/category_rule.dart';
+import 'package:budget_assistant/core/utils/result.dart';
+
+abstract class CategoryRepository {
+  Future<List<Category>> getCategoriesByUserId(String userId);
+  Future<void> insertCategory(Category category);
+  Future<List<Category>> getCategoriesByParentId(String? parentId);
+  Future<List<CategoryRule>> getRulesByBankAndSpace(
+    String bankName,
+    String? spaceId,
+  );
+  Future<void> insertRule(CategoryRule rule);
+    Future<Result<void>> updateCategory({
+    required String categoryId,
+    required String name,
+    required String type,
+    String? parentId,
+    String? iconEmoji,
+    String? colorHex,
+  });
+  Future<Result<void>> deleteCategory(String categoryId);
+}
+===== FILE: lib\features\categories\data\repositories\category_repository_impl.dart =====
+// lib/features/categories/data/repositories/category_repository_impl.dart
+import '../../domain/entities/category.dart';
+import '../../domain/entities/category_rule.dart';
+import '../../domain/repositories/category_repository.dart';
+import '../datasources/category_dao.dart';
+import '../datasources/category_rule_dao.dart';
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/utils/result.dart';
+import 'package:budget_assistant/core/errors/failures.dart';
+
+class CategoryRepositoryImpl implements CategoryRepository {
+  final CategoryDao _categoryDao;
+  final CategoryRuleDao _ruleDao;
+  final Logger _logger;
+
+  CategoryRepositoryImpl({
+    required CategoryDao categoryDao,
+    required CategoryRuleDao ruleDao,
+    required Logger logger,
+  }) : _categoryDao = categoryDao,
+       _ruleDao = ruleDao,
+       _logger = logger;
+
+  @override
+  Future<List<Category>> getCategoriesByUserId(String userId) async {
+    try {
+      final models = await _categoryDao.getCategoriesByUserId(userId);
+      return models.map((m) => Category.fromModel(m)).toList();
+    } catch (e, stackTrace) {
+      _logger.e(
+        'CategoryRepository.getCategoriesByUserId',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> insertCategory(Category category) async {
+    try {
+      final model = category.toModel();
+      await _categoryDao.insertCategory(model);
+    } catch (e, stackTrace) {
+      _logger.e(
+        'CategoryRepository.insertCategory',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<Category>> getCategoriesByParentId(String? parentId) async {
+    try {
+      final models = await _categoryDao.getCategoriesByParentId(parentId);
+      return models.map((m) => Category.fromModel(m)).toList();
+    } catch (e, stackTrace) {
+      _logger.e(
+        'CategoryRepository.getCategoriesByParentId',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<CategoryRule>> getRulesByBankAndSpace(
+    String bankName,
+    String? spaceId,
+  ) async {
+    try {
+      final models = await _ruleDao.getRulesByBankAndSpace(bankName, spaceId);
+      return models.map((m) => CategoryRule.fromModel(m)).toList();
+    } catch (e, stackTrace) {
+      _logger.e(
+        'CategoryRepository.getRulesByBankAndSpace',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> insertRule(CategoryRule rule) async {
+    try {
+      final model = rule.toModel();
+      await _ruleDao.insertRule(model);
+    } catch (e, stackTrace) {
+      _logger.e(
+        'CategoryRepository.insertRule',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+    @override
+  Future<Result<void>> updateCategory({
+    required String categoryId,
+    required String name,
+    required String type,
+    String? parentId,
+    String? iconEmoji,
+    String? colorHex,
+  }) async {
+    try {
+      await _categoryDao.updateCategoryFields(
+        categoryId: categoryId,
+        name: name,
+        type: type,
+        parentId: parentId,
+        iconEmoji: iconEmoji,
+        colorHex: colorHex,
+        updatedAt: DateTime.now().toUtc(),
+      );
+      _logger.i('Category updated: $categoryId');
+      return Result.success(null);
+    } catch (e, stackTrace) {
+      _logger.e('CategoryRepository.updateCategory', error: e, stackTrace: stackTrace);
+      return Result.failure(Failure.database(e.toString(), stackTrace));
+    }
+  }
+
+  @override
+  Future<Result<void>> deleteCategory(String categoryId) async {
+    try {
+      await _categoryDao.deleteCategory(categoryId);
+      _logger.i('Category deleted (with children re-parented): $categoryId');
+      return Result.success(null);
+    } catch (e, stackTrace) {
+      _logger.e('CategoryRepository.deleteCategory', error: e, stackTrace: stackTrace);
+      return Result.failure(Failure.database(e.toString(), stackTrace));
+    }
+  }
+}
+===== FILE: lib\features\categories\presentation\providers\category_providers.dart =====
+// lib/features/categories/presentation/providers/category_providers.dart
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/providers/database_providers.dart';
+import '../../../../core/providers/util_providers.dart';
+import '../../domain/entities/category.dart';
+import '../../domain/entities/category_rule.dart';
+import '../../domain/usecases/create_category_usecase.dart';
+import '../../domain/usecases/auto_categorize_transaction_usecase.dart';
+import '../../domain/repositories/category_repository.dart';
+import '../../data/repositories/category_repository_impl.dart';
+import '../../data/datasources/category_dao.dart';
+import '../../data/datasources/category_rule_dao.dart';
+import '../../domain/usecases/update_category_usecase.dart';
+import '../../domain/usecases/delete_category_usecase.dart';
+
+part 'category_providers.g.dart';
+
+@riverpod
+class CategoryDaoNotifier extends _$CategoryDaoNotifier {
+  @override
+  CategoryDao build() {
+    final db = ref.watch(appDatabaseProvider);
+    return CategoryDao(db);
+  }
+}
+
+@riverpod
+class CategoryRuleDaoNotifier extends _$CategoryRuleDaoNotifier {
+  @override
+  CategoryRuleDao build() {
+    final db = ref.watch(appDatabaseProvider);
+    return CategoryRuleDao(db);
+  }
+}
+
+@riverpod
+class CategoryRepositoryNotifier extends _$CategoryRepositoryNotifier {
+  @override
+  CategoryRepository build() {
+    return CategoryRepositoryImpl(
+      categoryDao: ref.watch(categoryDaoProvider),
+      ruleDao: ref.watch(categoryRuleDaoProvider),
+      logger: ref.watch(loggerProvider),
+    );
+  }
+}
+
+@riverpod
+class CreateCategoryUseCaseNotifier extends _$CreateCategoryUseCaseNotifier {
+  @override
+  CreateCategoryUseCase build() {
+    return CreateCategoryUseCase(
+      repository: ref.watch(categoryRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+      uuid: ref.watch(uuidProvider),
+    );
+  }
+}
+
+@riverpod
+class AutoCategorizeTransactionUseCaseNotifier
+    extends _$AutoCategorizeTransactionUseCaseNotifier {
+  @override
+  AutoCategorizeTransactionUseCase build() {
+    return AutoCategorizeTransactionUseCase(
+      repository: ref.watch(categoryRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+      uuid: ref.watch(uuidProvider),
+    );
+  }
+}
+
+@riverpod
+class CategoriesListNotifier extends _$CategoriesListNotifier {
+  @override
+  Future<List<Category>> build(String userId) async {
+    final repository = ref.watch(categoryRepositoryProvider);
+    return await repository.getCategoriesByUserId(userId);
+  }
+}
+
+@riverpod
+class RootCategoriesNotifier extends _$RootCategoriesNotifier {
+  @override
+  Future<List<Category>> build(String userId) async {
+    final repository = ref.watch(categoryRepositoryProvider);
+    return await repository.getCategoriesByParentId(null);
+  }
+}
+
+@riverpod
+class ChildCategoriesNotifier extends _$ChildCategoriesNotifier {
+  @override
+  Future<List<Category>> build(String parentId) async {
+    final repository = ref.watch(categoryRepositoryProvider);
+    return await repository.getCategoriesByParentId(parentId);
+  }
+}
+
+@riverpod
+class CategoryRulesByBankNotifier extends _$CategoryRulesByBankNotifier {
+  @override
+  Future<List<CategoryRule>> build(String bankName, String? spaceId) async {
+    final repository = ref.watch(categoryRepositoryProvider);
+    return await repository.getRulesByBankAndSpace(bankName, spaceId);
+  }
+}
+
+@riverpod
+class CategoriesGroupedByTypeNotifier
+    extends _$CategoriesGroupedByTypeNotifier {
+  @override
+  Future<Map<String, List<Category>>> build(String userId) async {
+    final categories = await ref.watch(categoriesListProvider(userId).future);
+
+    final grouped = <String, List<Category>>{
+      'expense': [],
+      'income': [],
+      'transfer': [],
+    };
+
+    for (final category in categories) {
+      grouped.putIfAbsent(category.type, () => []).add(category);
+    }
+
+    for (final entry in grouped.entries) {
+      entry.value.sort((a, b) {
+        if (a.sortOrder != null && b.sortOrder != null) {
+          return a.sortOrder!.compareTo(b.sortOrder!);
+        }
+        return a.name.compareTo(b.name);
+      });
+    }
+
+    return grouped;
+  }
+}
+
+@riverpod
+class UpdateCategoryUseCaseNotifier extends _$UpdateCategoryUseCaseNotifier {
+  @override
+  UpdateCategoryUseCase build() {
+    return UpdateCategoryUseCase(
+      repository: ref.watch(categoryRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+    );
+  }
+}
+
+@riverpod
+class DeleteCategoryUseCaseNotifier extends _$DeleteCategoryUseCaseNotifier {
+  @override
+  DeleteCategoryUseCase build() {
+    return DeleteCategoryUseCase(
+      repository: ref.watch(categoryRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+    );
+  }
+}
+===== FILE: lib\features\transactions\presentation\providers\transactions_providers.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+import 'package:budget_assistant/features/privacy/presentation/privacy_formatter.dart';
+
+/// Нотификатор режима приватности (Riverpod 3.x, без StateProvider).
+///
+/// Источники режима (подключаются на этапах 21 и 23):
+/// - app_settings.default_balance_visibility;
+/// - shake-to-hide;
+/// - face-down;
+/// - auto-hide timeout;
+/// - biometric/PIN unhide.
+class PrivacyModeNotifier extends Notifier<BalanceVisibilityMode> {
+  @override
+  BalanceVisibilityMode build() {
+    // Базовое значение. Этап 21 заменит на чтение из app_settings.
+    return BalanceVisibilityMode.visible;
+  }
+
+  void setMode(BalanceVisibilityMode mode) {
+    state = mode;
+  }
+
+  void toggle() {
+    state = switch (state) {
+      BalanceVisibilityMode.visible => BalanceVisibilityMode.partial,
+      BalanceVisibilityMode.partial => BalanceVisibilityMode.hidden,
+      BalanceVisibilityMode.hidden => BalanceVisibilityMode.visible,
+    };
+  }
+}
+
+final privacyModeProvider =
+    NotifierProvider<PrivacyModeNotifier, BalanceVisibilityMode>(
+      PrivacyModeNotifier.new,
+    );
+
+/// Единственная точка доступа к PrivacyFormatter.
+/// Виджеты получают formatter ТОЛЬКО отсюда (ТОМ 6, раздел 6.6).
+final privacyFormatterProvider = Provider<PrivacyFormatter>((ref) {
+  return const PrivacyFormatter();
+});
+===== FILE: lib\features\transactions\presentation\providers\create_transaction_providers.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+
+import 'package:budget_assistant/core/database/app_database.dart';
+import 'package:budget_assistant/core/ports/clock_port.dart';
+import 'package:budget_assistant/core/services/elapsed_realtime_service.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
+import 'package:budget_assistant/features/transactions/domain/models/transaction_split.dart';
+
+import '../../data/repositories/transactions_repository_impl.dart';
+import '../../domain/repositories/transactions_repository.dart';
+import '../../domain/usecases/create_transaction_usecase.dart';
+import '../../domain/usecases/update_transaction_usecase.dart';
+
+/// РћР±С‰РёР№ СЌРєР·РµРјРїР»СЏСЂ Logger РґР»СЏ РїСЂРѕРІР°Р№РґРµСЂРѕРІ С„РёС‡Рё.
+final Logger _logger = Logger();
+
+/// Р РµР°Р»СЊРЅС‹Р№ СЂРµРїРѕР·РёС‚РѕСЂРёР№ С‚СЂР°РЅР·Р°РєС†РёР№ (Drift, Р­С‚Р°Рї 6).
+final transactionsRepositoryProvider = Provider<TransactionsRepository>((ref) {
+  return TransactionsRepositoryImpl(db: AppDatabase(), logger: _logger);
+});
+
+/// Р‘РѕРµРІР°СЏ СЂРµР°Р»РёР·Р°С†РёСЏ РјРѕРЅРѕС‚РѕРЅРЅС‹С… С‡Р°СЃРѕРІ С‡РµСЂРµР· platform channel.
+final elapsedRealtimeServiceProvider = Provider<ClockPort>(
+  (ref) => ElapsedRealtimeService(),
+);
+
+/// UseCase СЃРѕР·РґР°РЅРёСЏ С‚СЂР°РЅР·Р°РєС†РёРё (Р­С‚Р°Рї 6).
+final createTransactionUseCaseProvider = Provider<CreateTransactionUseCase>(
+  (ref) => CreateTransactionUseCase(
+    repository: ref.watch(transactionsRepositoryProvider),
+    logger: _logger,
+    clock: ref.watch(elapsedRealtimeServiceProvider),
+  ),
+);
+
+/// UseCase РѕР±РЅРѕРІР»РµРЅРёСЏ С‚СЂР°РЅР·Р°РєС†РёРё (Р­С‚Р°Рї 7+).
+final updateTransactionUseCaseProvider = Provider<UpdateTransactionUseCase>(
+  (ref) => UpdateTransactionUseCase(
+    repository: ref.watch(transactionsRepositoryProvider),
+    logger: _logger,
+    clock: ref.watch(elapsedRealtimeServiceProvider),
+  ),
+);
+
+/// Id С‚РµРєСѓС‰РµРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РґР»СЏ С„РѕСЂРјС‹ СЃРѕР·РґР°РЅРёСЏ/СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ.
+final currentUserIdForCreateProvider = Provider<String>(
+  (ref) => ref.watch(currentUserIdProvider),
+);
+
+/// Р—Р°РіСЂСѓР·РєР° С‚СЂР°РЅР·Р°РєС†РёРё РїРѕ ID РґР»СЏ СЌРєСЂР°РЅР° СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ.
+final editTransactionProvider = FutureProvider.autoDispose
+    .family<Transaction?, String>((ref, id) async {
+      final repo = ref.watch(transactionsRepositoryProvider);
+      try {
+        return await repo.getTransactionById(id);
+      } catch (_) {
+        return null;
+      }
+    });
+
+/// Р—Р°РіСЂСѓР·РєР° СЃРїР»РёС‚РѕРІ С‚СЂР°РЅР·Р°РєС†РёРё РґР»СЏ СЌРєСЂР°РЅР° СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ.
+final editTransactionSplitsProvider = FutureProvider.autoDispose
+    .family<List<TransactionSplit>, String>((ref, id) async {
+      final repo = ref.watch(transactionsRepositoryProvider);
+      try {
+        return await repo.getSplitsForTransaction(id);
+      } catch (_) {
+        return const [];
+      }
+    });
+===== FILE: lib\core\formatting\money_formatter.dart =====
+import 'package:intl/intl.dart';
+
+class CurrencySymbols {
+  static String forCode(String code) {
+    switch (code.toUpperCase()) {
+      case 'RUB':
+        return '₽';
+      case 'USD':
+        return r'$';
+      case 'EUR':
+        return '€';
+      default:
+        return code.toUpperCase();
+    }
+  }
+}
+
+class MoneyFormatter {
+  static String formatKopecks(
+    int kopecks,
+    String currencyCode, {
+    bool showSign = false,
+  }) {
+    final abs = kopecks.abs();
+    final rubles = abs ~/ 100;
+    final kop = abs % 100;
+
+    final sign = switch (showSign) {
+      true when kopecks < 0 => '-',
+      true when kopecks > 0 => '+',
+      _ => '',
+    };
+
+    final rubFormatted = NumberFormat.decimalPattern('ru').format(rubles);
+    final kopFormatted = kop == 0 ? '' : ',${kop.toString().padLeft(2, '0')}';
+    final symbol = CurrencySymbols.forCode(currencyCode);
+
+    return '$sign$rubFormatted$kopFormatted $symbol';
+  }
+}
+===== FILE: lib\core\formatting\money_input_parser.dart =====
+class MoneyInputParser {
+  /// Parses user input like "1 234,56" into kopecks.
+  /// Returns null if invalid.
+  static int? parseKopecks(String input) {
+    final normalized = input
+        .replaceAll(RegExp(r'[\s ]'), '')
+        .replaceAll(',', '.');
+
+    if (normalized.isEmpty) return null;
+
+    final parts = normalized.split('.');
+    if (parts.length > 2) return null;
+
+    final rublesPart = parts[0].isEmpty ? '0' : parts[0];
+    final rubles = int.tryParse(rublesPart);
+    if (rubles == null || rubles < 0) return null;
+
+    var kopecks = 0;
+
+    if (parts.length == 2) {
+      final kopRaw = parts[1];
+      if (kopRaw.length > 2) return null;
+
+      final padded = kopRaw.padRight(2, '0');
+      final parsed = int.tryParse(padded);
+      if (parsed == null || parsed < 0) return null;
+
+      kopecks = parsed;
+    }
+
+    return rubles * 100 + kopecks;
+  }
+}
+===== FILE: lib\core\utils\amount_utils.dart =====
+int rublesToKopecks(double rubles) {
+  return (rubles * 100).round();
+}
+
+double kopecksToRubles(int kopecks) {
+  return kopecks / 100.0;
+}
+===== FILE: lib\features\home\presentation\screens\home_screen.dart =====
+// lib/features/home/presentation/screens/home_screen.dart
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Budget Assistant'), centerTitle: true),
+      // ✅ УБРАЛИ const снаружи: внутри кнопки с замыканиями onPressed
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.account_balance_wallet,
+              size: 64,
+              color: Colors.grey,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Welcome to Budget Assistant v6.0',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Core Architecture Initialized.',
+              style: TextStyle(color: Colors.grey),
+            ),
+            ElevatedButton(
+              onPressed: () => context.go('/accounts'),
+              child: const Text('Счета (QA)'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () => context.go('/categories'),
+              child: const Text('Категории (QA)'),
+            ),
+            ElevatedButton(
+              onPressed: () => context.push('/transactions'),
+              child: const Text('Транзакции (QA)'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+===== FILE: lib\features\sync\data\sync_table_spec.dart =====
+/// РћРїРёСЃР°РЅРёРµ С‚Р°Р±Р»РёС†С‹ РґР»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё.
+///
+/// Р—РґРµСЃСЊ Р¶Рµ Р·Р°РґР°С‘С‚СЃСЏ, РєР°РєРёРµ РїРѕР»СЏ С€РёС„СЂСѓСЋС‚СЃСЏ РїРµСЂРµРґ Supabase.
+class SyncTableSpec {
+  const SyncTableSpec({
+    required this.entityType,
+    required this.localTable,
+    required this.remoteTable,
+    required this.idColumn,
+    required this.userColumn,
+    required this.spaceColumn,
+    required this.updatedAtColumn,
+    required this.syncStatusColumn,
+    this.lockedStartedAtColumn,
+    this.lockedDurationMsColumn,
+    this.sensitiveColumns = const [],
+    this.numericColumns = const [],
+    this.ignoredColumns = const [],
+    this.remoteColumnMap = const {},
+  });
+
+  /// РўРёРї СЃСѓС‰РЅРѕСЃС‚Рё РґР»СЏ Р»РѕРіРѕРІ Рё РєРѕРЅС„Р»РёРєС‚РѕРІ.
+  final String entityType;
+
+  /// Р›РѕРєР°Р»СЊРЅР°СЏ С‚Р°Р±Р»РёС†Р° Drift/SQLite.
+  final String localTable;
+
+  /// РўР°Р±Р»РёС†Р° РІ Supabase.
+  final String remoteTable;
+
+  final String idColumn;
+  final String userColumn;
+  final String spaceColumn;
+  final String updatedAtColumn;
+  final String syncStatusColumn;
+
+  /// РўРѕР»СЊРєРѕ РґР»СЏ С‚СЂР°РЅР·Р°РєС†РёР№: РјРѕРЅРѕС‚РѕРЅРЅС‹Рµ С‡Р°СЃС‹ РЅР°С‡Р°Р»Р° Р±Р»РѕРєРёСЂРѕРІРєРё.
+  final String? lockedStartedAtColumn;
+
+  /// РўРѕР»СЊРєРѕ РґР»СЏ С‚СЂР°РЅР·Р°РєС†РёР№: РґР»РёС‚РµР»СЊРЅРѕСЃС‚СЊ Р±Р»РѕРєРёСЂРѕРІРєРё РІ РјСЃ.
+  final String? lockedDurationMsColumn;
+
+  /// РџРѕР»СЏ, РєРѕС‚РѕСЂС‹Рµ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ Р·Р°С€РёС„СЂРѕРІР°РЅС‹ РїРµСЂРµРґ РѕС‚РїСЂР°РІРєРѕР№.
+  final List<String> sensitiveColumns;
+
+  /// РџРѕР»СЏ, РєРѕС‚РѕСЂС‹Рµ РїРѕСЃР»Рµ СЂР°СЃС€РёС„СЂРѕРІРєРё РґРѕР»Р¶РЅС‹ СЃС‚Р°С‚СЊ int.
+  final List<String> numericColumns;
+
+  /// Р›РѕРєР°Р»СЊРЅС‹Рµ РїРѕР»СЏ, РєРѕС‚РѕСЂС‹Рµ РЅРµ СЃРёРЅС…СЂРѕРЅРёР·РёСЂСѓСЋС‚СЃСЏ.
+  final List<String> ignoredColumns;
+
+  /// РњР°РїРїРёРЅРі Р»РѕРєР°Р»СЊРЅРѕРµ РїРѕР»Рµ -> СѓРґР°Р»С‘РЅРЅРѕРµ РїРѕР»Рµ.
+  final Map<String, String> remoteColumnMap;
+
+  String remoteColumnFor(String localColumn) {
+    return remoteColumnMap[localColumn] ?? localColumn;
+  }
+
+  bool isSensitive(String column) => sensitiveColumns.contains(column);
+
+  bool shouldSend(String column) => !ignoredColumns.contains(column);
+
+  static const accounts = SyncTableSpec(
+    entityType: 'account',
+    localTable: 'accounts',
+    remoteTable: 'accounts',
+    idColumn: 'id',
+    userColumn: 'user_id',
+    spaceColumn: 'space_id',
+    updatedAtColumn: 'updated_at',
+    syncStatusColumn: 'sync_status',
+    sensitiveColumns: ['custom_name', 'bank_name'],
+    numericColumns: [],
+    ignoredColumns: ['sort_order'],
+  );
+
+  static const categories = SyncTableSpec(
+    entityType: 'category',
+    localTable: 'categories',
+    remoteTable: 'categories',
+    idColumn: 'id',
+    userColumn: 'user_id',
+    spaceColumn: 'space_id',
+    updatedAtColumn: 'updated_at',
+    syncStatusColumn: 'sync_status',
+    sensitiveColumns: ['name'],
+    numericColumns: [],
+    ignoredColumns: ['sort_order'],
+  );
+
+  static const transactions = SyncTableSpec(
+    entityType: 'transaction',
+    localTable: 'transactions',
+    remoteTable: 'transactions',
+    idColumn: 'id',
+    userColumn: 'user_id',
+    spaceColumn: 'space_id',
+    updatedAtColumn: 'updated_at',
+    syncStatusColumn: 'sync_status',
+    lockedStartedAtColumn: 'sync_locked_started_at',
+    lockedDurationMsColumn: 'sync_locked_duration_ms',
+    sensitiveColumns: ['amount', 'comment', 'merchant_name', 'bank_category'],
+    numericColumns: ['amount', 'original_amount'],
+    ignoredColumns: [],
+  );
+
+  static const defaultSpecs = [accounts, categories, transactions];
+}
+===== FILE: lib\features\sync\data\local\drift_sync_local_source.dart =====
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:drift/drift.dart';
+import 'package:logger/logger.dart';
+
+import 'package:budget_assistant/features/sync/data/sync_table_spec.dart';
+import 'package:budget_assistant/features/sync/domain/models/sync_models.dart';
+
+/// Р›РѕРєР°Р»СЊРЅС‹Р№ РёСЃС‚РѕС‡РЅРёРє РґР°РЅРЅС‹С… РґР»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё.
+class DriftSyncLocalSource {
+  DriftSyncLocalSource({required this.db, required this.logger});
+
+  final GeneratedDatabase db;
+  final Logger logger;
+
+  final Map<String, Set<String>> _columnsCache = {};
+
+  Future<List<SyncPendingRow>> fetchPending(
+    SyncTableSpec spec, {
+    int limit = 200,
+  }) async {
+    try {
+      final now = DateTime.now().toUtc();
+      final nowUnix = now.millisecondsSinceEpoch ~/ 1000;
+
+      final variables = <Variable>[Variable.withString('pending')];
+
+      var lockedClause = '';
+
+      if (spec.lockedStartedAtColumn != null &&
+          spec.lockedDurationMsColumn != null) {
+        lockedClause =
+            '''
+          AND (
+            ${spec.lockedStartedAtColumn} IS NULL
+            OR ${spec.lockedDurationMsColumn} IS NULL
+            OR (${spec.lockedStartedAtColumn} + ${spec.lockedDurationMsColumn} / 1000) <= ?
+          )
+        ''';
+
+        variables.add(Variable.withInt(nowUnix));
+      }
+
+      variables.add(Variable.withInt(limit));
+
+      final sql =
+          '''
+        SELECT *
+        FROM ${spec.localTable}
+        WHERE ${spec.syncStatusColumn} = ?
+        $lockedClause
+        ORDER BY ${spec.updatedAtColumn} ASC
+        LIMIT ?
+      ''';
+
+      final rows = await db.customSelect(sql, variables: variables).get();
+
+      return rows
+          .map((queryRow) {
+            final data = Map<String, Object?>.from(queryRow.data);
+
+            return SyncPendingRow(
+              id: data[spec.idColumn]?.toString() ?? '',
+              raw: data,
+              updatedAt: parseDate(data[spec.updatedAtColumn]),
+              spaceId: data[spec.spaceColumn]?.toString(),
+            );
+          })
+          .where((row) => row.id.isNotEmpty)
+          .toList();
+    } catch (e, st) {
+      logger.e(
+        'fetchPending failed for ${spec.localTable}',
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> markSynced(SyncTableSpec spec, List<String> ids) async {
+    if (ids.isEmpty) return;
+
+    try {
+      final placeholders = List.filled(ids.length, '?').join(', ');
+      final variables = <Variable>[
+        Variable.withString('synced'),
+        ...ids.map(Variable.withString),
+      ];
+
+      await db.customUpdate('''
+          UPDATE ${spec.localTable}
+          SET ${spec.syncStatusColumn} = ?
+          WHERE ${spec.idColumn} IN ($placeholders)
+        ''', variables: variables);
+    } catch (e, st) {
+      logger.e(
+        'markSynced failed for ${spec.localTable}',
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> markConflict(SyncTableSpec spec, List<String> ids) async {
+    if (ids.isEmpty) return;
+
+    try {
+      final placeholders = List.filled(ids.length, '?').join(', ');
+      final variables = <Variable>[
+        Variable.withString('conflict'),
+        ...ids.map(Variable.withString),
+      ];
+
+      await db.customUpdate('''
+          UPDATE ${spec.localTable}
+          SET ${spec.syncStatusColumn} = ?
+          WHERE ${spec.idColumn} IN ($placeholders)
+        ''', variables: variables);
+    } catch (e, st) {
+      logger.e(
+        'markConflict failed for ${spec.localTable}',
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> applyRemoteRow(
+    SyncTableSpec spec,
+    Map<String, Object?> decryptedRemoteRow,
+  ) async {
+    try {
+      final id = decryptedRemoteRow[spec.idColumn]?.toString();
+      if (id == null || id.isEmpty) {
+        logger.w('applyRemoteRow skipped: empty id');
+        return;
+      }
+
+      final localColumns = await _getTableColumns(spec.localTable);
+      if (localColumns.isEmpty) {
+        logger.w('applyRemoteRow skipped: no local columns found');
+        return;
+      }
+
+      final setClauses = <String>[];
+      final variables = <Variable>[];
+
+      decryptedRemoteRow.forEach((column, value) {
+        if (column == spec.idColumn) return;
+        if (column == spec.syncStatusColumn) return;
+        if (!spec.shouldSend(column)) return;
+        if (!localColumns.contains(column)) return;
+
+        setClauses.add('$column = ?');
+        variables.add(_variable(value));
+      });
+
+      if (setClauses.isEmpty) return;
+
+      setClauses.add('${spec.syncStatusColumn} = ?');
+      variables.add(Variable.withString('synced'));
+
+      variables.add(Variable.withString(id));
+
+      await db.customUpdate('''
+          UPDATE ${spec.localTable}
+          SET ${setClauses.join(', ')}
+          WHERE ${spec.idColumn} = ?
+        ''', variables: variables);
+    } catch (e, st) {
+      logger.e(
+        'applyRemoteRow failed for ${spec.localTable}',
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> insertConflict({
+    required String entityType,
+    required String entityId,
+    required Object? localValue,
+    required Object? remoteValue,
+  }) async {
+    try {
+      await db.customInsert(
+        '''
+          INSERT INTO sync_conflicts (
+            id,
+            entity_type,
+            entity_id,
+            local_value,
+            remote_value,
+            created_at
+          ) VALUES (?, ?, ?, ?, ?, ?)
+        ''',
+        variables: [
+          Variable.withString(_uuidV4()),
+          Variable.withString(entityType),
+          Variable.withString(entityId),
+          Variable.withString(_encodeJson(localValue)),
+          Variable.withString(_encodeJson(remoteValue)),
+          Variable.withDateTime(DateTime.now().toUtc()),
+        ],
+      );
+    } catch (e, st) {
+      logger.e('insertConflict failed', error: e, stackTrace: st);
+    }
+  }
+
+  Future<void> writeLog({
+    required String userId,
+    required String status,
+    String? errorMessage,
+    int entitiesSyncedCount = 0,
+  }) async {
+    try {
+      if (errorMessage != null) {
+        await db.customInsert(
+          '''
+            INSERT INTO sync_logs (
+              id,
+              user_id,
+              timestamp,
+              status,
+              error_message,
+              entities_synced_count
+            ) VALUES (?, ?, ?, ?, ?, ?)
+          ''',
+          variables: [
+            Variable.withString(_uuidV4()),
+            Variable.withString(userId),
+            Variable.withDateTime(DateTime.now().toUtc()),
+            Variable.withString(status),
+            Variable.withString(errorMessage),
+            Variable.withInt(entitiesSyncedCount),
+          ],
+        );
+      } else {
+        await db.customInsert(
+          '''
+            INSERT INTO sync_logs (
+              id,
+              user_id,
+              timestamp,
+              status,
+              error_message,
+              entities_synced_count
+            ) VALUES (?, ?, ?, ?, NULL, ?)
+          ''',
+          variables: [
+            Variable.withString(_uuidV4()),
+            Variable.withString(userId),
+            Variable.withDateTime(DateTime.now().toUtc()),
+            Variable.withString(status),
+            Variable.withInt(entitiesSyncedCount),
+          ],
+        );
+      }
+    } catch (e, st) {
+      logger.w('writeLog failed (non-critical)', error: e, stackTrace: st);
+    }
+  }
+
+  Future<Set<String>> _getTableColumns(String table) async {
+    final cached = _columnsCache[table];
+    if (cached != null) return cached;
+
+    try {
+      final rows = await db.customSelect('PRAGMA table_info($table)').get();
+
+      final columns = rows
+          .map((row) => row.data['name']?.toString() ?? '')
+          .where((name) => name.isNotEmpty)
+          .toSet();
+
+      _columnsCache[table] = columns;
+      return columns;
+    } catch (e, st) {
+      logger.e('_getTableColumns failed for $table', error: e, stackTrace: st);
+      return {};
+    }
+  }
+
+  Variable<Object> _variable(Object? value) {
+    if (value == null) {
+      return Variable.withString('NULL');
+    }
+
+    if (value is int) {
+      return Variable.withInt(value);
+    }
+
+    if (value is bool) {
+      return Variable.withBool(value);
+    }
+
+    if (value is DateTime) {
+      return Variable.withDateTime(value.toUtc());
+    }
+
+    return Variable.withString(value.toString());
+  }
+
+  String _encodeJson(Object? value) {
+    try {
+      return jsonEncode(_jsonSafe(value));
+    } catch (_) {
+      return value.toString();
+    }
+  }
+
+  Object? _jsonSafe(Object? value) {
+    if (value == null) return null;
+
+    if (value is DateTime) {
+      return value.toUtc().toIso8601String();
+    }
+
+    if (value is Map) {
+      return value.map((key, val) => MapEntry(key.toString(), _jsonSafe(val)));
+    }
+
+    if (value is Iterable) {
+      return value.map(_jsonSafe).toList();
+    }
+
+    return value;
+  }
+
+  String _uuidV4() {
+    final rnd = Random.secure();
+    final bytes = List<int>.generate(16, (_) => rnd.nextInt(256));
+
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+    String hex(int value) => value.toRadixString(16).padLeft(2, '0');
+
+    final hexList = bytes.map(hex).join();
+
+    return '${hexList.substring(0, 8)}-'
+        '${hexList.substring(8, 12)}-'
+        '${hexList.substring(12, 16)}-'
+        '${hexList.substring(16, 20)}-'
+        '${hexList.substring(20)}';
+  }
+
+  static DateTime? parseDate(Object? value) {
+    if (value == null) return null;
+
+    if (value is DateTime) {
+      return value.toUtc();
+    }
+
+    if (value is int) {
+      if (value > 1000000000000000) {
+        return DateTime.fromMicrosecondsSinceEpoch(value, isUtc: true);
+      }
+
+      if (value > 1000000000000) {
+        return DateTime.fromMillisecondsSinceEpoch(value, isUtc: true);
+      }
+
+      return DateTime.fromMillisecondsSinceEpoch(value * 1000, isUtc: true);
+    }
+
+    if (value is String) {
+      final direct = DateTime.tryParse(value);
+      if (direct != null) return direct.toUtc();
+
+      final withT = DateTime.tryParse(value.replaceFirst(' ', 'T'));
+      if (withT != null) return withT.toUtc();
+    }
+
+    return null;
+  }
+}
+===== FILE: lib\features\sync\data\crypto\sync_payload_encryptor.dart =====
+import 'package:budget_assistant/core/services/encryption_service.dart';
+import 'package:budget_assistant/features/sync/data/sync_table_spec.dart';
+
+/// РЁРёС„СЂСѓРµС‚ Рё РґРµС€РёС„СЂСѓРµС‚ СЃС‚СЂРѕРєРё/С‡РёСЃР»Р° РІ РїРѕР»РµР·РЅС‹С… РґР°РЅРЅС‹С… СЃСѓС‰РЅРѕСЃС‚РµР№
+/// РїРµСЂРµРґ РѕС‚РїСЂР°РІРєРѕР№ РІ Supabase.
+class SyncPayloadEncryptor {
+  const SyncPayloadEncryptor({required this.encryptionService});
+
+  final EncryptionService encryptionService;
+
+  Future<Map<String, Object?>> encryptRow({
+    required SyncTableSpec spec,
+    required Map<String, Object?> row,
+    required String spaceId,
+  }) async {
+    final out = <String, Object?>{};
+
+    for (final entry in row.entries) {
+      final column = entry.key;
+      final value = entry.value;
+
+      if (!spec.shouldSend(column)) {
+        continue;
+      }
+
+      if (spec.isSensitive(column)) {
+        if (value == null) {
+          out[spec.remoteColumnFor(column)] = null;
+          continue;
+        }
+
+        try {
+          String encrypted;
+
+          if (value is int && spec.numericColumns.contains(column)) {
+            encrypted = await encryptionService.encryptInt(value, spaceId);
+          } else {
+            final plain = value is String ? value : value.toString();
+            encrypted = await encryptionService.encryptString(plain, spaceId);
+          }
+
+          out[spec.remoteColumnFor(column)] = encrypted;
+        } catch (e) {
+          throw Exception(
+            'Failed to encrypt column $column for ${spec.entityType} ${row[spec.idColumn]}: $e',
+          );
+        }
+      } else {
+        out[column] = _toRemoteValue(value);
+      }
+    }
+
+    out[spec.syncStatusColumn] = 'synced';
+
+    return out;
+  }
+
+  Future<Map<String, Object?>> decryptRow({
+    required SyncTableSpec spec,
+    required Map<String, Object?> remoteRow,
+    required String spaceId,
+  }) async {
+    final out = Map<String, Object?>.from(remoteRow);
+
+    for (final column in spec.sensitiveColumns) {
+      final remoteColumn = spec.remoteColumnFor(column);
+      final encrypted = remoteRow[remoteColumn] ?? remoteRow[column];
+
+      if (encrypted == null) {
+        out[column] = null;
+        if (remoteColumn != column) {
+          out.remove(remoteColumn);
+        }
+        continue;
+      }
+
+      if (encrypted is! String) {
+        out[column] = encrypted;
+        if (remoteColumn != column) {
+          out.remove(remoteColumn);
+        }
+        continue;
+      }
+
+      try {
+        if (spec.numericColumns.contains(column)) {
+          out[column] = await encryptionService.decryptInt(encrypted, spaceId);
+        } else {
+          out[column] = await encryptionService.decryptString(
+            encrypted,
+            spaceId,
+          );
+        }
+      } catch (e) {
+        throw Exception(
+          'Failed to decrypt column $column for ${spec.entityType} ${remoteRow[spec.idColumn]}: $e',
+        );
+      }
+
+      if (remoteColumn != column) {
+        out.remove(remoteColumn);
+      }
+    }
+
+    out[spec.syncStatusColumn] = 'synced';
+    return out;
+  }
+
+  Object? _toRemoteValue(Object? value) {
+    if (value is DateTime) {
+      return value.toUtc().toIso8601String();
+    }
+    return value;
+  }
+}
+===== FILE: lib\features\sync\data\remote\supabase_sync_gateway.dart =====
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+/// Gateway РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ Supabase.
+class SupabaseSyncGateway {
+  const SupabaseSyncGateway({required this.client});
+
+  final SupabaseClient client;
+
+  Future<List<Map<String, Object?>>> fetchRemoteRows({
+    required String table,
+    required List<String> ids,
+  }) async {
+    if (ids.isEmpty) return [];
+
+    final response = await client
+        .from(table)
+        .select()
+        .inFilter('id', ids)
+        .limit(ids.length);
+
+    return response.map((row) => Map<String, Object?>.from(row)).toList();
+  }
+
+  Future<void> upsertRows({
+    required String table,
+    required List<Map<String, Object?>> rows,
+  }) async {
+    if (rows.isEmpty) return;
+
+    await client.from(table).upsert(rows, onConflict: 'id');
+  }
+}
+===== FILE: lib\features\sync\domain\models\sync_models.dart =====
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'sync_models.freezed.dart';
+
+enum SyncTrigger { manual, pullToRefresh, background }
+
+@freezed
+abstract class SyncPendingRow with _$SyncPendingRow {
+  const factory SyncPendingRow({
+    required String id,
+    required Map<String, Object?> raw,
+    DateTime? updatedAt,
+    String? spaceId,
+  }) = _SyncPendingRow;
+}
+
+@freezed
+abstract class SyncBatchSummary with _$SyncBatchSummary {
+  const factory SyncBatchSummary({
+    required int pushed,
+    required int conflicts,
+    required int resolvedByLww,
+    required int failed,
+    required SyncTrigger trigger,
+  }) = _SyncBatchSummary;
+}
+===== FILE: lib\features\sync\domain\usecases\sync_pending_entities_use_case.dart =====
+import 'package:logger/logger.dart';
+
+import 'package:budget_assistant/features/sync/data/crypto/sync_payload_encryptor.dart';
+import 'package:budget_assistant/features/sync/data/local/drift_sync_local_source.dart';
+import 'package:budget_assistant/features/sync/data/remote/supabase_sync_gateway.dart';
+import 'package:budget_assistant/features/sync/data/sync_table_spec.dart';
+import 'package:budget_assistant/features/sync/domain/models/sync_models.dart';
+
+class SyncPendingEntitiesUseCase {
+  SyncPendingEntitiesUseCase({
+    required this.localSource,
+    required this.remoteGateway,
+    required this.encryptor,
+    required this.logger,
+    required this.specs,
+  });
+
+  final DriftSyncLocalSource localSource;
+  final SupabaseSyncGateway remoteGateway;
+  final SyncPayloadEncryptor encryptor;
+  final Logger logger;
+  final List<SyncTableSpec> specs;
+
+  static const int _batchSize = 50;
+  static const int _pendingLimitPerEntity = 200;
+
+  Future<SyncBatchSummary> call({
+    SyncTrigger trigger = SyncTrigger.manual,
+  }) async {
+    var pushed = 0;
+    var conflicts = 0;
+    var resolvedByLww = 0;
+    var failed = 0;
+
+    for (final spec in specs) {
+      try {
+        final pendingRows = await localSource.fetchPending(
+          spec,
+          limit: _pendingLimitPerEntity,
+        );
+
+        if (pendingRows.isEmpty) {
+          continue;
+        }
+
+        final ids = pendingRows.map((row) => row.id).toList();
+
+        final remoteRows = await _withRetry(
+          () =>
+              remoteGateway.fetchRemoteRows(table: spec.remoteTable, ids: ids),
+          operationName: 'fetchRemoteRows:${spec.remoteTable}',
+        );
+
+        final remoteById = <String, Map<String, Object?>>{
+          for (final row in remoteRows)
+            row[spec.idColumn]?.toString() ?? '': row,
+        };
+
+        final rowsToPush = <SyncPendingRow>[];
+
+        for (final localRow in pendingRows) {
+          final remoteRow = remoteById[localRow.id];
+          final remoteUpdatedAt = _parseDate(remoteRow?[spec.updatedAtColumn]);
+
+          if (_shouldPushLocal(localRow.updatedAt, remoteUpdatedAt)) {
+            rowsToPush.add(localRow);
+            continue;
+          }
+
+          if (spec.entityType == SyncTableSpec.transactions.entityType) {
+            final spaceId = localRow.spaceId;
+
+            if (spaceId == null || spaceId.isEmpty) {
+              logger.e(
+                'LWW remote apply failed: missing spaceId '
+                'for transaction ${localRow.id}',
+              );
+              failed++;
+              continue;
+            }
+
+            try {
+              final decryptedRemote = await encryptor.decryptRow(
+                spec: spec,
+                remoteRow: remoteRow!,
+                spaceId: spaceId,
+              );
+
+              await localSource.applyRemoteRow(spec, decryptedRemote);
+
+              await localSource.insertConflict(
+                entityType: spec.entityType,
+                entityId: localRow.id,
+                localValue: _jsonSafe(localRow.raw),
+                remoteValue: _jsonSafe(remoteRow),
+              );
+
+              resolvedByLww++;
+            } catch (e, st) {
+              logger.e(
+                'LWW remote apply failed for transaction ${localRow.id}',
+                error: e,
+                stackTrace: st,
+              );
+              failed++;
+            }
+          } else {
+            await localSource.markConflict(spec, [localRow.id]);
+
+            await localSource.insertConflict(
+              entityType: spec.entityType,
+              entityId: localRow.id,
+              localValue: _jsonSafe(localRow.raw),
+              remoteValue: _jsonSafe(remoteRow),
+            );
+
+            conflicts++;
+          }
+        }
+
+        if (rowsToPush.isNotEmpty) {
+          final pushResult = await _pushRows(spec: spec, rows: rowsToPush);
+
+          pushed += pushResult.pushed;
+          failed += pushResult.failed;
+        }
+      } catch (e, st) {
+        logger.e(
+          'Sync entity batch failed for ${spec.entityType}',
+          error: e,
+          stackTrace: st,
+        );
+        failed++;
+      }
+    }
+
+    return SyncBatchSummary(
+      pushed: pushed,
+      conflicts: conflicts,
+      resolvedByLww: resolvedByLww,
+      failed: failed,
+      trigger: trigger,
+    );
+  }
+
+  Future<_PushResult> _pushRows({
+    required SyncTableSpec spec,
+    required List<SyncPendingRow> rows,
+  }) async {
+    var pushed = 0;
+    var failed = 0;
+
+    final groups = <String?, List<SyncPendingRow>>{};
+
+    for (final row in rows) {
+      groups.putIfAbsent(row.spaceId, () => []).add(row);
+    }
+
+    for (final entry in groups.entries) {
+      final spaceId = entry.key;
+      final spaceRows = entry.value;
+
+      if (spaceId == null || spaceId.isEmpty) {
+        logger.e(
+          'Missing spaceId for ${spec.entityType}. '
+          'Rows skipped: ${spaceRows.length}',
+        );
+        failed += spaceRows.length;
+        continue;
+      }
+
+      final encryptedRows = <Map<String, Object?>>[];
+
+      for (final row in spaceRows) {
+        try {
+          final encrypted = await encryptor.encryptRow(
+            spec: spec,
+            row: row.raw,
+            spaceId: spaceId,
+          );
+          encryptedRows.add(encrypted);
+        } catch (e, st) {
+          logger.e(
+            'Encryption failed for ${spec.entityType} ${row.id}',
+            error: e,
+            stackTrace: st,
+          );
+          failed++;
+        }
+      }
+
+      if (encryptedRows.isEmpty) {
+        continue;
+      }
+
+      for (var i = 0; i < encryptedRows.length; i += _batchSize) {
+        final end = i + _batchSize;
+        final chunk = encryptedRows.sublist(
+          i,
+          end > encryptedRows.length ? encryptedRows.length : end,
+        );
+
+        try {
+          await _withRetry(
+            () =>
+                remoteGateway.upsertRows(table: spec.remoteTable, rows: chunk),
+            operationName: 'upsertRows:${spec.remoteTable}',
+          );
+
+          final chunkIds = chunk
+              .map((row) => row[spec.idColumn]?.toString() ?? '')
+              .where((id) => id.isNotEmpty)
+              .toList();
+
+          await localSource.markSynced(spec, chunkIds);
+          pushed += chunkIds.length;
+        } catch (e, st) {
+          logger.e(
+            'Upsert batch failed for ${spec.entityType}',
+            error: e,
+            stackTrace: st,
+          );
+          failed += chunk.length;
+        }
+      }
+    }
+
+    return _PushResult(pushed: pushed, failed: failed);
+  }
+
+  bool _shouldPushLocal(DateTime? localUpdatedAt, DateTime? remoteUpdatedAt) {
+    if (remoteUpdatedAt == null) return true;
+    if (localUpdatedAt == null) return false;
+
+    return !localUpdatedAt.isBefore(remoteUpdatedAt);
+  }
+
+  Future<T> _withRetry<T>(
+    Future<T> Function() operation, {
+    required String operationName,
+    int maxAttempts = 3,
+  }) async {
+    var delay = const Duration(seconds: 1);
+
+    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        return await operation();
+      } catch (e, st) {
+        if (attempt == maxAttempts) {
+          rethrow;
+        }
+
+        logger.w(
+          'Retry $attempt/$maxAttempts for $operationName',
+          error: e,
+          stackTrace: st,
+        );
+
+        await Future<void>.delayed(delay);
+        delay *= 2;
+      }
+    }
+
+    throw StateError('Retry loop failed for $operationName');
+  }
+
+  DateTime? _parseDate(Object? value) {
+    return DriftSyncLocalSource.parseDate(value);
+  }
+
+  Object? _jsonSafe(Object? value) {
+    if (value == null) return null;
+
+    if (value is DateTime) {
+      return value.toUtc().toIso8601String();
+    }
+
+    if (value is Map) {
+      return value.map((key, val) => MapEntry(key.toString(), _jsonSafe(val)));
+    }
+
+    if (value is Iterable) {
+      return value.map(_jsonSafe).toList();
+    }
+
+    return value;
+  }
+}
+
+class _PushResult {
+  const _PushResult({required this.pushed, required this.failed});
+
+  final int pushed;
+  final int failed;
+}
+===== FILE: lib\features\sync\application\sync_providers.dart =====
+import 'package:drift/drift.dart' show GeneratedDatabase;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:budget_assistant/core/services/encryption_service.dart';
+import 'package:budget_assistant/core/services/secure_storage_service.dart';
+import 'package:budget_assistant/features/sync/data/crypto/sync_payload_encryptor.dart';
+import 'package:budget_assistant/features/sync/data/local/drift_sync_local_source.dart';
+import 'package:budget_assistant/features/sync/data/remote/supabase_sync_gateway.dart';
+import 'package:budget_assistant/features/sync/data/sync_table_spec.dart';
+import 'package:budget_assistant/features/sync/domain/usecases/sync_pending_entities_use_case.dart';
+
+final syncDatabaseProvider = Provider<GeneratedDatabase>(
+  (ref) => throw StateError(
+    'syncDatabaseProvider must be overridden with AppDatabase instance',
+  ),
+);
+
+final supabaseSyncClientProvider = Provider<SupabaseClient>(
+  (ref) => throw StateError(
+    'supabaseSyncClientProvider must be overridden with SupabaseClient',
+  ),
+);
+
+final syncStorageProvider = Provider<SecureStorageService>(
+  (ref) => SecureStorageService(),
+);
+
+final syncLoggerProvider = Provider<Logger>((ref) => Logger());
+
+final syncTableSpecsProvider = Provider<List<SyncTableSpec>>(
+  (ref) => SyncTableSpec.defaultSpecs,
+);
+
+final encryptionServiceProvider = Provider<EncryptionService>(
+  (ref) => EncryptionService(secureStorage: ref.watch(syncStorageProvider)),
+);
+
+final syncPayloadEncryptorProvider = Provider<SyncPayloadEncryptor>(
+  (ref) => SyncPayloadEncryptor(
+    encryptionService: ref.watch(encryptionServiceProvider),
+  ),
+);
+
+final syncLocalSourceProvider = Provider<DriftSyncLocalSource>(
+  (ref) => DriftSyncLocalSource(
+    db: ref.watch(syncDatabaseProvider),
+    logger: ref.watch(syncLoggerProvider),
+  ),
+);
+
+final supabaseSyncGatewayProvider = Provider<SupabaseSyncGateway>(
+  (ref) => SupabaseSyncGateway(client: ref.watch(supabaseSyncClientProvider)),
+);
+
+final syncPendingEntitiesUseCaseProvider = Provider<SyncPendingEntitiesUseCase>(
+  (ref) => SyncPendingEntitiesUseCase(
+    localSource: ref.watch(syncLocalSourceProvider),
+    remoteGateway: ref.watch(supabaseSyncGatewayProvider),
+    encryptor: ref.watch(syncPayloadEncryptorProvider),
+    logger: ref.watch(syncLoggerProvider),
+    specs: ref.watch(syncTableSpecsProvider),
+  ),
+);
+===== FILE: lib\features\sync\application\workmanager_sync_task.dart =====
+import 'package:flutter/widgets.dart';
+import 'package:logger/logger.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:workmanager/workmanager.dart';
+
+import 'package:budget_assistant/core/logger.dart';
+import 'package:budget_assistant/core/services/secure_storage_service.dart';
+import 'package:budget_assistant/features/sync/application/sync_background_database.dart';
+import 'package:budget_assistant/features/sync/application/sync_service.dart';
+
+/// Top-level callback РґР»СЏ WorkManager.
+@pragma('vm:entry-point')
+void syncWorkManagerCallback() {
+  Workmanager().executeTask((taskName, inputData) async {
+    if (taskName != 'budget_assistant_periodic_sync' &&
+        taskName != 'budget_assistant_one_off_sync') {
+      return true;
+    }
+
+    try {
+      WidgetsFlutterBinding.ensureInitialized();
+
+      final storage = SecureStorageService();
+      final logger = Logger();
+
+      final supabaseUrl = await storage.read('supabase_url');
+      final supabaseAnonKey = await storage.read('supabase_anon_key');
+
+      if (supabaseUrl == null || supabaseAnonKey == null) {
+        AppLogger.e(
+          'Sync background task failed: missing Supabase config in SecureStorage',
+        );
+        return false;
+      }
+
+      final db = await openSyncDatabaseInBackground();
+      final client = SupabaseClient(supabaseUrl, supabaseAnonKey);
+
+      try {
+        final syncService = SyncService(
+          db: db,
+          client: client,
+          storage: storage,
+          logger: logger,
+        );
+
+        final pushed = await syncService.forceSyncNow();
+
+        AppLogger.i('Sync background task completed: pushed=$pushed');
+
+        return true;
+      } finally {
+        await db.close();
+      }
+    } catch (e, st) {
+      AppLogger.e('Sync background task error', e, st);
+      return false;
+    }
+  });
+}
+===== FILE: lib\features\sync\application\sync_background_database.dart =====
+import 'dart:io';
+
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+
+import 'package:budget_assistant/core/database/app_database.dart';
+
+/// РћС‚РєСЂС‹РІР°РµС‚ Р»РѕРєР°Р»СЊРЅСѓСЋ Р‘Р” РІ background isolate WorkManager.
+@pragma('vm:entry-point')
+Future<GeneratedDatabase> openSyncDatabaseInBackground() async {
+  final dir = await getApplicationDocumentsDirectory();
+  final file = File(p.join(dir.path, 'budget_assistant.sqlite'));
+
+  return AppDatabase.forBackground(NativeDatabase.createInBackground(file));
+}

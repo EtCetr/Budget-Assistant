@@ -47,12 +47,23 @@ class _CreateTransactionScreenState
   @override
   void initState() {
     super.initState();
+    _invalidateLookups();
     _draft = TransactionDraft(
       type: widget.type,
       accountId: '',
       date: DateTime.now(),
       amount: 0,
     );
+  }
+
+  /// Принудительно перечитывает списки счетов и категорий из БД,
+  /// чтобы новые записи были видны без перезапуска приложения.
+  void _invalidateLookups() {
+    Future.microtask(() {
+      if (!mounted) return;
+      ref.invalidate(transactionAccountLookupProvider);
+      ref.invalidate(transactionCategoryLookupProvider);
+    });
   }
 
   @override

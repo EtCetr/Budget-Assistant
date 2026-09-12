@@ -1,0 +1,1490 @@
+﻿===== FILE: lib\features\transactions\presentation\screens\create_transaction_screen.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+
+import 'package:budget_assistant/core/database/app_database.dart';
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
+import 'package:budget_assistant/core/errors/result.dart';
+import 'package:budget_assistant/core/formatting/money_input_parser.dart';
+import 'package:budget_assistant/core/formatting/money_formatter.dart';
+import 'package:budget_assistant/core/theme/app_colors.dart';
+import 'package:budget_assistant/core/theme/app_spacing.dart';
+
+import '../../../../core/providers/security_providers.dart';
+import '../../domain/entities/lookup_item.dart';
+import '../../domain/models/secrecy_config.dart';
+import '../../domain/models/transaction_draft.dart';
+import '../labels/transactions_log_labels.dart';
+import '../providers/create_transaction_providers.dart';
+import '../providers/transactions_log_providers.dart';
+
+/// Р­РєСЂР°РЅ СЃРѕР·РґР°РЅРёСЏ С‚СЂР°РЅР·Р°РєС†РёРё.
+///
+/// Р РѕСѓС‚: /transactions/create?type=expense|income|transfer
+class CreateTransactionScreen extends ConsumerStatefulWidget {
+  const CreateTransactionScreen({super.key, required this.type});
+
+  final TransactionType type;
+
+  @override
+  ConsumerState<CreateTransactionScreen> createState() =>
+      _CreateTransactionScreenState();
+}
+
+class _CreateTransactionScreenState
+    extends ConsumerState<CreateTransactionScreen> {
+  late TransactionDraft _draft;
+
+  final _amountController = TextEditingController();
+  final _merchantController = TextEditingController();
+  final _commentController = TextEditingController();
+
+  bool _isSaving = false;
+  String? _amountError;
+
+  @override
+  void initState() {
+    super.initState();
+    _draft = TransactionDraft(
+      type: widget.type,
+      accountId: '',
+      date: DateTime.now(),
+      amount: 0,
+    );
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _merchantController.dispose();
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final accountsAsync = ref.watch(transactionAccountLookupProvider);
+    final categoriesAsync = ref.watch(transactionCategoryLookupProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(_screenTitle())),
+      body: accountsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ СЃС‡РµС‚Р°: $e')),
+        data: (accounts) {
+          if (accounts.isEmpty) {
+            return _buildNoAccounts();
+          }
+
+          // РђРІС‚Рѕ-РІС‹Р±РѕСЂ РїРµСЂРІРѕРіРѕ СЃС‡С‘С‚Р° РїСЂРё РїРµСЂРІРѕРј Р±РёР»РґРµ
+          if (_draft.accountId.isEmpty) {
+            _draft = _draft.copyWith(accountId: accounts.first.id);
+          }
+
+          return categoriesAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) =>
+                Center(child: Text('РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РєР°С‚РµРіРѕСЂРёРё: $e')),
+            data: (categories) => _buildForm(accounts, categories),
+          );
+        },
+      ),
+      bottomNavigationBar: _buildActionBar(),
+    );
+  }
+
+  String _screenTitle() {
+    switch (widget.type) {
+      case TransactionType.expense:
+        return 'РќРѕРІС‹Р№ СЂР°СЃС…РѕРґ';
+      case TransactionType.income:
+        return 'РќРѕРІС‹Р№ РґРѕС…РѕРґ';
+      case TransactionType.transfer:
+        return 'РќРѕРІС‹Р№ РїРµСЂРµРІРѕРґ';
+    }
+  }
+
+  Widget _buildNoAccounts() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.spacing32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.account_balance_wallet_outlined, size: 72),
+            const SizedBox(height: 16),
+            Text(
+              'РЎРЅР°С‡Р°Р»Р° РґРѕР±Р°РІСЊС‚Рµ СЃС‡С‘С‚',
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Р‘РµР· СЃС‡С‘С‚Р° РЅРµР»СЊР·СЏ СЃРѕР·РґР°С‚СЊ С‚СЂР°РЅР·Р°РєС†РёСЋ',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => context.pop(),
+              child: const Text('РќР°Р·Р°Рґ'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForm(List<LookupItem> accounts, List<LookupItem> categories) {
+    return ListView(
+      padding: const EdgeInsets.all(AppSpacing.spacing16),
+      children: [
+        _buildAmountField(),
+        const SizedBox(height: AppSpacing.spacing16),
+        _buildAccountDropdown(accounts),
+        if (widget.type == TransactionType.transfer) ...[
+          const SizedBox(height: AppSpacing.spacing16),
+          _buildLinkedAccountDropdown(accounts),
+        ],
+        if (widget.type != TransactionType.transfer) ...[
+          const SizedBox(height: AppSpacing.spacing16),
+          _buildCategoryDropdown(categories),
+        ],
+        const SizedBox(height: AppSpacing.spacing16),
+        _buildDatePicker(),
+        const SizedBox(height: AppSpacing.spacing16),
+        _buildMerchantField(),
+        const SizedBox(height: AppSpacing.spacing16),
+        _buildCommentField(),
+        const SizedBox(height: AppSpacing.spacing32),
+      ],
+    );
+  }
+
+  Widget _buildAmountField() {
+    return TextField(
+      controller: _amountController,
+      keyboardType: const TextInputType.numberWithOptions(
+        decimal: true,
+        signed: false,
+      ),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'^\d*[,.]?\d{0,2}')),
+      ],
+      autofocus: true,
+      decoration: InputDecoration(
+        labelText: 'РЎСѓРјРјР°',
+        errorText: _amountError,
+        border: const OutlineInputBorder(),
+        suffixText: 'в‚Ѕ',
+      ),
+      onChanged: (value) {
+        final parsed = MoneyInputParser.parseKopecks(value);
+        setState(() {
+          if (parsed == null) {
+            _amountError = 'РќРµРєРѕСЂСЂРµРєС‚РЅР°СЏ СЃСѓРјРјР°';
+          } else {
+            _amountError = null;
+            _draft = _draft.copyWith(amount: parsed);
+          }
+        });
+      },
+    );
+  }
+
+  Widget _buildAccountDropdown(List<LookupItem> accounts) {
+    return DropdownButtonFormField<String>(
+      initialValue: _draft.accountId.isEmpty ? null : _draft.accountId,
+      decoration: const InputDecoration(
+        labelText: 'РЎС‡С‘С‚',
+        border: OutlineInputBorder(),
+      ),
+      items: accounts
+          .map((a) => DropdownMenuItem(value: a.id, child: Text(a.name)))
+          .toList(),
+      onChanged: (value) {
+        if (value != null) {
+          setState(() => _draft = _draft.copyWith(accountId: value));
+        }
+      },
+    );
+  }
+
+  Widget _buildLinkedAccountDropdown(List<LookupItem> accounts) {
+    final others = accounts.where((a) => a.id != _draft.accountId).toList();
+    return DropdownButtonFormField<String>(
+      initialValue: _draft.linkedAccountId,
+      decoration: const InputDecoration(
+        labelText: 'РЎС‡С‘С‚-РїРѕР»СѓС‡Р°С‚РµР»СЊ',
+        border: OutlineInputBorder(),
+      ),
+      items: others
+          .map((a) => DropdownMenuItem(value: a.id, child: Text(a.name)))
+          .toList(),
+      onChanged: (value) {
+        setState(() => _draft = _draft.copyWith(linkedAccountId: value));
+      },
+    );
+  }
+
+  Widget _buildCategoryDropdown(List<LookupItem> categories) {
+    return DropdownButtonFormField<String>(
+      initialValue: _draft.customCategoryId,
+      decoration: const InputDecoration(
+        labelText: 'РљР°С‚РµРіРѕСЂРёСЏ (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)',
+        border: OutlineInputBorder(),
+      ),
+      items: categories
+          .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
+          .toList(),
+      onChanged: (value) {
+        setState(() => _draft = _draft.copyWith(customCategoryId: value));
+      },
+    );
+  }
+
+  Widget _buildDatePicker() {
+    return InkWell(
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: _draft.date,
+          firstDate: DateTime(2000),
+          lastDate: DateTime.now().add(const Duration(days: 365)),
+        );
+        if (picked != null) {
+          setState(() => _draft = _draft.copyWith(date: picked));
+        }
+      },
+      child: InputDecorator(
+        decoration: const InputDecoration(
+          labelText: 'Р”Р°С‚Р°',
+          border: OutlineInputBorder(),
+        ),
+        child: Text(DateFormat('dd.MM.yyyy').format(_draft.date)),
+      ),
+    );
+  }
+
+  Widget _buildMerchantField() {
+    return TextField(
+      controller: _merchantController,
+      decoration: const InputDecoration(
+        labelText: 'РњРµСЂС‡Р°РЅС‚ (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)',
+        border: OutlineInputBorder(),
+      ),
+      onChanged: (v) => _draft = _draft.copyWith(merchantName: v),
+    );
+  }
+
+  Widget _buildCommentField() {
+    return TextField(
+      controller: _commentController,
+      decoration: const InputDecoration(
+        labelText: 'РљРѕРјРјРµРЅС‚Р°СЂРёР№ (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)',
+        border: OutlineInputBorder(),
+      ),
+      maxLines: 2,
+      onChanged: (v) => _draft = _draft.copyWith(comment: v),
+    );
+  }
+
+  Widget _buildActionBar() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.spacing16),
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceCard,
+        border: Border(top: BorderSide(color: AppColors.borderDivider)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: _isSaving ? null : () => context.pop(),
+              child: const Text(TransactionsLogLabels.cancel),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.spacing12),
+          Expanded(
+            child: FilledButton(
+              onPressed: _isSaving ? null : _onSave,
+              child: _isSaving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('РЎРѕС…СЂР°РЅРёС‚СЊ'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _onSave() async {
+    HapticFeedback.mediumImpact();
+
+    if (_draft.amount <= 0) {
+      setState(() => _amountError = 'Р’РІРµРґРёС‚Рµ СЃСѓРјРјСѓ Р±РѕР»СЊС€Рµ РЅСѓР»СЏ');
+      return;
+    }
+
+    if (widget.type == TransactionType.transfer &&
+        (_draft.linkedAccountId == null || _draft.linkedAccountId!.isEmpty)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Р’С‹Р±РµСЂРёС‚Рµ СЃС‡С‘С‚-РїРѕР»СѓС‡Р°С‚РµР»СЊ')));
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      final usecase = ref.read(createTransactionUseCaseProvider);
+      final userId = ref.read(currentUserIdForCreateProvider);
+      final spaceId = ref.read(currentSpaceIdProvider);
+
+      // Р§РёС‚Р°РµРј РЅР°СЃС‚СЂРѕР№РєРё СЃРµРєСЂРµС‚РЅРѕСЃС‚Рё РёР· app_settings
+      final secrecyConfig = await _loadSecrecyConfig(userId);
+
+      final result = await usecase.call(
+        draft: _draft.copyWith(spaceId: spaceId),
+        userId: userId,
+        secrecyConfig: secrecyConfig,
+      );
+
+      if (!mounted) return;
+
+      switch (result) {
+        case Success(:final value):
+          HapticFeedback.mediumImpact();
+          ref.invalidate(transactionsLogProvider);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'РЎРѕС…СЂР°РЅРµРЅРѕ: ${MoneyFormatter.formatKopecks(value.amount, 'RUB')}',
+              ),
+            ),
+          );
+          context.pop();
+
+        case Error(:final failure):
+          HapticFeedback.vibrate();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('РћС€РёР±РєР°: ${failure.message}'),
+              backgroundColor: AppColors.colorExpense,
+            ),
+          );
+      }
+    } catch (e) {
+      HapticFeedback.vibrate();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('РќРµРїСЂРµРґРІРёРґРµРЅРЅР°СЏ РѕС€РёР±РєР°: $e'),
+            backgroundColor: AppColors.colorExpense,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  /// Р§РёС‚Р°РµС‚ РЅР°СЃС‚СЂРѕР№РєРё СЂРµР¶РёРјР° СЃРµРєСЂРµС‚РЅРѕСЃС‚Рё РёР· app_settings.
+  ///
+  /// Р’РѕР·РІСЂР°С‰Р°РµС‚ SecrecyConfig, РµСЃР»Рё СЂРµР¶РёРј РІРєР»СЋС‡РµРЅ Рё РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ СЃСѓС‰РµСЃС‚РІСѓРµС‚.
+  /// РРЅР°С‡Рµ РІРѕР·РІСЂР°С‰Р°РµС‚ null (Р±Р»РѕРєРёСЂРѕРІРєР° СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё РЅРµ РїСЂРёРјРµРЅСЏРµС‚СЃСЏ).
+  Future<SecrecyConfig?> _loadSecrecyConfig(String userId) async {
+    try {
+      final db = AppDatabase();
+      final settings = await db.appSettingsDao.getForUser(userId);
+
+      if (!settings.enableSecrecyMode) {
+        return null;
+      }
+
+      return SecrecyConfig(
+        enabled: true,
+        threshold: settings.largeTransactionThreshold,
+        timeoutSeconds: settings.secrecyTimeoutSeconds,
+      );
+    } catch (e) {
+      // Р•СЃР»Рё РЅРµ СѓРґР°Р»РѕСЃСЊ РїСЂРѕС‡РёС‚Р°С‚СЊ РЅР°СЃС‚СЂРѕР№РєРё, РЅРµ Р±Р»РѕРєРёСЂСѓРµРј СЃРѕС…СЂР°РЅРµРЅРёРµ
+      return null;
+    }
+  }
+}
+
+===== FILE: lib\features\transactions\presentation\screens\edit_transaction_screen.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+
+import 'package:budget_assistant/core/database/app_database.dart';
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
+import 'package:budget_assistant/core/errors/result.dart';
+import 'package:budget_assistant/core/formatting/money_input_parser.dart';
+import 'package:budget_assistant/core/formatting/money_formatter.dart';
+import 'package:budget_assistant/core/theme/app_colors.dart';
+import 'package:budget_assistant/core/theme/app_spacing.dart';
+
+import '../../domain/entities/lookup_item.dart';
+import '../../domain/models/secrecy_config.dart';
+import '../../domain/models/transaction.dart';
+import '../../domain/models/transaction_draft.dart';
+import '../../domain/models/transaction_split.dart';
+import '../labels/transactions_log_labels.dart';
+import '../providers/create_transaction_providers.dart';
+import '../providers/transactions_log_providers.dart';
+
+/// Р­РєСЂР°РЅ СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ С‚СЂР°РЅР·Р°РєС†РёРё.
+///
+/// Р РѕСѓС‚: /transactions/edit/:id
+class EditTransactionScreen extends ConsumerStatefulWidget {
+  const EditTransactionScreen({super.key, required this.transactionId});
+
+  final String transactionId;
+
+  @override
+  ConsumerState<EditTransactionScreen> createState() =>
+      _EditTransactionScreenState();
+}
+
+class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
+  TransactionDraft? _draft;
+  List<TransactionSplitDraft>? _existingSplits;
+  TransactionType? _type;
+
+  final _amountController = TextEditingController();
+  final _merchantController = TextEditingController();
+  final _commentController = TextEditingController();
+
+  bool _isSaving = false;
+  bool _isLoaded = false;
+  String? _amountError;
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _merchantController.dispose();
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  void _initFromTransaction(Transaction t, List<TransactionSplit> splits) {
+    if (_isLoaded) return;
+    _isLoaded = true;
+
+    _type = t.type;
+
+    _draft = TransactionDraft(
+      id: t.id,
+      accountId: t.accountId,
+      linkedAccountId: t.linkedAccountId,
+      date: t.date.toLocal(),
+      amount: t.amount,
+      originalCurrency: t.originalCurrency,
+      originalAmount: t.originalAmount,
+      type: t.type,
+      spaceId: t.spaceId,
+      bankCategory: t.bankCategory,
+      customCategoryId: t.customCategoryId,
+      merchantName: t.merchantName,
+      comment: t.comment,
+      savingsGoalId: t.savingsGoalId,
+      isWithdrawal: t.isWithdrawal,
+    );
+
+    _existingSplits = splits
+        .map(
+          (s) => TransactionSplitDraft(
+            id: s.id,
+            categoryId: s.categoryId,
+            amount: s.amount,
+            description: s.description,
+            createdAt: s.createdAt,
+          ),
+        )
+        .toList();
+
+    _amountController.text = _formatAmountForInput(t.amount);
+    _merchantController.text = t.merchantName ?? '';
+    _commentController.text = t.comment ?? '';
+  }
+
+  /// Р¤РѕСЂРјР°С‚РёСЂСѓРµС‚ РєРѕРїРµР№РєРё РІ СЃС‚СЂРѕРєСѓ РґР»СЏ РїРѕР»СЏ РІРІРѕРґР°.
+  /// РџСЂРёРјРµСЂ: 25050 РєРѕРїРµРµРє -> "250,50"
+  /// РљРѕРїРµР№РєРё = 0 -> РїСЂРѕСЃС‚Рѕ "250"
+  String _formatAmountForInput(int kopecks) {
+    final abs = kopecks.abs();
+    final rubles = abs ~/ 100;
+    final kop = abs % 100;
+
+    if (kop == 0) {
+      return '$rubles';
+    }
+    return '$rubles,${kop.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final transactionAsync = ref.watch(
+      editTransactionProvider(widget.transactionId),
+    );
+    final splitsAsync = ref.watch(
+      editTransactionSplitsProvider(widget.transactionId),
+    );
+    final accountsAsync = ref.watch(transactionAccountLookupProvider);
+    final categoriesAsync = ref.watch(transactionCategoryLookupProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text(TransactionsLogLabels.editTitle)),
+      body: transactionAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ: $e')),
+        data: (transaction) {
+          if (transaction == null) {
+            return const Center(child: Text('РўСЂР°РЅР·Р°РєС†РёСЏ РЅРµ РЅР°Р№РґРµРЅР°'));
+          }
+
+          return splitsAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Center(child: Text('РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ: $e')),
+            data: (splits) {
+              _initFromTransaction(transaction, splits);
+
+              return accountsAsync.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) =>
+                    Center(child: Text('РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ СЃС‡РµС‚Р°: $e')),
+                data: (accounts) {
+                  if (accounts.isEmpty) {
+                    return _buildNoAccounts();
+                  }
+
+                  return categoriesAsync.when(
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (e, _) => Center(
+                      child: Text('РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РєР°С‚РµРіРѕСЂРёРё: $e'),
+                    ),
+                    data: (categories) => _buildForm(accounts, categories),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
+      bottomNavigationBar: _isLoaded ? _buildActionBar() : null,
+    );
+  }
+
+  Widget _buildNoAccounts() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.spacing32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.account_balance_wallet_outlined, size: 72),
+            const SizedBox(height: 16),
+            Text(
+              'РЎРЅР°С‡Р°Р»Р° РґРѕР±Р°РІСЊС‚Рµ СЃС‡С‘С‚',
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Р‘РµР· СЃС‡С‘С‚Р° РЅРµР»СЊР·СЏ СЂРµРґР°РєС‚РёСЂРѕРІР°С‚СЊ С‚СЂР°РЅР·Р°РєС†РёСЋ',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => context.pop(),
+              child: const Text('РќР°Р·Р°Рґ'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForm(List<LookupItem> accounts, List<LookupItem> categories) {
+    if (_draft == null) return const SizedBox.shrink();
+
+    return ListView(
+      padding: const EdgeInsets.all(AppSpacing.spacing16),
+      children: [
+        _buildAmountField(),
+        const SizedBox(height: AppSpacing.spacing16),
+        _buildAccountDropdown(accounts),
+        if (_type == TransactionType.transfer) ...[
+          const SizedBox(height: AppSpacing.spacing16),
+          _buildLinkedAccountDropdown(accounts),
+        ],
+        if (_type != TransactionType.transfer) ...[
+          const SizedBox(height: AppSpacing.spacing16),
+          _buildCategoryDropdown(categories),
+        ],
+        const SizedBox(height: AppSpacing.spacing16),
+        _buildDatePicker(),
+        const SizedBox(height: AppSpacing.spacing16),
+        _buildMerchantField(),
+        const SizedBox(height: AppSpacing.spacing16),
+        _buildCommentField(),
+        const SizedBox(height: AppSpacing.spacing32),
+      ],
+    );
+  }
+
+  Widget _buildAmountField() {
+    return TextField(
+      controller: _amountController,
+      keyboardType: const TextInputType.numberWithOptions(
+        decimal: true,
+        signed: false,
+      ),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'^\d*[,.]?\d{0,2}')),
+      ],
+      decoration: InputDecoration(
+        labelText: 'РЎСѓРјРјР°',
+        errorText: _amountError,
+        border: const OutlineInputBorder(),
+        suffixText: 'в‚Ѕ',
+      ),
+      onChanged: (value) {
+        final parsed = MoneyInputParser.parseKopecks(value);
+        setState(() {
+          if (parsed == null) {
+            _amountError = 'РќРµРєРѕСЂСЂРµРєС‚РЅР°СЏ СЃСѓРјРјР°';
+          } else {
+            _amountError = null;
+            _draft = _draft?.copyWith(amount: parsed);
+          }
+        });
+      },
+    );
+  }
+
+  Widget _buildAccountDropdown(List<LookupItem> accounts) {
+    final currentId = _draft?.accountId;
+    final isValid = currentId != null && accounts.any((a) => a.id == currentId);
+
+    return DropdownButtonFormField<String>(
+      initialValue: isValid ? currentId : null,
+      decoration: const InputDecoration(
+        labelText: 'РЎС‡С‘С‚',
+        border: OutlineInputBorder(),
+      ),
+      items: accounts
+          .map((a) => DropdownMenuItem(value: a.id, child: Text(a.name)))
+          .toList(),
+      onChanged: (value) {
+        if (value != null && _draft != null) {
+          setState(() => _draft = _draft!.copyWith(accountId: value));
+        }
+      },
+    );
+  }
+
+  Widget _buildLinkedAccountDropdown(List<LookupItem> accounts) {
+    final others = accounts.where((a) => a.id != _draft?.accountId).toList();
+    final currentId = _draft?.linkedAccountId;
+    final isValid = currentId != null && others.any((a) => a.id == currentId);
+
+    return DropdownButtonFormField<String>(
+      initialValue: isValid ? currentId : null,
+      decoration: const InputDecoration(
+        labelText: 'РЎС‡С‘С‚-РїРѕР»СѓС‡Р°С‚РµР»СЊ',
+        border: OutlineInputBorder(),
+      ),
+      items: others
+          .map((a) => DropdownMenuItem(value: a.id, child: Text(a.name)))
+          .toList(),
+      onChanged: (value) {
+        if (_draft != null) {
+          setState(() => _draft = _draft!.copyWith(linkedAccountId: value));
+        }
+      },
+    );
+  }
+
+  Widget _buildCategoryDropdown(List<LookupItem> categories) {
+    final currentId = _draft?.customCategoryId;
+    final isValid =
+        currentId != null && categories.any((c) => c.id == currentId);
+
+    return DropdownButtonFormField<String>(
+      initialValue: isValid ? currentId : null,
+      decoration: const InputDecoration(
+        labelText: 'РљР°С‚РµРіРѕСЂРёСЏ (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)',
+        border: OutlineInputBorder(),
+      ),
+      items: categories
+          .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
+          .toList(),
+      onChanged: (value) {
+        if (_draft != null) {
+          setState(() => _draft = _draft!.copyWith(customCategoryId: value));
+        }
+      },
+    );
+  }
+
+  Widget _buildDatePicker() {
+    if (_draft == null) return const SizedBox.shrink();
+
+    return InkWell(
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: _draft!.date,
+          firstDate: DateTime(2000),
+          lastDate: DateTime.now().add(const Duration(days: 365)),
+        );
+        if (picked != null) {
+          setState(() => _draft = _draft!.copyWith(date: picked));
+        }
+      },
+      child: InputDecorator(
+        decoration: const InputDecoration(
+          labelText: 'Р”Р°С‚Р°',
+          border: OutlineInputBorder(),
+        ),
+        child: Text(DateFormat('dd.MM.yyyy').format(_draft!.date)),
+      ),
+    );
+  }
+
+  Widget _buildMerchantField() {
+    return TextField(
+      controller: _merchantController,
+      decoration: const InputDecoration(
+        labelText: 'РњРµСЂС‡Р°РЅС‚ (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)',
+        border: OutlineInputBorder(),
+      ),
+      onChanged: (v) {
+        if (_draft != null) {
+          _draft = _draft!.copyWith(merchantName: v);
+        }
+      },
+    );
+  }
+
+  Widget _buildCommentField() {
+    return TextField(
+      controller: _commentController,
+      decoration: const InputDecoration(
+        labelText: 'РљРѕРјРјРµРЅС‚Р°СЂРёР№ (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)',
+        border: OutlineInputBorder(),
+      ),
+      maxLines: 2,
+      onChanged: (v) {
+        if (_draft != null) {
+          _draft = _draft!.copyWith(comment: v);
+        }
+      },
+    );
+  }
+
+  Widget _buildActionBar() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.spacing16),
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceCard,
+        border: Border(top: BorderSide(color: AppColors.borderDivider)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: _isSaving ? null : () => context.pop(),
+              child: const Text(TransactionsLogLabels.cancel),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.spacing12),
+          Expanded(
+            child: FilledButton(
+              onPressed: _isSaving ? null : _onSave,
+              child: _isSaving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('РЎРѕС…СЂР°РЅРёС‚СЊ'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _onSave() async {
+    HapticFeedback.mediumImpact();
+
+    if (_draft == null) return;
+
+    if (_draft!.amount <= 0) {
+      setState(() => _amountError = 'Р’РІРµРґРёС‚Рµ СЃСѓРјРјСѓ Р±РѕР»СЊС€Рµ РЅСѓР»СЏ');
+      return;
+    }
+
+    if (_type == TransactionType.transfer &&
+        (_draft!.linkedAccountId == null || _draft!.linkedAccountId!.isEmpty)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Р’С‹Р±РµСЂРёС‚Рµ СЃС‡С‘С‚-РїРѕР»СѓС‡Р°С‚РµР»СЊ')));
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      final usecase = ref.read(updateTransactionUseCaseProvider);
+      final userId = ref.read(currentUserIdForCreateProvider);
+
+      // Р“РѕС‚РѕРІРёРј С‡РµСЂРЅРѕРІРёРє СЃ СЃРѕС…СЂР°РЅРµРЅРёРµРј СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёС… СЃРїР»РёС‚РѕРІ
+      final draftWithSplits = _draft!.copyWith(splits: _existingSplits);
+
+      // Р§РёС‚Р°РµРј РЅР°СЃС‚СЂРѕР№РєРё СЃРµРєСЂРµС‚РЅРѕСЃС‚Рё РёР· app_settings
+      final secrecyConfig = await _loadSecrecyConfig(userId);
+
+      final result = await usecase.call(
+        draft: draftWithSplits,
+        userId: userId,
+        secrecyConfig: secrecyConfig,
+      );
+
+      if (!mounted) return;
+
+      switch (result) {
+        case Success(:final value):
+          HapticFeedback.mediumImpact();
+          ref.invalidate(transactionsLogProvider);
+          ref.invalidate(hasPendingSyncProvider);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'РЎРѕС…СЂР°РЅРµРЅРѕ: ${MoneyFormatter.formatKopecks(value.amount, 'RUB')}',
+              ),
+            ),
+          );
+          context.pop();
+
+        case Error(:final failure):
+          HapticFeedback.vibrate();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('РћС€РёР±РєР°: ${failure.message}'),
+              backgroundColor: AppColors.colorExpense,
+            ),
+          );
+      }
+    } catch (e) {
+      HapticFeedback.vibrate();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('РќРµРїСЂРµРґРІРёРґРµРЅРЅР°СЏ РѕС€РёР±РєР°: $e'),
+            backgroundColor: AppColors.colorExpense,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  /// Р§РёС‚Р°РµС‚ РЅР°СЃС‚СЂРѕР№РєРё СЂРµР¶РёРјР° СЃРµРєСЂРµС‚РЅРѕСЃС‚Рё РёР· app_settings.
+  Future<SecrecyConfig?> _loadSecrecyConfig(String userId) async {
+    try {
+      final db = AppDatabase();
+      final settings = await db.appSettingsDao.getForUser(userId);
+
+      if (!settings.enableSecrecyMode) {
+        return null;
+      }
+
+      return SecrecyConfig(
+        enabled: true,
+        threshold: settings.largeTransactionThreshold,
+        timeoutSeconds: settings.secrecyTimeoutSeconds,
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+}
+
+===== FILE: lib\features\accounts\presentation\providers\account_providers.dart =====
+// lib/features/accounts/presentation/providers/account_providers.dart
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/providers/database_providers.dart';
+import '../../../../core/providers/util_providers.dart';
+import '../../domain/entities/account.dart';
+import '../../domain/usecases/create_account_usecase.dart';
+import '../../domain/usecases/calculate_net_worth_usecase.dart';
+import '../../domain/usecases/update_account_sort_order_usecase.dart';
+import '../../domain/usecases/delete_account_usecase.dart';
+import '../../domain/repositories/account_repository.dart';
+import '../../data/repositories/account_repository_impl.dart';
+import '../../data/datasources/account_dao.dart';
+import '../../data/datasources/mortgage_dao.dart';
+import '../../domain/usecases/update_account_usecase.dart';
+
+part 'account_providers.g.dart';
+
+@riverpod
+class AccountDaoNotifier extends _$AccountDaoNotifier {
+  @override
+  AccountDao build() {
+    final db = ref.watch(appDatabaseProvider);
+    return AccountDao(db);
+  }
+}
+
+@riverpod
+class MortgageDaoNotifier extends _$MortgageDaoNotifier {
+  @override
+  MortgageDao build() {
+    final db = ref.watch(appDatabaseProvider);
+    return MortgageDao(db);
+  }
+}
+
+@riverpod
+class AccountRepositoryNotifier extends _$AccountRepositoryNotifier {
+  @override
+  AccountRepository build() {
+    return AccountRepositoryImpl(
+      accountDao: ref.watch(accountDaoProvider),
+      mortgageDao: ref.watch(mortgageDaoProvider),
+      logger: ref.watch(loggerProvider),
+      uuid: ref.watch(uuidProvider),
+    );
+  }
+}
+
+@riverpod
+class CreateAccountUseCaseNotifier extends _$CreateAccountUseCaseNotifier {
+  @override
+  CreateAccountUseCase build() {
+    return CreateAccountUseCase(
+      repository: ref.watch(accountRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+      uuid: ref.watch(uuidProvider),
+    );
+  }
+}
+
+@riverpod
+class DeleteAccountUseCaseNotifier extends _$DeleteAccountUseCaseNotifier {
+  @override
+  DeleteAccountUseCase build() {
+    return DeleteAccountUseCase(
+      repository: ref.watch(accountRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+    );
+  }
+}
+
+@riverpod
+class UpdateAccountSortOrderUseCaseNotifier
+    extends _$UpdateAccountSortOrderUseCaseNotifier {
+  @override
+  UpdateAccountSortOrderUseCase build() {
+    return UpdateAccountSortOrderUseCase(
+      repository: ref.watch(accountRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+    );
+  }
+}
+
+@riverpod
+class CalculateNetWorthUseCaseNotifier
+    extends _$CalculateNetWorthUseCaseNotifier {
+  @override
+  CalculateNetWorthUseCase build() {
+    return CalculateNetWorthUseCase(
+      repository: ref.watch(accountRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+    );
+  }
+}
+
+@riverpod
+class AccountsListNotifier extends _$AccountsListNotifier {
+  @override
+  Future<List<Account>> build(String userId) async {
+    final repository = ref.watch(accountRepositoryProvider);
+    return await repository.getAccountsByUserId(userId);
+  }
+}
+
+@riverpod
+class NetWorthNotifier extends _$NetWorthNotifier {
+  @override
+  Future<int> build(String userId) async {
+    final useCase = ref.watch(calculateNetWorthUseCaseProvider);
+    final result = await useCase.execute(userId);
+
+    return result.when(success: (value) => value, failure: (error) => 0);
+  }
+}
+
+@riverpod
+class UpdateAccountUseCaseNotifier extends _$UpdateAccountUseCaseNotifier {
+  @override
+  UpdateAccountUseCase build() {
+    return UpdateAccountUseCase(
+      repository: ref.watch(accountRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+    );
+  }
+}
+
+===== FILE: lib\features\accounts\data\datasources\account_dao.dart =====
+// lib/features/accounts/data/datasources/account_dao.dart
+import 'package:drift/drift.dart';
+import '../../../../core/database/app_database.dart';
+import '../models/account_model.dart';
+
+part 'account_dao.g.dart';
+
+@DriftAccessor(tables: [Accounts])
+class AccountDao extends DatabaseAccessor<AppDatabase> with _$AccountDaoMixin {
+  AccountDao(super.db);
+
+  // ✅ НОВЫЙ МЕТОД: Stream для автообновления UI
+  Stream<List<AccountModel>> watchAccountsByUserId(String userId) {
+    final query = select(accounts)
+      ..where((t) => t.userId.equals(userId))
+      ..orderBy([(t) => OrderingTerm(expression: t.sortOrder, mode: OrderingMode.asc),
+                 (t) => OrderingTerm(expression: t.createdAt, mode: OrderingMode.desc)]);
+    
+    return query.watch().map((results) => results
+        .map((row) => AccountModel(
+              id: row.id,
+              userId: row.userId,
+              spaceId: row.spaceId,
+              bankName: row.bankName,
+              customName: row.customName,
+              cardNumberMask: row.cardNumberMask,
+              accountType: row.accountType,
+              currency: row.currency,
+              currentBalance: row.currentBalance,
+              creditLimit: row.creditLimit,
+              gracePeriodEnd: row.gracePeriodEnd,
+              minPaymentAmount: row.minPaymentAmount,
+              includeInPersonalBalance: row.includeInPersonalBalance,
+              includeInFamilyBalance: row.includeInFamilyBalance,
+              isSharedBalance: row.isSharedBalance,
+              isSharedExpenses: row.isSharedExpenses,
+              expenseDetailLevel: row.expenseDetailLevel,
+              isSharedIncomes: row.isSharedIncomes,
+              incomeDetailLevel: row.incomeDetailLevel,
+              sortOrder: row.sortOrder,
+              isArchived: row.isArchived,
+              isSystem: row.isSystem,
+              createdAt: row.createdAt,
+              updatedAt: row.updatedAt,
+              syncStatus: row.syncStatus,
+            ))
+        .toList());
+  }
+
+  // ✅ НОВЫЙ МЕТОД: Delete с каскадом для ипотеки
+    /// Удаление счёта с каскадным удалением ипотеки
+  Future<void> deleteAccount(String accountId) async {
+    try {
+      await (delete(
+        db.mortgages,
+      )..where((t) => t.accountId.equals(accountId))).go();
+      await (delete(accounts)..where((t) => t.id.equals(accountId))).go();
+    } catch (e) {
+      throw Exception('Failed to delete account: $e');
+    }
+  }
+
+  Future<List<AccountModel>> getAccountsByUserId(String userId) async {
+    try {
+      final query = select(accounts)..where((t) => t.userId.equals(userId));
+      final results = await query.get();
+
+      return results
+          .map(
+            (row) => AccountModel(
+              id: row.id,
+              userId: row.userId,
+              spaceId: row.spaceId,
+              bankName: row.bankName,
+              customName: row.customName,
+              cardNumberMask: row.cardNumberMask,
+              accountType: row.accountType,
+              currency: row.currency,
+              currentBalance: row.currentBalance,
+              creditLimit: row.creditLimit,
+              gracePeriodEnd: row.gracePeriodEnd,
+              minPaymentAmount: row.minPaymentAmount,
+              includeInPersonalBalance: row.includeInPersonalBalance,
+              includeInFamilyBalance: row.includeInFamilyBalance,
+              isSharedBalance: row.isSharedBalance,
+              isSharedExpenses: row.isSharedExpenses,
+              expenseDetailLevel: row.expenseDetailLevel,
+              isSharedIncomes: row.isSharedIncomes,
+              incomeDetailLevel: row.incomeDetailLevel,
+              sortOrder: row.sortOrder,
+              isArchived: row.isArchived,
+              isSystem: row.isSystem,
+              createdAt: row.createdAt,
+              updatedAt: row.updatedAt,
+              syncStatus: row.syncStatus,
+            ),
+          )
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to get accounts: $e');
+    }
+  }
+
+  Future<void> insertAccount(AccountModel account) async {
+    try {
+      await into(accounts).insert(
+        AccountsCompanion(
+          id: Value(account.id),
+          userId: Value(account.userId),
+          spaceId: Value(account.spaceId),
+          bankName: Value(account.bankName),
+          customName: Value(account.customName),
+          cardNumberMask: Value(account.cardNumberMask),
+          accountType: Value(account.accountType),
+          currency: Value(account.currency),
+          currentBalance: Value(account.currentBalance),
+          creditLimit: Value(account.creditLimit),
+          gracePeriodEnd: Value(account.gracePeriodEnd),
+          minPaymentAmount: Value(account.minPaymentAmount),
+          includeInPersonalBalance: Value(account.includeInPersonalBalance),
+          includeInFamilyBalance: Value(account.includeInFamilyBalance),
+          isSharedBalance: Value(account.isSharedBalance),
+          isSharedExpenses: Value(account.isSharedExpenses),
+          expenseDetailLevel: Value(account.expenseDetailLevel),
+          isSharedIncomes: Value(account.isSharedIncomes),
+          incomeDetailLevel: Value(account.incomeDetailLevel),
+          sortOrder: Value(account.sortOrder),
+          isArchived: Value(account.isArchived),
+          isSystem: Value(account.isSystem),
+          createdAt: Value(account.createdAt),
+          updatedAt: Value(account.updatedAt),
+          syncStatus: Value(account.syncStatus),
+        ),
+      );
+    } catch (e) {
+      throw Exception('Failed to insert account: $e');
+    }
+  }
+
+  Future<void> updateAccountSortOrder(String accountId, int? sortOrder) async {
+    try {
+      await (update(accounts)..where((t) => t.id.equals(accountId))).write(
+        AccountsCompanion(sortOrder: Value(sortOrder)),
+      );
+    } catch (e) {
+      throw Exception('Failed to update sort order: $e');
+    }
+  }
+
+  Future<AccountModel?> getSystemAccountByType(String accountType) async {
+    try {
+      final query = select(accounts)
+        ..where(
+          (t) => t.accountType.equals(accountType) & t.isSystem.equals(true),
+        );
+      final result = await query.getSingleOrNull();
+
+      if (result == null) return null;
+
+      return AccountModel(
+        id: result.id,
+        userId: result.userId,
+        spaceId: result.spaceId,
+        bankName: result.bankName,
+        customName: result.customName,
+        cardNumberMask: result.cardNumberMask,
+        accountType: result.accountType,
+        currency: result.currency,
+        currentBalance: result.currentBalance,
+        creditLimit: result.creditLimit,
+        gracePeriodEnd: result.gracePeriodEnd,
+        minPaymentAmount: result.minPaymentAmount,
+        includeInPersonalBalance: result.includeInPersonalBalance,
+        includeInFamilyBalance: result.includeInFamilyBalance,
+        isSharedBalance: result.isSharedBalance,
+        isSharedExpenses: result.isSharedExpenses,
+        expenseDetailLevel: result.expenseDetailLevel,
+        isSharedIncomes: result.isSharedIncomes,
+        incomeDetailLevel: result.incomeDetailLevel,
+        sortOrder: result.sortOrder,
+        isArchived: result.isArchived,
+        isSystem: result.isSystem,
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+        syncStatus: result.syncStatus,
+      );
+    } catch (e) {
+      throw Exception('Failed to get system account: $e');
+    }
+  }
+
+  // Внутрь класса AccountDao (после существующих методов)
+
+  /// Идемпотентно создаёт локальную копию профиля пользователя.
+  /// Нужна, чтобы FK accounts.user_id не падал до первой синхронизации (Этап 8).
+  Future<void> ensureLocalUser(String userId, {String email = ''}) async {
+    final existing = await (select(
+      db.users,
+    )..where((u) => u.id.equals(userId))).getSingleOrNull();
+    if (existing != null) return;
+
+    final now = DateTime.now().toUtc();
+    await into(db.users).insert(
+      UsersCompanion(
+        id: Value(userId),
+        displayName: const Value(''),
+        email: Value(email),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    );
+  }
+
+    /// Обновление счёта (Edit): updatedAt + возврат в очередь sync
+  Future<void> updateAccountFields({
+    required String accountId,
+    required String bankName,
+    required String customName,
+    required String accountType,
+    required String currency,
+    required int currentBalance,
+    required String? cardNumberMask,
+    required int? creditLimit,
+    required DateTime updatedAt,
+  }) async {
+    try {
+      await (update(accounts)..where((t) => t.id.equals(accountId))).write(
+        AccountsCompanion(
+          bankName: Value(bankName),
+          customName: Value(customName),
+          accountType: Value(accountType),
+          currency: Value(currency),
+          currentBalance: Value(currentBalance),
+          cardNumberMask: Value(cardNumberMask),
+          creditLimit: Value(creditLimit),
+          updatedAt: Value(updatedAt),
+          syncStatus: const Value('pending'),
+        ),
+      );
+    } catch (e) {
+      throw Exception('Failed to update account: $e');
+    }
+  }
+}
+
+===== FILE: lib\features\categories\data\datasources\category_dao.dart =====
+// lib/features/categories/data/datasources/category_dao.dart
+import 'package:drift/drift.dart';
+import '../../../../core/database/app_database.dart';
+import '../models/category_model.dart';
+
+part 'category_dao.g.dart';
+
+@DriftAccessor(tables: [Categories])
+class CategoryDao extends DatabaseAccessor<AppDatabase>
+    with _$CategoryDaoMixin {
+  CategoryDao(super.db);
+
+  // ✅ НОВЫЙ МЕТОД: Stream для автообновления UI
+  Stream<List<CategoryModel>> watchCategoriesByUserId(String userId) {
+    final query = select(categories)
+      ..where((t) => t.userId.equals(userId))
+      ..orderBy([(t) => OrderingTerm(expression: t.type, mode: OrderingMode.asc),
+                 (t) => OrderingTerm(expression: t.name, mode: OrderingMode.asc)]);
+    
+    return query.watch().map((results) => results
+        .map((row) => CategoryModel(
+              id: row.id,
+              spaceId: row.spaceId,
+              userId: row.userId,
+              parentId: row.parentId,
+              name: row.name,
+              type: row.type,
+              iconEmoji: row.iconEmoji,
+              colorHex: row.colorHex,
+              isPinnedForCashback: row.isPinnedForCashback,
+              isSystem: row.isSystem,
+              sortOrder: row.sortOrder,
+              createdAt: row.createdAt,
+              updatedAt: row.updatedAt,
+              syncStatus: row.syncStatus,
+            ))
+        .toList());
+  }
+
+  Future<List<CategoryModel>> getCategoriesByUserId(String userId) async {
+    try {
+      final query = select(categories)..where((t) => t.userId.equals(userId));
+      final results = await query.get();
+
+      return results
+          .map(
+            (row) => CategoryModel(
+              id: row.id,
+              spaceId: row.spaceId,
+              userId: row.userId,
+              parentId: row.parentId,
+              name: row.name,
+              type: row.type,
+              iconEmoji: row.iconEmoji,
+              colorHex: row.colorHex,
+              isPinnedForCashback: row.isPinnedForCashback,
+              isSystem: row.isSystem,
+              sortOrder: row.sortOrder,
+              createdAt: row.createdAt,
+              updatedAt: row.updatedAt,
+              syncStatus: row.syncStatus,
+            ),
+          )
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to get categories: $e');
+    }
+  }
+
+  Future<void> insertCategory(CategoryModel category) async {
+    try {
+      await into(categories).insert(
+        CategoriesCompanion(
+          id: Value(category.id),
+          spaceId: Value(category.spaceId),
+          userId: Value(category.userId),
+          parentId: Value(category.parentId),
+          name: Value(category.name),
+          type: Value(category.type),
+          iconEmoji: Value(category.iconEmoji),
+          colorHex: Value(category.colorHex),
+          isPinnedForCashback: Value(category.isPinnedForCashback),
+          isSystem: Value(category.isSystem),
+          sortOrder: Value(category.sortOrder),
+          createdAt: Value(category.createdAt),
+          updatedAt: Value(category.updatedAt),
+          syncStatus: Value(category.syncStatus),
+        ),
+      );
+    } catch (e) {
+      throw Exception('Failed to insert category: $e');
+    }
+  }
+
+  Future<List<CategoryModel>> getCategoriesByParentId(String? parentId) async {
+    try {
+      final query = select(categories);
+
+      if (parentId == null) {
+        query.where((t) => t.parentId.isNull());
+      } else {
+        query.where((t) => t.parentId.equals(parentId));
+      }
+
+      final results = await query.get();
+
+      return results
+          .map(
+            (row) => CategoryModel(
+              id: row.id,
+              spaceId: row.spaceId,
+              userId: row.userId,
+              parentId: row.parentId,
+              name: row.name,
+              type: row.type,
+              iconEmoji: row.iconEmoji,
+              colorHex: row.colorHex,
+              isPinnedForCashback: row.isPinnedForCashback,
+              isSystem: row.isSystem,
+              sortOrder: row.sortOrder,
+              createdAt: row.createdAt,
+              updatedAt: row.updatedAt,
+              syncStatus: row.syncStatus,
+            ),
+          )
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to get categories by parent: $e');
+    }
+  }
+
+    /// Обновление категории: updatedAt + возврат в очередь sync
+  Future<void> updateCategoryFields({
+    required String categoryId,
+    required String name,
+    required String type,
+    required String? parentId,
+    required String? iconEmoji,
+    required String? colorHex,
+    required DateTime updatedAt,
+  }) async {
+    try {
+      await (update(categories)..where((t) => t.id.equals(categoryId))).write(
+        CategoriesCompanion(
+          name: Value(name),
+          type: Value(type),
+          parentId: Value(parentId),
+          iconEmoji: Value(iconEmoji),
+          colorHex: Value(colorHex),
+          updatedAt: Value(updatedAt),
+          syncStatus: const Value('pending'),
+        ),
+      );
+    } catch (e) {
+      throw Exception('Failed to update category: $e');
+    }
+  }
+
+  /// Удаление категории со сплайсом детей на её родителя (в транзакции)
+  Future<void> deleteCategory(String categoryId) async {
+    try {
+      await transaction(() async {
+        final row = await (select(categories)
+              ..where((t) => t.id.equals(categoryId)))
+            .getSingleOrNull();
+        if (row == null) return;
+
+        await (update(categories)..where((t) => t.parentId.equals(categoryId)))
+            .write(CategoriesCompanion(parentId: Value(row.parentId)));
+
+        await (delete(categories)..where((t) => t.id.equals(categoryId))).go();
+      });
+    } catch (e) {
+      throw Exception('Failed to delete category: $e');
+    }
+  }
+}
+

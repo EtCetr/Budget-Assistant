@@ -25,6 +25,9 @@ import 'package:budget_assistant/features/import/presentation/screens/import_onb
 import 'package:budget_assistant/features/transactions/presentation/screens/create_transaction_screen.dart';
 import 'package:budget_assistant/features/transactions/presentation/screens/edit_transaction_screen.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
+import 'package:budget_assistant/features/budget/presentation/screens/budget_limits_screen.dart';
+import 'package:budget_assistant/features/budget/presentation/screens/edit_budget_limit_screen.dart';
+
 
 part 'app_router.g.dart';
 
@@ -208,6 +211,29 @@ GoRouter appRouter(Ref ref) {
             );
           }
           return EditTransactionScreen(transactionId: id);
+        },
+      ),
+            GoRoute(
+        path: '/budget',
+        name: 'budget',
+        builder: (context, state) => const BudgetLimitsScreen(),
+      ),
+      GoRoute(
+        path: '/budget/create',
+        name: 'create-budget-limit',
+        builder: (context, state) => const EditBudgetLimitScreen(),
+      ),
+      GoRoute(
+        path: '/budget/edit/:id',
+        name: 'edit-budget-limit',
+        builder: (context, state) {
+          final id = state.pathParameters['id'];
+          if (id == null || id.isEmpty) {
+            return const Scaffold(
+              body: Center(child: Text('ID лимита не указан')),
+            );
+          }
+          return EditBudgetLimitScreen(limitId: id);
         },
       ),
     ],

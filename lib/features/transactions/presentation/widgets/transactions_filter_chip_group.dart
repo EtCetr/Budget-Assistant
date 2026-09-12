@@ -66,11 +66,7 @@ class TransactionsFilterChipGroup extends ConsumerWidget {
           ),
           const SizedBox(width: 8),
           FilterChip(
-            label: Text(
-              filter.amountFromKopecks == null && filter.amountToKopecks == null
-                  ? TransactionsLogLabels.amount
-                  : TransactionsLogLabels.amount,
-            ),
+            label: const Text(TransactionsLogLabels.amount),
             selected:
                 filter.amountFromKopecks != null ||
                 filter.amountToKopecks != null,
@@ -118,15 +114,6 @@ class TransactionsFilterChipGroup extends ConsumerWidget {
               ref.read(transactionsFilterProvider.notifier).toggleExcludeOwn();
             },
           ),
-          FilterChip(
-            label: const Text(TransactionsLogLabels.excludeOwn),
-            selected: filter.excludeOwn,
-            selectedColor: AppColors.colorTransfer.withValues(alpha: .25),
-            onSelected: (_) {
-              HapticFeedback.selectionClick();
-              ref.read(transactionsFilterProvider.notifier).toggleExcludeOwn();
-            },
-          ),
           const SizedBox(width: 8),
           FilterChip(
             label: const Text(TransactionsLogLabels.excludeLargeExpenses),
@@ -143,284 +130,297 @@ class TransactionsFilterChipGroup extends ConsumerWidget {
       ),
     );
   }
+}
 
-  String _typeLabel(TransactionTypeFilter type) {
-    switch (type) {
-      case TransactionTypeFilter.all:
-        return TransactionsLogLabels.typeAll;
-      case TransactionTypeFilter.expense:
-        return TransactionsLogLabels.typeExpense;
-      case TransactionTypeFilter.income:
-        return TransactionsLogLabels.typeIncome;
-      case TransactionTypeFilter.transfer:
-        return TransactionsLogLabels.typeTransfer;
-    }
+String _typeLabel(TransactionTypeFilter type) {
+  switch (type) {
+    case TransactionTypeFilter.all:
+      return TransactionsLogLabels.typeAll;
+    case TransactionTypeFilter.expense:
+      return TransactionsLogLabels.typeExpense;
+    case TransactionTypeFilter.income:
+      return TransactionsLogLabels.typeIncome;
+    case TransactionTypeFilter.transfer:
+      return TransactionsLogLabels.typeTransfer;
   }
+}
 
-  String _periodLabel(TransactionsPeriodPreset period) {
-    switch (period) {
-      case TransactionsPeriodPreset.all:
-        return TransactionsLogLabels.periodAll;
-      case TransactionsPeriodPreset.today:
-        return TransactionsLogLabels.periodToday;
-      case TransactionsPeriodPreset.week:
-        return TransactionsLogLabels.periodWeek;
-      case TransactionsPeriodPreset.month:
-        return TransactionsLogLabels.periodMonth;
-      case TransactionsPeriodPreset.year:
-        return TransactionsLogLabels.periodYear;
-      case TransactionsPeriodPreset.custom:
-        return TransactionsLogLabels.periodCustom;
-    }
+String _periodLabel(TransactionsPeriodPreset period) {
+  switch (period) {
+    case TransactionsPeriodPreset.all:
+      return TransactionsLogLabels.periodAll;
+    case TransactionsPeriodPreset.today:
+      return TransactionsLogLabels.periodToday;
+    case TransactionsPeriodPreset.week:
+      return TransactionsLogLabels.periodWeek;
+    case TransactionsPeriodPreset.month:
+      return TransactionsLogLabels.periodMonth;
+    case TransactionsPeriodPreset.year:
+      return TransactionsLogLabels.periodYear;
+    case TransactionsPeriodPreset.custom:
+      return TransactionsLogLabels.periodCustom;
   }
+}
 
-  Future<void> _showTypeSheet(BuildContext context, WidgetRef ref) async {
-    final current = ref.read(transactionsFilterProvider).type;
+Future<void> _showTypeSheet(BuildContext context, WidgetRef ref) async {
+  final current = ref.read(transactionsFilterProvider).type;
+  await showModalBottomSheet(
+    context: context,
+    builder: (sheetContext) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: TransactionTypeFilter.values.map((type) {
+            return ListTile(
+              selected: current == type,
+              title: Text(_typeLabel(type)),
+              onTap: () {
+                HapticFeedback.selectionClick();
+                ref.read(transactionsFilterProvider.notifier).setType(type);
+                Navigator.of(sheetContext).pop();
+              },
+            );
+          }).toList(),
+        ),
+      );
+    },
+  );
+}
 
-    await showModalBottomSheet(
-      context: context,
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: TransactionTypeFilter.values.map((type) {
-              return ListTile(
-                selected: current == type,
-                title: Text(_typeLabel(type)),
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  ref.read(transactionsFilterProvider.notifier).setType(type);
-                  Navigator.of(sheetContext).pop();
-                },
-              );
-            }).toList(),
-          ),
-        );
-      },
-    );
-  }
+Future<void> _showCategoriesSheet(BuildContext context, WidgetRef ref) async {
+  // Перечитываем категории, чтобы новые записи были видны без рестарта.
+  ref.invalidate(transactionCategoryLookupProvider);
+  final lookupAsync = ref.read(transactionCategoryLookupProvider);
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (sheetContext) {
+      return lookupAsync.when(
+        loading: () => const SizedBox(
+          height: 200,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+        error: (_, __) => const SizedBox(
+          height: 200,
+          child: Center(child: Icon(Icons.error_outline)),
+        ),
+        data: (items) => _MultiSelectSheet(
+          items: items,
+          initialSelected: ref.read(transactionsFilterProvider).categoryIds,
+          onApply: (ids) {
+            ref.read(transactionsFilterProvider.notifier).setCategoryIds(ids);
+          },
+        ),
+      );
+    },
+  );
+}
 
-  Future<void> _showCategoriesSheet(BuildContext context, WidgetRef ref) async {
-    final lookupAsync = ref.read(transactionCategoryLookupProvider);
+Future<void> _showAccountsSheet(BuildContext context, WidgetRef ref) async {
+  // Перечитываем счета, чтобы новые записи были видны без рестарта.
+  ref.invalidate(transactionAccountLookupProvider);
+  final lookupAsync = ref.read(transactionAccountLookupProvider);
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (sheetContext) {
+      return lookupAsync.when(
+        loading: () => const SizedBox(
+          height: 200,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+        error: (_, __) => const SizedBox(
+          height: 200,
+          child: Center(child: Icon(Icons.error_outline)),
+        ),
+        data: (items) => _MultiSelectSheet(
+          items: items,
+          initialSelected: ref.read(transactionsFilterProvider).accountIds,
+          onApply: (ids) {
+            ref.read(transactionsFilterProvider.notifier).setAccountIds(ids);
+          },
+        ),
+      );
+    },
+  );
+}
 
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return lookupAsync.when(
-          loading: () => const SizedBox(
-            height: 200,
-            child: Center(child: CircularProgressIndicator()),
-          ),
-          error: (_, __) => const SizedBox(
-            height: 200,
-            child: Center(child: Icon(Icons.error_outline)),
-          ),
-          data: (items) => _MultiSelectSheet(
-            items: items,
-            initialSelected: ref.read(transactionsFilterProvider).categoryIds,
-            onApply: (ids) {
-              ref.read(transactionsFilterProvider.notifier).setCategoryIds(ids);
-            },
-          ),
-        );
-      },
-    );
-  }
+Future<void> _showPeriodSheet(BuildContext context, WidgetRef ref) async {
+  await showModalBottomSheet(
+    context: context,
+    builder: (sheetContext) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _periodTile(
+              sheetContext,
+              ref,
+              TransactionsPeriodPreset.all,
+              TransactionsLogLabels.periodAll,
+            ),
+            _periodTile(
+              sheetContext,
+              ref,
+              TransactionsPeriodPreset.today,
+              TransactionsLogLabels.periodToday,
+            ),
+            _periodTile(
+              sheetContext,
+              ref,
+              TransactionsPeriodPreset.week,
+              TransactionsLogLabels.periodWeek,
+            ),
+            _periodTile(
+              sheetContext,
+              ref,
+              TransactionsPeriodPreset.month,
+              TransactionsLogLabels.periodMonth,
+            ),
+            _periodTile(
+              sheetContext,
+              ref,
+              TransactionsPeriodPreset.year,
+              TransactionsLogLabels.periodYear,
+            ),
+            ListTile(
+              leading: const Icon(Icons.date_range),
+              title: const Text(TransactionsLogLabels.periodCustom),
+              onTap: () async {
+                Navigator.of(sheetContext).pop();
+                final range = await showDateRangePicker(
+                  context: context,
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime.now().add(const Duration(days: 365)),
+                );
+                if (range == null) return;
+                HapticFeedback.selectionClick();
+                ref
+                    .read(transactionsFilterProvider.notifier)
+                    .setCustomPeriod(range.start, range.end);
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
 
-  Future<void> _showAccountsSheet(BuildContext context, WidgetRef ref) async {
-    final lookupAsync = ref.read(transactionAccountLookupProvider);
+Widget _periodTile(
+  BuildContext context,
+  WidgetRef ref,
+  TransactionsPeriodPreset preset,
+  String label,
+) {
+  final current = ref.read(transactionsFilterProvider).period;
+  return ListTile(
+    selected: current == preset,
+    title: Text(label),
+    onTap: () {
+      HapticFeedback.selectionClick();
+      ref.read(transactionsFilterProvider.notifier).setPeriod(preset);
+      Navigator.of(context).pop();
+    },
+  );
+}
 
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return lookupAsync.when(
-          loading: () => const SizedBox(
-            height: 200,
-            child: Center(child: CircularProgressIndicator()),
-          ),
-          error: (_, __) => const SizedBox(
-            height: 200,
-            child: Center(child: Icon(Icons.error_outline)),
-          ),
-          data: (items) => _MultiSelectSheet(
-            items: items,
-            initialSelected: ref.read(transactionsFilterProvider).accountIds,
-            onApply: (ids) {
-              ref.read(transactionsFilterProvider.notifier).setAccountIds(ids);
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _showPeriodSheet(BuildContext context, WidgetRef ref) async {
-    await showModalBottomSheet(
-      context: context,
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _periodTile(
-                sheetContext,
-                ref,
-                TransactionsPeriodPreset.all,
-                TransactionsLogLabels.periodAll,
+Future<void> _showAmountSheet(BuildContext context, WidgetRef ref) async {
+  // Читаем текущий фильтр, чтобы предзаполнить поля суммы.
+  final currentFilter = ref.read(transactionsFilterProvider);
+  final fromController = TextEditingController(
+    text: currentFilter.amountFromKopecks == null
+        ? ''
+        : _formatAmountForInput(currentFilter.amountFromKopecks!),
+  );
+  final toController = TextEditingController(
+    text: currentFilter.amountToKopecks == null
+        ? ''
+        : _formatAmountForInput(currentFilter.amountToKopecks!),
+  );
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (sheetContext) {
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+          left: 16,
+          right: 16,
+          top: 16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: fromController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
               ),
-              _periodTile(
-                sheetContext,
-                ref,
-                TransactionsPeriodPreset.today,
-                TransactionsLogLabels.periodToday,
+              decoration: const InputDecoration(
+                labelText: TransactionsLogLabels.from,
+                border: OutlineInputBorder(),
               ),
-              _periodTile(
-                sheetContext,
-                ref,
-                TransactionsPeriodPreset.week,
-                TransactionsLogLabels.periodWeek,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: toController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
               ),
-              _periodTile(
-                sheetContext,
-                ref,
-                TransactionsPeriodPreset.month,
-                TransactionsLogLabels.periodMonth,
+              decoration: const InputDecoration(
+                labelText: TransactionsLogLabels.to,
+                border: OutlineInputBorder(),
               ),
-              _periodTile(
-                sheetContext,
-                ref,
-                TransactionsPeriodPreset.year,
-                TransactionsLogLabels.periodYear,
-              ),
-              ListTile(
-                leading: const Icon(Icons.date_range),
-                title: const Text(TransactionsLogLabels.periodCustom),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-
-                  final range = await showDateRangePicker(
-                    context: context,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime.now().add(const Duration(days: 365)),
-                  );
-
-                  if (range == null) return;
-
-                  HapticFeedback.selectionClick();
-                  ref
-                      .read(transactionsFilterProvider.notifier)
-                      .setCustomPeriod(range.start, range.end);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _periodTile(
-    BuildContext context,
-    WidgetRef ref,
-    TransactionsPeriodPreset preset,
-    String label,
-  ) {
-    final current = ref.read(transactionsFilterProvider).period;
-
-    return ListTile(
-      selected: current == preset,
-      title: Text(label),
-      onTap: () {
-        HapticFeedback.selectionClick();
-        ref.read(transactionsFilterProvider.notifier).setPeriod(preset);
-        Navigator.of(context).pop();
-      },
-    );
-  }
-
-  Future<void> _showAmountSheet(BuildContext context, WidgetRef ref) async {
-    final fromController = TextEditingController();
-    final toController = TextEditingController();
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 16,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: fromController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: TransactionsLogLabels.from,
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: toController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: TransactionsLogLabels.to,
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(sheetContext).pop(),
-                      child: const Text(TransactionsLogLabels.cancel),
-                    ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: const Text(TransactionsLogLabels.cancel),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () {
-                        final from = fromController.text.trim().isEmpty
-                            ? null
-                            : MoneyInputParser.parseKopecks(
-                                fromController.text,
-                              );
-
-                        final to = toController.text.trim().isEmpty
-                            ? null
-                            : MoneyInputParser.parseKopecks(toController.text);
-
-                        HapticFeedback.selectionClick();
-                        ref
-                            .read(transactionsFilterProvider.notifier)
-                            .setAmountRange(from, to);
-
-                        Navigator.of(sheetContext).pop();
-                      },
-                      child: const Text(TransactionsLogLabels.apply),
-                    ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () {
+                      final from = fromController.text.trim().isEmpty
+                          ? null
+                          : MoneyInputParser.parseKopecks(fromController.text);
+                      final to = toController.text.trim().isEmpty
+                          ? null
+                          : MoneyInputParser.parseKopecks(toController.text);
+                      HapticFeedback.selectionClick();
+                      ref
+                          .read(transactionsFilterProvider.notifier)
+                          .setAmountRange(from, to);
+                      Navigator.of(sheetContext).pop();
+                    },
+                    child: const Text(TransactionsLogLabels.apply),
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+/// Форматирует копейки в строку для поля ввода (без double).
+/// Пример: 25050 -> "250,50"; 25000 -> "250".
+String _formatAmountForInput(int kopecks) {
+  final abs = kopecks.abs();
+  final rubles = abs ~/ 100;
+  final kop = abs % 100;
+  if (kop == 0) {
+    return '$rubles';
   }
+  return '$rubles,${kop.toString().padLeft(2, '0')}';
 }
 
 class _MultiSelectSheet extends StatefulWidget {
@@ -457,7 +457,6 @@ class _MultiSelectSheetState extends State<_MultiSelectSheet> {
             child: ListView(
               children: widget.items.map((item) {
                 final selected = _selected.contains(item.id);
-
                 return CheckboxListTile(
                   value: selected,
                   title: Text(item.name),

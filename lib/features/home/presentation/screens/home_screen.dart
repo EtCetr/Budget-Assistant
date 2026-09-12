@@ -1,5 +1,4 @@
-﻿// lib/features/home/presentation/screens/home_screen.dart
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -9,7 +8,6 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Budget Assistant'), centerTitle: true),
-      // ✅ УБРАЛИ const снаружи: внутри кнопки с замыканиями onPressed
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -29,6 +27,7 @@ class HomeScreen extends StatelessWidget {
               'Core Architecture Initialized.',
               style: TextStyle(color: Colors.grey),
             ),
+            const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => context.go('/accounts'),
               child: const Text('Счета (QA)'),
@@ -38,9 +37,19 @@ class HomeScreen extends StatelessWidget {
               onPressed: () => context.go('/categories'),
               child: const Text('Категории (QA)'),
             ),
+            const SizedBox(height: 12),
             ElevatedButton(
               onPressed: () => context.push('/transactions'),
               child: const Text('Транзакции (QA)'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () => context.push('/budget'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('💰 Бюджет и лимиты'),
             ),
           ],
         ),

@@ -104,5 +104,19 @@ class SyncTableSpec {
     ignoredColumns: [],
   );
 
-  static const defaultSpecs = [accounts, categories, transactions];
+  static const budgetLimits = SyncTableSpec(
+    entityType: 'budget_limit',
+    localTable: 'budget_limits',
+    remoteTable: 'budget_limits',
+    idColumn: 'id',
+    userColumn: 'user_id',
+    spaceColumn: 'space_id',
+    updatedAtColumn: 'updated_at',
+    syncStatusColumn: 'sync_status',
+    sensitiveColumns: ['limit_amount', 'alert_amount'],
+    numericColumns: ['limit_amount', 'alert_amount'],
+    ignoredColumns: [],
+  );
+
+  static const defaultSpecs = [accounts, categories, transactions, budgetLimits];
 }
