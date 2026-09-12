@@ -55,23 +55,19 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
         expressions.add(t.date.isSmallerOrEqualValue(range.$2));
       }
 
-            // Фильтр по сумме работает с ПОДПИСАННОЙ суммой, как она показана в UI:
-      // расход = −amount, доход/перевод = +amount.
-      final isExpense = t.type.equalsValue(TransactionType.expense);
-      final negatedAmount = t.amount * const Constant(-1);
+      // Фильтр по сумме работает по МОДУЛЮ: пользователь вводит "от 200",
+      // и получает и трату на 250, и доход на 280.
+      // Тип транзакции фильтруется отдельно через _typeExpression.
+      final absAmount = CustomExpression<int>('ABS(${t.amount.name})');
 
       if (filter.amountFromKopecks != null) {
-        final from = filter.amountFromKopecks!;
         expressions.add(
-          (isExpense & negatedAmount.isBiggerOrEqualValue(from)) |
-              (isExpense.not() & t.amount.isBiggerOrEqualValue(from)),
+          absAmount.isBiggerOrEqualValue(filter.amountFromKopecks!),
         );
       }
       if (filter.amountToKopecks != null) {
-        final to = filter.amountToKopecks!;
         expressions.add(
-          (isExpense & negatedAmount.isSmallerOrEqualValue(to)) |
-              (isExpense.not() & t.amount.isSmallerOrEqualValue(to)),
+          absAmount.isSmallerOrEqualValue(filter.amountToKopecks!),
         );
       }
 
