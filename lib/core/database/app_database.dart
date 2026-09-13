@@ -4,9 +4,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'dart:io';
 
-// ═══════════════════════════════════════════════════════════════
-// Таблицы из Этапа 3 (фундаментальные сущности)
-// ═══════════════════════════════════════════════════════════════
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// РўР°Р±Р»РёС†С‹ РёР· Р­С‚Р°РїР° 3 (С„СѓРЅРґР°РјРµРЅС‚Р°Р»СЊРЅС‹Рµ СЃСѓС‰РЅРѕСЃС‚Рё)
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
 import 'tables/users.dart';
 import 'tables/spaces.dart';
 import 'tables/memberships.dart';
@@ -15,14 +15,14 @@ import 'tables/notifications.dart';
 import 'tables/sync_conflicts.dart';
 import 'tables/sync_logs.dart';
 
-// ═══════════════════════════════════════════════════════════════
-// Enum'ы Этапа 6 (type, audit_status, sync_status)
-// ═══════════════════════════════════════════════════════════════
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// Enum'С‹ Р­С‚Р°РїР° 6 (type, audit_status, sync_status)
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 
-// ═══════════════════════════════════════════════════════════════
-// DAO (Data Access Objects) — типобезопасные запросы
-// ═══════════════════════════════════════════════════════════════
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// DAO (Data Access Objects) вЂ” С‚РёРїРѕР±РµР·РѕРїР°СЃРЅС‹Рµ Р·Р°РїСЂРѕСЃС‹
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
 import 'daos/users_dao.dart';
 import 'daos/spaces_dao.dart';
 import 'daos/memberships_dao.dart';
@@ -36,9 +36,9 @@ import 'package:budget_assistant/core/logger.dart';
 
 part 'app_database.g.dart';
 
-// ═══════════════════════════════════════════════════════════════
-// Таблицы из Этапа 5 (уже реализованы, остаются здесь)
-// ═══════════════════════════════════════════════════════════════
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// РўР°Р±Р»РёС†С‹ РёР· Р­С‚Р°РїР° 5 (СѓР¶Рµ СЂРµР°Р»РёР·РѕРІР°РЅС‹, РѕСЃС‚Р°СЋС‚СЃСЏ Р·РґРµСЃСЊ)
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
 class Accounts extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text().references(Users, #id)();
@@ -130,9 +130,9 @@ class CategoryRules extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-// ═══════════════════════════════════════════════════════════════
-// ЭТАП 6: Таблица транзакций
-// ═══════════════════════════════════════════════════════════════
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// Р­РўРђРџ 6: РўР°Р±Р»РёС†Р° С‚СЂР°РЅР·Р°РєС†РёР№
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
 @DataClassName('TransactionDb')
 class Transactions extends Table {
   TextColumn get id => text()();
@@ -180,9 +180,9 @@ class Transactions extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-// ═══════════════════════════════════════════════════════════════
-// ЭТАП 6: Сплиты чека/долга
-// ═══════════════════════════════════════════════════════════════
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// Р­РўРђРџ 6: РЎРїР»РёС‚С‹ С‡РµРєР°/РґРѕР»РіР°
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
 @DataClassName('TransactionSplitDb')
 class TransactionSplits extends Table {
   TextColumn get id => text()();
@@ -199,12 +199,12 @@ class TransactionSplits extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-// ═══════════════════════════════════════════════════════════════
-// ЭТАП 9: Бюджетные лимиты по категориям
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// Р­РўРђРџ 9: Р‘СЋРґР¶РµС‚РЅС‹Рµ Р»РёРјРёС‚С‹ РїРѕ РєР°С‚РµРіРѕСЂРёСЏРј
 //
-// Уникальный констрейнт: (space_id, user_id, category_id, year, month)
-// Деньги: IntColumn (копейки), E2E-шифрование limit_amount и alert_amount
-// ═══════════════════════════════════════════════════════════════
+// РЈРЅРёРєР°Р»СЊРЅС‹Р№ РєРѕРЅСЃС‚СЂРµР№РЅС‚: (space_id, user_id, category_id, year, month)
+// Р”РµРЅСЊРіРё: IntColumn (РєРѕРїРµР№РєРё), E2E-С€РёС„СЂРѕРІР°РЅРёРµ limit_amount Рё alert_amount
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
 @DataClassName('BudgetLimitDb')
 class BudgetLimits extends Table {
   TextColumn get id => text()();
@@ -225,19 +225,19 @@ class BudgetLimits extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-// ═══════════════════════════════════════════════════════════════
-// Основная конфигурация БД
-// ═══════════════════════════════════════════════════════════════
-// ═══════════════════════════════════════════════════════════════
-// ЭТАП 10: Курсы валют (мультивалютность, ТОМ 2 §18.2)
-// ═══════════════════════════════════════════════════════════════
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// РћСЃРЅРѕРІРЅР°СЏ РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ Р‘Р”
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// Р­РўРђРџ 10: РљСѓСЂСЃС‹ РІР°Р»СЋС‚ (РјСѓР»СЊС‚РёРІР°Р»СЋС‚РЅРѕСЃС‚СЊ, РўРћРњ 2 В§18.2)
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
 @DataClassName('ExchangeRateDb')
 class ExchangeRates extends Table {
   TextColumn get id => text()();
   TextColumn get fromCurrency => text()();
   TextColumn get toCurrency => text()();
   DateTimeColumn get date => dateTime()();
-  // Мультипликатор (не деньги).
+  // РњСѓР»СЊС‚РёРїР»РёРєР°С‚РѕСЂ (РЅРµ РґРµРЅСЊРіРё).
   RealColumn get rate => real()();
   TextColumn get source => text().withDefault(const Constant('manual'))();
   DateTimeColumn get createdAt => dateTime()();
@@ -246,16 +246,16 @@ class ExchangeRates extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-// ═══════════════════════════════════════════════════════════════
-// ЭТАП 10: Матрица кэшбэка по картам (ТОМ 2 §14.3)
-// ═══════════════════════════════════════════════════════════════
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// Р­РўРђРџ 10: РњР°С‚СЂРёС†Р° РєСЌС€Р±СЌРєР° РїРѕ РєР°СЂС‚Р°Рј (РўРћРњ 2 В§14.3)
+// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
 @DataClassName('CashbackMatrixDb')
 class CashbackMatrix extends Table {
   TextColumn get id => text()();
   TextColumn get accountId => text().references(Accounts, #id)();
-  // Привязка к локальной категории для расчёта NET-суммы (ТОМ 4 Правило 1).
+  // РџСЂРёРІСЏР·РєР° Рє Р»РѕРєР°Р»СЊРЅРѕР№ РєР°С‚РµРіРѕСЂРёРё РґР»СЏ СЂР°СЃС‡С‘С‚Р° NET-СЃСѓРјРјС‹ (РўРћРњ 4 РџСЂР°РІРёР»Рѕ 1).
   TextColumn get categoryId => text().nullable().references(Categories, #id)();
-  // Название категории банка (в Supabase шифруется [E2E]).
+  // РќР°Р·РІР°РЅРёРµ РєР°С‚РµРіРѕСЂРёРё Р±Р°РЅРєР° (РІ Supabase С€РёС„СЂСѓРµС‚СЃСЏ [E2E]).
   TextColumn get categoryName => text()();
   IntColumn get percentBps => integer()();
   TextColumn get status => text().withDefault(const Constant('potential'))();
@@ -269,9 +269,22 @@ class CashbackMatrix extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
+class DashboardWidgets extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text().references(Users, #id)();
+  TextColumn get widgetType => text()();
+  BoolColumn get isVisible => boolean().withDefault(const Constant(true))();
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get syncStatus => text().withDefault(const Constant('pending'))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
 @DriftDatabase(
   tables: [
-    // Этап 3: Фундаментальные сущности
+    // Р­С‚Р°Рї 3: Р¤СѓРЅРґР°РјРµРЅС‚Р°Р»СЊРЅС‹Рµ СЃСѓС‰РЅРѕСЃС‚Рё
     Users,
     Spaces,
     Memberships,
@@ -279,19 +292,20 @@ class CashbackMatrix extends Table {
     Notifications,
     SyncConflicts,
     SyncLogs,
-    // Этап 5: Счета, ипотеки, категории
+    // Р­С‚Р°Рї 5: РЎС‡РµС‚Р°, РёРїРѕС‚РµРєРё, РєР°С‚РµРіРѕСЂРёРё
     Accounts,
     Mortgages,
     Categories,
     CategoryRules,
-    // Этап 6: Транзакции и сплиты
+    // Р­С‚Р°Рї 6: РўСЂР°РЅР·Р°РєС†РёРё Рё СЃРїР»РёС‚С‹
     Transactions,
     TransactionSplits,
-    // Этап 9: Бюджетные лимиты
+    // Р­С‚Р°Рї 9: Р‘СЋРґР¶РµС‚РЅС‹Рµ Р»РёРјРёС‚С‹
     BudgetLimits,
-    // Этап 10: Кэшбэк и курсы валют
+    // Р­С‚Р°Рї 10: РљСЌС€Р±СЌРє Рё РєСѓСЂСЃС‹ РІР°Р»СЋС‚
     ExchangeRates,
     CashbackMatrix,
+    DashboardWidgets,
   ],
   daos: [
     UsersDao,
@@ -313,16 +327,16 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
   AppDatabase.forBackground(super.e);
 
-  /// v1: старт (Этап 3)
-  /// v2: миграция SyncableTable (Этап 3/5) — ИСТОРИЧЕСКАЯ МИНА, удалена в v5
-  /// v3: Этап 6 — таблицы transactions и transaction_splits
-  /// v4: Этап 8+ — поле is_large_expense
-  /// v5: Этап 9 — таблица budget_limits + индексы
+  /// v1: СЃС‚Р°СЂС‚ (Р­С‚Р°Рї 3)
+  /// v2: РјРёРіСЂР°С†РёСЏ SyncableTable (Р­С‚Р°Рї 3/5) вЂ” РРЎРўРћР РР§Р•РЎРљРђРЇ РњРРќРђ, СѓРґР°Р»РµРЅР° РІ v5
+  /// v3: Р­С‚Р°Рї 6 вЂ” С‚Р°Р±Р»РёС†С‹ transactions Рё transaction_splits
+  /// v4: Р­С‚Р°Рї 8+ вЂ” РїРѕР»Рµ is_large_expense
+  /// v5: Р­С‚Р°Рї 9 вЂ” С‚Р°Р±Р»РёС†Р° budget_limits + РёРЅРґРµРєСЃС‹
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 8;
 
   Future<void> _createAllIndexes() async {
-    // ИНДЕКСЫ ДЛЯ ЭТАПА 3
+    // РРќР”Р•РљРЎР« Р”Р›РЇ Р­РўРђРџРђ 3
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_memberships_user
       ON memberships(user_id, status)
@@ -357,7 +371,7 @@ class AppDatabase extends _$AppDatabase {
       ON sync_logs(status)
     ''');
 
-    // ИНДЕКСЫ ДЛЯ ЭТАПА 5
+    // РРќР”Р•РљРЎР« Р”Р›РЇ Р­РўРђРџРђ 5
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_accounts_user_space
       ON accounts(user_id, space_id, sync_status)
@@ -383,7 +397,7 @@ class AppDatabase extends _$AppDatabase {
       ON category_rules(space_id, bank_name)
     ''');
 
-    // ИНДЕКСЫ ДЛЯ ЭТАПА 6
+    // РРќР”Р•РљРЎР« Р”Р›РЇ Р­РўРђРџРђ 6
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_transactions_user_space_date
       ON transactions(user_id, space_id, date)
@@ -426,28 +440,28 @@ class AppDatabase extends _$AppDatabase {
       ON transaction_splits(sync_status)
     ''');
 
-    // ИНДЕКСЫ ДЛЯ ЭТАПА 9 (budget_limits)
-    // Уникальный констрейнт: один лимит на категорию в месяц
+    // РРќР”Р•РљРЎР« Р”Р›РЇ Р­РўРђРџРђ 9 (budget_limits)
+    // РЈРЅРёРєР°Р»СЊРЅС‹Р№ РєРѕРЅСЃС‚СЂРµР№РЅС‚: РѕРґРёРЅ Р»РёРјРёС‚ РЅР° РєР°С‚РµРіРѕСЂРёСЋ РІ РјРµСЃСЏС†
     await customStatement('''
       CREATE UNIQUE INDEX IF NOT EXISTS idx_budget_limits_unique
       ON budget_limits(space_id, user_id, category_id, year, month)
     ''');
-    // Поиск лимитов по категории
+    // РџРѕРёСЃРє Р»РёРјРёС‚РѕРІ РїРѕ РєР°С‚РµРіРѕСЂРёРё
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_budget_limits_category
       ON budget_limits(category_id)
     ''');
-    // Pending-лимиты для синхронизации
+    // Pending-Р»РёРјРёС‚С‹ РґР»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_budget_limits_sync_status
       ON budget_limits(sync_status)
     ''');
-    // Фильтрация по пользователю и пространству
+    // Р¤РёР»СЊС‚СЂР°С†РёСЏ РїРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ Рё РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІСѓ
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_budget_limits_user_space
       ON budget_limits(user_id, space_id)
     ''');
-    // ИНДЕКСЫ ДЛЯ ЭТАПА 10 (кэшбэк + курсы валют)
+    // РРќР”Р•РљРЎР« Р”Р›РЇ Р­РўРђРџРђ 10 (РєСЌС€Р±СЌРє + РєСѓСЂСЃС‹ РІР°Р»СЋС‚)
     await customStatement('''
       CREATE UNIQUE INDEX IF NOT EXISTS idx_exchange_rates_unique
       ON exchange_rates(from_currency, to_currency, date)
@@ -470,8 +484,8 @@ class AppDatabase extends _$AppDatabase {
       await _createAllIndexes();
     },
     onUpgrade: (Migrator m, int from, int to) async {
-      // ИСТОРИЧЕСКАЯ МИНА УДАЛЕНА: ветка from < 2 с DROP TABLE
-      // больше не нужна, т.к. схема стабилизирована на v4+
+      // РРЎРўРћР РР§Р•РЎРљРђРЇ РњРРќРђ РЈР”РђР›Р•РќРђ: РІРµС‚РєР° from < 2 СЃ DROP TABLE
+      // Р±РѕР»СЊС€Рµ РЅРµ РЅСѓР¶РЅР°, С‚.Рє. СЃС…РµРјР° СЃС‚Р°Р±РёР»РёР·РёСЂРѕРІР°РЅР° РЅР° v4+
       if (from < 3) {
         await m.createTable(transactions);
         await m.createTable(transactionSplits);
@@ -488,9 +502,9 @@ class AppDatabase extends _$AppDatabase {
         );
       }
       if (from < 5) {
-        // ЭТАП 9: создаём таблицу budget_limits
+        // Р­РўРђРџ 9: СЃРѕР·РґР°С‘Рј С‚Р°Р±Р»РёС†Сѓ budget_limits
         await m.createTable(budgetLimits);
-        // Создаём индексы для budget_limits
+        // РЎРѕР·РґР°С‘Рј РёРЅРґРµРєСЃС‹ РґР»СЏ budget_limits
         await customStatement('''
               CREATE UNIQUE INDEX IF NOT EXISTS idx_budget_limits_unique
               ON budget_limits(space_id, user_id, category_id, year, month)
@@ -510,7 +524,7 @@ class AppDatabase extends _$AppDatabase {
       }
     
         if (from < 6) {
-          // ЭТАП 10: кэшбэк + мультивалютность
+          // Р­РўРђРџ 10: РєСЌС€Р±СЌРє + РјСѓР»СЊС‚РёРІР°Р»СЋС‚РЅРѕСЃС‚СЊ
           await m.createTable(exchangeRates);
           await m.createTable(cashbackMatrix);
           await customStatement('''
@@ -526,19 +540,40 @@ class AppDatabase extends _$AppDatabase {
             ON cashback_matrix(sync_status)
           ''');
         }
+        if (from < 8) {
+          // Stage 11 fix: v7 migration was nested incorrectly and
+          // dashboard_widgets may be missing on upgraded devices.
+          final dashboardTableExists = await customSelect(
+            "SELECT COUNT(*) AS c FROM sqlite_master "
+            "WHERE type='table' AND name='dashboard_widgets'",
+          ).getSingle();
+          if (dashboardTableExists.read<int>('c') == 0) {
+            await m.createTable(dashboardWidgets);
+          }
+          await customStatement('''
+CREATE UNIQUE INDEX IF NOT EXISTS idx_dashboard_widgets_user_type
+ON dashboard_widgets(user_id, widget_type)
+        ''');
+          await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_dashboard_widgets_sync_status
+ON dashboard_widgets(sync_status)
+        ''');
+        }
 },
     beforeOpen: (details) async {
       AppLogger.i(
-        '🔧 Migration details: wasCreated=${details.wasCreated}, hadUpgrade=${details.hadUpgrade}, versionNow=${details.versionNow}, versionBefore=${details.versionBefore}',
+        'рџ”§ Migration details: wasCreated=${details.wasCreated}, hadUpgrade=${details.hadUpgrade}, versionNow=${details.versionNow}, versionBefore=${details.versionBefore}',
       );
       await customStatement('PRAGMA foreign_keys = ON');
+          await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS idx_dashboard_widgets_user_type ON dashboard_widgets(user_id, widget_type)');
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_dashboard_widgets_sync_status ON dashboard_widgets(sync_status)');
       await customStatement('PRAGMA journal_mode = WAL');
       await customStatement('PRAGMA synchronous = NORMAL');
       final tables = await customSelect(
         "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",
       ).get();
       AppLogger.i(
-        '📋 Tables in DB: ${tables.map((r) => r.read<String>('name')).join(', ')}',
+        'рџ“‹ Tables in DB: ${tables.map((r) => r.read<String>('name')).join(', ')}',
       );
     },
   );
@@ -548,12 +583,12 @@ LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final dbPath = p.join(dbFolder.path, 'budget_assistant.sqlite');
-    AppLogger.i('📁 DB Path: $dbPath');
+    AppLogger.i('рџ“Ѓ DB Path: $dbPath');
     AppLogger.i(
-      '📂 Directory exists: ${await Directory(dbFolder.path).exists()}',
+      'рџ“‚ Directory exists: ${await Directory(dbFolder.path).exists()}',
     );
     final fileExists = await File(dbPath).exists();
-    AppLogger.i('💾 DB file exists before open: $fileExists');
+    AppLogger.i('рџ’ѕ DB file exists before open: $fileExists');
     return NativeDatabase(File(dbPath));
   });
 }

@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:budget_assistant/features/auth/domain/notifiers/auth_notifier.dart';
-import 'package:budget_assistant/features/home/presentation/screens/home_screen.dart';
+import 'package:budget_assistant/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:budget_assistant/features/onboarding/presentation/widgets/onboarding_wrapper.dart';
 import 'package:budget_assistant/features/auth/presentation/screens/auth_wrapper.dart';
 import 'package:budget_assistant/features/spaces/presentation/screens/space_selector_screen.dart';
@@ -121,7 +121,7 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: AppRoutes.home,
         name: 'home',
-        builder: (context, state) => const HomeScreen(),
+        builder: (context, state) => const DashboardScreen(),
       ),
       GoRoute(
         path: AppRoutes.onboarding,
@@ -208,7 +208,7 @@ GoRouter appRouter(Ref ref) {
           final id = state.pathParameters['id'];
           if (id == null || id.isEmpty) {
             return const Scaffold(
-              body: Center(child: Text('ID транзакции не указан')),
+              body: Center(child: Text('ID С‚СЂР°РЅР·Р°РєС†РёРё РЅРµ СѓРєР°Р·Р°РЅ')),
             );
           }
           return EditTransactionScreen(transactionId: id);
@@ -231,7 +231,7 @@ GoRouter appRouter(Ref ref) {
           final id = state.pathParameters['id'];
           if (id == null || id.isEmpty) {
             return const Scaffold(
-              body: Center(child: Text('ID лимита не указан')),
+              body: Center(child: Text('ID Р»РёРјРёС‚Р° РЅРµ СѓРєР°Р·Р°РЅ')),
             );
           }
           return EditBudgetLimitScreen(limitId: id);
