@@ -12,6 +12,7 @@ import '../../domain/repositories/cashback_repository.dart';
 import '../../domain/repositories/exchange_rate_repository.dart';
 import '../../data/repositories/cashback_repository_impl.dart';
 import '../../data/repositories/exchange_rate_repository_impl.dart';
+import '../../data/remote/cbr_rate_remote_source.dart';
 import '../../domain/usecases/calculate_cashback_usecase.dart';
 import '../../domain/usecases/convert_currency_usecase.dart';
 import '../../domain/usecases/get_cashback_cycle_bounds_usecase.dart';
@@ -25,11 +26,17 @@ final cashbackRepositoryProvider = Provider<CashbackRepository>((ref) {
   );
 });
 
+/// Открытый источник официальных курсов ЦБ РФ (Dio, без API-ключа).
+final cbrRateRemoteSourceProvider = Provider<CbrRateRemoteSource>((ref) {
+  return CbrRateRemoteSource(logger: _logger);
+});
+
 final exchangeRateRepositoryProvider = Provider<ExchangeRateRepository>((ref) {
   return ExchangeRateRepositoryImpl(
     db: ref.watch(appDatabaseProvider),
     logger: _logger,
     uuid: const Uuid(),
+    remote: ref.watch(cbrRateRemoteSourceProvider),
   );
 });
 
@@ -87,7 +94,7 @@ final cashbackSummariesProvider =
   return useCase(accountId: accountId, now: DateTime.now());
 });
 
-/// Последние добавленные курсы валют (для диалога).
+/// Последние курсы валют (для меню исключений).
 final exchangeRatesRecentProvider =
     StreamProvider<List<ExchangeRateEntry>>((ref) {
   final repo = ref.watch(exchangeRateRepositoryProvider);

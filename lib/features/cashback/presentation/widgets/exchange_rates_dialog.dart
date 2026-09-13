@@ -4,7 +4,11 @@ import 'package:intl/intl.dart';
 import '../providers/cashback_providers.dart';
 import '../../domain/entities/exchange_rate_entry.dart';
 
-/// Диалог управления курсами валют (список + ручное добавление).
+/// Меню ИСКЛЮЧЕНИЙ курсов (Этап 10).
+///
+/// Конвертация происходит автоматически по официальному курсу ЦБ РФ
+/// на дату операции. Сюда пользователь вносит только ручные исключения:
+/// «заплатил по курсу, отличному от официального».
 class ExchangeRatesDialog extends ConsumerWidget {
   const ExchangeRatesDialog({super.key});
 
@@ -16,16 +20,50 @@ class ExchangeRatesDialog extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ratesAsync = ref.watch(exchangeRatesRecentProvider);
     return AlertDialog(
-      title: const Text('Курсы валют'),
+      title: const Text('Исключения курсов'),
       content: SizedBox(
         width: double.maxFinite,
-        height: 400,
+        height: 460,
         child: Column(
           children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Конвертация происходит автоматически по официальному курсу ЦБ РФ на дату операции. '
+                      'Данное меню заполнять только в случае оплаты по курсу, отличному от официального.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
             Expanded(
               child: ratesAsync.when(
                 data: (rates) => rates.isEmpty
-                    ? const Center(child: Text('Курсы не добавлены'))
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Text(
+                            'Исключений нет.\nВсе конвертации идут по авто-курсу ЦБ.',
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
                     : ListView.builder(
                         itemCount: rates.length,
                         itemBuilder: (context, i) => _RateTile(rate: rates[i]),
@@ -38,7 +76,7 @@ class ExchangeRatesDialog extends ConsumerWidget {
             FilledButton.icon(
               onPressed: () => _AddRateDialog.show(context),
               icon: const Icon(Icons.add),
-              label: const Text('Добавить курс'),
+              label: const Text('Добавить исключение'),
             ),
           ],
         ),
@@ -58,12 +96,15 @@ class _RateTile extends StatelessWidget {
 
   final ExchangeRateEntry rate;
 
+  String get _sourceLabel =>
+      rate.source == 'manual' ? 'вручную (исключение)' : 'ЦБ РФ (авто-кэш)';
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
       dense: true,
       title: Text('${rate.fromCurrency} → ${rate.toCurrency}'),
-      subtitle: Text(DateFormat.yMd('ru').format(rate.date)),
+      subtitle: Text('${DateFormat.yMd('ru').format(rate.date)} • $_sourceLabel'),
       trailing: Text('${rate.rate}'),
     );
   }
@@ -136,7 +177,7 @@ class _AddRateDialogState extends ConsumerState<_AddRateDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Новый курс'),
+      title: const Text('Курс-исключение'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -154,7 +195,7 @@ class _AddRateDialogState extends ConsumerState<_AddRateDialog> {
             TextField(
               controller: _rateController,
               decoration:
-                  const InputDecoration(labelText: 'Курс', hintText: 'напр. 92.5'),
+                  const InputDecoration(labelText: 'Курс', hintText: 'напр. 95.5'),
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
             ),
@@ -162,7 +203,7 @@ class _AddRateDialogState extends ConsumerState<_AddRateDialog> {
             InkWell(
               onTap: _pickDate,
               child: InputDecorator(
-                decoration: const InputDecoration(labelText: 'Дата'),
+                decoration: const InputDecoration(labelText: 'Дата оплаты'),
                 child: Text(DateFormat.yMd('ru').format(_date)),
               ),
             ),
