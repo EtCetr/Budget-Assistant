@@ -1,4 +1,4 @@
-﻿import 'package:intl/intl.dart';
+import 'package:intl/intl.dart';
 
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 
@@ -100,6 +100,22 @@ class PrivacyFormatter {
     }
 
     return '$percent%';
+  }
+
+  /// Процент кэшбэка из базисных пунктов (Этап 10).
+  ///
+  /// 500 bps -> '5%', 250 bps -> '2.5%'.
+  /// В hidden режиме возвращает пустую строку.
+  String formatPercentBps(int percentBps, BalanceVisibilityMode mode) {
+    if (mode == BalanceVisibilityMode.hidden) {
+      return '';
+    }
+
+    final percent = percentBps / 100;
+    if (percent == percent.roundToDouble()) {
+      return '${percent.round()}%';
+    }
+    return '${percent.toStringAsFixed(1)}%';
   }
 
   /// Тренд цены.

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -27,6 +27,7 @@ import 'package:budget_assistant/features/transactions/presentation/screens/edit
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import 'package:budget_assistant/features/budget/presentation/screens/budget_limits_screen.dart';
 import 'package:budget_assistant/features/budget/presentation/screens/edit_budget_limit_screen.dart';
+import 'package:budget_assistant/features/cashback/presentation/screens/cashback_screen.dart';
 
 
 part 'app_router.g.dart';
@@ -236,6 +237,11 @@ GoRouter appRouter(Ref ref) {
           return EditBudgetLimitScreen(limitId: id);
         },
       ),
+    GoRoute(
+      path: '/cashback',
+      name: 'cashback',
+      builder: (context, state) => const CashbackScreen(),
+    ),
     ],
     redirect: (context, state) {
       final location = state.uri.toString();

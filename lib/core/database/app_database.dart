@@ -228,6 +228,47 @@ class BudgetLimits extends Table {
 // ═══════════════════════════════════════════════════════════════
 // Основная конфигурация БД
 // ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// ЭТАП 10: Курсы валют (мультивалютность, ТОМ 2 §18.2)
+// ═══════════════════════════════════════════════════════════════
+@DataClassName('ExchangeRateDb')
+class ExchangeRates extends Table {
+  TextColumn get id => text()();
+  TextColumn get fromCurrency => text()();
+  TextColumn get toCurrency => text()();
+  DateTimeColumn get date => dateTime()();
+  // Мультипликатор (не деньги).
+  RealColumn get rate => real()();
+  TextColumn get source => text().withDefault(const Constant('manual'))();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ЭТАП 10: Матрица кэшбэка по картам (ТОМ 2 §14.3)
+// ═══════════════════════════════════════════════════════════════
+@DataClassName('CashbackMatrixDb')
+class CashbackMatrix extends Table {
+  TextColumn get id => text()();
+  TextColumn get accountId => text().references(Accounts, #id)();
+  // Привязка к локальной категории для расчёта NET-суммы (ТОМ 4 Правило 1).
+  TextColumn get categoryId => text().nullable().references(Categories, #id)();
+  // Название категории банка (в Supabase шифруется [E2E]).
+  TextColumn get categoryName => text()();
+  IntColumn get percentBps => integer()();
+  TextColumn get status => text().withDefault(const Constant('potential'))();
+  TextColumn get lifetimeType => text().withDefault(const Constant('monthly'))();
+  DateTimeColumn get expiresAt => dateTime()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  TextColumn get syncStatus =>
+      textEnum<SyncStatus>().withDefault(const Constant('pending'))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
 @DriftDatabase(
   tables: [
     // Этап 3: Фундаментальные сущности
@@ -248,6 +289,9 @@ class BudgetLimits extends Table {
     TransactionSplits,
     // Этап 9: Бюджетные лимиты
     BudgetLimits,
+    // Этап 10: Кэшбэк и курсы валют
+    ExchangeRates,
+    CashbackMatrix,
   ],
   daos: [
     UsersDao,
@@ -275,7 +319,7 @@ class AppDatabase extends _$AppDatabase {
   /// v4: Этап 8+ — поле is_large_expense
   /// v5: Этап 9 — таблица budget_limits + индексы
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   Future<void> _createAllIndexes() async {
     // ИНДЕКСЫ ДЛЯ ЭТАПА 3
@@ -403,6 +447,20 @@ class AppDatabase extends _$AppDatabase {
       CREATE INDEX IF NOT EXISTS idx_budget_limits_user_space
       ON budget_limits(user_id, space_id)
     ''');
+    // ИНДЕКСЫ ДЛЯ ЭТАПА 10 (кэшбэк + курсы валют)
+    await customStatement('''
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_exchange_rates_unique
+      ON exchange_rates(from_currency, to_currency, date)
+    ''');
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_cashback_matrix_account
+      ON cashback_matrix(account_id, expires_at)
+    ''');
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_cashback_matrix_sync_status
+      ON cashback_matrix(sync_status)
+    ''');
+
   }
 
   @override
@@ -450,7 +508,25 @@ class AppDatabase extends _$AppDatabase {
               ON budget_limits(user_id, space_id)
             ''');
       }
-    },
+    
+        if (from < 6) {
+          // ЭТАП 10: кэшбэк + мультивалютность
+          await m.createTable(exchangeRates);
+          await m.createTable(cashbackMatrix);
+          await customStatement('''
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_exchange_rates_unique
+            ON exchange_rates(from_currency, to_currency, date)
+          ''');
+          await customStatement('''
+            CREATE INDEX IF NOT EXISTS idx_cashback_matrix_account
+            ON cashback_matrix(account_id, expires_at)
+          ''');
+          await customStatement('''
+            CREATE INDEX IF NOT EXISTS idx_cashback_matrix_sync_status
+            ON cashback_matrix(sync_status)
+          ''');
+        }
+},
     beforeOpen: (details) async {
       AppLogger.i(
         '🔧 Migration details: wasCreated=${details.wasCreated}, hadUpgrade=${details.hadUpgrade}, versionNow=${details.versionNow}, versionBefore=${details.versionBefore}',

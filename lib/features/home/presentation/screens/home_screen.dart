@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -50,6 +50,15 @@ class HomeScreen extends StatelessWidget {
                 foregroundColor: Colors.white,
               ),
               child: const Text('💰 Бюджет и лимиты'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () => context.push('/cashback'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('💳 Кэшбэк и валюты'),
             ),
           ],
         ),
