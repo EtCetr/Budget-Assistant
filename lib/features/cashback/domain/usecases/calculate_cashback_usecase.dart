@@ -54,9 +54,10 @@ class CalculateCashbackUseCase {
       for (final group in byLifetime.entries) {
         final lifetimeType = group.key;
         final bounds = _cycleBounds(now: now, lifetimeType: lifetimeType);
-
         final txs = await _cashbackRepository.fetchRelevantTransactions(
-          accountId, bounds.startUtc, bounds.endUtc,
+          accountId,
+          bounds.startUtc,
+          bounds.endUtc,
         );
         final splitTxIds = txs.where((t) => t.isSplit).map((t) => t.id).toList();
         final splits = await _cashbackRepository.fetchSplits(splitTxIds);
@@ -101,6 +102,7 @@ class CalculateCashbackUseCase {
             categoryName: e.categoryName,
             percentBps: e.percentBps,
             lifetimeType: lifetimeType,
+            status: e.status,
             cycleStartUtc: bounds.startUtc,
             cycleEndUtc: bounds.endUtc,
             grossExpenseKopecks: g,

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
+import '../../domain/entities/cashback_account_ref.dart';
 import '../../domain/entities/cashback_entry.dart';
 import '../../domain/entities/cashback_raw_models.dart';
 import '../../domain/repositories/cashback_repository.dart';
@@ -81,7 +82,9 @@ class CashbackRepositoryImpl implements CashbackRepository {
 
   @override
   Future<List<CashbackTransactionRaw>> fetchRelevantTransactions(
-    String accountId, DateTime startUtc, DateTime endUtc,
+    String accountId,
+    DateTime startUtc,
+    DateTime endUtc,
   ) async {
     try {
       final t = _db.transactions;
@@ -90,7 +93,7 @@ class CashbackRepositoryImpl implements CashbackRepository {
                 row.accountId.equals(accountId) &
                 // Правило 3: переводы исключены.
                 row.type.equalsValue(TransactionType.transfer).not() &
-                // Исключение игнорируемых (сторно удалено из продукта, enum сохранён).
+                // Исключение игнорируемых.
                 row.auditStatus.equalsValue(AuditStatus.ignored).not() &
                 // Фундаментальные фильтры P&L (ТОМ 4 §1.1): без копилок и изъятий.
                 row.savingsGoalId.isNull() &
@@ -146,6 +149,50 @@ class CashbackRepositoryImpl implements CashbackRepository {
       ..addColumns([countExp])
       ..where(_db.transactions.accountId.equals(accountId));
     return query.map((row) => row.read(countExp) ?? 0).watchSingle();
+  }
+
+  @override
+  Future<List<CashbackAccountRef>> getMyAccounts(String userId) async {
+    try {
+      final rows = await _dao.getMyAccounts(userId);
+      return rows.map(_toRef).toList();
+    } catch (e, st) {
+      _logger.e('CashbackRepository.getMyAccounts failed', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<CashbackAccountRef>> getFamilyAccounts(String spaceId) async {
+    try {
+      final rows = await _dao.getFamilyAccounts(spaceId);
+      return rows.map(_toRef).toList();
+    } catch (e, st) {
+      _logger.e('CashbackRepository.getFamilyAccounts failed', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  @override
+  Stream<String> watchCashbackRelevantChanges() =>
+      _dao.watchCashbackRelevantChanges();
+
+  @override
+  Future<void> updateEntryStatus(String id, String status) async {
+    try {
+      await _dao.updateStatus(id, status);
+    } catch (e, st) {
+      _logger.e('CashbackRepository.updateEntryStatus failed', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  CashbackAccountRef _toRef(Account r) {
+    return CashbackAccountRef(
+      id: r.id,
+      name: r.customName.isNotEmpty ? r.customName : r.bankName,
+      currency: r.currency,
+    );
   }
 
   CashbackEntry _mapEntry(CashbackMatrixDb r) {

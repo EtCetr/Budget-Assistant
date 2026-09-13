@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
 import '../../domain/entities/cashback_category_summary.dart';
+import '../providers/cashback_providers.dart';
 
 /// Карточка категории кэшбэка.
 ///
-/// Все суммы проходят через PrivacyFormatter (ТОМ 6 §6.6):
-/// в режимах partial/hidden вместо сумм отображается маскировка.
-/// Хардкод маски в виджете запрещён — только через formatter.
+/// Все суммы проходят через PrivacyFormatter (ТОМ 6 §6.6).
+/// Чип статуса переключает potential <-> approved тапом.
 class CashbackEntryCard extends ConsumerWidget {
   const CashbackEntryCard({super.key, required this.summary, this.onDelete});
 
@@ -17,6 +17,10 @@ class CashbackEntryCard extends ConsumerWidget {
   String get _lifetimeLabel =>
       summary.lifetimeType == 'weekly' ? 'Недельный' : 'Месячный';
 
+  double get _percent => summary.percentBps / 100;
+
+  bool get _approved => summary.status == 'approved';
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formatter = ref.watch(privacyFormatterProvider);
@@ -24,7 +28,6 @@ class CashbackEntryCard extends ConsumerWidget {
 
     String money(int kopecks) =>
         formatter.formatAmount(kopecks, summary.currency, mode);
-    final percentLabel = formatter.formatPercentBps(summary.percentBps, mode);
 
     final theme = Theme.of(context);
     return Card(
@@ -40,10 +43,17 @@ class CashbackEntryCard extends ConsumerWidget {
                   child: Text(summary.categoryName,
                       style: theme.textTheme.titleMedium),
                 ),
-                Chip(
-                  label: Text(percentLabel.isEmpty
-                      ? _lifetimeLabel
-                      : '$_lifetimeLabel $percentLabel'),
+                Chip(label: Text('$_lifetimeLabel ${_percent.toStringAsFixed(1)}%')),
+                const SizedBox(width: 4),
+                ActionChip(
+                  avatar: Icon(
+                    _approved ? Icons.verified : Icons.hourglass_bottom,
+                    size: 14,
+                    color: _approved ? Colors.green : Colors.orange,
+                  ),
+                  label: Text(_approved ? 'Подтверждён' : 'Начислен'),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () => _toggleStatus(context, ref),
                 ),
                 if (onDelete != null)
                   IconButton(
@@ -54,7 +64,7 @@ class CashbackEntryCard extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             _row('Траты (брутто)', money(summary.grossExpenseKopecks)),
-            _row('Возвраты (вычитаются)', money(summary.refundKopecks)),
+            _row('Возвраты', '- ${money(summary.refundKopecks)}'),
             _row('NET-база', money(summary.netExpenseKopecks)),
             const Divider(),
             Row(
@@ -74,6 +84,33 @@ class CashbackEntryCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _toggleStatus(BuildContext context, WidgetRef ref) async {
+    final next = _approved ? 'potential' : 'approved';
+    try {
+      final result = await ref.read(updateCashbackEntryStatusUseCaseProvider)(
+        entryId: summary.entryId,
+        status: next,
+      );
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result.isSuccess
+                ? (next == 'approved'
+                    ? 'Кэшбэк подтверждён'
+                    : 'Возвращено в «Начислен»')
+                : 'Не удалось изменить статус',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Не удалось изменить статус')),
+      );
+    }
   }
 
   Widget _row(String label, String value) {

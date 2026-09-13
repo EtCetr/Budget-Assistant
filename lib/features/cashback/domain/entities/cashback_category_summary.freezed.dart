@@ -14,7 +14,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CashbackCategorySummary {
 
- String get entryId; String get accountId; String? get categoryId; String get categoryName; int get percentBps; String get lifetimeType; DateTime get cycleStartUtc; DateTime get cycleEndUtc; int get grossExpenseKopecks; int get refundKopecks; int get netExpenseKopecks; int get cashbackKopecks; String get currency;
+ String get entryId; String get accountId; String? get categoryId; String get categoryName; int get percentBps; String get lifetimeType;/// 'potential' | 'approved' (ТОМ 2 §14.3).
+ String get status; DateTime get cycleStartUtc; DateTime get cycleEndUtc; int get grossExpenseKopecks; int get refundKopecks; int get netExpenseKopecks; int get cashbackKopecks; String get currency;
 /// Create a copy of CashbackCategorySummary
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +26,16 @@ $CashbackCategorySummaryCopyWith<CashbackCategorySummary> get copyWith => _$Cash
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CashbackCategorySummary&&(identical(other.entryId, entryId) || other.entryId == entryId)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.percentBps, percentBps) || other.percentBps == percentBps)&&(identical(other.lifetimeType, lifetimeType) || other.lifetimeType == lifetimeType)&&(identical(other.cycleStartUtc, cycleStartUtc) || other.cycleStartUtc == cycleStartUtc)&&(identical(other.cycleEndUtc, cycleEndUtc) || other.cycleEndUtc == cycleEndUtc)&&(identical(other.grossExpenseKopecks, grossExpenseKopecks) || other.grossExpenseKopecks == grossExpenseKopecks)&&(identical(other.refundKopecks, refundKopecks) || other.refundKopecks == refundKopecks)&&(identical(other.netExpenseKopecks, netExpenseKopecks) || other.netExpenseKopecks == netExpenseKopecks)&&(identical(other.cashbackKopecks, cashbackKopecks) || other.cashbackKopecks == cashbackKopecks)&&(identical(other.currency, currency) || other.currency == currency));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CashbackCategorySummary&&(identical(other.entryId, entryId) || other.entryId == entryId)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.percentBps, percentBps) || other.percentBps == percentBps)&&(identical(other.lifetimeType, lifetimeType) || other.lifetimeType == lifetimeType)&&(identical(other.status, status) || other.status == status)&&(identical(other.cycleStartUtc, cycleStartUtc) || other.cycleStartUtc == cycleStartUtc)&&(identical(other.cycleEndUtc, cycleEndUtc) || other.cycleEndUtc == cycleEndUtc)&&(identical(other.grossExpenseKopecks, grossExpenseKopecks) || other.grossExpenseKopecks == grossExpenseKopecks)&&(identical(other.refundKopecks, refundKopecks) || other.refundKopecks == refundKopecks)&&(identical(other.netExpenseKopecks, netExpenseKopecks) || other.netExpenseKopecks == netExpenseKopecks)&&(identical(other.cashbackKopecks, cashbackKopecks) || other.cashbackKopecks == cashbackKopecks)&&(identical(other.currency, currency) || other.currency == currency));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,entryId,accountId,categoryId,categoryName,percentBps,lifetimeType,cycleStartUtc,cycleEndUtc,grossExpenseKopecks,refundKopecks,netExpenseKopecks,cashbackKopecks,currency);
+int get hashCode => Object.hash(runtimeType,entryId,accountId,categoryId,categoryName,percentBps,lifetimeType,status,cycleStartUtc,cycleEndUtc,grossExpenseKopecks,refundKopecks,netExpenseKopecks,cashbackKopecks,currency);
 
 @override
 String toString() {
-  return 'CashbackCategorySummary(entryId: $entryId, accountId: $accountId, categoryId: $categoryId, categoryName: $categoryName, percentBps: $percentBps, lifetimeType: $lifetimeType, cycleStartUtc: $cycleStartUtc, cycleEndUtc: $cycleEndUtc, grossExpenseKopecks: $grossExpenseKopecks, refundKopecks: $refundKopecks, netExpenseKopecks: $netExpenseKopecks, cashbackKopecks: $cashbackKopecks, currency: $currency)';
+  return 'CashbackCategorySummary(entryId: $entryId, accountId: $accountId, categoryId: $categoryId, categoryName: $categoryName, percentBps: $percentBps, lifetimeType: $lifetimeType, status: $status, cycleStartUtc: $cycleStartUtc, cycleEndUtc: $cycleEndUtc, grossExpenseKopecks: $grossExpenseKopecks, refundKopecks: $refundKopecks, netExpenseKopecks: $netExpenseKopecks, cashbackKopecks: $cashbackKopecks, currency: $currency)';
 }
 
 
@@ -45,7 +46,7 @@ abstract mixin class $CashbackCategorySummaryCopyWith<$Res>  {
   factory $CashbackCategorySummaryCopyWith(CashbackCategorySummary value, $Res Function(CashbackCategorySummary) _then) = _$CashbackCategorySummaryCopyWithImpl;
 @useResult
 $Res call({
- String entryId, String accountId, String? categoryId, String categoryName, int percentBps, String lifetimeType, DateTime cycleStartUtc, DateTime cycleEndUtc, int grossExpenseKopecks, int refundKopecks, int netExpenseKopecks, int cashbackKopecks, String currency
+ String entryId, String accountId, String? categoryId, String categoryName, int percentBps, String lifetimeType, String status, DateTime cycleStartUtc, DateTime cycleEndUtc, int grossExpenseKopecks, int refundKopecks, int netExpenseKopecks, int cashbackKopecks, String currency
 });
 
 
@@ -62,7 +63,7 @@ class _$CashbackCategorySummaryCopyWithImpl<$Res>
 
 /// Create a copy of CashbackCategorySummary
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? entryId = null,Object? accountId = null,Object? categoryId = freezed,Object? categoryName = null,Object? percentBps = null,Object? lifetimeType = null,Object? cycleStartUtc = null,Object? cycleEndUtc = null,Object? grossExpenseKopecks = null,Object? refundKopecks = null,Object? netExpenseKopecks = null,Object? cashbackKopecks = null,Object? currency = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? entryId = null,Object? accountId = null,Object? categoryId = freezed,Object? categoryName = null,Object? percentBps = null,Object? lifetimeType = null,Object? status = null,Object? cycleStartUtc = null,Object? cycleEndUtc = null,Object? grossExpenseKopecks = null,Object? refundKopecks = null,Object? netExpenseKopecks = null,Object? cashbackKopecks = null,Object? currency = null,}) {
   return _then(_self.copyWith(
 entryId: null == entryId ? _self.entryId : entryId // ignore: cast_nullable_to_non_nullable
 as String,accountId: null == accountId ? _self.accountId : accountId // ignore: cast_nullable_to_non_nullable
@@ -70,6 +71,7 @@ as String,categoryId: freezed == categoryId ? _self.categoryId : categoryId // i
 as String?,categoryName: null == categoryName ? _self.categoryName : categoryName // ignore: cast_nullable_to_non_nullable
 as String,percentBps: null == percentBps ? _self.percentBps : percentBps // ignore: cast_nullable_to_non_nullable
 as int,lifetimeType: null == lifetimeType ? _self.lifetimeType : lifetimeType // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,cycleStartUtc: null == cycleStartUtc ? _self.cycleStartUtc : cycleStartUtc // ignore: cast_nullable_to_non_nullable
 as DateTime,cycleEndUtc: null == cycleEndUtc ? _self.cycleEndUtc : cycleEndUtc // ignore: cast_nullable_to_non_nullable
 as DateTime,grossExpenseKopecks: null == grossExpenseKopecks ? _self.grossExpenseKopecks : grossExpenseKopecks // ignore: cast_nullable_to_non_nullable
@@ -157,7 +159,7 @@ return $default(_that);case _:
 
 
 class _CashbackCategorySummary implements CashbackCategorySummary {
-  const _CashbackCategorySummary({required this.entryId, required this.accountId, this.categoryId, required this.categoryName, required this.percentBps, required this.lifetimeType, required this.cycleStartUtc, required this.cycleEndUtc, required this.grossExpenseKopecks, required this.refundKopecks, required this.netExpenseKopecks, required this.cashbackKopecks, required this.currency});
+  const _CashbackCategorySummary({required this.entryId, required this.accountId, this.categoryId, required this.categoryName, required this.percentBps, required this.lifetimeType, required this.status, required this.cycleStartUtc, required this.cycleEndUtc, required this.grossExpenseKopecks, required this.refundKopecks, required this.netExpenseKopecks, required this.cashbackKopecks, required this.currency});
   
 
 @override final  String entryId;
@@ -166,6 +168,8 @@ class _CashbackCategorySummary implements CashbackCategorySummary {
 @override final  String categoryName;
 @override final  int percentBps;
 @override final  String lifetimeType;
+/// 'potential' | 'approved' (ТОМ 2 §14.3).
+@override final  String status;
 @override final  DateTime cycleStartUtc;
 @override final  DateTime cycleEndUtc;
 @override final  int grossExpenseKopecks;
@@ -184,16 +188,16 @@ _$CashbackCategorySummaryCopyWith<_CashbackCategorySummary> get copyWith => __$C
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CashbackCategorySummary&&(identical(other.entryId, entryId) || other.entryId == entryId)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.percentBps, percentBps) || other.percentBps == percentBps)&&(identical(other.lifetimeType, lifetimeType) || other.lifetimeType == lifetimeType)&&(identical(other.cycleStartUtc, cycleStartUtc) || other.cycleStartUtc == cycleStartUtc)&&(identical(other.cycleEndUtc, cycleEndUtc) || other.cycleEndUtc == cycleEndUtc)&&(identical(other.grossExpenseKopecks, grossExpenseKopecks) || other.grossExpenseKopecks == grossExpenseKopecks)&&(identical(other.refundKopecks, refundKopecks) || other.refundKopecks == refundKopecks)&&(identical(other.netExpenseKopecks, netExpenseKopecks) || other.netExpenseKopecks == netExpenseKopecks)&&(identical(other.cashbackKopecks, cashbackKopecks) || other.cashbackKopecks == cashbackKopecks)&&(identical(other.currency, currency) || other.currency == currency));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CashbackCategorySummary&&(identical(other.entryId, entryId) || other.entryId == entryId)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.percentBps, percentBps) || other.percentBps == percentBps)&&(identical(other.lifetimeType, lifetimeType) || other.lifetimeType == lifetimeType)&&(identical(other.status, status) || other.status == status)&&(identical(other.cycleStartUtc, cycleStartUtc) || other.cycleStartUtc == cycleStartUtc)&&(identical(other.cycleEndUtc, cycleEndUtc) || other.cycleEndUtc == cycleEndUtc)&&(identical(other.grossExpenseKopecks, grossExpenseKopecks) || other.grossExpenseKopecks == grossExpenseKopecks)&&(identical(other.refundKopecks, refundKopecks) || other.refundKopecks == refundKopecks)&&(identical(other.netExpenseKopecks, netExpenseKopecks) || other.netExpenseKopecks == netExpenseKopecks)&&(identical(other.cashbackKopecks, cashbackKopecks) || other.cashbackKopecks == cashbackKopecks)&&(identical(other.currency, currency) || other.currency == currency));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,entryId,accountId,categoryId,categoryName,percentBps,lifetimeType,cycleStartUtc,cycleEndUtc,grossExpenseKopecks,refundKopecks,netExpenseKopecks,cashbackKopecks,currency);
+int get hashCode => Object.hash(runtimeType,entryId,accountId,categoryId,categoryName,percentBps,lifetimeType,status,cycleStartUtc,cycleEndUtc,grossExpenseKopecks,refundKopecks,netExpenseKopecks,cashbackKopecks,currency);
 
 @override
 String toString() {
-  return 'CashbackCategorySummary(entryId: $entryId, accountId: $accountId, categoryId: $categoryId, categoryName: $categoryName, percentBps: $percentBps, lifetimeType: $lifetimeType, cycleStartUtc: $cycleStartUtc, cycleEndUtc: $cycleEndUtc, grossExpenseKopecks: $grossExpenseKopecks, refundKopecks: $refundKopecks, netExpenseKopecks: $netExpenseKopecks, cashbackKopecks: $cashbackKopecks, currency: $currency)';
+  return 'CashbackCategorySummary(entryId: $entryId, accountId: $accountId, categoryId: $categoryId, categoryName: $categoryName, percentBps: $percentBps, lifetimeType: $lifetimeType, status: $status, cycleStartUtc: $cycleStartUtc, cycleEndUtc: $cycleEndUtc, grossExpenseKopecks: $grossExpenseKopecks, refundKopecks: $refundKopecks, netExpenseKopecks: $netExpenseKopecks, cashbackKopecks: $cashbackKopecks, currency: $currency)';
 }
 
 
@@ -204,7 +208,7 @@ abstract mixin class _$CashbackCategorySummaryCopyWith<$Res> implements $Cashbac
   factory _$CashbackCategorySummaryCopyWith(_CashbackCategorySummary value, $Res Function(_CashbackCategorySummary) _then) = __$CashbackCategorySummaryCopyWithImpl;
 @override @useResult
 $Res call({
- String entryId, String accountId, String? categoryId, String categoryName, int percentBps, String lifetimeType, DateTime cycleStartUtc, DateTime cycleEndUtc, int grossExpenseKopecks, int refundKopecks, int netExpenseKopecks, int cashbackKopecks, String currency
+ String entryId, String accountId, String? categoryId, String categoryName, int percentBps, String lifetimeType, String status, DateTime cycleStartUtc, DateTime cycleEndUtc, int grossExpenseKopecks, int refundKopecks, int netExpenseKopecks, int cashbackKopecks, String currency
 });
 
 
@@ -221,7 +225,7 @@ class __$CashbackCategorySummaryCopyWithImpl<$Res>
 
 /// Create a copy of CashbackCategorySummary
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? entryId = null,Object? accountId = null,Object? categoryId = freezed,Object? categoryName = null,Object? percentBps = null,Object? lifetimeType = null,Object? cycleStartUtc = null,Object? cycleEndUtc = null,Object? grossExpenseKopecks = null,Object? refundKopecks = null,Object? netExpenseKopecks = null,Object? cashbackKopecks = null,Object? currency = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? entryId = null,Object? accountId = null,Object? categoryId = freezed,Object? categoryName = null,Object? percentBps = null,Object? lifetimeType = null,Object? status = null,Object? cycleStartUtc = null,Object? cycleEndUtc = null,Object? grossExpenseKopecks = null,Object? refundKopecks = null,Object? netExpenseKopecks = null,Object? cashbackKopecks = null,Object? currency = null,}) {
   return _then(_CashbackCategorySummary(
 entryId: null == entryId ? _self.entryId : entryId // ignore: cast_nullable_to_non_nullable
 as String,accountId: null == accountId ? _self.accountId : accountId // ignore: cast_nullable_to_non_nullable
@@ -229,6 +233,7 @@ as String,categoryId: freezed == categoryId ? _self.categoryId : categoryId // i
 as String?,categoryName: null == categoryName ? _self.categoryName : categoryName // ignore: cast_nullable_to_non_nullable
 as String,percentBps: null == percentBps ? _self.percentBps : percentBps // ignore: cast_nullable_to_non_nullable
 as int,lifetimeType: null == lifetimeType ? _self.lifetimeType : lifetimeType // ignore: cast_nullable_to_non_nullable
+as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String,cycleStartUtc: null == cycleStartUtc ? _self.cycleStartUtc : cycleStartUtc // ignore: cast_nullable_to_non_nullable
 as DateTime,cycleEndUtc: null == cycleEndUtc ? _self.cycleEndUtc : cycleEndUtc // ignore: cast_nullable_to_non_nullable
 as DateTime,grossExpenseKopecks: null == grossExpenseKopecks ? _self.grossExpenseKopecks : grossExpenseKopecks // ignore: cast_nullable_to_non_nullable

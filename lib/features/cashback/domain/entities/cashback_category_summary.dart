@@ -12,6 +12,8 @@ abstract class CashbackCategorySummary with _$CashbackCategorySummary {
     required String categoryName,
     required int percentBps,
     required String lifetimeType,
+    /// 'potential' | 'approved' (ТОМ 2 §14.3).
+    required String status,
     required DateTime cycleStartUtc,
     required DateTime cycleEndUtc,
     required int grossExpenseKopecks,
