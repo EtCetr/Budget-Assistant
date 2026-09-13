@@ -1,5 +1,4 @@
-﻿import 'package:flutter/material.dart';
-
+import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../labels/transactions_log_labels.dart';
 
@@ -55,6 +54,36 @@ class TransactionsEmptyState extends StatelessWidget {
       subtitle: TransactionsLogLabels.errorSubtitle,
       primaryLabel: TransactionsLogLabels.retry,
       onPrimary: onRetry,
+    );
+  }
+
+  /// Семейный скоуп выбран, но пользователь не состоит ни в одной группе.
+  factory TransactionsEmptyState.noFamilyGroup({
+    required VoidCallback onCreateGroup,
+  }) {
+    return TransactionsEmptyState(
+      icon: Icons.group_add_outlined,
+      title: 'Вы не состоите ни в одной семейной группе',
+      subtitle:
+          'Создайте группу, чтобы вести общий бюджет и видеть операции семьи',
+      primaryLabel: 'Создать группу',
+      onPrimary: onCreateGroup,
+    );
+  }
+
+  /// Семейный скоуп: группа есть, но семейных операций пока нет.
+  /// Предлагаем подключить личные транзакции к группе (вариант A).
+  factory TransactionsEmptyState.noFamilyTransactions({
+    required VoidCallback onAttach,
+  }) {
+    return TransactionsEmptyState(
+      icon: Icons.family_restroom_outlined,
+      title: 'В семье пока нет операций',
+      subtitle:
+          'Можно подключить ваши личные транзакции к группе — '
+          'они станут видны всем её участникам',
+      primaryLabel: 'Подключить мои транзакции',
+      onPrimary: onAttach,
     );
   }
 

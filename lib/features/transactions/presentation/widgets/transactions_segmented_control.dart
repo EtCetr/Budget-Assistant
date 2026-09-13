@@ -1,5 +1,4 @@
-﻿import 'package:flutter/material.dart';
-
+import 'package:flutter/material.dart';
 import '../../domain/entities/transactions_filter_state.dart';
 import '../labels/transactions_log_labels.dart';
 
@@ -7,10 +6,14 @@ class TransactionsSegmentedControl extends StatelessWidget {
   const TransactionsSegmentedControl({
     super.key,
     required this.scope,
+    required this.familyLabel,
     required this.onChanged,
   });
 
   final TransactionsScope scope;
+
+  /// Имя активной семейной группы (или дефолтная подпись «Семейные»).
+  final String familyLabel;
   final ValueChanged<TransactionsScope> onChanged;
 
   @override
@@ -18,18 +21,18 @@ class TransactionsSegmentedControl extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: SegmentedButton<TransactionsScope>(
-        segments: const [
-          ButtonSegment(
+        segments: [
+          const ButtonSegment(
             value: TransactionsScope.all,
             label: Text(TransactionsLogLabels.scopeAll),
           ),
-          ButtonSegment(
+          const ButtonSegment(
             value: TransactionsScope.mine,
             label: Text(TransactionsLogLabels.scopeMine),
           ),
           ButtonSegment(
             value: TransactionsScope.family,
-            label: Text(TransactionsLogLabels.scopeFamily),
+            label: Text(familyLabel),
           ),
         ],
         selected: {scope},

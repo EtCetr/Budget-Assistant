@@ -10,13 +10,14 @@ class BudgetLimitCard extends ConsumerWidget {
   final BudgetLimit limit;
   final BalanceVisibilityMode privacyMode;
   final PrivacyFormatter formatter;
+  final String categoryName;
   final VoidCallback? onTap;
-
   const BudgetLimitCard({
     super.key,
     required this.limit,
     required this.privacyMode,
     required this.formatter,
+    required this.categoryName,
     this.onTap,
   });
 
@@ -25,7 +26,6 @@ class BudgetLimitCard extends ConsumerWidget {
     final effectiveLimitAsync = ref.watch(
       effectiveLimitForCategoryProvider(limit.categoryId),
     );
-
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: InkWell(
@@ -36,14 +36,14 @@ class BudgetLimitCard extends ConsumerWidget {
             data: (effective) {
               if (effective == null) {
                 return _buildContent(
-                  categoryName: 'Категория',
+                  categoryName: categoryName,
                   spent: 0,
                   limitAmount: limit.limitAmount,
                   percentUsed: 0,
                 );
               }
               return _buildContent(
-                categoryName: 'Категория',
+                categoryName: categoryName,
                 spent: effective.spent,
                 limitAmount: effective.effectiveTotal,
                 percentUsed: effective.percentUsed,
@@ -65,7 +65,6 @@ class BudgetLimitCard extends ConsumerWidget {
   }) {
     final spentText = formatter.formatAmount(spent, 'RUB', privacyMode);
     final limitText = formatter.formatAmount(limitAmount, 'RUB', privacyMode);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

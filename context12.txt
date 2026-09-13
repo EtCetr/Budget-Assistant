@@ -1,0 +1,2624 @@
+﻿===== FILE: lib\features\budget\presentation\screens\budget_limits_screen.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+import '../providers/budget_providers.dart';
+import '../widgets/monthly_pnl_summary_card.dart';
+import '../widgets/budget_limit_card.dart';
+
+class BudgetLimitsScreen extends ConsumerWidget {
+  const BudgetLimitsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final limitsAsync = ref.watch(budgetLimitsForCurrentMonthProvider);
+    final pnlAsync = ref.watch(monthlyPnlForCurrentMonthProvider);
+    final privacyMode = ref.watch(privacyModeProvider);
+    final formatter = ref.watch(privacyFormatterProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Р‘СЋРґР¶РµС‚ Рё Р»РёРјРёС‚С‹'),
+        centerTitle: true,
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(budgetLimitsForCurrentMonthProvider);
+          ref.invalidate(monthlyPnlForCurrentMonthProvider);
+        },
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: pnlAsync.when(
+                data: (pnl) => MonthlyPnlSummaryCard(
+                  pnl: pnl,
+                  privacyMode: privacyMode,
+                  formatter: formatter,
+                ),
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (e, _) => Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text('РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё: $e'),
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Text(
+                  'Р›РёРјРёС‚С‹ РїРѕ РєР°С‚РµРіРѕСЂРёСЏРј',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            limitsAsync.when(
+              data: (limits) {
+                if (limits.isEmpty) {
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.account_balance_wallet_outlined,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'РќРµС‚ СѓСЃС‚Р°РЅРѕРІР»РµРЅРЅС‹С… Р»РёРјРёС‚РѕРІ',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'РќР°Р¶РјРёС‚Рµ + С‡С‚РѕР±С‹ СЃРѕР·РґР°С‚СЊ Р»РёРјРёС‚',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final limit = limits[index];
+                      return BudgetLimitCard(
+                        limit: limit,
+                        privacyMode: privacyMode,
+                        formatter: formatter,
+                        onTap: () {
+                          context.push('/budget/edit/${limit.id}');
+                        },
+                      );
+                    },
+                    childCount: limits.length,
+                  ),
+                );
+              },
+              loading: () => const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, _) => SliverFillRemaining(
+                child: Center(child: Text('РћС€РёР±РєР°: $e')),
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.push('/budget/create');
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+===== FILE: lib\features\budget\domain\entities\budget_limit.dart =====
+import '../../data/models/budget_limit_model.dart';
+
+class BudgetLimit {
+  final String id;
+  final String? spaceId;
+  final String userId;
+  final String categoryId;
+  final int year;
+  final int month;
+  final int limitAmount;
+  final int alertPercent;
+  final int alertAmount;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String syncStatus;
+
+  BudgetLimit({
+    required this.id,
+    this.spaceId,
+    required this.userId,
+    required this.categoryId,
+    required this.year,
+    required this.month,
+    required this.limitAmount,
+    this.alertPercent = 80,
+    this.alertAmount = 0,
+    required this.createdAt,
+    required this.updatedAt,
+    this.syncStatus = 'pending',
+  });
+
+  factory BudgetLimit.fromModel(BudgetLimitModel model) {
+    return BudgetLimit(
+      id: model.id,
+      spaceId: model.spaceId,
+      userId: model.userId,
+      categoryId: model.categoryId,
+      year: model.year,
+      month: model.month,
+      limitAmount: model.limitAmount,
+      alertPercent: model.alertPercent,
+      alertAmount: model.alertAmount,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+      syncStatus: model.syncStatus,
+    );
+  }
+
+  BudgetLimitModel toModel() {
+    return BudgetLimitModel(
+      id: id,
+      spaceId: spaceId,
+      userId: userId,
+      categoryId: categoryId,
+      year: year,
+      month: month,
+      limitAmount: limitAmount,
+      alertPercent: alertPercent,
+      alertAmount: alertAmount,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      syncStatus: syncStatus,
+    );
+  }
+}
+
+===== FILE: lib\features\budget\domain\repositories\budget_limits_repository.dart =====
+import 'package:budget_assistant/core/errors/result.dart';
+import '../entities/budget_limit.dart';
+import '../entities/monthly_pnl.dart';
+
+abstract interface class BudgetLimitsRepository {
+  Future<List<BudgetLimit>> getForMonth({
+    required String userId,
+    String? spaceId,
+    required int year,
+    required int month,
+  });
+
+  Stream<List<BudgetLimit>> watchForMonth({
+    required String userId,
+    String? spaceId,
+    required int year,
+    required int month,
+  });
+
+  /// РџРѕР»СѓС‡РёС‚СЊ Р»РёРјРёС‚ РїРѕ РµРіРѕ ID (РґР»СЏ РїСЂРµС„РёР»Р»Р° СЌРєСЂР°РЅР° СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ).
+  Future<BudgetLimit?> getById(String id);
+
+  Future<BudgetLimit?> getForCategory({
+    required String userId,
+    String? spaceId,
+    required String categoryId,
+    required int year,
+    required int month,
+  });
+
+  Future<Result<BudgetLimit>> upsert(BudgetLimit limit);
+
+  Future<Result<void>> delete(String id);
+
+  Future<Result<MonthlyPnl>> calculateMonthlyPnl({
+    required String userId,
+    String? spaceId,
+    required int year,
+    required int month,
+    bool excludeLargeExpenses = false,
+  });
+
+  Future<Result<int>> calculateCategoryExpense({
+    required String userId,
+    String? spaceId,
+    required String categoryId,
+    required int year,
+    required int month,
+  });
+
+  /// Р РµР°РєС‚РёРІРЅС‹Р№ С‚СЂРёРіРіРµСЂ: СЌРјРёС‚РёС‚ СЃСѓРјРјР°СЂРЅС‹Р№ РѕР±СЉС‘Рј СЂРµР»РµРІР°РЅС‚РЅС‹С… С‚СЂР°РЅР·Р°РєС†РёР№
+  /// Р·Р° РјРµСЃСЏС†. Р›СЋР±РѕРµ РёР·РјРµРЅРµРЅРёРµ С‚СЂР°РЅР·Р°РєС†РёР№ (РґРѕР±Р°РІР»РµРЅРёРµ/СѓРґР°Р»РµРЅРёРµ/РїСЂР°РІРєР° СЃСѓРјРјС‹)
+  /// РјРµРЅСЏРµС‚ СЃСѓРјРјСѓ Рё РїСѓС€РёС‚ РЅРѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ вЂ” РїСЂРѕРІР°Р№РґРµСЂС‹ Р±СЋРґР¶РµС‚Р° РїРµСЂРµСЃС‡РёС‚С‹РІР°СЋС‚СЃСЏ.
+  /// РџСЂРёРјРµРЅСЏСЋС‚СЃСЏ Р¶С‘СЃС‚РєРёРµ С„РёР»СЊС‚СЂС‹ P&L (РўРћРњ 4): Р±РµР· РїРµСЂРµРІРѕРґРѕРІ/РєРѕРїРёР»РѕРє/РёР·СЉСЏС‚РёР№.
+  Stream<int> watchMonthlyTransactionChanges({
+    required String userId,
+    String? spaceId,
+    required int year,
+    required int month,
+  });
+}
+
+===== FILE: lib\features\budget\data\repositories\budget_limits_repository_impl.dart =====
+import 'package:drift/drift.dart';
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/database/app_database.dart';
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
+import 'package:budget_assistant/core/errors/failures.dart';
+import 'package:budget_assistant/core/errors/result.dart';
+import '../../domain/entities/budget_limit.dart';
+import '../../domain/entities/monthly_pnl.dart';
+import '../../domain/repositories/budget_limits_repository.dart';
+
+class BudgetLimitsRepositoryImpl implements BudgetLimitsRepository {
+  final AppDatabase _db;
+  final Logger _logger;
+
+  BudgetLimitsRepositoryImpl({required AppDatabase db, required Logger logger})
+    : _db = db,
+      _logger = logger;
+
+  @override
+  Future<List<BudgetLimit>> getForMonth({
+    required String userId,
+    String? spaceId,
+    required int year,
+    required int month,
+  }) async {
+    try {
+      final rows = await _db.budgetLimitsDao.getForMonth(
+        userId: userId,
+        spaceId: spaceId,
+        year: year,
+        month: month,
+      );
+      return rows.map(_fromDb).toList();
+    } catch (e, stack) {
+      _logger.e(
+        'Failed to get budget limits for month',
+        error: e,
+        stackTrace: stack,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Stream<List<BudgetLimit>> watchForMonth({
+    required String userId,
+    String? spaceId,
+    required int year,
+    required int month,
+  }) {
+    return _db.budgetLimitsDao
+        .watchForMonth(
+          userId: userId,
+          spaceId: spaceId,
+          year: year,
+          month: month,
+        )
+        .map((rows) => rows.map(_fromDb).toList());
+  }
+
+  @override
+  Future<BudgetLimit?> getById(String id) async {
+    try {
+      final row = await _db.budgetLimitsDao.getById(id);
+      return row == null ? null : _fromDb(row);
+    } catch (e, stack) {
+      _logger.e(
+        'Failed to get budget limit by id',
+        error: e,
+        stackTrace: stack,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<BudgetLimit?> getForCategory({
+    required String userId,
+    String? spaceId,
+    required String categoryId,
+    required int year,
+    required int month,
+  }) async {
+    try {
+      final row = await _db.budgetLimitsDao.getForCategory(
+        userId: userId,
+        spaceId: spaceId,
+        categoryId: categoryId,
+        year: year,
+        month: month,
+      );
+      return row == null ? null : _fromDb(row);
+    } catch (e, stack) {
+      _logger.e(
+        'Failed to get budget limit for category',
+        error: e,
+        stackTrace: stack,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Result<BudgetLimit>> upsert(BudgetLimit limit) async {
+    try {
+      final companion = _toCompanion(limit);
+      await _db.budgetLimitsDao.upsert(companion);
+      return Success(limit);
+    } catch (e, stack) {
+      _logger.e('Failed to upsert budget limit', error: e, stackTrace: stack);
+      return Error(Failure.database(e.toString(), stack));
+    }
+  }
+
+  @override
+  Future<Result<void>> delete(String id) async {
+    try {
+      await _db.budgetLimitsDao.deleteById(id);
+      return const Success(null);
+    } catch (e, stack) {
+      _logger.e('Failed to delete budget limit', error: e, stackTrace: stack);
+      return Error(Failure.database(e.toString(), stack));
+    }
+  }
+
+  @override
+  Future<Result<MonthlyPnl>> calculateMonthlyPnl({
+    required String userId,
+    String? spaceId,
+    required int year,
+    required int month,
+    bool excludeLargeExpenses = false,
+  }) async {
+    try {
+      final localStart = DateTime(year, month, 1);
+      final localEnd = DateTime(
+        year,
+        month + 1,
+        1,
+      ).subtract(const Duration(seconds: 1));
+      final utcStart = localStart.toUtc();
+      final utcEnd = localEnd.toUtc();
+
+      final t = _db.transactions;
+
+      Expression<bool> filter =
+          t.userId.equals(userId) &
+          t.date.isBiggerOrEqualValue(utcStart) &
+          t.date.isSmallerOrEqualValue(utcEnd) &
+          t.type.equals(TransactionType.transfer.name).not() &
+          t.savingsGoalId.isNull() &
+          t.isWithdrawal.equals(false) &
+          t.auditStatus.equals(AuditStatus.ignored.name).not();
+
+      if (spaceId != null) {
+        filter = filter & t.spaceId.equals(spaceId);
+      }
+
+      if (excludeLargeExpenses) {
+        filter = filter & t.isLargeExpense.equals(false);
+      }
+
+      final incomeQuery = _db.selectOnly(t)..addColumns([t.amount.sum()]);
+      incomeQuery.where(filter & t.type.equals(TransactionType.income.name));
+      final incomeResult = await incomeQuery.getSingle();
+      final totalIncome = incomeResult.read(t.amount.sum()) ?? 0;
+
+      final expenseQuery = _db.selectOnly(t)
+        ..addColumns([t.amount.sum(), t.id.count()]);
+      expenseQuery.where(filter & t.type.equals(TransactionType.expense.name));
+      final expenseResult = await expenseQuery.getSingle();
+      final totalExpense = expenseResult.read(t.amount.sum()) ?? 0;
+      final transactionCount = expenseResult.read(t.id.count()) ?? 0;
+
+      int savingsRate = 0;
+      if (totalIncome > 0) {
+        savingsRate = ((totalIncome - totalExpense) * 100) ~/ totalIncome;
+      }
+
+      return Success(
+        MonthlyPnl(
+          year: year,
+          month: month,
+          totalIncome: totalIncome,
+          totalExpense: totalExpense,
+          savingsRate: savingsRate,
+          transactionCount: transactionCount,
+        ),
+      );
+    } catch (e, stack) {
+      _logger.e('Failed to calculate monthly PnL', error: e, stackTrace: stack);
+      return Error(Failure.database(e.toString(), stack));
+    }
+  }
+
+  @override
+  Future<Result<int>> calculateCategoryExpense({
+    required String userId,
+    String? spaceId,
+    required String categoryId,
+    required int year,
+    required int month,
+  }) async {
+    try {
+      final localStart = DateTime(year, month, 1);
+      final localEnd = DateTime(
+        year,
+        month + 1,
+        1,
+      ).subtract(const Duration(seconds: 1));
+      final utcStart = localStart.toUtc();
+      final utcEnd = localEnd.toUtc();
+
+      final t = _db.transactions;
+
+      Expression<bool> filter =
+          t.userId.equals(userId) &
+          t.date.isBiggerOrEqualValue(utcStart) &
+          t.date.isSmallerOrEqualValue(utcEnd) &
+          t.type.equals(TransactionType.expense.name) &
+          t.customCategoryId.equals(categoryId) &
+          t.savingsGoalId.isNull() &
+          t.isWithdrawal.equals(false) &
+          t.auditStatus.equals(AuditStatus.ignored.name).not();
+
+      if (spaceId != null) {
+        filter = filter & t.spaceId.equals(spaceId);
+      }
+
+      final query = _db.selectOnly(t)..addColumns([t.amount.sum()]);
+      query.where(filter);
+      final result = await query.getSingle();
+      final total = result.read(t.amount.sum()) ?? 0;
+
+      return Success(total);
+    } catch (e, stack) {
+      _logger.e(
+        'Failed to calculate category expense',
+        error: e,
+        stackTrace: stack,
+      );
+      return Error(Failure.database(e.toString(), stack));
+    }
+  }
+
+  @override
+  Stream<int> watchMonthlyTransactionChanges({
+    required String userId,
+    String? spaceId,
+    required int year,
+    required int month,
+  }) {
+    try {
+      final localStart = DateTime(year, month, 1);
+      final localEnd = DateTime(
+        year,
+        month + 1,
+        1,
+      ).subtract(const Duration(seconds: 1));
+      final utcStart = localStart.toUtc();
+      final utcEnd = localEnd.toUtc();
+
+      final t = _db.transactions;
+
+      Expression<bool> filter =
+          t.userId.equals(userId) &
+          t.date.isBiggerOrEqualValue(utcStart) &
+          t.date.isSmallerOrEqualValue(utcEnd) &
+          t.type.equals(TransactionType.transfer.name).not() &
+          t.savingsGoalId.isNull() &
+          t.isWithdrawal.equals(false) &
+          t.auditStatus.equals(AuditStatus.ignored.name).not();
+
+      if (spaceId != null) {
+        filter = filter & t.spaceId.equals(spaceId);
+      }
+
+      final query = _db.selectOnly(t)..addColumns([t.id.count()]);
+      query.where(filter);
+
+      // Р’РђР–РќРћ: РІРѕР·РІСЂР°С‰Р°РµРј РЅРµ Р°РіСЂРµРіР°С‚ (СЃСѓРјРјР° РЅРµ РјРµРЅСЏРµС‚СЃСЏ РїСЂРё СЃРјРµРЅРµ РєР°С‚РµРіРѕСЂРёРё),
+      // Р° СѓРЅРёРєР°Р»СЊРЅСѓСЋ РјРµС‚РєСѓ РІСЂРµРјРµРЅРё. Р›СЋР±Р°СЏ Р·Р°РїРёСЃСЊ РІ С‚Р°Р±Р»РёС†Сѓ С‚СЂР°РЅР·Р°РєС†РёР№
+      // (РґРѕР±Р°РІР»РµРЅРёРµ / РїСЂР°РІРєР° СЃСѓРјРјС‹ / СЃРјРµРЅР° РєР°С‚РµРіРѕСЂРёРё / СѓРґР°Р»РµРЅРёРµ) Р·Р°СЃС‚Р°РІР»СЏРµС‚
+      // Drift РїРµСЂРµРІС‹РїРѕР»РЅРёС‚СЊ Р·Р°РїСЂРѕСЃ, Р° РјРµС‚РєР° РІСЂРµРјРµРЅРё РіР°СЂР°РЅС‚РёСЂСѓРµС‚, С‡С‚Рѕ Р·РЅР°С‡РµРЅРёРµ
+      // Р±СѓРґРµС‚ РЅРѕРІС‹Рј Рё Riverpod РїРµСЂРµСЃС‡РёС‚Р°РµС‚ Р·Р°РІРёСЃРёРјС‹Рµ РїСЂРѕРІР°Р№РґРµСЂС‹.
+      return query.watch().map((rows) {
+        return DateTime.now().microsecondsSinceEpoch;
+      });
+    } catch (e, stack) {
+      _logger.e(
+        'Failed to watch monthly transaction changes',
+        error: e,
+        stackTrace: stack,
+      );
+      return Stream.value(0);
+    }
+  }
+
+  BudgetLimitsCompanion _toCompanion(BudgetLimit limit) {
+    return BudgetLimitsCompanion(
+      id: Value(limit.id),
+      spaceId: Value(limit.spaceId),
+      userId: Value(limit.userId),
+      categoryId: Value(limit.categoryId),
+      year: Value(limit.year),
+      month: Value(limit.month),
+      limitAmount: Value(limit.limitAmount),
+      alertPercent: Value(limit.alertPercent),
+      alertAmount: Value(limit.alertAmount),
+      createdAt: Value(limit.createdAt),
+      updatedAt: Value(limit.updatedAt),
+      syncStatus: Value(limit.syncStatus),
+    );
+  }
+
+  BudgetLimit _fromDb(BudgetLimitDb db) {
+    return BudgetLimit(
+      id: db.id,
+      spaceId: db.spaceId,
+      userId: db.userId,
+      categoryId: db.categoryId,
+      year: db.year,
+      month: db.month,
+      limitAmount: db.limitAmount,
+      alertPercent: db.alertPercent,
+      alertAmount: db.alertAmount,
+      createdAt: db.createdAt,
+      updatedAt: db.updatedAt,
+      syncStatus: db.syncStatus,
+    );
+  }
+}
+
+===== FILE: lib\features\transactions\presentation\screens\transactions_log_screen.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../features/privacy/presentation/providers/privacy_mode_provider.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/pending_sync_indicator.dart';
+import '../../../../core/widgets/skeleton_shimmer.dart';
+import '../../../privacy/domain/models/balance_visibility_mode.dart';
+import '../../domain/entities/transactions_filter_state.dart';
+import '../labels/transactions_log_labels.dart';
+import '../providers/transactions_log_providers.dart';
+import '../widgets/fab_create_menu.dart';
+import '../widgets/transactions_empty_state.dart';
+import '../widgets/transactions_filter_chip_group.dart';
+import '../widgets/transactions_list.dart';
+import '../widgets/transactions_segmented_control.dart';
+
+class TransactionsLogScreen extends ConsumerWidget {
+  const TransactionsLogScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final logState = ref.watch(transactionsLogProvider);
+    final filter = ref.watch(transactionsFilterProvider);
+    final hasPendingAsync = ref.watch(hasPendingSyncProvider);
+    final hasPending = hasPendingAsync.value ?? false;
+    final privacyMode = ref.watch(privacyModeProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(TransactionsLogLabels.title),
+        actions: [
+          if (hasPending)
+            const Padding(
+              padding: EdgeInsets.only(right: 8),
+              child: Center(child: PendingSyncIndicator()),
+            ),
+          IconButton(
+            tooltip: 'Search',
+            icon: const Icon(Icons.search),
+            onPressed: () => _showSearchSheet(context, ref),
+          ),
+          GestureDetector(
+            onTap: () => _togglePrivacyQuick(ref, privacyMode),
+            onLongPress: () => _showPrivacySheet(context, ref),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Icon(
+                privacyMode == BalanceVisibilityMode.hidden
+                    ? Icons.visibility_off
+                    : Icons.visibility,
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          TransactionsSegmentedControl(
+            scope: filter.scope,
+            onChanged: (scope) {
+              HapticFeedback.selectionClick();
+              ref.read(transactionsFilterProvider.notifier).setScope(scope);
+            },
+          ),
+          TransactionsFilterChipGroup(filter: filter),
+          Expanded(child: _buildBody(context, ref, logState, filter)),
+        ],
+      ),
+      floatingActionButton: const FabCreateMenu(),
+    );
+  }
+
+  Widget _buildBody(
+    BuildContext context,
+    WidgetRef ref,
+    TransactionsLogState state,
+    TransactionsFilterState filter,
+  ) {
+    return RefreshIndicator(
+      color: AppColors.colorFAB,
+      backgroundColor: AppColors.surfaceCard,
+      onRefresh: () => _onRefresh(context, ref),
+      child: state.groups.when(
+        loading: () => const TransactionsLogSkeleton(),
+        error: (error, stack) {
+          return TransactionsEmptyState.error(
+            onRetry: () => ref.invalidate(transactionsLogProvider),
+          );
+        },
+        data: (groups) {
+          if (groups.isEmpty) {
+            if (filter.hasActiveFilters) {
+              return TransactionsEmptyState.filtered(
+                onReset: () {
+                  HapticFeedback.mediumImpact();
+                  ref.read(transactionsFilterProvider.notifier).reset();
+                },
+              );
+            }
+
+            return TransactionsEmptyState.noData(
+              onAdd: () => showFabCreateMenu(context),
+              onImport: () => context.push('/import/onboarding'),
+            );
+          }
+
+          return TransactionsList(
+            groups: groups,
+            hasMore: state.hasMore,
+            isLoadingMore: state.isLoadingMore,
+            onLoadMore: () =>
+                ref.read(transactionsLogProvider.notifier).loadMore(),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _onRefresh(BuildContext context, WidgetRef ref) async {
+    HapticFeedback.lightImpact();
+
+    try {
+      final syncedCount = await ref.read(syncServiceProvider).forceSyncNow();
+
+      ref.invalidate(transactionsLogProvider);
+      ref.invalidate(hasPendingSyncProvider);
+
+      if (!context.mounted) return;
+
+      HapticFeedback.mediumImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${TransactionsLogLabels.syncSuccess}: $syncedCount'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+
+      HapticFeedback.vibrate();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(TransactionsLogLabels.syncError)),
+      );
+    }
+  }
+
+  void _togglePrivacyQuick(WidgetRef ref, BalanceVisibilityMode current) {
+    HapticFeedback.lightImpact();
+
+    final next = current == BalanceVisibilityMode.visible
+        ? BalanceVisibilityMode.partial
+        : BalanceVisibilityMode.visible;
+
+    ref.read(privacyModeProvider.notifier).setMode(next);
+  }
+
+  void _showSearchSheet(BuildContext context, WidgetRef ref) {
+    final controller = TextEditingController(
+      text: ref.read(transactionsFilterProvider).search,
+    );
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: TransactionsLogLabels.searchHint,
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(sheetContext).pop(),
+                      child: const Text(TransactionsLogLabels.cancel),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        ref
+                            .read(transactionsFilterProvider.notifier)
+                            .setSearch(controller.text);
+                        Navigator.of(sheetContext).pop();
+                      },
+                      child: const Text(TransactionsLogLabels.apply),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showPrivacySheet(BuildContext context, WidgetRef ref) {
+    final current = ref.read(privacyModeProvider);
+
+    showModalBottomSheet(
+      context: context,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                selected: current == BalanceVisibilityMode.visible,
+                leading: const Icon(Icons.visibility),
+                title: const Text(TransactionsLogLabels.visible),
+                onTap: () {
+                  ref
+                      .read(privacyModeProvider.notifier)
+                      .setMode(BalanceVisibilityMode.visible);
+                  Navigator.of(sheetContext).pop();
+                },
+              ),
+              ListTile(
+                selected: current == BalanceVisibilityMode.partial,
+                leading: const Icon(Icons.visibility_outlined),
+                title: const Text(TransactionsLogLabels.partial),
+                onTap: () {
+                  ref
+                      .read(privacyModeProvider.notifier)
+                      .setMode(BalanceVisibilityMode.partial);
+                  Navigator.of(sheetContext).pop();
+                },
+              ),
+              ListTile(
+                selected: current == BalanceVisibilityMode.hidden,
+                leading: const Icon(Icons.visibility_off),
+                title: const Text(TransactionsLogLabels.hidden),
+                onTap: () {
+                  ref
+                      .read(privacyModeProvider.notifier)
+                      .setMode(BalanceVisibilityMode.hidden);
+                  Navigator.of(sheetContext).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+===== FILE: lib\features\transactions\domain\entities\transactions_filter_state.dart =====
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'transactions_filter_state.freezed.dart';
+
+enum TransactionsScope { all, mine, family }
+
+enum TransactionTypeFilter { all, expense, income, transfer }
+
+enum TransactionsPeriodPreset { all, today, week, month, year, custom }
+
+@freezed
+abstract class TransactionsFilterState with _$TransactionsFilterState {
+  const factory TransactionsFilterState({
+    @Default(TransactionsScope.all) TransactionsScope scope,
+    @Default(TransactionTypeFilter.all) TransactionTypeFilter type,
+    @Default(<String>[]) List<String> categoryIds,
+    @Default(<String>[]) List<String> accountIds,
+    @Default(TransactionsPeriodPreset.all) TransactionsPeriodPreset period,
+    DateTime? customFrom,
+    DateTime? customTo,
+    int? amountFromKopecks,
+    int? amountToKopecks,
+    @Default(false) bool onlyWithReceipt,
+    @Default(false) bool onlySplit,
+    @Default(false) bool onlyDebts,
+    @Default(false) bool excludeOwn,
+    @Default(false) bool excludeLargeExpenses,
+    @Default('') String search,
+  }) = _TransactionsFilterState;
+}
+
+extension TransactionsFilterStateX on TransactionsFilterState {
+  bool get hasActiveFilters {
+    return type != TransactionTypeFilter.all ||
+        categoryIds.isNotEmpty ||
+        accountIds.isNotEmpty ||
+        period != TransactionsPeriodPreset.all ||
+        amountFromKopecks != null ||
+        amountToKopecks != null ||
+        onlyWithReceipt ||
+        onlySplit ||
+        onlyDebts ||
+        excludeOwn ||
+        excludeLargeExpenses ||
+        search.trim().isNotEmpty;
+  }
+}
+
+===== FILE: lib\core\database\tables\spaces.dart =====
+// lib/core/database/tables/spaces.dart
+import 'package:drift/drift.dart';
+import 'syncable_mixin.dart';
+
+class Spaces extends Table with SyncableTable {
+  TextColumn get id => text().named('id')();
+  TextColumn get name => text().named('name')(); // [E2E]
+  TextColumn get encryptionSalt => text().named('encryption_salt')();
+  TextColumn get status => text()
+      .named('status')
+      .withDefault(const Constant('active'))(); // active | dissolved
+  TextColumn get currencyCode =>
+      text().named('currency_code').withDefault(const Constant('RUB'))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+===== FILE: lib\core\database\tables\memberships.dart =====
+// lib/core/database/tables/memberships.dart
+import 'package:drift/drift.dart';
+import 'syncable_mixin.dart';
+import 'users.dart';
+import 'spaces.dart';
+
+class Memberships extends Table with SyncableTable {
+  TextColumn get id => text().named('id')();
+  TextColumn get userId => text().named('user_id').references(Users, #id)();
+  TextColumn get spaceId => text().named('space_id').references(Spaces, #id)();
+  TextColumn get role => text()
+      .named('role')
+      .withDefault(const Constant('member'))(); // admin | member
+  TextColumn get status => text()
+      .named('status')
+      .withDefault(const Constant('active'))(); // active | pending | left
+  DateTimeColumn get lastActiveAt =>
+      dateTime().named('last_active_at').nullable()();
+  DateTimeColumn get joinedAt => dateTime().named('joined_at')();
+  DateTimeColumn get leftAt => dateTime().named('left_at').nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+    {userId, spaceId},
+  ];
+}
+
+===== FILE: lib\features\spaces\presentation\screens\space_selector_screen.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/core/router/app_router.dart';
+
+class SpaceSelectorScreen extends ConsumerWidget {
+  const SpaceSelectorScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Выбор пространства')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.account_tree, size: 64, color: Colors.blue),
+            const SizedBox(height: 24),
+            const Text(
+              'Выберите пространство',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () {
+                // TODO: Загрузить реальный список пространств из БД
+                // Заглушка: устанавливаем личный space_id через мутатор
+                ref
+                    .read(currentSpaceIdProvider.notifier)
+                    .setSpaceId('personal_space_mock_id');
+              },
+              child: const Text('Личное пространство'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\budget\presentation\widgets\budget_limit_card.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/features/privacy/presentation/privacy_formatter.dart';
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+import '../../domain/entities/budget_limit.dart';
+import '../providers/budget_providers.dart';
+import 'budget_progress_indicator.dart';
+
+class BudgetLimitCard extends ConsumerWidget {
+  final BudgetLimit limit;
+  final BalanceVisibilityMode privacyMode;
+  final PrivacyFormatter formatter;
+  final VoidCallback? onTap;
+
+  const BudgetLimitCard({
+    super.key,
+    required this.limit,
+    required this.privacyMode,
+    required this.formatter,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final effectiveLimitAsync = ref.watch(
+      effectiveLimitForCategoryProvider(limit.categoryId),
+    );
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: effectiveLimitAsync.when(
+            data: (effective) {
+              if (effective == null) {
+                return _buildContent(
+                  categoryName: 'РљР°С‚РµРіРѕСЂРёСЏ',
+                  spent: 0,
+                  limitAmount: limit.limitAmount,
+                  percentUsed: 0,
+                );
+              }
+              return _buildContent(
+                categoryName: 'РљР°С‚РµРіРѕСЂРёСЏ',
+                spent: effective.spent,
+                limitAmount: effective.effectiveTotal,
+                percentUsed: effective.percentUsed,
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Text('РћС€РёР±РєР°: $e'),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent({
+    required String categoryName,
+    required int spent,
+    required int limitAmount,
+    required int percentUsed,
+  }) {
+    final spentText = formatter.formatAmount(spent, 'RUB', privacyMode);
+    final limitText = formatter.formatAmount(limitAmount, 'RUB', privacyMode);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          categoryName,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        BudgetProgressIndicator(
+          percentUsed: percentUsed,
+          privacyMode: privacyMode,
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'РџРѕС‚СЂР°С‡РµРЅРѕ: $spentText',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            Text(
+              'Р›РёРјРёС‚: $limitText',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\budget\presentation\widgets\budget_progress_indicator.dart =====
+import 'package:flutter/material.dart';
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+
+/// РџСЂРѕРіСЂРµСЃСЃ-Р±Р°СЂ Р»РёРјРёС‚Р°.
+///
+/// Р¦РІРµС‚ РјРµРЅСЏРµС‚СЃСЏ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РїСЂРѕС†РµРЅС‚Р° РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ:
+/// - 0-50%: Р·РµР»С‘РЅС‹Р№
+/// - 50-80%: Р¶С‘Р»С‚С‹Р№
+/// - 80-100%: РѕСЂР°РЅР¶РµРІС‹Р№
+/// - >100%: РєСЂР°СЃРЅС‹Р№
+class BudgetProgressIndicator extends StatelessWidget {
+  final int percentUsed;
+  final BalanceVisibilityMode privacyMode;
+
+  const BudgetProgressIndicator({
+    super.key,
+    required this.percentUsed,
+    required this.privacyMode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (privacyMode == BalanceVisibilityMode.hidden) {
+      return const LinearProgressIndicator(
+        value: 0.5,
+        backgroundColor: Colors.grey,
+        valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+      );
+    }
+
+    final clampedPercent = percentUsed.clamp(0, 100).toDouble();
+    final color = _getColor(percentUsed);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: clampedPercent / 100,
+            backgroundColor: Colors.grey[300],
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            minHeight: 8,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '$percentUsed%',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Color _getColor(int percent) {
+    if (percent > 100) return Colors.red;
+    if (percent >= 80) return Colors.orange;
+    if (percent >= 50) return Colors.amber;
+    return Colors.green;
+  }
+}
+
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\budget\presentation\widgets\monthly_pnl_summary_card.dart =====
+import 'package:flutter/material.dart';
+import 'package:budget_assistant/features/privacy/presentation/privacy_formatter.dart';
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+import '../../domain/entities/monthly_pnl.dart';
+
+class MonthlyPnlSummaryCard extends StatelessWidget {
+  final MonthlyPnl? pnl;
+  final BalanceVisibilityMode privacyMode;
+  final PrivacyFormatter formatter;
+
+  const MonthlyPnlSummaryCard({
+    super.key,
+    required this.pnl,
+    required this.privacyMode,
+    required this.formatter,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (pnl == null) {
+      return const Card(
+        margin: EdgeInsets.all(16),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Center(child: Text('РќРµС‚ РґР°РЅРЅС‹С… Р·Р° С‚РµРєСѓС‰РёР№ РјРµСЃСЏС†')),
+        ),
+      );
+    }
+
+    final income = formatter.formatAmount(pnl!.totalIncome, 'RUB', privacyMode);
+    final expense = formatter.formatAmount(pnl!.totalExpense, 'RUB', privacyMode);
+    final savingsRate = privacyMode == BalanceVisibilityMode.hidden
+        ? 'вЂўвЂўвЂў'
+        : '${pnl!.savingsRate}%';
+
+    return Card(
+      margin: const EdgeInsets.all(16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'РС‚РѕРіРё РјРµСЃСЏС†Р°',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            _buildRow('Р”РѕС…РѕРґС‹', income, Colors.green),
+            const SizedBox(height: 8),
+            _buildRow('Р Р°СЃС…РѕРґС‹', expense, Colors.red),
+            const Divider(height: 24),
+            _buildRow('РќРѕСЂРјР° СЃР±РµСЂРµР¶РµРЅРёР№', savingsRate, Colors.blue),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRow(String label, String value, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 14)),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\widgets\fab_create_menu.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../core/theme/app_colors.dart';
+import '../labels/transactions_log_labels.dart';
+
+class FabCreateMenu extends ConsumerWidget {
+  const FabCreateMenu({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return FloatingActionButton(
+      backgroundColor: AppColors.colorFAB,
+      onPressed: () {
+        HapticFeedback.heavyImpact();
+        showFabCreateMenu(context);
+      },
+      child: const Icon(Icons.add, color: Colors.white),
+    );
+  }
+}
+
+Future<void> showFabCreateMenu(BuildContext context) async {
+  await showModalBottomSheet(
+    context: context,
+    builder: (sheetContext) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(
+                Icons.arrow_downward,
+                color: AppColors.colorExpense,
+              ),
+              title: const Text(TransactionsLogLabels.createExpense),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                context.push('/transactions/create?type=expense');
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.arrow_upward,
+                color: AppColors.colorIncome,
+              ),
+              title: const Text(TransactionsLogLabels.createIncome),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                context.push('/transactions/create?type=income');
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.swap_horiz,
+                color: AppColors.colorTransfer,
+              ),
+              title: const Text(TransactionsLogLabels.createTransfer),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                context.push('/transactions/create?type=transfer');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.file_upload_outlined),
+              title: const Text(TransactionsLogLabels.importFile),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                context.push('/import/onboarding');
+              },
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\widgets\transactions_empty_state.dart =====
+import 'package:flutter/material.dart';
+
+import '../../../../core/theme/app_colors.dart';
+import '../labels/transactions_log_labels.dart';
+
+class TransactionsEmptyState extends StatelessWidget {
+  const TransactionsEmptyState({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.primaryLabel,
+    this.onPrimary,
+    this.secondaryLabel,
+    this.onSecondary,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String? primaryLabel;
+  final VoidCallback? onPrimary;
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
+
+  factory TransactionsEmptyState.noData({
+    required VoidCallback onAdd,
+    required VoidCallback onImport,
+  }) {
+    return TransactionsEmptyState(
+      icon: Icons.account_balance_wallet_outlined,
+      title: TransactionsLogLabels.noDataTitle,
+      subtitle: TransactionsLogLabels.noDataSubtitle,
+      primaryLabel: TransactionsLogLabels.addTransaction,
+      onPrimary: onAdd,
+      secondaryLabel: TransactionsLogLabels.importBank,
+      onSecondary: onImport,
+    );
+  }
+
+  factory TransactionsEmptyState.filtered({required VoidCallback onReset}) {
+    return TransactionsEmptyState(
+      icon: Icons.search_off,
+      title: TransactionsLogLabels.nothingFoundTitle,
+      subtitle: TransactionsLogLabels.nothingFoundSubtitle,
+      primaryLabel: TransactionsLogLabels.resetFilters,
+      onPrimary: onReset,
+    );
+  }
+
+  factory TransactionsEmptyState.error({required VoidCallback onRetry}) {
+    return TransactionsEmptyState(
+      icon: Icons.error_outline,
+      title: TransactionsLogLabels.errorTitle,
+      subtitle: TransactionsLogLabels.errorSubtitle,
+      primaryLabel: TransactionsLogLabels.retry,
+      onPrimary: onRetry,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 72, color: AppColors.textSecondary),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 24),
+            if (primaryLabel != null && onPrimary != null)
+              FilledButton(onPressed: onPrimary, child: Text(primaryLabel!)),
+            if (secondaryLabel != null && onSecondary != null) ...[
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: onSecondary,
+                child: Text(secondaryLabel!),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\widgets\transactions_filter_chip_group.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/formatting/money_input_parser.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../domain/entities/lookup_item.dart';
+import '../../domain/entities/transactions_filter_state.dart';
+import '../labels/transactions_log_labels.dart';
+import '../providers/transactions_log_providers.dart';
+
+class TransactionsFilterChipGroup extends ConsumerWidget {
+  const TransactionsFilterChipGroup({super.key, required this.filter});
+
+  final TransactionsFilterState filter;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SizedBox(
+      height: 56,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: [
+          if (filter.hasActiveFilters) ...[
+            FilterChip(
+              label: const Text(TransactionsLogLabels.reset),
+              selected: false,
+              onSelected: (_) {
+                HapticFeedback.mediumImpact();
+                ref.read(transactionsFilterProvider.notifier).reset();
+              },
+            ),
+            const SizedBox(width: 8),
+          ],
+          FilterChip(
+            label: Text(_typeLabel(filter.type)),
+            selected: filter.type != TransactionTypeFilter.all,
+            onSelected: (_) => _showTypeSheet(context, ref),
+          ),
+          const SizedBox(width: 8),
+          FilterChip(
+            label: Text(
+              filter.categoryIds.isEmpty
+                  ? TransactionsLogLabels.categories
+                  : '${TransactionsLogLabels.categories}: ${filter.categoryIds.length}',
+            ),
+            selected: filter.categoryIds.isNotEmpty,
+            onSelected: (_) => _showCategoriesSheet(context, ref),
+          ),
+          const SizedBox(width: 8),
+          FilterChip(
+            label: Text(
+              filter.accountIds.isEmpty
+                  ? TransactionsLogLabels.accounts
+                  : '${TransactionsLogLabels.accounts}: ${filter.accountIds.length}',
+            ),
+            selected: filter.accountIds.isNotEmpty,
+            onSelected: (_) => _showAccountsSheet(context, ref),
+          ),
+          const SizedBox(width: 8),
+          FilterChip(
+            label: Text(_periodLabel(filter.period)),
+            selected: filter.period != TransactionsPeriodPreset.all,
+            onSelected: (_) => _showPeriodSheet(context, ref),
+          ),
+          const SizedBox(width: 8),
+          FilterChip(
+            label: const Text(TransactionsLogLabels.amount),
+            selected:
+                filter.amountFromKopecks != null ||
+                filter.amountToKopecks != null,
+            onSelected: (_) => _showAmountSheet(context, ref),
+          ),
+          const SizedBox(width: 8),
+          FilterChip(
+            label: const Text(TransactionsLogLabels.withReceipts),
+            selected: filter.onlyWithReceipt,
+            selectedColor: AppColors.colorWarning.withValues(alpha: .25),
+            onSelected: (_) {
+              HapticFeedback.selectionClick();
+              ref
+                  .read(transactionsFilterProvider.notifier)
+                  .toggleOnlyWithReceipt();
+            },
+          ),
+          const SizedBox(width: 8),
+          FilterChip(
+            label: const Text(TransactionsLogLabels.onlySplit),
+            selected: filter.onlySplit,
+            selectedColor: const Color(0xFF14B8A6).withValues(alpha: .25),
+            onSelected: (_) {
+              HapticFeedback.selectionClick();
+              ref.read(transactionsFilterProvider.notifier).toggleOnlySplit();
+            },
+          ),
+          const SizedBox(width: 8),
+          FilterChip(
+            label: const Text(TransactionsLogLabels.onlyDebts),
+            selected: filter.onlyDebts,
+            selectedColor: AppColors.colorExpense.withValues(alpha: .2),
+            onSelected: (_) {
+              HapticFeedback.selectionClick();
+              ref.read(transactionsFilterProvider.notifier).toggleOnlyDebts();
+            },
+          ),
+          const SizedBox(width: 8),
+          FilterChip(
+            label: const Text(TransactionsLogLabels.excludeOwn),
+            selected: filter.excludeOwn,
+            selectedColor: AppColors.colorTransfer.withValues(alpha: .25),
+            onSelected: (_) {
+              HapticFeedback.selectionClick();
+              ref.read(transactionsFilterProvider.notifier).toggleExcludeOwn();
+            },
+          ),
+          const SizedBox(width: 8),
+          FilterChip(
+            label: const Text(TransactionsLogLabels.excludeLargeExpenses),
+            selected: filter.excludeLargeExpenses,
+            selectedColor: const Color(0xFF8B5CF6).withValues(alpha: .25),
+            onSelected: (_) {
+              HapticFeedback.selectionClick();
+              ref
+                  .read(transactionsFilterProvider.notifier)
+                  .toggleExcludeLargeExpenses();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _typeLabel(TransactionTypeFilter type) {
+  switch (type) {
+    case TransactionTypeFilter.all:
+      return TransactionsLogLabels.typeAll;
+    case TransactionTypeFilter.expense:
+      return TransactionsLogLabels.typeExpense;
+    case TransactionTypeFilter.income:
+      return TransactionsLogLabels.typeIncome;
+    case TransactionTypeFilter.transfer:
+      return TransactionsLogLabels.typeTransfer;
+  }
+}
+
+String _periodLabel(TransactionsPeriodPreset period) {
+  switch (period) {
+    case TransactionsPeriodPreset.all:
+      return TransactionsLogLabels.periodAll;
+    case TransactionsPeriodPreset.today:
+      return TransactionsLogLabels.periodToday;
+    case TransactionsPeriodPreset.week:
+      return TransactionsLogLabels.periodWeek;
+    case TransactionsPeriodPreset.month:
+      return TransactionsLogLabels.periodMonth;
+    case TransactionsPeriodPreset.year:
+      return TransactionsLogLabels.periodYear;
+    case TransactionsPeriodPreset.custom:
+      return TransactionsLogLabels.periodCustom;
+  }
+}
+
+Future<void> _showTypeSheet(BuildContext context, WidgetRef ref) async {
+  final current = ref.read(transactionsFilterProvider).type;
+  await showModalBottomSheet(
+    context: context,
+    builder: (sheetContext) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: TransactionTypeFilter.values.map((type) {
+            return ListTile(
+              selected: current == type,
+              title: Text(_typeLabel(type)),
+              onTap: () {
+                HapticFeedback.selectionClick();
+                ref.read(transactionsFilterProvider.notifier).setType(type);
+                Navigator.of(sheetContext).pop();
+              },
+            );
+          }).toList(),
+        ),
+      );
+    },
+  );
+}
+
+Future<void> _showCategoriesSheet(BuildContext context, WidgetRef ref) async {
+  // Перечитываем категории, чтобы новые записи были видны без рестарта.
+  ref.invalidate(transactionCategoryLookupProvider);
+  final lookupAsync = ref.read(transactionCategoryLookupProvider);
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (sheetContext) {
+      return lookupAsync.when(
+        loading: () => const SizedBox(
+          height: 200,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+        error: (_, __) => const SizedBox(
+          height: 200,
+          child: Center(child: Icon(Icons.error_outline)),
+        ),
+        data: (items) => _MultiSelectSheet(
+          items: items,
+          initialSelected: ref.read(transactionsFilterProvider).categoryIds,
+          onApply: (ids) {
+            ref.read(transactionsFilterProvider.notifier).setCategoryIds(ids);
+          },
+        ),
+      );
+    },
+  );
+}
+
+Future<void> _showAccountsSheet(BuildContext context, WidgetRef ref) async {
+  // Перечитываем счета, чтобы новые записи были видны без рестарта.
+  ref.invalidate(transactionAccountLookupProvider);
+  final lookupAsync = ref.read(transactionAccountLookupProvider);
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (sheetContext) {
+      return lookupAsync.when(
+        loading: () => const SizedBox(
+          height: 200,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+        error: (_, __) => const SizedBox(
+          height: 200,
+          child: Center(child: Icon(Icons.error_outline)),
+        ),
+        data: (items) => _MultiSelectSheet(
+          items: items,
+          initialSelected: ref.read(transactionsFilterProvider).accountIds,
+          onApply: (ids) {
+            ref.read(transactionsFilterProvider.notifier).setAccountIds(ids);
+          },
+        ),
+      );
+    },
+  );
+}
+
+Future<void> _showPeriodSheet(BuildContext context, WidgetRef ref) async {
+  await showModalBottomSheet(
+    context: context,
+    builder: (sheetContext) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _periodTile(
+              sheetContext,
+              ref,
+              TransactionsPeriodPreset.all,
+              TransactionsLogLabels.periodAll,
+            ),
+            _periodTile(
+              sheetContext,
+              ref,
+              TransactionsPeriodPreset.today,
+              TransactionsLogLabels.periodToday,
+            ),
+            _periodTile(
+              sheetContext,
+              ref,
+              TransactionsPeriodPreset.week,
+              TransactionsLogLabels.periodWeek,
+            ),
+            _periodTile(
+              sheetContext,
+              ref,
+              TransactionsPeriodPreset.month,
+              TransactionsLogLabels.periodMonth,
+            ),
+            _periodTile(
+              sheetContext,
+              ref,
+              TransactionsPeriodPreset.year,
+              TransactionsLogLabels.periodYear,
+            ),
+            ListTile(
+              leading: const Icon(Icons.date_range),
+              title: const Text(TransactionsLogLabels.periodCustom),
+              onTap: () async {
+                Navigator.of(sheetContext).pop();
+                final range = await showDateRangePicker(
+                  context: context,
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime.now().add(const Duration(days: 365)),
+                );
+                if (range == null) return;
+                HapticFeedback.selectionClick();
+                ref
+                    .read(transactionsFilterProvider.notifier)
+                    .setCustomPeriod(range.start, range.end);
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Widget _periodTile(
+  BuildContext context,
+  WidgetRef ref,
+  TransactionsPeriodPreset preset,
+  String label,
+) {
+  final current = ref.read(transactionsFilterProvider).period;
+  return ListTile(
+    selected: current == preset,
+    title: Text(label),
+    onTap: () {
+      HapticFeedback.selectionClick();
+      ref.read(transactionsFilterProvider.notifier).setPeriod(preset);
+      Navigator.of(context).pop();
+    },
+  );
+}
+
+Future<void> _showAmountSheet(BuildContext context, WidgetRef ref) async {
+  // Читаем текущий фильтр, чтобы предзаполнить поля суммы.
+  final currentFilter = ref.read(transactionsFilterProvider);
+  final fromController = TextEditingController(
+    text: currentFilter.amountFromKopecks == null
+        ? ''
+        : _formatAmountForInput(currentFilter.amountFromKopecks!),
+  );
+  final toController = TextEditingController(
+    text: currentFilter.amountToKopecks == null
+        ? ''
+        : _formatAmountForInput(currentFilter.amountToKopecks!),
+  );
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (sheetContext) {
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+          left: 16,
+          right: 16,
+          top: 16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: fromController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: const InputDecoration(
+                labelText: TransactionsLogLabels.from,
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: toController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: const InputDecoration(
+                labelText: TransactionsLogLabels.to,
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: const Text(TransactionsLogLabels.cancel),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () {
+                      final from = fromController.text.trim().isEmpty
+                          ? null
+                          : MoneyInputParser.parseKopecks(fromController.text);
+                      final to = toController.text.trim().isEmpty
+                          ? null
+                          : MoneyInputParser.parseKopecks(toController.text);
+                      HapticFeedback.selectionClick();
+                      ref
+                          .read(transactionsFilterProvider.notifier)
+                          .setAmountRange(from, to);
+                      Navigator.of(sheetContext).pop();
+                    },
+                    child: const Text(TransactionsLogLabels.apply),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+/// Форматирует копейки в строку для поля ввода (без double).
+/// Пример: 25050 -> "250,50"; 25000 -> "250".
+String _formatAmountForInput(int kopecks) {
+  final abs = kopecks.abs();
+  final rubles = abs ~/ 100;
+  final kop = abs % 100;
+  if (kop == 0) {
+    return '$rubles';
+  }
+  return '$rubles,${kop.toString().padLeft(2, '0')}';
+}
+
+class _MultiSelectSheet extends StatefulWidget {
+  const _MultiSelectSheet({
+    required this.items,
+    required this.initialSelected,
+    required this.onApply,
+  });
+
+  final List<LookupItem> items;
+  final List<String> initialSelected;
+  final ValueChanged<List<String>> onApply;
+
+  @override
+  State<_MultiSelectSheet> createState() => _MultiSelectSheetState();
+}
+
+class _MultiSelectSheetState extends State<_MultiSelectSheet> {
+  late final Set<String> _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = widget.initialSelected.toSet();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Expanded(
+            child: ListView(
+              children: widget.items.map((item) {
+                final selected = _selected.contains(item.id);
+                return CheckboxListTile(
+                  value: selected,
+                  title: Text(item.name),
+                  onChanged: (value) {
+                    setState(() {
+                      if (value == true) {
+                        _selected.add(item.id);
+                      } else {
+                        _selected.remove(item.id);
+                      }
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text(TransactionsLogLabels.cancel),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () {
+                      HapticFeedback.selectionClick();
+                      widget.onApply(_selected.toList());
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text(TransactionsLogLabels.apply),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\widgets\transactions_list.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../domain/entities/transaction_day_group.dart';
+import '../../domain/entities/transaction_ui_model.dart';
+import 'transaction_group_header.dart';
+import 'transaction_row.dart';
+
+sealed class _TransactionsListEntry {
+  const _TransactionsListEntry();
+}
+
+class _HeaderEntry extends _TransactionsListEntry {
+  const _HeaderEntry(this.group);
+
+  final TransactionDayGroupUi group;
+}
+
+class _RowEntry extends _TransactionsListEntry {
+  const _RowEntry(this.transaction);
+
+  final TransactionUiModel transaction;
+}
+
+class TransactionsList extends ConsumerStatefulWidget {
+  const TransactionsList({
+    super.key,
+    required this.groups,
+    required this.hasMore,
+    required this.isLoadingMore,
+    required this.onLoadMore,
+  });
+
+  final List<TransactionDayGroupUi> groups;
+  final bool hasMore;
+  final bool isLoadingMore;
+  final VoidCallback onLoadMore;
+
+  @override
+  ConsumerState<TransactionsList> createState() => _TransactionsListState();
+}
+
+class _TransactionsListState extends ConsumerState<TransactionsList> {
+  late final ScrollController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = ScrollController();
+    _controller.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onScroll);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_controller.hasClients) return;
+
+    final threshold = _controller.position.maxScrollExtent - 250;
+
+    if (_controller.position.pixels >= threshold &&
+        widget.hasMore &&
+        !widget.isLoadingMore) {
+      widget.onLoadMore();
+    }
+  }
+
+  List<_TransactionsListEntry> _buildEntries() {
+    final entries = <_TransactionsListEntry>[];
+
+    for (final group in widget.groups) {
+      entries.add(_HeaderEntry(group));
+
+      for (final tx in group.transactions) {
+        entries.add(_RowEntry(tx));
+      }
+    }
+
+    return entries;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = _buildEntries();
+
+    return ListView.builder(
+      controller: _controller,
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemCount: entries.length + (widget.hasMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == entries.length && widget.hasMore) {
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Center(
+              child: widget.isLoadingMore
+                  ? const CircularProgressIndicator()
+                  : const SizedBox.shrink(),
+            ),
+          );
+        }
+
+        final entry = entries[index];
+
+        return switch (entry) {
+          _HeaderEntry(:final group) => TransactionGroupHeader(group: group),
+          _RowEntry(:final transaction) => TransactionRow(
+            transaction: transaction,
+          ),
+        };
+      },
+    );
+  }
+}
+
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\widgets\transactions_segmented_control.dart =====
+import 'package:flutter/material.dart';
+
+import '../../domain/entities/transactions_filter_state.dart';
+import '../labels/transactions_log_labels.dart';
+
+class TransactionsSegmentedControl extends StatelessWidget {
+  const TransactionsSegmentedControl({
+    super.key,
+    required this.scope,
+    required this.onChanged,
+  });
+
+  final TransactionsScope scope;
+  final ValueChanged<TransactionsScope> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: SegmentedButton<TransactionsScope>(
+        segments: const [
+          ButtonSegment(
+            value: TransactionsScope.all,
+            label: Text(TransactionsLogLabels.scopeAll),
+          ),
+          ButtonSegment(
+            value: TransactionsScope.mine,
+            label: Text(TransactionsLogLabels.scopeMine),
+          ),
+          ButtonSegment(
+            value: TransactionsScope.family,
+            label: Text(TransactionsLogLabels.scopeFamily),
+          ),
+        ],
+        selected: {scope},
+        onSelectionChanged: (selection) {
+          onChanged(selection.first);
+        },
+      ),
+    );
+  }
+}
+
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\widgets\transaction_group_header.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/formatting/privacy_formatter.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../domain/entities/transaction_day_group.dart';
+import '../labels/transactions_log_labels.dart';
+import '../../../../features/privacy/presentation/providers/privacy_mode_provider.dart';
+
+class TransactionGroupHeader extends ConsumerWidget {
+  const TransactionGroupHeader({super.key, required this.group});
+
+  final TransactionDayGroupUi group;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final privacyMode = ref.watch(privacyModeProvider);
+    final formatter = PrivacyFormatter();
+
+    final spent = formatter.amount(
+      kopecks: group.summary.spentKopecks,
+      currencyCode: 'RUB',
+      mode: privacyMode,
+    );
+
+    final income = formatter.amount(
+      kopecks: group.summary.incomeKopecks,
+      currencyCode: 'RUB',
+      mode: privacyMode,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            group.title,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${TransactionsLogLabels.spent}: $spent · ${TransactionsLogLabels.income}: $income · ${group.summary.operationsCount} ${TransactionsLogLabels.operations}',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          ),
+          const Divider(height: 16),
+        ],
+      ),
+    );
+  }
+}
+
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\widgets\transaction_long_press_menu.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
+
+import '../../../../core/errors/result.dart';
+import '../../../../core/formatting/privacy_formatter.dart';
+import '../../../../features/privacy/presentation/providers/privacy_mode_provider.dart';
+import '../../domain/entities/lookup_item.dart';
+import '../../domain/entities/transaction_ui_model.dart';
+import '../labels/transactions_log_labels.dart';
+import '../providers/transactions_log_providers.dart';
+
+/// Контекстное меню транзакции (long-press на TransactionRow).
+Future<void> showTransactionLongPressMenu({
+  required BuildContext context,
+  required WidgetRef ref,
+  required TransactionUiModel transaction,
+}) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final privacyMode = ref.read(privacyModeProvider);
+  final formatter = PrivacyFormatter();
+
+  final title = formatter.text(
+    transaction.merchantName,
+    privacyMode,
+    fallback: transaction.categoryName,
+  );
+
+  await showModalBottomSheet(
+    context: context,
+    builder: (sheetContext) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                title,
+                style: Theme.of(sheetContext).textTheme.titleMedium,
+              ),
+            ),
+
+            // ✏️ Редактировать
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text(TransactionsLogLabels.edit),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                HapticFeedback.lightImpact();
+                context.push('/transactions/edit/${transaction.id}');
+              },
+            ),
+
+            // 🎁 Подарок / отмена подарка (контекстно)
+            if (transaction.isHiddenByCalendar)
+              ListTile(
+                leading: const Icon(Icons.visibility),
+                title: const Text(TransactionsLogLabels.unhideGift),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  HapticFeedback.lightImpact();
+
+                  final result = await ref
+                      .read(unhideTransactionAsGiftUseCaseProvider)
+                      .call(transaction.id);
+
+                  _invalidateAndNotify(messenger, ref, result);
+                },
+              )
+            else
+              ListTile(
+                leading: const Icon(Icons.card_giftcard),
+                title: const Text(TransactionsLogLabels.hideAsGift),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  HapticFeedback.lightImpact();
+
+                  final result = await ref
+                      .read(hideTransactionAsGiftUseCaseProvider)
+                      .call(transaction.id);
+
+                  _invalidateAndNotify(messenger, ref, result);
+                },
+              ),
+
+            // 💎 Крупная трата / снять пометку (контекстно)
+            if (transaction.isLargeExpense)
+              ListTile(
+                leading: const Icon(Icons.diamond_outlined),
+                title: const Text(TransactionsLogLabels.unmarkAsLargeExpense),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  HapticFeedback.lightImpact();
+
+                  final result = await ref
+                      .read(toggleLargeExpenseUseCaseProvider)
+                      .call(transaction.id);
+
+                  _invalidateAndNotify(messenger, ref, result);
+                },
+              )
+            else
+              ListTile(
+                leading: const Icon(Icons.diamond),
+                title: const Text(TransactionsLogLabels.markAsLargeExpense),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  HapticFeedback.lightImpact();
+
+                  final result = await ref
+                      .read(toggleLargeExpenseUseCaseProvider)
+                      .call(transaction.id);
+
+                  _invalidateAndNotify(messenger, ref, result);
+                },
+              ),
+
+            // ↩️ Компенсирующая операция (только для расходов)
+            if (transaction.type == TransactionType.expense)
+              ListTile(
+                leading: const Icon(Icons.undo),
+                title: const Text(TransactionsLogLabels.refund),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  HapticFeedback.lightImpact();
+
+                  final result = await ref
+                      .read(markAsRefundUseCaseProvider)
+                      .call(transaction);
+
+                  _invalidateAndNotify(messenger, ref, result);
+                },
+              ),
+
+            // 🏷️ Изменить категорию
+            ListTile(
+              leading: const Icon(Icons.category),
+              title: const Text(TransactionsLogLabels.changeCategory),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                _showCategoryPicker(context, ref, messenger, transaction);
+              },
+            ),
+
+            // 📸 / 🧾 Чек (контекстно). TODO(Этап 16): роуты /receipts/scan и /receipts/:id
+            if (transaction.receiptId == null)
+              ListTile(
+                leading: const Icon(Icons.photo_camera_outlined),
+                title: const Text(TransactionsLogLabels.attachReceipt),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                },
+              )
+            else
+              ListTile(
+                leading: const Icon(Icons.receipt_long),
+                title: const Text(TransactionsLogLabels.viewReceipt),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                },
+              ),
+
+            const SizedBox(height: 16),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+void _invalidateAndNotify(
+  ScaffoldMessengerState messenger,
+  WidgetRef ref,
+  Result<void> result,
+) {
+  ref.invalidate(transactionsLogProvider);
+  ref.invalidate(hasPendingSyncProvider);
+
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(
+        result.isSuccess
+            ? TransactionsLogLabels.actionDone
+            : TransactionsLogLabels.actionFailed,
+      ),
+    ),
+  );
+}
+
+Future<void> _showCategoryPicker(
+  BuildContext context,
+  WidgetRef ref,
+  ScaffoldMessengerState messenger,
+  TransactionUiModel transaction,
+) async {
+  final lookupAsync = ref.read(transactionCategoryLookupProvider);
+
+  await showModalBottomSheet(
+    context: context,
+    builder: (sheetContext) {
+      return lookupAsync.when(
+        loading: () => const SizedBox(
+          height: 200,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+        error: (_, __) => const SizedBox(
+          height: 200,
+          child: Center(child: Icon(Icons.error_outline)),
+        ),
+        data: (items) {
+          return SafeArea(
+            child: ListView(
+              children: items.map((LookupItem item) {
+                return ListTile(
+                  title: Text(item.name),
+                  onTap: () async {
+                    Navigator.of(sheetContext).pop();
+                    HapticFeedback.lightImpact();
+
+                    final result = await ref
+                        .read(updateTransactionCategoryUseCaseProvider)
+                        .call(
+                          transactionId: transaction.id,
+                          categoryId: item.id,
+                        );
+
+                    _invalidateAndNotify(messenger, ref, result);
+                  },
+                );
+              }).toList(),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\widgets\transaction_row.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
+
+import '../../../../core/formatting/color_parser.dart';
+import '../../../../core/formatting/privacy_formatter.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/pending_sync_indicator.dart';
+import '../../../../features/privacy/presentation/providers/privacy_mode_provider.dart';
+import '../../../privacy/domain/models/balance_visibility_mode.dart';
+import '../../../auth/presentation/providers/current_user_provider.dart';
+import '../../domain/entities/transaction_ui_model.dart';
+import 'transaction_long_press_menu.dart';
+
+class TransactionRow extends ConsumerWidget {
+  const TransactionRow({super.key, required this.transaction});
+
+  final TransactionUiModel transaction;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final privacyMode = ref.watch(privacyModeProvider);
+    final currentUserId = ref.watch(currentUserIdProvider);
+    final formatter = PrivacyFormatter();
+
+    final isFamilyMember = transaction.userId != currentUserId;
+    final showFamilyAttributes =
+        isFamilyMember && privacyMode != BalanceVisibilityMode.hidden;
+
+    final merchant = formatter.text(
+      transaction.merchantName,
+      privacyMode,
+      fallback: transaction.categoryName,
+    );
+
+    final subtitle = formatter.text(
+      '${transaction.categoryName} • ${DateFormat.Hm().format(transaction.date.toLocal())}',
+      privacyMode,
+    );
+
+    final hasPendingSync = transaction.syncStatus == SyncStatus.pending;
+    final hasSyncError = transaction.syncStatus == SyncStatus.conflict;
+    final isHold = transaction.auditStatus == AuditStatus.pending;
+    final amountText = formatter.amount(
+      kopecks: transaction.type == TransactionType.expense
+          ? -transaction.amountKopecks
+          : transaction.amountKopecks,
+      currencyCode: transaction.currencyCode,
+      mode: privacyMode,
+      showSign: transaction.type != TransactionType.transfer,
+    );    
+    final amountColor = switch (transaction.type) {
+      TransactionType.expense => AppColors.colorExpense,
+      TransactionType.income => AppColors.colorIncome,
+      TransactionType.transfer => AppColors.colorTransfer,
+    };
+
+    return InkWell(
+      onLongPress: () {
+        HapticFeedback.mediumImpact();
+        showTransactionLongPressMenu(
+          context: context,
+          ref: ref,
+          transaction: transaction,
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceCard,
+          borderRadius: BorderRadius.circular(12),
+          border: hasSyncError
+              ? Border.all(color: AppColors.colorExpense, width: 2)
+              : null,
+        ),
+        child: Row(
+          children: [
+            if (showFamilyAttributes)
+              Container(
+                width: 4,
+                height: 48,
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: ColorParser.fromHex(
+                    transaction.memberColorHex ?? '#60A5FA',
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: ColorParser.fromHex(
+                transaction.categoryColorHex,
+              ),
+              child: const Icon(Icons.category, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    merchant,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (showFamilyAttributes && transaction.memberDisplayName != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: CircleAvatar(
+                  radius: 12,
+                  backgroundColor: ColorParser.fromHex(
+                    transaction.memberColorHex ?? '#60A5FA',
+                  ),
+                  child: Text(
+                    _initials(transaction.memberDisplayName!),
+                    style: const TextStyle(fontSize: 10, color: Colors.white),
+                  ),
+                ),
+              ),
+            if (transaction.isSplit &&
+                privacyMode == BalanceVisibilityMode.visible)
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: Text(
+                  'Split',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: AppColors.colorWarning,
+                  ),
+                ),
+              ),
+            if (transaction.receiptId != null)
+              const Padding(
+                padding: EdgeInsets.only(right: 6),
+                child: Icon(
+                  Icons.receipt_long,
+                  size: 16,
+                  color: AppColors.textSecondary,
+                ),
+                
+              ),
+            if (transaction.receiptId != null)
+              const Padding(
+                padding: EdgeInsets.only(right: 6),
+                child: Icon(
+                  Icons.receipt_long,
+                  size: 16,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            if (transaction.isLargeExpense)
+              const Padding(
+                padding: EdgeInsets.only(right: 6),
+                child: Icon(
+                  Icons.diamond,
+                  size: 16,
+                  color: Color(0xFF8B5CF6), // фиолетовый
+                ),
+              ),
+            if (isHold)
+              const Padding(
+                padding: EdgeInsets.only(right: 6),
+                child: Icon(
+                  Icons.hourglass_bottom,
+                  size: 16,
+                  color: AppColors.colorWarning,
+                ),
+              ),
+            if (hasPendingSync)
+              const Padding(
+                padding: EdgeInsets.only(right: 6),
+                child: PendingSyncIndicator(),
+              ),
+            if (hasSyncError)
+              const Padding(
+                padding: EdgeInsets.only(right: 6),
+                child: Icon(
+                  Icons.warning_amber,
+                  size: 16,
+                  color: AppColors.colorExpense,
+                ),
+              ),
+            Text(
+              amountText,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: amountColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _initials(String name) {
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty || parts.first.isEmpty) return '';
+
+    if (parts.length == 1) {
+      return parts.first.substring(0, 1).toUpperCase();
+    }
+
+    return '${parts[0].substring(0, 1)}${parts[1].substring(0, 1)}'
+        .toUpperCase();
+  }
+}
+

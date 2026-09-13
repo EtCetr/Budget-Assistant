@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+import 'package:budget_assistant/features/categories/domain/entities/category.dart';
+import 'package:budget_assistant/features/categories/presentation/providers/category_providers.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
 import '../providers/budget_providers.dart';
 import '../widgets/monthly_pnl_summary_card.dart';
@@ -9,13 +12,24 @@ import '../widgets/budget_limit_card.dart';
 class BudgetLimitsScreen extends ConsumerWidget {
   const BudgetLimitsScreen({super.key});
 
+  /// Имя категории по id из закэшированного списка категорий.
+  /// Fallback — заглушка, пока список ещё грузится.
+  String _categoryName(List<Category>? categories, String categoryId) {
+    if (categories == null) return 'Категория';
+    for (final category in categories) {
+      if (category.id == categoryId) return category.name;
+    }
+    return 'Категория';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final limitsAsync = ref.watch(budgetLimitsForCurrentMonthProvider);
     final pnlAsync = ref.watch(monthlyPnlForCurrentMonthProvider);
     final privacyMode = ref.watch(privacyModeProvider);
     final formatter = ref.watch(privacyFormatterProvider);
-
+    final userId = ref.watch(currentUserIdProvider);
+    final categoriesAsync = ref.watch(categoriesListProvider(userId));
     return Scaffold(
       appBar: AppBar(
         title: const Text('Бюджет и лимиты'),
@@ -88,6 +102,7 @@ class BudgetLimitsScreen extends ConsumerWidget {
                     ),
                   );
                 }
+                final categories = categoriesAsync.value;
                 return SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
@@ -96,6 +111,7 @@ class BudgetLimitsScreen extends ConsumerWidget {
                         limit: limit,
                         privacyMode: privacyMode,
                         formatter: formatter,
+                        categoryName: _categoryName(categories, limit.categoryId),
                         onTap: () {
                           context.push('/budget/edit/${limit.id}');
                         },
