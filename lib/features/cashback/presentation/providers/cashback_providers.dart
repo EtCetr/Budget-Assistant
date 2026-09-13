@@ -62,10 +62,13 @@ final calculateCashbackUseCaseProvider = Provider<CalculateCashbackUseCase>(
 );
 
 /// Список карт/счетов (без системных и архивных) для выбора в экране кэшбэка.
+///
+/// Реактивный: зависит от accountsListProvider, который экран счетов
+/// инвалидирует при создании/редактировании/удалении счёта. Новый счёт
+/// появляется в селекторе кэшбэка сразу, без перезапуска приложения.
 final cashbackAccountsProvider = FutureProvider<List<Account>>((ref) async {
-  final repo = ref.watch(accountRepositoryProvider);
   final userId = ref.watch(currentUserIdProvider);
-  final accounts = await repo.getAccountsByUserId(userId);
+  final accounts = await ref.watch(accountsListProvider(userId).future);
   return accounts.where((a) => !a.isSystem && !a.isArchived).toList();
 });
 

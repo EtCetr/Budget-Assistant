@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-
+import 'package:budget_assistant/core/constants/currency_codes.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import 'package:budget_assistant/core/errors/result.dart';
@@ -11,7 +11,7 @@ import 'package:budget_assistant/core/formatting/money_input_parser.dart';
 import 'package:budget_assistant/core/formatting/money_formatter.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
-
+import 'package:budget_assistant/features/cashback/presentation/providers/cashback_providers.dart';
 import '../../../../core/providers/security_providers.dart';
 import '../../domain/entities/lookup_item.dart';
 import '../../domain/models/secrecy_config.dart';
@@ -23,6 +23,8 @@ import '../providers/transactions_log_providers.dart';
 /// Экран создания транзакции.
 ///
 /// Роут: /transactions/create?type=expense|income|transfer
+/// Этап 10: выбор валюты операции + авто-конвертация в валюту счёта
+/// по курсу на дату (оригинал хранится в original_amount/original_currency).
 class CreateTransactionScreen extends ConsumerStatefulWidget {
   const CreateTransactionScreen({super.key, required this.type});
 
@@ -36,13 +38,13 @@ class CreateTransactionScreen extends ConsumerStatefulWidget {
 class _CreateTransactionScreenState
     extends ConsumerState<CreateTransactionScreen> {
   late TransactionDraft _draft;
-
   final _amountController = TextEditingController();
   final _merchantController = TextEditingController();
   final _commentController = TextEditingController();
-
   bool _isSaving = false;
   String? _amountError;
+  String? _selectedCurrency;
+  String? _previewText;
 
   @override
   void initState() {
@@ -63,6 +65,7 @@ class _CreateTransactionScreenState
       if (!mounted) return;
       ref.invalidate(transactionAccountLookupProvider);
       ref.invalidate(transactionCategoryLookupProvider);
+      ref.invalidate(accountCurrencyMapProvider);
     });
   }
 
@@ -78,7 +81,6 @@ class _CreateTransactionScreenState
   Widget build(BuildContext context) {
     final accountsAsync = ref.watch(transactionAccountLookupProvider);
     final categoriesAsync = ref.watch(transactionCategoryLookupProvider);
-
     return Scaffold(
       appBar: AppBar(title: Text(_screenTitle())),
       body: accountsAsync.when(
@@ -88,12 +90,10 @@ class _CreateTransactionScreenState
           if (accounts.isEmpty) {
             return _buildNoAccounts();
           }
-
           // Авто-выбор первого счёта при первом билде
           if (_draft.accountId.isEmpty) {
             _draft = _draft.copyWith(accountId: accounts.first.id);
           }
-
           return categoriesAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) =>
@@ -151,12 +151,17 @@ class _CreateTransactionScreenState
   }
 
   Widget _buildForm(List<LookupItem> accounts, List<LookupItem> categories) {
+    final currencyMap =
+        ref.watch(accountCurrencyMapProvider).value ?? const <String, String>{};
+    final accountCurrency = currencyMap[_draft.accountId] ?? 'RUB';
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.spacing16),
       children: [
-        _buildAmountField(),
+        _buildAmountField(_selectedCurrency ?? accountCurrency),
         const SizedBox(height: AppSpacing.spacing16),
         _buildAccountDropdown(accounts),
+        const SizedBox(height: AppSpacing.spacing16),
+        _buildCurrencyDropdown(accountCurrency),
         if (widget.type == TransactionType.transfer) ...[
           const SizedBox(height: AppSpacing.spacing16),
           _buildLinkedAccountDropdown(accounts),
@@ -176,34 +181,48 @@ class _CreateTransactionScreenState
     );
   }
 
-  Widget _buildAmountField() {
-    return TextField(
-      controller: _amountController,
-      keyboardType: const TextInputType.numberWithOptions(
-        decimal: true,
-        signed: false,
-      ),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'^\d*[,.]?\d{0,2}')),
+  Widget _buildAmountField(String suffixCurrency) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: _amountController,
+          keyboardType: const TextInputType.numberWithOptions(
+            decimal: true,
+            signed: false,
+          ),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d*[,.]?\d{0,2}')),
+          ],
+          autofocus: true,
+          decoration: InputDecoration(
+            labelText: 'Сумма',
+            errorText: _amountError,
+            border: const OutlineInputBorder(),
+            suffixText: suffixCurrency,
+          ),
+          onChanged: (value) {
+            final parsed = MoneyInputParser.parseKopecks(value);
+            setState(() {
+              if (parsed == null) {
+                _amountError = 'Некорректная сумма';
+              } else {
+                _amountError = null;
+                _draft = _draft.copyWith(amount: parsed);
+              }
+            });
+            _updatePreview();
+          },
+        ),
+        if (_previewText != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6, left: 4),
+            child: Text(
+              _previewText!,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
       ],
-      autofocus: true,
-      decoration: InputDecoration(
-        labelText: 'Сумма',
-        errorText: _amountError,
-        border: const OutlineInputBorder(),
-        suffixText: '₽',
-      ),
-      onChanged: (value) {
-        final parsed = MoneyInputParser.parseKopecks(value);
-        setState(() {
-          if (parsed == null) {
-            _amountError = 'Некорректная сумма';
-          } else {
-            _amountError = null;
-            _draft = _draft.copyWith(amount: parsed);
-          }
-        });
-      },
     );
   }
 
@@ -219,8 +238,36 @@ class _CreateTransactionScreenState
           .toList(),
       onChanged: (value) {
         if (value != null) {
-          setState(() => _draft = _draft.copyWith(accountId: value));
+          setState(() {
+            _draft = _draft.copyWith(accountId: value);
+            _selectedCurrency = null;
+            _previewText = null;
+          });
+          _updatePreview();
         }
+      },
+    );
+  }
+
+  Widget _buildCurrencyDropdown(String accountCurrency) {
+    final current = _selectedCurrency ?? accountCurrency;
+    return DropdownButtonFormField<String>(
+      initialValue: current,
+      decoration: const InputDecoration(
+        labelText: 'Валюта операции',
+        border: OutlineInputBorder(),
+      ),
+      items: [
+        for (final code in kCurrencyCodes)
+          DropdownMenuItem(value: code, child: Text(code)),
+      ],
+      onChanged: (value) {
+        setState(() {
+          _selectedCurrency =
+              (value == null || value == accountCurrency) ? null : value;
+          _previewText = null;
+        });
+        _updatePreview();
       },
     );
   }
@@ -269,6 +316,7 @@ class _CreateTransactionScreenState
         );
         if (picked != null) {
           setState(() => _draft = _draft.copyWith(date: picked));
+          _updatePreview();
         }
       },
       child: InputDecorator(
@@ -337,14 +385,43 @@ class _CreateTransactionScreenState
     );
   }
 
+  /// Живой предпросмотр конвертации в валюту счёта (Этап 10).
+  Future<void> _updatePreview() async {
+    if (_draft.amount <= 0) {
+      if (mounted) setState(() => _previewText = null);
+      return;
+    }
+    try {
+      final map = await ref.read(accountCurrencyMapProvider.future);
+      final accountCurrency = map[_draft.accountId] ?? 'RUB';
+      final txCurrency = _selectedCurrency ?? accountCurrency;
+      if (txCurrency == accountCurrency) {
+        if (mounted) setState(() => _previewText = null);
+        return;
+      }
+      final converted = await ref.read(convertCurrencyUseCaseProvider)(
+        amountKopecks: _draft.amount,
+        fromCurrency: txCurrency,
+        toCurrency: accountCurrency,
+        dateUtc: _draft.date.toUtc(),
+      );
+      if (!mounted) return;
+      setState(() {
+        _previewText = converted == null
+            ? 'Нет курса $txCurrency → $accountCurrency на дату: при сохранении потребуется исключение'
+            : '≈ ${MoneyFormatter.formatKopecks(converted, accountCurrency)} по курсу на дату';
+      });
+    } catch (_) {
+      if (mounted) setState(() => _previewText = null);
+    }
+  }
+
   Future<void> _onSave() async {
     HapticFeedback.mediumImpact();
-
     if (_draft.amount <= 0) {
       setState(() => _amountError = 'Введите сумму больше нуля');
       return;
     }
-
     if (widget.type == TransactionType.transfer &&
         (_draft.linkedAccountId == null || _draft.linkedAccountId!.isEmpty)) {
       ScaffoldMessenger.of(
@@ -352,25 +429,53 @@ class _CreateTransactionScreenState
       ).showSnackBar(const SnackBar(content: Text('Выберите счёт-получатель')));
       return;
     }
-
     setState(() => _isSaving = true);
-
     try {
       final usecase = ref.read(createTransactionUseCaseProvider);
       final userId = ref.read(currentUserIdForCreateProvider);
       final spaceId = ref.read(currentSpaceIdProvider);
+      final currencyMap =
+          await ref.read(accountCurrencyMapProvider.future);
+      final accountCurrency = currencyMap[_draft.accountId] ?? 'RUB';
+      final txCurrency = _selectedCurrency ?? accountCurrency;
+
+      var saveDraft = _draft.copyWith(spaceId: spaceId);
+      if (txCurrency != accountCurrency) {
+        final converted = await ref.read(convertCurrencyUseCaseProvider)(
+          amountKopecks: _draft.amount,
+          fromCurrency: txCurrency,
+          toCurrency: accountCurrency,
+          dateUtc: _draft.date.toUtc(),
+        );
+        if (converted == null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Нет курса $txCurrency → $accountCurrency на дату операции. '
+                  'Добавьте исключение: экран «Кэшбэк» → иконка ⇄.',
+                ),
+                backgroundColor: AppColors.colorExpense,
+              ),
+            );
+          }
+          return;
+        }
+        saveDraft = saveDraft.copyWith(
+          amount: converted,
+          originalCurrency: txCurrency,
+          originalAmount: _draft.amount,
+        );
+      }
 
       // Читаем настройки секретности из app_settings
       final secrecyConfig = await _loadSecrecyConfig(userId);
-
       final result = await usecase.call(
-        draft: _draft.copyWith(spaceId: spaceId),
+        draft: saveDraft,
         userId: userId,
         secrecyConfig: secrecyConfig,
       );
-
       if (!mounted) return;
-
       switch (result) {
         case Success(:final value):
           HapticFeedback.mediumImpact();
@@ -378,12 +483,11 @@ class _CreateTransactionScreenState
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Сохранено: ${MoneyFormatter.formatKopecks(value.amount, 'RUB')}',
+                'Сохранено: ${MoneyFormatter.formatKopecks(value.amount, accountCurrency)}',
               ),
             ),
           );
           context.pop();
-
         case Error(:final failure):
           HapticFeedback.vibrate();
           ScaffoldMessenger.of(context).showSnackBar(
@@ -411,25 +515,19 @@ class _CreateTransactionScreenState
   }
 
   /// Читает настройки режима секретности из app_settings.
-  ///
-  /// Возвращает SecrecyConfig, если режим включен и пользователь существует.
-  /// Иначе возвращает null (блокировка синхронизации не применяется).
   Future<SecrecyConfig?> _loadSecrecyConfig(String userId) async {
     try {
       final db = AppDatabase();
       final settings = await db.appSettingsDao.getForUser(userId);
-
       if (!settings.enableSecrecyMode) {
         return null;
       }
-
       return SecrecyConfig(
         enabled: true,
         threshold: settings.largeTransactionThreshold,
         timeoutSeconds: settings.secrecyTimeoutSeconds,
       );
     } catch (e) {
-      // Если не удалось прочитать настройки, не блокируем сохранение
       return null;
     }
   }

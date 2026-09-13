@@ -1,13 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
-
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/ports/clock_port.dart';
 import 'package:budget_assistant/core/services/elapsed_realtime_service.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+import 'package:budget_assistant/features/accounts/presentation/providers/account_providers.dart';
 import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
 import 'package:budget_assistant/features/transactions/domain/models/transaction_split.dart';
-
 import '../../data/repositories/transactions_repository_impl.dart';
 import '../../domain/repositories/transactions_repository.dart';
 import '../../domain/usecases/create_transaction_usecase.dart';
@@ -49,24 +48,34 @@ final currentUserIdForCreateProvider = Provider<String>(
   (ref) => ref.watch(currentUserIdProvider),
 );
 
+/// Этап 10: карта id счёта -> код валюты счёта.
+/// Нужна формам создания/редактирования для мультивалютного ввода
+/// и предпросмотра конвертации.
+final accountCurrencyMapProvider = FutureProvider<Map<String, String>>((ref) async {
+  final repo = ref.watch(accountRepositoryProvider);
+  final userId = ref.watch(currentUserIdForCreateProvider);
+  final accounts = await repo.getAccountsByUserId(userId);
+  return {for (final a in accounts) a.id: a.currency};
+});
+
 /// Загрузка транзакции по ID для экрана редактирования.
 final editTransactionProvider = FutureProvider.autoDispose
     .family<Transaction?, String>((ref, id) async {
-      final repo = ref.watch(transactionsRepositoryProvider);
-      try {
-        return await repo.getTransactionById(id);
-      } catch (_) {
-        return null;
-      }
-    });
+  final repo = ref.watch(transactionsRepositoryProvider);
+  try {
+    return await repo.getTransactionById(id);
+  } catch (_) {
+    return null;
+  }
+});
 
 /// Загрузка сплитов транзакции для экрана редактирования.
 final editTransactionSplitsProvider = FutureProvider.autoDispose
     .family<List<TransactionSplit>, String>((ref, id) async {
-      final repo = ref.watch(transactionsRepositoryProvider);
-      try {
-        return await repo.getSplitsForTransaction(id);
-      } catch (_) {
-        return const [];
-      }
-    });
+  final repo = ref.watch(transactionsRepositoryProvider);
+  try {
+    return await repo.getSplitsForTransaction(id);
+  } catch (_) {
+    return const [];
+  }
+});

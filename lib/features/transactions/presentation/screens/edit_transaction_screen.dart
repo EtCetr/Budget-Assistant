@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-
+import 'package:budget_assistant/core/constants/currency_codes.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import 'package:budget_assistant/core/errors/result.dart';
@@ -11,7 +11,7 @@ import 'package:budget_assistant/core/formatting/money_input_parser.dart';
 import 'package:budget_assistant/core/formatting/money_formatter.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
-
+import 'package:budget_assistant/features/cashback/presentation/providers/cashback_providers.dart';
 import '../../domain/entities/lookup_item.dart';
 import '../../domain/models/secrecy_config.dart';
 import '../../domain/models/transaction.dart';
@@ -24,6 +24,8 @@ import '../providers/transactions_log_providers.dart';
 /// Экран редактирования транзакции.
 ///
 /// Роут: /transactions/edit/:id
+/// Этап 10: редактирование валюты операции; оригинал префиллится
+/// из original_currency/original_amount.
 class EditTransactionScreen extends ConsumerStatefulWidget {
   const EditTransactionScreen({super.key, required this.transactionId});
 
@@ -38,14 +40,15 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
   TransactionDraft? _draft;
   List<TransactionSplitDraft>? _existingSplits;
   TransactionType? _type;
-
   final _amountController = TextEditingController();
   final _merchantController = TextEditingController();
   final _commentController = TextEditingController();
-
   bool _isSaving = false;
   bool _isLoaded = false;
+  bool _previewInitialized = false;
   String? _amountError;
+  String? _selectedCurrency;
+  String? _previewText;
 
   @override
   void initState() {
@@ -60,6 +63,7 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
       if (!mounted) return;
       ref.invalidate(transactionAccountLookupProvider);
       ref.invalidate(transactionCategoryLookupProvider);
+      ref.invalidate(accountCurrencyMapProvider);
     });
   }
 
@@ -74,27 +78,7 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
   void _initFromTransaction(Transaction t, List<TransactionSplit> splits) {
     if (_isLoaded) return;
     _isLoaded = true;
-
     _type = t.type;
-
-    _draft = TransactionDraft(
-      id: t.id,
-      accountId: t.accountId,
-      linkedAccountId: t.linkedAccountId,
-      date: t.date.toLocal(),
-      amount: t.amount,
-      originalCurrency: t.originalCurrency,
-      originalAmount: t.originalAmount,
-      type: t.type,
-      spaceId: t.spaceId,
-      bankCategory: t.bankCategory,
-      customCategoryId: t.customCategoryId,
-      merchantName: t.merchantName,
-      comment: t.comment,
-      savingsGoalId: t.savingsGoalId,
-      isWithdrawal: t.isWithdrawal,
-    );
-
     _existingSplits = splits
         .map(
           (s) => TransactionSplitDraft(
@@ -106,10 +90,33 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
           ),
         )
         .toList();
-
-    _amountController.text = _formatAmountForInput(t.amount);
+    // Этап 10: если есть сплиты — работаем в валюте счёта (суммы сплитов
+    // уже в валюте счёта), валютный ввод для них заблокирован.
+    final hasSplits = splits.isNotEmpty;
+    final foreign = !hasSplits && t.originalCurrency != null;
+    _selectedCurrency = foreign ? t.originalCurrency : null;
+    final inputKopecks = foreign ? (t.originalAmount ?? t.amount) : t.amount;
+    _draft = TransactionDraft(
+      id: t.id,
+      accountId: t.accountId,
+      linkedAccountId: t.linkedAccountId,
+      date: t.date.toLocal(),
+      amount: inputKopecks,
+      originalCurrency: null,
+      originalAmount: null,
+      type: t.type,
+      spaceId: t.spaceId,
+      bankCategory: t.bankCategory,
+      customCategoryId: t.customCategoryId,
+      merchantName: t.merchantName,
+      comment: t.comment,
+      savingsGoalId: t.savingsGoalId,
+      isWithdrawal: t.isWithdrawal,
+    );
+    _amountController.text = _formatAmountForInput(inputKopecks);
     _merchantController.text = t.merchantName ?? '';
     _commentController.text = t.comment ?? '';
+    _previewInitialized = false;
   }
 
   /// Форматирует копейки в строку для поля ввода.
@@ -119,7 +126,6 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
     final abs = kopecks.abs();
     final rubles = abs ~/ 100;
     final kop = abs % 100;
-
     if (kop == 0) {
       return '$rubles';
     }
@@ -136,7 +142,6 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
     );
     final accountsAsync = ref.watch(transactionAccountLookupProvider);
     final categoriesAsync = ref.watch(transactionCategoryLookupProvider);
-
     return Scaffold(
       appBar: AppBar(title: const Text(TransactionsLogLabels.editTitle)),
       body: transactionAsync.when(
@@ -146,13 +151,15 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
           if (transaction == null) {
             return const Center(child: Text('Транзакция не найдена'));
           }
-
           return splitsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(child: Text('Не удалось загрузить: $e')),
             data: (splits) {
               _initFromTransaction(transaction, splits);
-
+              if (!_previewInitialized) {
+                _previewInitialized = true;
+                _updatePreview();
+              }
               return accountsAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) =>
@@ -161,7 +168,6 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
                   if (accounts.isEmpty) {
                     return _buildNoAccounts();
                   }
-
                   return categoriesAsync.when(
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
@@ -215,13 +221,17 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
 
   Widget _buildForm(List<LookupItem> accounts, List<LookupItem> categories) {
     if (_draft == null) return const SizedBox.shrink();
-
+    final currencyMap =
+        ref.watch(accountCurrencyMapProvider).value ?? const <String, String>{};
+    final accountCurrency = currencyMap[_draft!.accountId] ?? 'RUB';
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.spacing16),
       children: [
-        _buildAmountField(),
+        _buildAmountField(_selectedCurrency ?? accountCurrency),
         const SizedBox(height: AppSpacing.spacing16),
         _buildAccountDropdown(accounts),
+        const SizedBox(height: AppSpacing.spacing16),
+        _buildCurrencyDropdown(accountCurrency),
         if (_type == TransactionType.transfer) ...[
           const SizedBox(height: AppSpacing.spacing16),
           _buildLinkedAccountDropdown(accounts),
@@ -241,40 +251,53 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
     );
   }
 
-  Widget _buildAmountField() {
-    return TextField(
-      controller: _amountController,
-      keyboardType: const TextInputType.numberWithOptions(
-        decimal: true,
-        signed: false,
-      ),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'^\d*[,.]?\d{0,2}')),
+  Widget _buildAmountField(String suffixCurrency) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: _amountController,
+          keyboardType: const TextInputType.numberWithOptions(
+            decimal: true,
+            signed: false,
+          ),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d*[,.]?\d{0,2}')),
+          ],
+          decoration: InputDecoration(
+            labelText: 'Сумма',
+            errorText: _amountError,
+            border: const OutlineInputBorder(),
+            suffixText: suffixCurrency,
+          ),
+          onChanged: (value) {
+            final parsed = MoneyInputParser.parseKopecks(value);
+            setState(() {
+              if (parsed == null) {
+                _amountError = 'Некорректная сумма';
+              } else {
+                _amountError = null;
+                _draft = _draft?.copyWith(amount: parsed);
+              }
+            });
+            _updatePreview();
+          },
+        ),
+        if (_previewText != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6, left: 4),
+            child: Text(
+              _previewText!,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
       ],
-      decoration: InputDecoration(
-        labelText: 'Сумма',
-        errorText: _amountError,
-        border: const OutlineInputBorder(),
-        suffixText: '₽',
-      ),
-      onChanged: (value) {
-        final parsed = MoneyInputParser.parseKopecks(value);
-        setState(() {
-          if (parsed == null) {
-            _amountError = 'Некорректная сумма';
-          } else {
-            _amountError = null;
-            _draft = _draft?.copyWith(amount: parsed);
-          }
-        });
-      },
     );
   }
 
   Widget _buildAccountDropdown(List<LookupItem> accounts) {
     final currentId = _draft?.accountId;
     final isValid = currentId != null && accounts.any((a) => a.id == currentId);
-
     return DropdownButtonFormField<String>(
       initialValue: isValid ? currentId : null,
       decoration: const InputDecoration(
@@ -286,8 +309,36 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
           .toList(),
       onChanged: (value) {
         if (value != null && _draft != null) {
-          setState(() => _draft = _draft!.copyWith(accountId: value));
+          setState(() {
+            _draft = _draft!.copyWith(accountId: value);
+            _selectedCurrency = null;
+            _previewText = null;
+          });
+          _updatePreview();
         }
+      },
+    );
+  }
+
+  Widget _buildCurrencyDropdown(String accountCurrency) {
+    final current = _selectedCurrency ?? accountCurrency;
+    return DropdownButtonFormField<String>(
+      initialValue: current,
+      decoration: const InputDecoration(
+        labelText: 'Валюта операции',
+        border: OutlineInputBorder(),
+      ),
+      items: [
+        for (final code in kCurrencyCodes)
+          DropdownMenuItem(value: code, child: Text(code)),
+      ],
+      onChanged: (value) {
+        setState(() {
+          _selectedCurrency =
+              (value == null || value == accountCurrency) ? null : value;
+          _previewText = null;
+        });
+        _updatePreview();
       },
     );
   }
@@ -296,7 +347,6 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
     final others = accounts.where((a) => a.id != _draft?.accountId).toList();
     final currentId = _draft?.linkedAccountId;
     final isValid = currentId != null && others.any((a) => a.id == currentId);
-
     return DropdownButtonFormField<String>(
       initialValue: isValid ? currentId : null,
       decoration: const InputDecoration(
@@ -318,7 +368,6 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
     final currentId = _draft?.customCategoryId;
     final isValid =
         currentId != null && categories.any((c) => c.id == currentId);
-
     return DropdownButtonFormField<String>(
       initialValue: isValid ? currentId : null,
       decoration: const InputDecoration(
@@ -338,7 +387,6 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
 
   Widget _buildDatePicker() {
     if (_draft == null) return const SizedBox.shrink();
-
     return InkWell(
       onTap: () async {
         final picked = await showDatePicker(
@@ -349,6 +397,7 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
         );
         if (picked != null) {
           setState(() => _draft = _draft!.copyWith(date: picked));
+          _updatePreview();
         }
       },
       child: InputDecorator(
@@ -425,16 +474,45 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
     );
   }
 
+  /// Живой предпросмотр конвертации в валюту счёта (Этап 10).
+  Future<void> _updatePreview() async {
+    final draft = _draft;
+    if (draft == null || draft.amount <= 0) {
+      if (mounted) setState(() => _previewText = null);
+      return;
+    }
+    try {
+      final map = await ref.read(accountCurrencyMapProvider.future);
+      final accountCurrency = map[draft.accountId] ?? 'RUB';
+      final txCurrency = _selectedCurrency ?? accountCurrency;
+      if (txCurrency == accountCurrency) {
+        if (mounted) setState(() => _previewText = null);
+        return;
+      }
+      final converted = await ref.read(convertCurrencyUseCaseProvider)(
+        amountKopecks: draft.amount,
+        fromCurrency: txCurrency,
+        toCurrency: accountCurrency,
+        dateUtc: draft.date.toUtc(),
+      );
+      if (!mounted) return;
+      setState(() {
+        _previewText = converted == null
+            ? 'Нет курса $txCurrency → $accountCurrency на дату: при сохранении потребуется исключение'
+            : '≈ ${MoneyFormatter.formatKopecks(converted, accountCurrency)} по курсу на дату';
+      });
+    } catch (_) {
+      if (mounted) setState(() => _previewText = null);
+    }
+  }
+
   Future<void> _onSave() async {
     HapticFeedback.mediumImpact();
-
     if (_draft == null) return;
-
     if (_draft!.amount <= 0) {
       setState(() => _amountError = 'Введите сумму больше нуля');
       return;
     }
-
     if (_type == TransactionType.transfer &&
         (_draft!.linkedAccountId == null || _draft!.linkedAccountId!.isEmpty)) {
       ScaffoldMessenger.of(
@@ -442,27 +520,68 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
       ).showSnackBar(const SnackBar(content: Text('Выберите счёт-получатель')));
       return;
     }
-
     setState(() => _isSaving = true);
-
     try {
       final usecase = ref.read(updateTransactionUseCaseProvider);
       final userId = ref.read(currentUserIdForCreateProvider);
+      final currencyMap =
+          await ref.read(accountCurrencyMapProvider.future);
+      final accountCurrency = currencyMap[_draft!.accountId] ?? 'RUB';
+      final txCurrency = _selectedCurrency ?? accountCurrency;
+
+      if ((_existingSplits?.isNotEmpty ?? false) &&
+          txCurrency != accountCurrency) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Валютная операция со сплитами не поддерживается: верните валюту счёта',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      var saveDraft = _draft!;
+      if (txCurrency != accountCurrency) {
+        final converted = await ref.read(convertCurrencyUseCaseProvider)(
+          amountKopecks: _draft!.amount,
+          fromCurrency: txCurrency,
+          toCurrency: accountCurrency,
+          dateUtc: _draft!.date.toUtc(),
+        );
+        if (converted == null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Нет курса $txCurrency → $accountCurrency на дату операции. '
+                  'Добавьте исключение: экран «Кэшбэк» → иконка ⇄.',
+                ),
+                backgroundColor: AppColors.colorExpense,
+              ),
+            );
+          }
+          return;
+        }
+        saveDraft = saveDraft.copyWith(
+          amount: converted,
+          originalCurrency: txCurrency,
+          originalAmount: _draft!.amount,
+        );
+      }
 
       // Готовим черновик с сохранением существующих сплитов
-      final draftWithSplits = _draft!.copyWith(splits: _existingSplits);
-
+      final draftWithSplits = saveDraft.copyWith(splits: _existingSplits);
       // Читаем настройки секретности из app_settings
       final secrecyConfig = await _loadSecrecyConfig(userId);
-
       final result = await usecase.call(
         draft: draftWithSplits,
         userId: userId,
         secrecyConfig: secrecyConfig,
       );
-
       if (!mounted) return;
-
       switch (result) {
         case Success(:final value):
           HapticFeedback.mediumImpact();
@@ -471,12 +590,11 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Сохранено: ${MoneyFormatter.formatKopecks(value.amount, 'RUB')}',
+                'Сохранено: ${MoneyFormatter.formatKopecks(value.amount, accountCurrency)}',
               ),
             ),
           );
           context.pop();
-
         case Error(:final failure):
           HapticFeedback.vibrate();
           ScaffoldMessenger.of(context).showSnackBar(
@@ -508,11 +626,9 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
     try {
       final db = AppDatabase();
       final settings = await db.appSettingsDao.getForUser(userId);
-
       if (!settings.enableSecrecyMode) {
         return null;
       }
-
       return SecrecyConfig(
         enabled: true,
         threshold: settings.largeTransactionThreshold,

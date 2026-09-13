@@ -1,17 +1,24 @@
-﻿// lib/features/accounts/presentation/widgets/account_card.dart
+// lib/features/accounts/presentation/widgets/account_card.dart
 import 'package:flutter/material.dart';
 import '../../domain/entities/account.dart';
 
 class AccountCard extends StatelessWidget {
   final Account account;
   final VoidCallback? onTap;
-
   const AccountCard({super.key, required this.account, this.onTap});
 
+  /// Форматирование копеек в валюте счёта (деление на 100 — только в UI).
   String _formatBalance(int kopecks) {
-    final rubles = kopecks ~/ 100;
-    final kops = kopecks % 100;
-    return '${rubles.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]} ')}₽ ${kops.toString().padLeft(2, '0')}коп';
+    final isNegative = kopecks < 0;
+    final abs = kopecks.abs();
+    final whole = abs ~/ 100;
+    final fraction = (abs % 100).toString().padLeft(2, '0');
+    final grouped = whole.toString().replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]} ',
+    );
+    final sign = isNegative ? '-' : '';
+    return '$sign$grouped,$fraction ${account.currency}';
   }
 
   Color _getGradientStartColor() {

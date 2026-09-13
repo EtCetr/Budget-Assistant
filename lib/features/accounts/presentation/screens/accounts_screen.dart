@@ -1,7 +1,8 @@
-﻿// lib/features/accounts/presentation/screens/accounts_screen.dart
+// lib/features/accounts/presentation/screens/accounts_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:budget_assistant/core/constants/currency_codes.dart';
 import '../providers/account_providers.dart';
 import '../widgets/expansion_tile_group.dart';
 import '../widgets/account_type_ui.dart';
@@ -11,13 +12,11 @@ import 'package:budget_assistant/core/utils/result.dart';
 
 class AccountsScreen extends ConsumerWidget {
   final String userId;
-
   const AccountsScreen({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final accountsAsync = ref.watch(accountsListProvider(userId));
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Accounts'),
@@ -83,18 +82,15 @@ class AccountsScreen extends ConsumerWidget {
         ),
       );
     }
-
     final grouped = <String, List<Account>>{};
     for (final account in accounts) {
       grouped.putIfAbsent(account.accountType, () => []).add(account);
     }
-
     // Сначала известные типы в порядке ТЗ, затем прочие
     final orderedTypes = [
       ...AccountTypes.all.where(grouped.containsKey),
       ...grouped.keys.where((t) => !AccountTypes.all.contains(t)),
     ];
-
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -157,11 +153,11 @@ class AccountsScreen extends ConsumerWidget {
   }
 }
 
-/// Диалог создания И редактирования счёта
+/// Диалог создания И редактирования счёта.
+/// Этап 10: добавлен выбор валюты счёта (ISO-код).
 class _AccountDialog extends ConsumerStatefulWidget {
   final String userId;
   final Account? account;
-
   const _AccountDialog({required this.userId, this.account});
 
   @override
@@ -173,6 +169,7 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
   late final TextEditingController _bankController;
   late final TextEditingController _balanceController;
   late String _selectedType;
+  late String _selectedCurrency;
   bool _isLoading = false;
 
   bool get _isEdit => widget.account != null;
@@ -187,6 +184,7 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
       text: a == null ? '' : (a.currentBalance / 100).toStringAsFixed(2),
     );
     _selectedType = a?.accountType ?? AccountTypes.debit;
+    _selectedCurrency = a?.currency ?? 'RUB';
   }
 
   @override
@@ -201,52 +199,76 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(_isEdit ? 'Edit Account' : 'Create Account'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Account Name',
-              hintText: 'e.g., My Card',
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Account Name',
+                hintText: 'e.g., My Card',
+              ),
+              autofocus: !_isEdit,
             ),
-            autofocus: !_isEdit,
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _bankController,
-            decoration: const InputDecoration(
-              labelText: 'Bank / Source',
-              hintText: 'e.g., T-Bank, Cash box',
+            const SizedBox(height: 16),
+            TextField(
+              controller: _bankController,
+              decoration: const InputDecoration(
+                labelText: 'Bank / Source',
+                hintText: 'e.g., T-Bank, Cash box',
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _balanceController,
-            decoration: const InputDecoration(
-              labelText: 'Balance (₽)',
-              hintText: '0.00',
+            const SizedBox(height: 16),
+            TextField(
+              controller: _balanceController,
+              decoration: InputDecoration(
+                labelText: 'Balance ($_selectedCurrency)',
+                hintText: '0.00',
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
             ),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            initialValue: _selectedType,
-            decoration: const InputDecoration(labelText: 'Type'),
-            items: [
-              for (final type in AccountTypes.all)
-                DropdownMenuItem(
-                  value: type,
-                  child: Text(accountTypeMeta(type).label),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedCurrency,
+              decoration: const InputDecoration(labelText: 'Currency'),
+              items: [
+                for (final code in kCurrencyCodes)
+                  DropdownMenuItem(value: code, child: Text(code)),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  _selectedCurrency = value ?? 'RUB';
+                });
+              },
+            ),
+            if (_isEdit)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'История операций не пересчитывается: смена валюты влияет только на новые операции и расчёты.',
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
-            ],
-            onChanged: (value) {
-              setState(() {
-                _selectedType = value ?? AccountTypes.debit;
-              });
-            },
-          ),
-        ],
+              ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedType,
+              decoration: const InputDecoration(labelText: 'Type'),
+              items: [
+                for (final type in AccountTypes.all)
+                  DropdownMenuItem(
+                    value: type,
+                    child: Text(accountTypeMeta(type).label),
+                  ),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  _selectedType = value ?? AccountTypes.debit;
+                });
+              },
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -271,9 +293,7 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
       );
       return;
     }
-
     setState(() => _isLoading = true);
-
     try {
       // Деньги ТОЛЬКО в копейках: double — лишь для парсинга ввода
       final balanceKopecks =
@@ -282,7 +302,6 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
       final bank = _bankController.text.trim().isEmpty
           ? 'Manual'
           : _bankController.text.trim();
-
       final Result<void> result;
       if (_isEdit) {
         final a = widget.account!;
@@ -291,7 +310,7 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
               bankName: bank,
               customName: name,
               accountType: _selectedType,
-              currency: a.currency,
+              currency: _selectedCurrency,
               currentBalance: balanceKopecks,
               cardNumberMask: a.cardNumberMask,
               creditLimit: a.creditLimit,
@@ -302,11 +321,10 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
               bankName: bank,
               customName: name,
               accountType: _selectedType,
-              currency: 'RUB',
+              currency: _selectedCurrency,
               currentBalance: balanceKopecks,
             );
       }
-
       result.when(
         success: (_) {
           if (!mounted) return;

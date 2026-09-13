@@ -9,11 +9,27 @@ import '../../domain/entities/exchange_rate_entry.dart';
 /// Конвертация происходит автоматически по официальному курсу ЦБ РФ
 /// на дату операции. Сюда пользователь вносит только ручные исключения:
 /// «заплатил по курсу, отличному от официального».
+/// Любую строку (исключение или авто-кэш ЦБ) можно удалить корзиной.
 class ExchangeRatesDialog extends ConsumerWidget {
   const ExchangeRatesDialog({super.key});
 
   static Future<void> show(BuildContext context) {
     return showDialog(context: context, builder: (_) => const ExchangeRatesDialog());
+  }
+
+  Future<void> _deleteRate(BuildContext context, WidgetRef ref, String id) async {
+    try {
+      await ref.read(exchangeRateRepositoryProvider).deleteRate(id);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Запись курса удалена')),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Не удалось удалить: $e')),
+      );
+    }
   }
 
   @override
@@ -66,7 +82,11 @@ class ExchangeRatesDialog extends ConsumerWidget {
                       )
                     : ListView.builder(
                         itemCount: rates.length,
-                        itemBuilder: (context, i) => _RateTile(rate: rates[i]),
+                        itemBuilder: (context, i) => _RateTile(
+                          rate: rates[i],
+                          onDelete: () =>
+                              _deleteRate(context, ref, rates[i].id),
+                        ),
                       ),
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Center(child: Text('Ошибка: $e')),
@@ -92,9 +112,10 @@ class ExchangeRatesDialog extends ConsumerWidget {
 }
 
 class _RateTile extends StatelessWidget {
-  const _RateTile({required this.rate});
+  const _RateTile({required this.rate, required this.onDelete});
 
   final ExchangeRateEntry rate;
+  final VoidCallback onDelete;
 
   String get _sourceLabel =>
       rate.source == 'manual' ? 'вручную (исключение)' : 'ЦБ РФ (авто-кэш)';
@@ -105,7 +126,17 @@ class _RateTile extends StatelessWidget {
       dense: true,
       title: Text('${rate.fromCurrency} → ${rate.toCurrency}'),
       subtitle: Text('${DateFormat.yMd('ru').format(rate.date)} • $_sourceLabel'),
-      trailing: Text('${rate.rate}'),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('${rate.rate}'),
+          IconButton(
+            tooltip: 'Удалить',
+            icon: const Icon(Icons.delete_outline, size: 20),
+            onPressed: onDelete,
+          ),
+        ],
+      ),
     );
   }
 }
