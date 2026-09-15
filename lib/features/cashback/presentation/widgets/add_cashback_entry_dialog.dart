@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:budget_assistant/features/categories/domain/entities/category.dart';
 
-/// Результат диалога добавления категории кэшбэка.
+/// Результат диалога добавления/редактирования категории кэшбэка.
 class AddCashbackEntryResult {
   const AddCashbackEntryResult({
     required this.categoryId,
@@ -17,15 +17,38 @@ class AddCashbackEntryResult {
 }
 
 class AddCashbackEntryDialog extends StatefulWidget {
-  const AddCashbackEntryDialog({super.key, required this.categories});
+  const AddCashbackEntryDialog({
+    super.key,
+    required this.categories,
+    this.initialCategoryId,
+    this.initialPercentBps,
+    this.initialLifetimeType,
+  });
 
   final List<Category> categories;
 
+  /// Если переданы initial-* параметры — диалог работает в режиме редактирования.
+  final String? initialCategoryId;
+  final int? initialPercentBps;
+  final String? initialLifetimeType;
+
+  bool get _isEdit => initialCategoryId != null;
+
   static Future<AddCashbackEntryResult?> show(
-      BuildContext context, List<Category> categories) {
+    BuildContext context,
+    List<Category> categories, {
+    String? initialCategoryId,
+    int? initialPercentBps,
+    String? initialLifetimeType,
+  }) {
     return showDialog<AddCashbackEntryResult>(
       context: context,
-      builder: (_) => AddCashbackEntryDialog(categories: categories),
+      builder: (_) => AddCashbackEntryDialog(
+        categories: categories,
+        initialCategoryId: initialCategoryId,
+        initialPercentBps: initialPercentBps,
+        initialLifetimeType: initialLifetimeType,
+      ),
     );
   }
 
@@ -38,7 +61,21 @@ class _AddCashbackEntryDialogState extends State<AddCashbackEntryDialog> {
   String _lifetimeType = 'monthly';
   String? _categoryError;
   String? _percentError;
-  final _percentController = TextEditingController();
+  late final TextEditingController _percentController;
+
+  @override
+  void initState() {
+    super.initState();
+    _categoryId = widget.initialCategoryId;
+    _lifetimeType = widget.initialLifetimeType ?? 'monthly';
+    final bps = widget.initialPercentBps;
+    final initialText = bps == null
+        ? ''
+        : (bps % 100 == 0
+            ? (bps ~/ 100).toString()
+            : (bps / 100).toStringAsFixed(1));
+    _percentController = TextEditingController(text: initialText);
+  }
 
   @override
   void dispose() {
@@ -70,7 +107,9 @@ class _AddCashbackEntryDialogState extends State<AddCashbackEntryDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Категория кэшбэка'),
+      title: Text(widget._isEdit
+          ? 'Изменить категорию кэшбэка'
+          : 'Категория кэшбэка'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -124,7 +163,10 @@ class _AddCashbackEntryDialogState extends State<AddCashbackEntryDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Отмена'),
         ),
-        FilledButton(onPressed: _submit, child: const Text('Добавить')),
+        FilledButton(
+          onPressed: _submit,
+          child: Text(widget._isEdit ? 'Сохранить' : 'Добавить'),
+        ),
       ],
     );
   }

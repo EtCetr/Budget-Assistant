@@ -1,4 +1,4 @@
-﻿// lib/features/accounts/domain/usecases/create_account_usecase.dart
+// lib/features/accounts/domain/usecases/create_account_usecase.dart
 import 'package:budget_assistant/core/errors/failures.dart';
 import 'package:budget_assistant/core/utils/result.dart';
 import '../entities/account.dart';
@@ -15,9 +15,9 @@ class CreateAccountUseCase {
     required AccountRepository repository,
     required Logger logger,
     required Uuid uuid,
-  }) : _repository = repository,
-       _logger = logger,
-       _uuid = uuid;
+  })  : _repository = repository,
+        _logger = logger,
+        _uuid = uuid;
 
   Future<Result<Account>> execute({
     required String userId,
@@ -27,17 +27,15 @@ class CreateAccountUseCase {
     required String currency,
     required int currentBalance,
     String? spaceId,
+    bool isSharedBalance = false,
     String? cardNumberMask,
     int? creditLimit,
     DateTime? gracePeriodEnd,
     int? minPaymentAmount,
   }) async {
     try {
-      // ✅ ГАРАНТИЯ: локальный профиль существует до INSERT в accounts (FK)
       await _repository.ensureLocalUser(userId);
-
       final now = DateTime.now().toUtc();
-
       final account = Account(
         id: _uuid.v4(),
         userId: userId,
@@ -51,21 +49,16 @@ class CreateAccountUseCase {
         creditLimit: creditLimit,
         gracePeriodEnd: gracePeriodEnd,
         minPaymentAmount: minPaymentAmount,
+        isSharedBalance: isSharedBalance,
         createdAt: now,
         updatedAt: now,
         syncStatus: 'pending',
       );
-
       await _repository.insertAccount(account);
       _logger.i('Account created: ${account.id}');
-
       return Result.success(account);
     } catch (e, stackTrace) {
-      _logger.e(
-        'CreateAccountUseCase failed',
-        error: e,
-        stackTrace: stackTrace,
-      );
+      _logger.e('CreateAccountUseCase failed', error: e, stackTrace: stackTrace);
       return Result.failure(Failure.database(e.toString(), stackTrace));
     }
   }

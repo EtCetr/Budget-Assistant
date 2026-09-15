@@ -8,6 +8,7 @@ import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import 'package:budget_assistant/core/errors/result.dart';
 import 'package:budget_assistant/core/formatting/money_input_parser.dart';
+import 'package:budget_assistant/core/formatting/money_text_input_formatter.dart';
 import 'package:budget_assistant/core/formatting/money_formatter.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
@@ -262,7 +263,7 @@ class _EditTransactionScreenState extends ConsumerState<EditTransactionScreen> {
             signed: false,
           ),
           inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d*[,.]?\d{0,2}')),
+            MoneyTextInputFormatter(),
           ],
           decoration: InputDecoration(
             labelText: 'Сумма',

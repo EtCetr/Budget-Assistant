@@ -5,6 +5,7 @@ import 'package:budget_assistant/core/ports/clock_port.dart';
 import 'package:budget_assistant/core/services/elapsed_realtime_service.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/features/accounts/presentation/providers/account_providers.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/providers/savings_goal_port_providers.dart';
 import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
 import 'package:budget_assistant/features/transactions/domain/models/transaction_split.dart';
 import '../../data/repositories/transactions_repository_impl.dart';
@@ -26,11 +27,15 @@ final elapsedRealtimeServiceProvider = Provider<ClockPort>(
 );
 
 /// UseCase создания транзакции (Этап 6).
+///
+/// Этап 12: передаётся порт прогресса целей накопления — при
+/// создании транзакции с savings_goal_id обновляется current_amount цели.
 final createTransactionUseCaseProvider = Provider<CreateTransactionUseCase>(
   (ref) => CreateTransactionUseCase(
     repository: ref.watch(transactionsRepositoryProvider),
     logger: _logger,
     clock: ref.watch(elapsedRealtimeServiceProvider),
+    savingsGoalProgressPort: ref.watch(savingsGoalProgressPortProvider),
   ),
 );
 

@@ -8,28 +8,33 @@ import '../providers/cashback_providers.dart';
 ///
 /// Все суммы проходят через PrivacyFormatter (ТОМ 6 §6.6).
 /// Чип статуса переключает potential <-> approved тапом.
+/// Кнопки редактирования/удаления — в верхней строке; чипыPercent/статус
+/// перенесены в Wrap, чтобы не было RenderFlex overflow на узких экранах.
 class CashbackEntryCard extends ConsumerWidget {
-  const CashbackEntryCard({super.key, required this.summary, this.onDelete});
+  const CashbackEntryCard({
+    super.key,
+    required this.summary,
+    this.onDelete,
+    this.onEdit,
+  });
 
   final CashbackCategorySummary summary;
   final VoidCallback? onDelete;
+  final VoidCallback? onEdit;
 
   String get _lifetimeLabel =>
       summary.lifetimeType == 'weekly' ? 'Недельный' : 'Месячный';
-
   double get _percent => summary.percentBps / 100;
-
   bool get _approved => summary.status == 'approved';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formatter = ref.watch(privacyFormatterProvider);
     final mode = ref.watch(privacyModeProvider);
-
     String money(int kopecks) =>
         formatter.formatAmount(kopecks, summary.currency, mode);
-
     final theme = Theme.of(context);
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Padding(
@@ -40,11 +45,34 @@ class CashbackEntryCard extends ConsumerWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(summary.categoryName,
-                      style: theme.textTheme.titleMedium),
+                  child: Text(
+                    summary.categoryName,
+                    style: theme.textTheme.titleMedium,
+                  ),
                 ),
-                Chip(label: Text('$_lifetimeLabel ${_percent.toStringAsFixed(1)}%')),
-                const SizedBox(width: 4),
+                if (onEdit != null)
+                  IconButton(
+                    tooltip: 'Изменить',
+                    icon: const Icon(Icons.edit_outlined, size: 20),
+                    onPressed: onEdit,
+                  ),
+                if (onDelete != null)
+                  IconButton(
+                    tooltip: 'Удалить',
+                    icon: const Icon(Icons.delete_outline, size: 20),
+                    onPressed: onDelete,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              children: [
+                Chip(
+                  label:
+                      Text('$_lifetimeLabel ${_percent.toStringAsFixed(1)}%'),
+                ),
                 ActionChip(
                   avatar: Icon(
                     _approved ? Icons.verified : Icons.hourglass_bottom,
@@ -55,11 +83,6 @@ class CashbackEntryCard extends ConsumerWidget {
                   visualDensity: VisualDensity.compact,
                   onPressed: () => _toggleStatus(context, ref),
                 ),
-                if (onDelete != null)
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: onDelete,
-                  ),
               ],
             ),
             const SizedBox(height: 12),

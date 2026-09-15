@@ -1,6 +1,5 @@
-﻿import 'package:drift/drift.dart';
+import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
-
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
 import 'package:budget_assistant/features/transactions/domain/models/transaction_split.dart';
@@ -17,8 +16,8 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
   final Logger _logger;
 
   TransactionsRepositoryImpl({required AppDatabase db, required Logger logger})
-    : _db = db,
-      _logger = logger;
+      : _db = db,
+        _logger = logger;
 
   @override
   Future<void> createTransaction(
@@ -30,7 +29,6 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
         await _db
             .into(_db.transactions)
             .insert(_toTransactionsCompanion(transaction));
-
         if (splits.isNotEmpty) {
           await _db.batch((batch) {
             batch.insertAll(
@@ -56,11 +54,9 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
         await (_db.update(_db.transactions)
               ..where((t) => t.id.equals(transaction.id)))
             .write(_toTransactionsCompanion(transaction));
-
         await (_db.delete(
           _db.transactionSplits,
         )..where((t) => t.transactionId.equals(transaction.id))).go();
-
         if (splits.isNotEmpty) {
           await _db.batch((batch) {
             batch.insertAll(
@@ -83,7 +79,6 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
         await (_db.delete(
           _db.transactionSplits,
         )..where((t) => t.transactionId.equals(id))).go();
-
         return await (_db.delete(
           _db.transactions,
         )..where((t) => t.id.equals(id) & t.userId.equals(userId))).go();
@@ -100,11 +95,9 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
       final row = await (_db.select(
         _db.transactions,
       )..where((t) => t.id.equals(id))).getSingleOrNull();
-
       if (row == null) {
         return null;
       }
-
       return _fromDb(row);
     } catch (e, stack) {
       _logger.e('Failed to get transaction', error: e, stackTrace: stack);
@@ -120,11 +113,31 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
       final rows = await (_db.select(
         _db.transactionSplits,
       )..where((t) => t.transactionId.equals(transactionId))).get();
-
       return rows.map(_splitFromDb).toList();
     } catch (e, stack) {
       _logger.e(
         'Failed to get transaction splits',
+        error: e,
+        stackTrace: stack,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<Transaction>> getTransactionsByGoalId(String goalId) async {
+    try {
+      final rows = await (_db.select(_db.transactions)
+            ..where((t) => t.savingsGoalId.equals(goalId))
+            ..orderBy([
+              (t) => OrderingTerm.asc(t.date),
+              (t) => OrderingTerm.asc(t.createdAt),
+            ]))
+          .get();
+      return rows.map(_fromDb).toList();
+    } catch (e, stack) {
+      _logger.e(
+        'Failed to get transactions by goal id',
         error: e,
         stackTrace: stack,
       );

@@ -1,4 +1,4 @@
-﻿// lib/features/categories/presentation/widgets/category_tree_view.dart
+// lib/features/categories/presentation/widgets/category_tree_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/category_providers.dart';
@@ -8,29 +8,34 @@ import '../../domain/entities/category.dart';
 class CategoryTreeView extends ConsumerWidget {
   final List<Category> categories;
   final String userId;
+  final void Function(Category category)? onLongPress;
 
   const CategoryTreeView({
     super.key,
     required this.categories,
     required this.userId,
+    this.onLongPress,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Filter root categories (parentId == null)
     final rootCategories = categories.where((c) => c.isRoot).toList();
-
     if (rootCategories.isEmpty) {
       return const Padding(
         padding: EdgeInsets.all(16),
         child: Text('No root categories'),
       );
     }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: rootCategories.map((category) {
-        return _CategoryTreeItem(category: category, userId: userId, level: 0);
+        return _CategoryTreeItem(
+          category: category,
+          userId: userId,
+          level: 0,
+          onLongPress: onLongPress,
+        );
       }).toList(),
     );
   }
@@ -40,11 +45,13 @@ class _CategoryTreeItem extends ConsumerStatefulWidget {
   final Category category;
   final String userId;
   final int level;
+  final void Function(Category category)? onLongPress;
 
   const _CategoryTreeItem({
     required this.category,
     required this.userId,
     required this.level,
+    this.onLongPress,
   });
 
   @override
@@ -59,7 +66,6 @@ class _CategoryTreeItemState extends ConsumerState<_CategoryTreeItem> {
     final childrenAsync = ref.watch(
       childCategoriesProvider(widget.category.id),
     );
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -71,6 +77,9 @@ class _CategoryTreeItemState extends ConsumerState<_CategoryTreeItem> {
           onTap: () {
             // Handle category tap
           },
+          onLongPress: widget.onLongPress == null
+              ? null
+              : () => widget.onLongPress!(widget.category),
           onExpandToggle: () {
             setState(() {
               _isExpanded = !_isExpanded;
@@ -88,6 +97,7 @@ class _CategoryTreeItemState extends ConsumerState<_CategoryTreeItem> {
                     category: child,
                     userId: widget.userId,
                     level: widget.level + 1,
+                    onLongPress: widget.onLongPress,
                   );
                 }).toList(),
               );

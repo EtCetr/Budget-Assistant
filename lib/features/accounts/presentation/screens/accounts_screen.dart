@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budget_assistant/core/constants/currency_codes.dart';
+import 'package:budget_assistant/core/providers/security_providers.dart';
+import 'package:budget_assistant/features/spaces/presentation/providers/space_providers.dart';
 import '../providers/account_providers.dart';
 import '../widgets/expansion_tile_group.dart';
 import '../widgets/account_type_ui.dart';
@@ -60,11 +62,7 @@ class AccountsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAccountsList(
-    BuildContext context,
-    WidgetRef ref,
-    List<Account> accounts,
-  ) {
+  Widget _buildAccountsList(BuildContext context, WidgetRef ref, List<Account> accounts) {
     if (accounts.isEmpty) {
       return Center(
         child: Column(
@@ -86,7 +84,6 @@ class AccountsScreen extends ConsumerWidget {
     for (final account in accounts) {
       grouped.putIfAbsent(account.accountType, () => []).add(account);
     }
-    // Сначала известные типы в порядке ТЗ, затем прочие
     final orderedTypes = [
       ...AccountTypes.all.where(grouped.containsKey),
       ...grouped.keys.where((t) => !AccountTypes.all.contains(t)),
@@ -99,8 +96,7 @@ class AccountsScreen extends ConsumerWidget {
             title: accountTypeMeta(type).label,
             icon: accountTypeMeta(type).icon,
             accounts: grouped[type]!,
-            onTap: (account) =>
-                _showAccountDialog(context, ref, account: account),
+            onTap: (account) => _showAccountDialog(context, ref, account: account),
             onLongPress: (account) => _showDeleteDialog(context, ref, account),
           ),
       ],
@@ -153,13 +149,10 @@ class AccountsScreen extends ConsumerWidget {
   }
 }
 
-/// Диалог создания И редактирования счёта.
-/// Этап 10: добавлен выбор валюты счёта (ISO-код).
 class _AccountDialog extends ConsumerStatefulWidget {
   final String userId;
   final Account? account;
   const _AccountDialog({required this.userId, this.account});
-
   @override
   ConsumerState<_AccountDialog> createState() => _AccountDialogState();
 }
@@ -170,8 +163,8 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
   late final TextEditingController _balanceController;
   late String _selectedType;
   late String _selectedCurrency;
+  late bool _isShared;
   bool _isLoading = false;
-
   bool get _isEdit => widget.account != null;
 
   @override
@@ -185,6 +178,7 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
     );
     _selectedType = a?.accountType ?? AccountTypes.debit;
     _selectedCurrency = a?.currency ?? 'RUB';
+    _isShared = a?.isSharedBalance ?? false;
   }
 
   @override
@@ -197,6 +191,9 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final spaces = ref.watch(userSpacesProvider).value ?? const [];
+    final currentSpaceId = ref.watch(currentSpaceIdProvider);
+    final canShare = spaces.isNotEmpty;
     return AlertDialog(
       title: Text(_isEdit ? 'Edit Account' : 'Create Account'),
       content: SingleChildScrollView(
@@ -205,42 +202,37 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
           children: [
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Account Name',
-                hintText: 'e.g., My Card',
-              ),
+              decoration: const InputDecoration(labelText: 'Account Name', hintText: 'e.g., My Card'),
               autofocus: !_isEdit,
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _bankController,
-              decoration: const InputDecoration(
-                labelText: 'Bank / Source',
-                hintText: 'e.g., T-Bank, Cash box',
-              ),
+              decoration: const InputDecoration(labelText: 'Bank / Source', hintText: 'e.g., T-Bank, Cash box'),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _balanceController,
-              decoration: InputDecoration(
-                labelText: 'Balance ($_selectedCurrency)',
-                hintText: '0.00',
-              ),
+              decoration: InputDecoration(labelText: 'Balance ($_selectedCurrency)', hintText: '0.00'),
               keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               initialValue: _selectedCurrency,
               decoration: const InputDecoration(labelText: 'Currency'),
-              items: [
-                for (final code in kCurrencyCodes)
-                  DropdownMenuItem(value: code, child: Text(code)),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedCurrency = value ?? 'RUB';
-                });
-              },
+              items: [for (final code in kCurrencyCodes) DropdownMenuItem(value: code, child: Text(code))],
+              onChanged: (value) => setState(() => _selectedCurrency = value ?? 'RUB'),
+            ),
+            const SizedBox(height: 8),
+            SwitchListTile(
+              title: const Text('Семейный счёт (общий баланс)'),
+              subtitle: Text(canShare
+                  ? 'Баланс виден всем членам активной группы'
+                  : 'Сначала присоединитесь к семейному пространству'),
+              value: _isShared,
+              onChanged: canShare
+                  ? (v) => setState(() => _isShared = v)
+                  : null,
             ),
             if (_isEdit)
               Padding(
@@ -256,16 +248,9 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
               decoration: const InputDecoration(labelText: 'Type'),
               items: [
                 for (final type in AccountTypes.all)
-                  DropdownMenuItem(
-                    value: type,
-                    child: Text(accountTypeMeta(type).label),
-                  ),
+                  DropdownMenuItem(value: type, child: Text(accountTypeMeta(type).label)),
               ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedType = value ?? AccountTypes.debit;
-                });
-              },
+              onChanged: (value) => setState(() => _selectedType = value ?? AccountTypes.debit),
             ),
           ],
         ),
@@ -276,7 +261,7 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _isLoading ? null : _save,
+          onPressed: _isLoading ? null : () => _save(currentSpaceId, spaces),
           child: _isLoading
               ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
               : Text(_isEdit ? 'Save' : 'Create'),
@@ -285,23 +270,17 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
     );
   }
 
-  Future<void> _save() async {
+  Future<void> _save(String? currentSpaceId, List<dynamic> spaces) async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account name is required')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Account name is required')));
       return;
     }
     setState(() => _isLoading = true);
     try {
-      // Деньги ТОЛЬКО в копейках: double — лишь для парсинга ввода
       final balanceKopecks =
-          ((double.tryParse(_balanceController.text.replaceAll(',', '.')) ?? 0.0) * 100)
-              .round();
-      final bank = _bankController.text.trim().isEmpty
-          ? 'Manual'
-          : _bankController.text.trim();
+          ((double.tryParse(_balanceController.text.replaceAll(',', '.')) ?? 0.0) * 100).round();
+      final bank = _bankController.text.trim().isEmpty ? 'Manual' : _bankController.text.trim();
       final Result<void> result;
       if (_isEdit) {
         final a = widget.account!;
@@ -323,6 +302,8 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
               accountType: _selectedType,
               currency: _selectedCurrency,
               currentBalance: balanceKopecks,
+              spaceId: _isShared ? (currentSpaceId ?? (spaces.isEmpty ? null : (spaces.first as dynamic).id as String)) : null,
+              isSharedBalance: _isShared,
             );
       }
       result.when(
@@ -343,9 +324,7 @@ class _AccountDialogState extends ConsumerState<_AccountDialog> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Invalid amount: $e')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid amount: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

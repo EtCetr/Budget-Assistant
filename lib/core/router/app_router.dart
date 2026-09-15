@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
 import 'package:budget_assistant/features/auth/domain/notifiers/auth_notifier.dart';
 import 'package:budget_assistant/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:budget_assistant/features/onboarding/presentation/widgets/onboarding_wrapper.dart';
@@ -28,7 +27,9 @@ import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import 'package:budget_assistant/features/budget/presentation/screens/budget_limits_screen.dart';
 import 'package:budget_assistant/features/budget/presentation/screens/edit_budget_limit_screen.dart';
 import 'package:budget_assistant/features/cashback/presentation/screens/cashback_screen.dart';
-
+import 'package:budget_assistant/features/savings_goals/presentation/providers/savings_goals_screen_providers.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/screens/create_savings_goal_screen.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/screens/savings_goals_screen.dart';
 
 part 'app_router.g.dart';
 
@@ -38,6 +39,7 @@ class AppLock extends _$AppLock {
   bool build() => false;
 
   void lock() => state = true;
+
   void unlock() => state = false;
 }
 
@@ -76,6 +78,7 @@ class CurrentSpaceId extends _$CurrentSpaceId {
   String? build() => null;
 
   void setSpaceId(String? id) => state = id;
+
   void clear() => state = null;
 }
 
@@ -85,6 +88,7 @@ class PendingInviteToken extends _$PendingInviteToken {
   String? build() => null;
 
   void setToken(String? token) => state = token;
+
   void clear() => state = null;
 }
 
@@ -108,7 +112,6 @@ class _AuthRefreshNotifier extends ChangeNotifier {
 GoRouter appRouter(Ref ref) {
   final authStatus = ref.watch(authProvider);
   final refreshNotifier = _AuthRefreshNotifier(ref);
-
   ref.onDispose(() {
     refreshNotifier.dispose();
   });
@@ -208,13 +211,13 @@ GoRouter appRouter(Ref ref) {
           final id = state.pathParameters['id'];
           if (id == null || id.isEmpty) {
             return const Scaffold(
-              body: Center(child: Text('ID С‚СЂР°РЅР·Р°РєС†РёРё РЅРµ СѓРєР°Р·Р°РЅ')),
+              body: Center(child: Text('ID транзакции не указан')),
             );
           }
           return EditTransactionScreen(transactionId: id);
         },
       ),
-            GoRoute(
+      GoRoute(
         path: '/budget',
         name: 'budget',
         builder: (context, state) => const BudgetLimitsScreen(),
@@ -231,17 +234,38 @@ GoRouter appRouter(Ref ref) {
           final id = state.pathParameters['id'];
           if (id == null || id.isEmpty) {
             return const Scaffold(
-              body: Center(child: Text('ID Р»РёРјРёС‚Р° РЅРµ СѓРєР°Р·Р°РЅ')),
+              body: Center(child: Text('ID лимита не указан')),
             );
           }
           return EditBudgetLimitScreen(limitId: id);
         },
       ),
-    GoRoute(
-      path: '/cashback',
-      name: 'cashback',
-      builder: (context, state) => const CashbackScreen(),
-    ),
+      GoRoute(
+        path: '/cashback',
+        name: 'cashback',
+        builder: (context, state) => const CashbackScreen(),
+      ),
+      // Этап 12: цели накопления
+      GoRoute(
+        path: '/savings-goals',
+        name: 'savings-goals',
+        builder: (context, state) => const SavingsGoalsScreen(),
+      ),
+      GoRoute(
+        path: '/savings-goals/archive',
+        name: 'savings-goals-archive',
+        builder: (context, state) => const SavingsGoalsScreen(
+          initialTab: SavingsGoalsTab.archive,
+        ),
+      ),
+      GoRoute(
+        path: '/savings-goals/create',
+        name: 'create-savings-goal',
+        builder: (context, state) {
+          final goalId = state.uri.queryParameters['id'];
+          return CreateSavingsGoalScreen(goalId: goalId);
+        },
+      ),
     ],
     redirect: (context, state) {
       final location = state.uri.toString();

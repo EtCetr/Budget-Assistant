@@ -106,7 +106,6 @@ class DashboardScreen extends ConsumerWidget {
     final spacesAsync = ref.watch(userSpacesProvider);
     final currentSpaceId = ref.watch(currentSpaceIdProvider);
     final privacyMode = ref.watch(privacyModeProvider);
-
     final spaces = spacesAsync.value ?? const [];
     final currentSpace = spaces.where((s) => s.id == currentSpaceId).toList();
     final spaceTitle = currentSpace.isEmpty
@@ -212,6 +211,14 @@ class DashboardScreen extends ConsumerWidget {
                 onTap: () {
                   Navigator.of(context).pop();
                   context.push('/cashback');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.savings),
+                title: const Text(DashboardStrings.navSavingsGoals),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  context.push('/savings-goals');
                 },
               ),
             ],

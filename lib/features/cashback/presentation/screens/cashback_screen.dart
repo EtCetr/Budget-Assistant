@@ -6,6 +6,7 @@ import 'package:budget_assistant/core/providers/security_providers.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/features/categories/presentation/providers/category_providers.dart';
 import '../../domain/entities/cashback_account_ref.dart';
+import '../../domain/entities/cashback_category_summary.dart';
 import '../../domain/entities/cashback_entry.dart';
 import '../providers/cashback_providers.dart';
 import '../widgets/cashback_entry_card.dart';
@@ -15,7 +16,7 @@ import '../widgets/exchange_rates_dialog.dart';
 
 /// Экран кэшбэка (Этап 10): режимы «По картам» и «Матрица выгоды»,
 /// источник счетов «Мои карты / Карты семьи», статусы potential/approved,
-/// удаление только через диалог подтверждения.
+/// удаление и редактирование только через диалоги подтверждения/формы.
 class CashbackScreen extends ConsumerStatefulWidget {
   const CashbackScreen({super.key});
 
@@ -65,6 +66,50 @@ class _CashbackScreenState extends ConsumerState<CashbackScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Не удалось добавить категорию кэшбэка')),
+        );
+      }
+    }
+  }
+
+  Future<void> _editEntry(
+    CashbackCategorySummary summary,
+    String accountId,
+  ) async {
+    final userId = ref.read(currentUserIdProvider);
+    final categories =
+        await ref.read(categoryRepositoryProvider).getCategoriesByUserId(userId);
+    final expenseCategories =
+        categories.where((c) => c.type == 'expense').toList();
+    if (!mounted) return;
+    final matched = expenseCategories
+        .where((c) => c.name == summary.categoryName)
+        .toList();
+    final result = await AddCashbackEntryDialog.show(
+      context,
+      expenseCategories,
+      initialCategoryId: matched.isEmpty ? null : matched.first.id,
+      initialPercentBps: summary.percentBps,
+      initialLifetimeType: summary.lifetimeType,
+    );
+    if (result == null) return;
+    try {
+      await ref.read(cashbackRepositoryProvider).updateEntry(
+            id: summary.entryId,
+            categoryId: result.categoryId,
+            categoryName: result.categoryName,
+            percentBps: result.percentBps,
+            lifetimeType: result.lifetimeType,
+            expiresAt: _nextReset(result.lifetimeType),
+          );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Категория кэшбэка обновлена')),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Не удалось обновить категорию')),
         );
       }
     }
@@ -299,6 +344,7 @@ class _CashbackScreenState extends ConsumerState<CashbackScreen> {
                       final s = summaries[i];
                       return CashbackEntryCard(
                         summary: s,
+                        onEdit: () => _editEntry(s, selected.id),
                         onDelete: () =>
                             _confirmDeleteEntry(s.entryId, s.categoryName),
                       );

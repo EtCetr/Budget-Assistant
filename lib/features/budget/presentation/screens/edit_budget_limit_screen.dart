@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budget_assistant/core/formatting/money_input_parser.dart';
+import 'package:budget_assistant/core/formatting/money_text_input_formatter.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/features/categories/domain/entities/category.dart';
 import 'package:budget_assistant/features/categories/presentation/providers/category_providers.dart';
@@ -39,19 +40,13 @@ class _EditBudgetLimitScreenState extends ConsumerState<EditBudgetLimitScreen> {
     if (!mounted || _isPrefilled) return;
     setState(() {
       _selectedCategoryId = limit.categoryId;
-      _amountController.text = _formatRubles(limit.limitAmount);
+      _amountController.text = MoneyTextInputFormatter.formatKopecks(limit.limitAmount);
       _alertPercent = limit.alertPercent.clamp(50, 100);
       _isPrefilled = true;
     });
   }
 
   /// Копейки -> строка рублей для поля ввода (без double).
-  String _formatRubles(int kopecks) {
-    final rubles = kopecks ~/ 100;
-    final kop = kopecks % 100;
-    if (kop == 0) return '$rubles';
-    return '$rubles.${kop.toString().padLeft(2, '0')}';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -170,6 +165,7 @@ class _EditBudgetLimitScreenState extends ConsumerState<EditBudgetLimitScreen> {
           TextFormField(
             controller: _amountController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [MoneyTextInputFormatter()],
             decoration: const InputDecoration(
               labelText: 'Сумма лимита (₽)',
               hintText: 'Например: 10000',

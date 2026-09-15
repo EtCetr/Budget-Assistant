@@ -282,6 +282,47 @@ class DashboardWidgets extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
+// ═══════════════════════════════════════════════════════════
+// Этап 12: Цели накопления + локальные черновики форм
+// ═══════════════════════════════════════════════════════════
+@DataClassName('SavingsGoalDb')
+class SavingsGoals extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text().references(Users, #id)();
+  TextColumn get spaceId => text().nullable().references(Spaces, #id)();
+  TextColumn get name => text()(); // [E2E]
+  IntColumn get targetAmount => integer()(); // [E2E]
+  IntColumn get currentAmount =>
+      integer().withDefault(const Constant(0))(); // [E2E]
+  DateTimeColumn get deadline => dateTime().nullable()();
+  TextColumn get linkedAccountId =>
+      text().nullable().references(Accounts, #id)();
+  TextColumn get currency => text().withDefault(const Constant('RUB'))();
+  IntColumn get draftAmount => integer().nullable()(); // [E2E]
+  BoolColumn get autoReminderEnabled =>
+      boolean().withDefault(const Constant(true))();
+  TextColumn get status => text().withDefault(const Constant('active'))();
+  BoolColumn get isArchived => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get completedAt => dateTime().nullable()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get syncStatus =>
+      textEnum<SyncStatus>().withDefault(const Constant('pending'))();
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('SavingsGoalDraftDb')
+class SavingsGoalDrafts extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text().references(Users, #id)();
+  TextColumn get goalId => text().nullable()();
+  TextColumn get formDataJson => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  @override
+  Set<Column> get primaryKey => {id};
+}
 @DriftDatabase(
   tables: [
     // Р­С‚Р°Рї 3: Р¤СѓРЅРґР°РјРµРЅС‚Р°Р»СЊРЅС‹Рµ СЃСѓС‰РЅРѕСЃС‚Рё
@@ -306,6 +347,8 @@ class DashboardWidgets extends Table {
     ExchangeRates,
     CashbackMatrix,
     DashboardWidgets,
+    SavingsGoals,
+    SavingsGoalDrafts,
   ],
   daos: [
     UsersDao,
@@ -333,7 +376,23 @@ class AppDatabase extends _$AppDatabase {
   /// v4: Р­С‚Р°Рї 8+ вЂ” РїРѕР»Рµ is_large_expense
   /// v5: Р­С‚Р°Рї 9 вЂ” С‚Р°Р±Р»РёС†Р° budget_limits + РёРЅРґРµРєСЃС‹
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
+
+  Future<void> _createSavingsIndexes() async {
+    // ТОМ 2 §22: фильтрация целей по владельцу/пространству/статусу/дедлайну
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_savings_goals_user_status
+      ON savings_goals(user_id, space_id, status, deadline, sync_status)
+    ''');
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_savings_goals_sync_status
+      ON savings_goals(sync_status)
+    ''');
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_savings_goal_drafts_user
+      ON savings_goal_drafts(user_id, updated_at)
+    ''');
+  }
 
   Future<void> _createAllIndexes() async {
     // РРќР”Р•РљРЎР« Р”Р›РЇ Р­РўРђРџРђ 3
@@ -475,6 +534,7 @@ class AppDatabase extends _$AppDatabase {
       ON cashback_matrix(sync_status)
     ''');
 
+      await _createSavingsIndexes();
   }
 
   @override
@@ -484,6 +544,12 @@ class AppDatabase extends _$AppDatabase {
       await _createAllIndexes();
     },
     onUpgrade: (Migrator m, int from, int to) async {
+      if (from < 9) {
+        // Этап 12: цели накопления + локальные черновики форм
+        await m.createTable(savingsGoals);
+        await m.createTable(savingsGoalDrafts);
+        await _createSavingsIndexes();
+      }
       // РРЎРўРћР РР§Р•РЎРљРђРЇ РњРРќРђ РЈР”РђР›Р•РќРђ: РІРµС‚РєР° from < 2 СЃ DROP TABLE
       // Р±РѕР»СЊС€Рµ РЅРµ РЅСѓР¶РЅР°, С‚.Рє. СЃС…РµРјР° СЃС‚Р°Р±РёР»РёР·РёСЂРѕРІР°РЅР° РЅР° v4+
       if (from < 3) {

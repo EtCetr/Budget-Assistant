@@ -1,4 +1,4 @@
-﻿// lib/features/categories/presentation/widgets/category_list_item.dart
+// lib/features/categories/presentation/widgets/category_list_item.dart
 import 'package:flutter/material.dart';
 import '../../domain/entities/category.dart';
 
@@ -9,6 +9,7 @@ class CategoryListItem extends StatelessWidget {
   final bool isExpanded;
   final VoidCallback? onTap;
   final VoidCallback? onExpandToggle;
+  final VoidCallback? onLongPress;
 
   const CategoryListItem({
     super.key,
@@ -18,12 +19,14 @@ class CategoryListItem extends StatelessWidget {
     this.isExpanded = false,
     this.onTap,
     this.onExpandToggle,
+    this.onLongPress,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Container(
         padding: EdgeInsets.only(
           left: 16.0 + (level * 24.0),

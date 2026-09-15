@@ -1,4 +1,4 @@
-﻿// lib/features/categories/presentation/screens/categories_screen.dart
+// lib/features/categories/presentation/screens/categories_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,13 +9,11 @@ import '../../domain/entities/category.dart';
 
 class CategoriesScreen extends ConsumerWidget {
   final String userId;
-
   const CategoriesScreen({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsync = ref.watch(categoriesGroupedByTypeProvider(userId));
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Categories'),
@@ -25,11 +23,6 @@ class CategoriesScreen extends ConsumerWidget {
           onPressed: () => context.go('/'),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.tune),
-            tooltip: 'Manage (edit / delete)',
-            onPressed: () => _showManageDialog(context, ref),
-          ),
           IconButton(
             icon: const Icon(Icons.account_balance_wallet),
             tooltip: 'Accounts',
@@ -87,23 +80,37 @@ class CategoriesScreen extends ConsumerWidget {
         ),
       );
     }
-
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         if (grouped['expense']?.isNotEmpty ?? false) ...[
           _buildSectionHeader('Expenses', Icons.trending_down, Colors.red),
-          CategoryTreeView(categories: grouped['expense']!, userId: userId),
+          CategoryTreeView(
+            categories: grouped['expense']!,
+            userId: userId,
+            onLongPress: (category) =>
+                _showCategoryDialog(context, ref, category: category),
+          ),
           const SizedBox(height: 24),
         ],
         if (grouped['income']?.isNotEmpty ?? false) ...[
           _buildSectionHeader('Incomes', Icons.trending_up, Colors.green),
-          CategoryTreeView(categories: grouped['income']!, userId: userId),
+          CategoryTreeView(
+            categories: grouped['income']!,
+            userId: userId,
+            onLongPress: (category) =>
+                _showCategoryDialog(context, ref, category: category),
+          ),
           const SizedBox(height: 24),
         ],
         if (grouped['transfer']?.isNotEmpty ?? false) ...[
           _buildSectionHeader('Transfers', Icons.swap_horiz, Colors.blue),
-          CategoryTreeView(categories: grouped['transfer']!, userId: userId),
+          CategoryTreeView(
+            categories: grouped['transfer']!,
+            userId: userId,
+            onLongPress: (category) =>
+                _showCategoryDialog(context, ref, category: category),
+          ),
         ],
       ],
     );
@@ -122,135 +129,23 @@ class CategoriesScreen extends ConsumerWidget {
     );
   }
 
-  void _showCategoryDialog(BuildContext context, WidgetRef ref, {Category? category}) {
+  void _showCategoryDialog(
+    BuildContext context,
+    WidgetRef ref, {
+    Category? category,
+  }) {
     showDialog(
       context: context,
       builder: (context) => _CategoryDialog(userId: userId, category: category),
     );
   }
-
-  void _showManageDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (context) => _ManageCategoriesDialog(userId: userId),
-    );
-  }
 }
 
-/// Плоский список всех категорий с кнопками Edit / Delete
-class _ManageCategoriesDialog extends ConsumerWidget {
-  final String userId;
-
-  const _ManageCategoriesDialog({required this.userId});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final categoriesAsync = ref.watch(categoriesListProvider(userId));
-
-    return AlertDialog(
-      title: const Text('Manage Categories'),
-      content: SizedBox(
-        width: double.maxFinite,
-        height: 380,
-        child: categoriesAsync.when(
-          data: (categories) => categories.isEmpty
-              ? const Center(child: Text('No categories yet'))
-              : ListView.separated(
-                  itemCount: categories.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
-                  itemBuilder: (context, index) {
-                    final category = categories[index];
-                    return ListTile(
-                      leading: Text(
-                        category.iconEmoji ?? '🏷️',
-                        style: const TextStyle(fontSize: 22),
-                      ),
-                      title: Text(category.name),
-                      subtitle: Text(category.type),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit_outlined),
-                            tooltip: 'Edit',
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              showDialog(
-                                context: context,
-                                builder: (context) =>
-                                    _CategoryDialog(userId: userId, category: category),
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline, color: Colors.red),
-                            tooltip: 'Delete',
-                            onPressed: () => _confirmDelete(context, ref, category),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, st) => Center(child: Text('Error: $e')),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Close'),
-        ),
-      ],
-    );
-  }
-
-  void _confirmDelete(BuildContext context, WidgetRef ref, Category category) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete category?'),
-        content: Text(
-          'Delete "${category.name}"? Child categories will move to its parent.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(dialogContext).pop();
-              final useCase = ref.read(deleteCategoryUseCaseProvider);
-              final result = await useCase.execute(category.id);
-              if (!context.mounted) return;
-              result.when(
-                success: (_) {
-                  ref.invalidate(categoriesListProvider(userId));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Category "${category.name}" deleted')),
-                  );
-                },
-                failure: (failure) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: ${failure.message}')),
-                  );
-                },
-              );
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Диалог создания И редактирования категории (с выбором родителя)
+/// Диалог создания И редактирования категории (с выбором родителя).
+/// В режиме редактирования доступна кнопка удаления (с подтверждением).
 class _CategoryDialog extends ConsumerStatefulWidget {
   final String userId;
   final Category? category;
-
   const _CategoryDialog({required this.userId, this.category});
 
   @override
@@ -283,6 +178,48 @@ class _CategoryDialogState extends ConsumerState<_CategoryDialog> {
     super.dispose();
   }
 
+  Future<void> _delete() async {
+    final category = widget.category!;
+    final messenger = ScaffoldMessenger.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete category?'),
+        content: Text(
+          'Delete "${category.name}"? Child categories will move to its parent.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    final result =
+        await ref.read(deleteCategoryUseCaseProvider).execute(category.id);
+    if (!mounted) return;
+    ref.invalidate(categoriesListProvider(widget.userId));
+    Navigator.of(context).pop();
+    result.when(
+      success: (_) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('Category "${category.name}" deleted')),
+        );
+      },
+      failure: (failure) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('Error: ${failure.message}')),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Кандидаты в родители: тот же тип, не сама редактируемая категория
@@ -291,7 +228,6 @@ class _CategoryDialogState extends ConsumerState<_CategoryDialog> {
     final candidates = parents
         .where((c) => c.type == _selectedType && c.id != widget.category?.id)
         .toList();
-
     return AlertDialog(
       title: Text(_isEdit ? 'Edit Category' : 'Create Category'),
       content: Column(
@@ -351,6 +287,11 @@ class _CategoryDialogState extends ConsumerState<_CategoryDialog> {
         ],
       ),
       actions: [
+        if (_isEdit)
+          TextButton(
+            onPressed: _isLoading ? null : _delete,
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
@@ -373,9 +314,7 @@ class _CategoryDialogState extends ConsumerState<_CategoryDialog> {
       );
       return;
     }
-
     setState(() => _isLoading = true);
-
     try {
       final emoji = _emojiController.text.trim();
       final Result<void> result;
@@ -397,7 +336,6 @@ class _CategoryDialogState extends ConsumerState<_CategoryDialog> {
               parentId: _parentId,
             );
       }
-
       result.when(
         success: (_) {
           if (!mounted) return;

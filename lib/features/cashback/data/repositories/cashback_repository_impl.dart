@@ -81,6 +81,33 @@ class CashbackRepositoryImpl implements CashbackRepository {
   }
 
   @override
+  Future<void> updateEntry({
+    required String id,
+    required String? categoryId,
+    required String categoryName,
+    required int percentBps,
+    required String lifetimeType,
+    required DateTime expiresAt,
+  }) async {
+    try {
+      await (_db.update(_db.cashbackMatrix)..where((r) => r.id.equals(id))).write(
+        CashbackMatrixCompanion(
+          categoryId: Value(categoryId),
+          categoryName: Value(categoryName),
+          percentBps: Value(percentBps),
+          lifetimeType: Value(lifetimeType),
+          expiresAt: Value(expiresAt),
+          updatedAt: Value(DateTime.now().toUtc()),
+          syncStatus: const Value(SyncStatus.pending),
+        ),
+      );
+    } catch (e, st) {
+      _logger.e('CashbackRepository.updateEntry failed', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  @override
   Future<List<CashbackTransactionRaw>> fetchRelevantTransactions(
     String accountId,
     DateTime startUtc,

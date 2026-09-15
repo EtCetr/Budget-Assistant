@@ -68,6 +68,15 @@ class FakeTransactionsRepository implements TransactionsRepository {
   ) async {
     return splitsStore[transactionId] ?? const [];
   }
+
+  @override
+  Future<List<Transaction>> getTransactionsByGoalId(String goalId) async {
+    final result = store.values
+        .where((t) => t.savingsGoalId == goalId)
+        .toList();
+    result.sort((a, b) => a.date.compareTo(b.date));
+    return result;
+  }
 }
 
 void main() {

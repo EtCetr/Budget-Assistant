@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 import 'package:budget_assistant/core/database/database_provider.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/core/providers/security_providers.dart';
+import 'package:budget_assistant/features/cashback/presentation/providers/cashback_providers.dart';
 import '../../data/repositories/dashboard_data_repository_impl.dart';
 import '../../data/repositories/dashboard_layout_repository_impl.dart';
 import '../../domain/entities/dashboard_widget_item.dart';
@@ -28,7 +29,6 @@ final dashboardLayoutProvider =
     StreamProvider.autoDispose<List<DashboardWidgetItem>>((ref) {
   final userId = ref.watch(currentUserIdProvider);
   final repository = ref.watch(dashboardLayoutRepositoryProvider);
-
   return Stream.fromFuture(repository.ensureDefaults(userId)).asyncExpand(
     (_) => repository.watchLayout(userId),
   );
@@ -47,7 +47,6 @@ final dashboardExpenseFlowProvider =
   final userId = ref.watch(currentUserIdProvider);
   final spaceId = ref.watch(currentSpaceIdProvider);
   final repository = ref.watch(dashboardDataRepositoryProvider);
-
   return repository.getExpenseFlow(
     userId: userId,
     spaceId: spaceId,
@@ -55,10 +54,16 @@ final dashboardExpenseFlowProvider =
   );
 });
 
+/// Виджет «Активный кэшбэк».
+///
+/// Этап 12 (фикс реактивности): подписан на cashbackMatrixTriggerProvider —
+/// перезагружается сразу при изменении cashback_matrix / транзакций / счетов,
+/// поэтому добавление, удаление и редактирование категории кэшбэка
+/// мгновенно отражается на дашборде.
 final dashboardActiveCashbackProvider =
     FutureProvider.autoDispose<List<ActiveCashbackUi>>((ref) async {
+  ref.watch(cashbackMatrixTriggerProvider);
   final userId = ref.watch(currentUserIdProvider);
   final repository = ref.watch(dashboardDataRepositoryProvider);
-
   return repository.getActiveCashback(userId);
 });

@@ -1,9 +1,9 @@
-﻿import 'package:logger/logger.dart';
+import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
-
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import 'package:budget_assistant/core/errors/result.dart';
 import 'package:budget_assistant/core/ports/clock_port.dart';
+import 'package:budget_assistant/core/ports/savings_goal_progress_port.dart';
 import 'package:budget_assistant/core/errors/failures.dart';
 import 'package:budget_assistant/features/transactions/domain/models/secrecy_config.dart';
 import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
@@ -16,14 +16,17 @@ class CreateTransactionUseCase {
   final TransactionsRepository _repository;
   final Logger _logger;
   final ClockPort _clock;
+  final SavingsGoalProgressPort? _savingsGoalProgressPort;
 
   const CreateTransactionUseCase({
     required TransactionsRepository repository,
     required Logger logger,
     required ClockPort clock,
-  }) : _repository = repository,
-       _logger = logger,
-       _clock = clock;
+    SavingsGoalProgressPort? savingsGoalProgressPort,
+  })  : _repository = repository,
+        _logger = logger,
+        _clock = clock,
+        _savingsGoalProgressPort = savingsGoalProgressPort;
 
   Future<Result<Transaction>> call({
     required TransactionDraft draft,
@@ -32,7 +35,6 @@ class CreateTransactionUseCase {
   }) async {
     try {
       final validationError = TransactionValidator.validate(draft);
-
       if (validationError != null) {
         return Error(Failure.validation(validationError));
       }
@@ -85,7 +87,6 @@ class CreateTransactionUseCase {
 
       if (_shouldLockSync(draft.type, draft.amount, secrecyConfig)) {
         final elapsed = await _clock.elapsedRealtimeMs();
-
         transaction = transaction.copyWith(
           syncLockedStartedAt: elapsed,
           syncLockedDurationMs: secrecyConfig!.timeoutSeconds * 1000,
@@ -94,11 +95,40 @@ class CreateTransactionUseCase {
 
       await _repository.createTransaction(transaction, splits);
 
+      // Этап 12: транзакция привязана к цели накопления —
+      // обновляем прогресс и черновую сумму (ТЗ 6.3.16.14.12).
+      await _syncSavingsGoalProgress(transaction);
+
       return Success(transaction);
     } catch (e, stack) {
       _logger.e('CreateTransactionUseCase failed', error: e, stackTrace: stack);
-
       return Error(Failure.database(e.toString()));
+    }
+  }
+
+  /// Обновляет current_amount и draft_amount цели накопления.
+  ///
+  /// Ошибка обновления прогресса логируется, но НЕ отменяет
+  /// уже созданную транзакцию.
+  Future<void> _syncSavingsGoalProgress(Transaction transaction) async {
+    final port = _savingsGoalProgressPort;
+    final goalId = transaction.savingsGoalId;
+    if (port == null || goalId == null) return;
+    try {
+      final delta =
+          transaction.isWithdrawal ? -transaction.amount : transaction.amount;
+      await port.updateProgress(
+        goalId: goalId,
+        deltaKopecks: delta,
+        draftAmountKopecks:
+            transaction.isWithdrawal ? null : transaction.amount,
+      );
+    } catch (e, stack) {
+      _logger.e(
+        'Failed to update savings goal progress',
+        error: e,
+        stackTrace: stack,
+      );
     }
   }
 

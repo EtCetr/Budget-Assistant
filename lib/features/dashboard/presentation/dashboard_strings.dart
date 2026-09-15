@@ -10,7 +10,7 @@ abstract final class DashboardStrings {
   static const income = 'доходы';
   static const expenses = 'расходы';
   static const expenseFlowTitle = 'Движение расходов';
-  static const expenseEmptyTitle = 'Нет трат за последнюю неделю';
+  static const expenseEmptyTitle = 'Нет трат за последний месяц';
   static const expenseEmptySubtitle = 'Самое время добавить первую!';
   static const cashbackTitle = 'Активный кэшбэк';
   static const cashbackEmptySubtitle =
@@ -32,4 +32,5 @@ abstract final class DashboardStrings {
   static const navCategories = 'Категории';
   static const navBudget = 'Бюджет и лимиты';
   static const navCashback = 'Кэшбэк';
+  static const navSavingsGoals = 'Цели накопления';
 }
