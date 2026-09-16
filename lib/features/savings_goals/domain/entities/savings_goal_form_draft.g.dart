@@ -29,6 +29,14 @@ _SavingsGoalFormDraft _$SavingsGoalFormDraftFromJson(
       'visibility',
       (v) => v as String? ?? 'personal',
     ),
+    seedBalanceOnCreate: $checkedConvert(
+      'seedBalanceOnCreate',
+      (v) => v as bool? ?? true,
+    ),
+    seedAmountKopecks: $checkedConvert(
+      'seedAmountKopecks',
+      (v) => (v as num?)?.toInt(),
+    ),
     updatedAt: $checkedConvert('updatedAt', (v) => DateTime.parse(v as String)),
   );
   return val;
@@ -47,5 +55,7 @@ Map<String, dynamic> _$SavingsGoalFormDraftToJson(
   'linkedAccountId': instance.linkedAccountId,
   'autoReminderEnabled': instance.autoReminderEnabled,
   'visibility': instance.visibility,
+  'seedBalanceOnCreate': instance.seedBalanceOnCreate,
+  'seedAmountKopecks': instance.seedAmountKopecks,
   'updatedAt': instance.updatedAt.toIso8601String(),
 };

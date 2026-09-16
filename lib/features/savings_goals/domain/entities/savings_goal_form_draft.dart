@@ -27,6 +27,14 @@ abstract class SavingsGoalFormDraft with _$SavingsGoalFormDraft {
 
     /// 'personal' | 'family'.
     @Default('personal') String visibility,
+
+    /// Микро-коммит 12.5.1 (Вариант Б): зачислять ли баланс счёта
+    /// в цель при создании. По умолчанию включён (решение владельца).
+    @Default(true) bool seedBalanceOnCreate,
+
+    /// Сумма зачисления в копейках.
+    /// null = зачислить 100% баланса счёта (пустое поле в форме).
+    int? seedAmountKopecks,
     required DateTime updatedAt,
   }) = _SavingsGoalFormDraft;
 

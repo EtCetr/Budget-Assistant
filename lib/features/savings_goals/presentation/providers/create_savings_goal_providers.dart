@@ -9,6 +9,7 @@ import 'package:budget_assistant/features/accounts/domain/entities/account.dart'
 import 'package:budget_assistant/features/accounts/presentation/providers/account_providers.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/features/spaces/presentation/providers/space_providers.dart';
+
 import '../../domain/entities/savings_goal.dart';
 import '../../domain/entities/savings_goal_form_draft.dart';
 import '../widgets/emoji_selector_sheet.dart';
@@ -32,6 +33,8 @@ class CreateSavingsGoalFormState {
     this.visibility = SavingsGoalVisibility.personal,
     this.isDirty = false,
     this.currencyLocked = false,
+    this.seedBalanceOnCreate = true,
+    this.seedAmountText = '',
   });
 
   final String? goalId;
@@ -46,6 +49,11 @@ class CreateSavingsGoalFormState {
   final String visibility;
   final bool isDirty;
   final bool currencyLocked;
+  final bool seedBalanceOnCreate;
+
+  /// 12.5.1 (Вариант Б): текст суммы зачисления из баланса счёта.
+  /// Пустая строка = зачислить 100% баланса счёта.
+  final String seedAmountText;
 
   CreateSavingsGoalFormState copyWith({
     String? goalId,
@@ -62,6 +70,8 @@ class CreateSavingsGoalFormState {
     String? visibility,
     bool? isDirty,
     bool? currencyLocked,
+    bool? seedBalanceOnCreate,
+    String? seedAmountText,
   }) {
     return CreateSavingsGoalFormState(
       goalId: goalId ?? this.goalId,
@@ -77,6 +87,8 @@ class CreateSavingsGoalFormState {
       visibility: visibility ?? this.visibility,
       isDirty: isDirty ?? this.isDirty,
       currencyLocked: currencyLocked ?? this.currencyLocked,
+      seedBalanceOnCreate: seedBalanceOnCreate ?? this.seedBalanceOnCreate,
+      seedAmountText: seedAmountText ?? this.seedAmountText,
     );
   }
 }
@@ -154,19 +166,45 @@ class CreateSavingsGoalFormNotifier
   }
 
   /// ВАЖНО: НЕ читает linkedGoalAccountsProvider (иначе циклическая
-  /// зависимость: форма -> список счетов -> форма). Валюту передаёт
+  /// зависимость: форма -> список счетов -> форма). Валюту и баланс передаёт
   /// вызывающий виджет, который уже держит список счетов.
-  void setLinkedAccount(String? accountId, {String? currency}) {
+  void setLinkedAccount(
+    String? accountId, {
+    String? currency,
+    int? balanceKopecks,
+  }) {
     if (accountId == null) {
       _touch(state.copyWith(clearLinkedAccount: true));
       return;
     }
+    // 12.5.1: при смене счёта сбрасываем сумму зачисления на 100% нового баланса.
+    final seedText = (state.seedBalanceOnCreate && balanceKopecks != null)
+        ? kopecksToFormText(balanceKopecks)
+        : state.seedAmountText;
     _touch(state.copyWith(
       linkedAccountId: accountId,
       currency: currency ?? state.currency,
       currencyLocked: currency != null,
+      seedAmountText: seedText,
     ));
   }
+
+  /// Чекбокс «зачислить баланс счёта в цель» (только при создании).
+  /// 12.5.1: при включении предзаполняем сумму 100% баланса счёта.
+  void setSeedBalance(bool value, {int? balanceKopecks}) {
+    if (value && balanceKopecks != null && balanceKopecks > 0) {
+      _touch(state.copyWith(
+        seedBalanceOnCreate: true,
+        seedAmountText: kopecksToFormText(balanceKopecks),
+      ));
+      return;
+    }
+    _touch(state.copyWith(seedBalanceOnCreate: value));
+  }
+
+  /// 12.5.1 (Вариант Б): сумма зачисления. Пустая строка = 100% баланса.
+  void setSeedAmountText(String value) =>
+      _touch(state.copyWith(seedAmountText: value));
 
   void applyDraft(SavingsGoalFormDraft draft) {
     _draftTimer?.cancel();
@@ -189,6 +227,10 @@ class CreateSavingsGoalFormNotifier
           : SavingsGoalVisibility.personal,
       currencyLocked:
           draft.goalType == SavingsGoalType.linked && draft.linkedAccountId != null,
+      seedBalanceOnCreate: draft.seedBalanceOnCreate,
+      seedAmountText: draft.seedAmountKopecks == null
+          ? ''
+          : MoneyTextInputFormatter.kopecksToInputText(draft.seedAmountKopecks!),
     );
   }
 
@@ -205,6 +247,13 @@ class CreateSavingsGoalFormNotifier
   void _scheduleDraftSave() {
     _draftTimer?.cancel();
     _draftTimer = Timer(const Duration(seconds: 5), _saveDraft);
+  }
+
+  /// 12.5.1: сумма зачисления в черновик. null = «100% баланса» (пустое поле).
+  int? _seedAmountKopecksForDraft() {
+    if (state.goalType != SavingsGoalType.linked) return null;
+    if (!state.seedBalanceOnCreate) return null;
+    return MoneyInputParser.parseKopecks(state.seedAmountText);
   }
 
   Future<void> _saveDraft() async {
@@ -224,6 +273,8 @@ class CreateSavingsGoalFormNotifier
             state.goalType == SavingsGoalType.linked ? state.linkedAccountId : null,
         autoReminderEnabled: state.autoReminderEnabled,
         visibility: state.visibility,
+        seedBalanceOnCreate: state.seedBalanceOnCreate,
+        seedAmountKopecks: _seedAmountKopecksForDraft(),
       );
       await ref.read(savingsGoalsRepositoryProvider).saveDraft(userId, draft);
     } catch (e, st) {
@@ -256,9 +307,34 @@ final createGoalValidationErrorProvider = Provider<String?>((ref) {
         form.goalType == SavingsGoalType.linked ? form.linkedAccountId : null,
     autoReminderEnabled: form.autoReminderEnabled,
     visibility: form.visibility,
+    seedBalanceOnCreate: form.seedBalanceOnCreate,
+    seedAmountKopecks: _parseSeedAmount(form),
   );
-  return ref.watch(validateSavingsGoalFormUseCaseProvider)(draft);
+  return ref.watch(validateSavingsGoalFormUseCaseProvider)(
+    draft,
+    linkedAccountBalanceKopecks: _linkedAccountBalance(ref, form),
+  );
 });
+
+/// 12.5.1: разбор суммы зачисления (только привязанная цель + чекбокс вкл).
+int? _parseSeedAmount(CreateSavingsGoalFormState form) {
+  if (form.goalType != SavingsGoalType.linked) return null;
+  if (!form.seedBalanceOnCreate) return null;
+  return MoneyInputParser.parseKopecks(form.seedAmountText);
+}
+
+/// Баланс выбранного счёта для валидации суммы зачисления.
+/// Читаем linkedGoalAccountsProvider здесь (в провайдере), а не в нотификаторе
+/// формы — циклической зависимости нет: форма этот провайдер не читает.
+int? _linkedAccountBalance(Ref ref, CreateSavingsGoalFormState form) {
+  if (form.goalType != SavingsGoalType.linked) return null;
+  final accountId = form.linkedAccountId;
+  if (accountId == null) return null;
+  for (final account in ref.watch(linkedGoalAccountsProvider)) {
+    if (account.id == accountId) return account.currentBalance;
+  }
+  return null;
+}
 
 final canUseFamilyVisibilityProvider = Provider<bool>((ref) {
   final spaces = ref.watch(userSpacesProvider).value ?? const [];

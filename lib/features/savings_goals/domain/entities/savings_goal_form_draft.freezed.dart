@@ -20,7 +20,11 @@ mixin _$SavingsGoalFormDraft {
  String get emoji;/// Копейки.
  int? get targetAmount; String? get currency; DateTime? get deadline;/// 'virtual' | 'linked'.
  String get goalType; String? get linkedAccountId; bool get autoReminderEnabled;/// 'personal' | 'family'.
- String get visibility; DateTime get updatedAt;
+ String get visibility;/// Микро-коммит 12.5.1 (Вариант Б): зачислять ли баланс счёта
+/// в цель при создании. По умолчанию включён (решение владельца).
+ bool get seedBalanceOnCreate;/// Сумма зачисления в копейках.
+/// null = зачислить 100% баланса счёта (пустое поле в форме).
+ int? get seedAmountKopecks; DateTime get updatedAt;
 /// Create a copy of SavingsGoalFormDraft
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -33,16 +37,16 @@ $SavingsGoalFormDraftCopyWith<SavingsGoalFormDraft> get copyWith => _$SavingsGoa
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SavingsGoalFormDraft&&(identical(other.goalId, goalId) || other.goalId == goalId)&&(identical(other.name, name) || other.name == name)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.targetAmount, targetAmount) || other.targetAmount == targetAmount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.deadline, deadline) || other.deadline == deadline)&&(identical(other.goalType, goalType) || other.goalType == goalType)&&(identical(other.linkedAccountId, linkedAccountId) || other.linkedAccountId == linkedAccountId)&&(identical(other.autoReminderEnabled, autoReminderEnabled) || other.autoReminderEnabled == autoReminderEnabled)&&(identical(other.visibility, visibility) || other.visibility == visibility)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SavingsGoalFormDraft&&(identical(other.goalId, goalId) || other.goalId == goalId)&&(identical(other.name, name) || other.name == name)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.targetAmount, targetAmount) || other.targetAmount == targetAmount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.deadline, deadline) || other.deadline == deadline)&&(identical(other.goalType, goalType) || other.goalType == goalType)&&(identical(other.linkedAccountId, linkedAccountId) || other.linkedAccountId == linkedAccountId)&&(identical(other.autoReminderEnabled, autoReminderEnabled) || other.autoReminderEnabled == autoReminderEnabled)&&(identical(other.visibility, visibility) || other.visibility == visibility)&&(identical(other.seedBalanceOnCreate, seedBalanceOnCreate) || other.seedBalanceOnCreate == seedBalanceOnCreate)&&(identical(other.seedAmountKopecks, seedAmountKopecks) || other.seedAmountKopecks == seedAmountKopecks)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,goalId,name,emoji,targetAmount,currency,deadline,goalType,linkedAccountId,autoReminderEnabled,visibility,updatedAt);
+int get hashCode => Object.hash(runtimeType,goalId,name,emoji,targetAmount,currency,deadline,goalType,linkedAccountId,autoReminderEnabled,visibility,seedBalanceOnCreate,seedAmountKopecks,updatedAt);
 
 @override
 String toString() {
-  return 'SavingsGoalFormDraft(goalId: $goalId, name: $name, emoji: $emoji, targetAmount: $targetAmount, currency: $currency, deadline: $deadline, goalType: $goalType, linkedAccountId: $linkedAccountId, autoReminderEnabled: $autoReminderEnabled, visibility: $visibility, updatedAt: $updatedAt)';
+  return 'SavingsGoalFormDraft(goalId: $goalId, name: $name, emoji: $emoji, targetAmount: $targetAmount, currency: $currency, deadline: $deadline, goalType: $goalType, linkedAccountId: $linkedAccountId, autoReminderEnabled: $autoReminderEnabled, visibility: $visibility, seedBalanceOnCreate: $seedBalanceOnCreate, seedAmountKopecks: $seedAmountKopecks, updatedAt: $updatedAt)';
 }
 
 
@@ -53,7 +57,7 @@ abstract mixin class $SavingsGoalFormDraftCopyWith<$Res>  {
   factory $SavingsGoalFormDraftCopyWith(SavingsGoalFormDraft value, $Res Function(SavingsGoalFormDraft) _then) = _$SavingsGoalFormDraftCopyWithImpl;
 @useResult
 $Res call({
- String? goalId, String name, String emoji, int? targetAmount, String? currency, DateTime? deadline, String goalType, String? linkedAccountId, bool autoReminderEnabled, String visibility, DateTime updatedAt
+ String? goalId, String name, String emoji, int? targetAmount, String? currency, DateTime? deadline, String goalType, String? linkedAccountId, bool autoReminderEnabled, String visibility, bool seedBalanceOnCreate, int? seedAmountKopecks, DateTime updatedAt
 });
 
 
@@ -70,7 +74,7 @@ class _$SavingsGoalFormDraftCopyWithImpl<$Res>
 
 /// Create a copy of SavingsGoalFormDraft
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? goalId = freezed,Object? name = null,Object? emoji = null,Object? targetAmount = freezed,Object? currency = freezed,Object? deadline = freezed,Object? goalType = null,Object? linkedAccountId = freezed,Object? autoReminderEnabled = null,Object? visibility = null,Object? updatedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? goalId = freezed,Object? name = null,Object? emoji = null,Object? targetAmount = freezed,Object? currency = freezed,Object? deadline = freezed,Object? goalType = null,Object? linkedAccountId = freezed,Object? autoReminderEnabled = null,Object? visibility = null,Object? seedBalanceOnCreate = null,Object? seedAmountKopecks = freezed,Object? updatedAt = null,}) {
   return _then(_self.copyWith(
 goalId: freezed == goalId ? _self.goalId : goalId // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -82,7 +86,9 @@ as DateTime?,goalType: null == goalType ? _self.goalType : goalType // ignore: c
 as String,linkedAccountId: freezed == linkedAccountId ? _self.linkedAccountId : linkedAccountId // ignore: cast_nullable_to_non_nullable
 as String?,autoReminderEnabled: null == autoReminderEnabled ? _self.autoReminderEnabled : autoReminderEnabled // ignore: cast_nullable_to_non_nullable
 as bool,visibility: null == visibility ? _self.visibility : visibility // ignore: cast_nullable_to_non_nullable
-as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as String,seedBalanceOnCreate: null == seedBalanceOnCreate ? _self.seedBalanceOnCreate : seedBalanceOnCreate // ignore: cast_nullable_to_non_nullable
+as bool,seedAmountKopecks: freezed == seedAmountKopecks ? _self.seedAmountKopecks : seedAmountKopecks // ignore: cast_nullable_to_non_nullable
+as int?,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }
@@ -163,7 +169,7 @@ return $default(_that);case _:
 @JsonSerializable()
 
 class _SavingsGoalFormDraft implements SavingsGoalFormDraft {
-  const _SavingsGoalFormDraft({this.goalId, this.name = '', this.emoji = '', this.targetAmount, this.currency, this.deadline, this.goalType = 'virtual', this.linkedAccountId, this.autoReminderEnabled = true, this.visibility = 'personal', required this.updatedAt});
+  const _SavingsGoalFormDraft({this.goalId, this.name = '', this.emoji = '', this.targetAmount, this.currency, this.deadline, this.goalType = 'virtual', this.linkedAccountId, this.autoReminderEnabled = true, this.visibility = 'personal', this.seedBalanceOnCreate = true, this.seedAmountKopecks, required this.updatedAt});
   factory _SavingsGoalFormDraft.fromJson(Map<String, dynamic> json) => _$SavingsGoalFormDraftFromJson(json);
 
 /// null при создании, id цели при редактировании.
@@ -181,6 +187,12 @@ class _SavingsGoalFormDraft implements SavingsGoalFormDraft {
 @override@JsonKey() final  bool autoReminderEnabled;
 /// 'personal' | 'family'.
 @override@JsonKey() final  String visibility;
+/// Микро-коммит 12.5.1 (Вариант Б): зачислять ли баланс счёта
+/// в цель при создании. По умолчанию включён (решение владельца).
+@override@JsonKey() final  bool seedBalanceOnCreate;
+/// Сумма зачисления в копейках.
+/// null = зачислить 100% баланса счёта (пустое поле в форме).
+@override final  int? seedAmountKopecks;
 @override final  DateTime updatedAt;
 
 /// Create a copy of SavingsGoalFormDraft
@@ -196,16 +208,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SavingsGoalFormDraft&&(identical(other.goalId, goalId) || other.goalId == goalId)&&(identical(other.name, name) || other.name == name)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.targetAmount, targetAmount) || other.targetAmount == targetAmount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.deadline, deadline) || other.deadline == deadline)&&(identical(other.goalType, goalType) || other.goalType == goalType)&&(identical(other.linkedAccountId, linkedAccountId) || other.linkedAccountId == linkedAccountId)&&(identical(other.autoReminderEnabled, autoReminderEnabled) || other.autoReminderEnabled == autoReminderEnabled)&&(identical(other.visibility, visibility) || other.visibility == visibility)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SavingsGoalFormDraft&&(identical(other.goalId, goalId) || other.goalId == goalId)&&(identical(other.name, name) || other.name == name)&&(identical(other.emoji, emoji) || other.emoji == emoji)&&(identical(other.targetAmount, targetAmount) || other.targetAmount == targetAmount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.deadline, deadline) || other.deadline == deadline)&&(identical(other.goalType, goalType) || other.goalType == goalType)&&(identical(other.linkedAccountId, linkedAccountId) || other.linkedAccountId == linkedAccountId)&&(identical(other.autoReminderEnabled, autoReminderEnabled) || other.autoReminderEnabled == autoReminderEnabled)&&(identical(other.visibility, visibility) || other.visibility == visibility)&&(identical(other.seedBalanceOnCreate, seedBalanceOnCreate) || other.seedBalanceOnCreate == seedBalanceOnCreate)&&(identical(other.seedAmountKopecks, seedAmountKopecks) || other.seedAmountKopecks == seedAmountKopecks)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,goalId,name,emoji,targetAmount,currency,deadline,goalType,linkedAccountId,autoReminderEnabled,visibility,updatedAt);
+int get hashCode => Object.hash(runtimeType,goalId,name,emoji,targetAmount,currency,deadline,goalType,linkedAccountId,autoReminderEnabled,visibility,seedBalanceOnCreate,seedAmountKopecks,updatedAt);
 
 @override
 String toString() {
-  return 'SavingsGoalFormDraft(goalId: $goalId, name: $name, emoji: $emoji, targetAmount: $targetAmount, currency: $currency, deadline: $deadline, goalType: $goalType, linkedAccountId: $linkedAccountId, autoReminderEnabled: $autoReminderEnabled, visibility: $visibility, updatedAt: $updatedAt)';
+  return 'SavingsGoalFormDraft(goalId: $goalId, name: $name, emoji: $emoji, targetAmount: $targetAmount, currency: $currency, deadline: $deadline, goalType: $goalType, linkedAccountId: $linkedAccountId, autoReminderEnabled: $autoReminderEnabled, visibility: $visibility, seedBalanceOnCreate: $seedBalanceOnCreate, seedAmountKopecks: $seedAmountKopecks, updatedAt: $updatedAt)';
 }
 
 
@@ -216,7 +228,7 @@ abstract mixin class _$SavingsGoalFormDraftCopyWith<$Res> implements $SavingsGoa
   factory _$SavingsGoalFormDraftCopyWith(_SavingsGoalFormDraft value, $Res Function(_SavingsGoalFormDraft) _then) = __$SavingsGoalFormDraftCopyWithImpl;
 @override @useResult
 $Res call({
- String? goalId, String name, String emoji, int? targetAmount, String? currency, DateTime? deadline, String goalType, String? linkedAccountId, bool autoReminderEnabled, String visibility, DateTime updatedAt
+ String? goalId, String name, String emoji, int? targetAmount, String? currency, DateTime? deadline, String goalType, String? linkedAccountId, bool autoReminderEnabled, String visibility, bool seedBalanceOnCreate, int? seedAmountKopecks, DateTime updatedAt
 });
 
 
@@ -233,7 +245,7 @@ class __$SavingsGoalFormDraftCopyWithImpl<$Res>
 
 /// Create a copy of SavingsGoalFormDraft
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? goalId = freezed,Object? name = null,Object? emoji = null,Object? targetAmount = freezed,Object? currency = freezed,Object? deadline = freezed,Object? goalType = null,Object? linkedAccountId = freezed,Object? autoReminderEnabled = null,Object? visibility = null,Object? updatedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? goalId = freezed,Object? name = null,Object? emoji = null,Object? targetAmount = freezed,Object? currency = freezed,Object? deadline = freezed,Object? goalType = null,Object? linkedAccountId = freezed,Object? autoReminderEnabled = null,Object? visibility = null,Object? seedBalanceOnCreate = null,Object? seedAmountKopecks = freezed,Object? updatedAt = null,}) {
   return _then(_SavingsGoalFormDraft(
 goalId: freezed == goalId ? _self.goalId : goalId // ignore: cast_nullable_to_non_nullable
 as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -245,7 +257,9 @@ as DateTime?,goalType: null == goalType ? _self.goalType : goalType // ignore: c
 as String,linkedAccountId: freezed == linkedAccountId ? _self.linkedAccountId : linkedAccountId // ignore: cast_nullable_to_non_nullable
 as String?,autoReminderEnabled: null == autoReminderEnabled ? _self.autoReminderEnabled : autoReminderEnabled // ignore: cast_nullable_to_non_nullable
 as bool,visibility: null == visibility ? _self.visibility : visibility // ignore: cast_nullable_to_non_nullable
-as String,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as String,seedBalanceOnCreate: null == seedBalanceOnCreate ? _self.seedBalanceOnCreate : seedBalanceOnCreate // ignore: cast_nullable_to_non_nullable
+as bool,seedAmountKopecks: freezed == seedAmountKopecks ? _self.seedAmountKopecks : seedAmountKopecks // ignore: cast_nullable_to_non_nullable
+as int?,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,
   ));
 }

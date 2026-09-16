@@ -5,6 +5,7 @@ import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/features/accounts/domain/entities/account.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+
 import '../../domain/entities/savings_goal.dart';
 import '../providers/create_savings_goal_providers.dart';
 import '../savings_goals_strings.dart';
@@ -80,6 +81,9 @@ class AccountSelectorDropdown extends ConsumerWidget {
           ref.read(createSavingsGoalFormProvider.notifier).setLinkedAccount(
                 id,
                 currency: picked.isEmpty ? null : picked.first.currency,
+                // 12.5.1: баланс нужен для предзаполнения суммы зачисления.
+                balanceKopecks:
+                    picked.isEmpty ? null : picked.first.currentBalance,
               );
         }
       },

@@ -8,6 +8,7 @@ import 'package:budget_assistant/core/widgets/skeleton_shimmer.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+
 import '../../domain/entities/savings_goal.dart';
 import '../../domain/entities/savings_goal_form_draft.dart';
 import '../providers/create_savings_goal_providers.dart';
@@ -36,6 +37,8 @@ class _CreateSavingsGoalScreenState
     extends ConsumerState<CreateSavingsGoalScreen> {
   final _nameController = TextEditingController();
   final _amountController = TextEditingController();
+  // 12.5.1 (Вариант Б): контроллер суммы зачисления из баланса счёта.
+  final _seedAmountController = TextEditingController();
   bool _initialized = false;
   bool _saving = false;
 
@@ -51,6 +54,7 @@ class _CreateSavingsGoalScreenState
   void dispose() {
     _nameController.dispose();
     _amountController.dispose();
+    _seedAmountController.dispose();
     super.dispose();
   }
 
@@ -130,6 +134,25 @@ class _CreateSavingsGoalScreenState
       final String successMessage;
       if (form.goalId == null) {
         final spaceId = ref.read(createGoalSpaceIdProvider);
+        int initialAmountKopecks = 0;
+        if (form.goalType == SavingsGoalType.linked &&
+            form.seedBalanceOnCreate &&
+            form.linkedAccountId != null) {
+          int? accountBalance;
+          for (final acc in ref.read(linkedGoalAccountsProvider)) {
+            if (acc.id == form.linkedAccountId) {
+              accountBalance = acc.currentBalance;
+              break;
+            }
+          }
+          final balance = accountBalance ?? 0;
+          // 12.5.1 (Вариант Б): пустое поле = 100% баланса счёта.
+          final enteredKopecks =
+              MoneyInputParser.parseKopecks(form.seedAmountText);
+          initialAmountKopecks = enteredKopecks ?? balance;
+          if (initialAmountKopecks < 0) initialAmountKopecks = 0;
+          if (initialAmountKopecks > balance) initialAmountKopecks = balance;
+        }
         await ref.read(createSavingsGoalUseCaseProvider)(
           userId: userId,
           name: finalName,
@@ -141,6 +164,7 @@ class _CreateSavingsGoalScreenState
               : null,
           autoReminderEnabled: form.autoReminderEnabled,
           spaceId: spaceId,
+          initialAmountKopecks: initialAmountKopecks,
         );
         successMessage = SavingsGoalsStrings.goalCreatedSnack;
       } else {
@@ -225,7 +249,6 @@ class _CreateSavingsGoalScreenState
   Widget build(BuildContext context) {
     final privacyMode = ref.watch(privacyModeProvider);
     final validationError = ref.watch(createGoalValidationErrorProvider);
-
     ref.listen(createSavingsGoalFormProvider, (_, next) {
       if (_nameController.text != next.name) {
         _nameController.text = next.name;
@@ -233,8 +256,11 @@ class _CreateSavingsGoalScreenState
       if (_amountController.text != next.amountText) {
         _amountController.text = next.amountText;
       }
+      // 12.5.1: синхронизация поля суммы зачисления с состоянием формы.
+      if (_seedAmountController.text != next.seedAmountText) {
+        _seedAmountController.text = next.seedAmountText;
+      }
     });
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -303,7 +329,9 @@ class _CreateSavingsGoalScreenState
                 const SizedBox(height: AppSpacing.spacing12),
                 const SavingsPlanPreview(),
                 const SizedBox(height: AppSpacing.spacing24),
-                const SavingsGoalFormTypeSection(),
+                SavingsGoalFormTypeSection(
+                  seedAmountController: _seedAmountController,
+                ),
                 const SizedBox(height: AppSpacing.spacing24),
                 const SavingsGoalFormAutomationSection(),
                 const SizedBox(height: AppSpacing.spacing24),

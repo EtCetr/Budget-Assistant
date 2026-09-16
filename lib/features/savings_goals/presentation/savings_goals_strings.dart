@@ -115,21 +115,29 @@ abstract final class SavingsGoalsStrings {
   static const formSectionType = 'Тип цели';
   static const formSectionAutomation = 'Автоматизация';
   static const formSectionVisibility = 'Область видимости';
-
   static const nameLabel = 'Название цели*';
   static const nameHint = 'Например, «Отпуск в Праге»';
   static const emojiTooltip = 'Выберите эмодзи для визуальной идентификации';
   static const emojiNone = 'Без эмодзи';
-
   static const amountFormLabel = 'Целевая сумма*';
   static const currencyInherited = 'Валюта наследуется от привязанного счёта';
+  static const seedBalanceTitle = 'Зачислить текущий баланс счёта в цель';
+  static const seedBalanceHint =
+      'Накопленное стартует с текущего баланса счёта (разово, при создании)';
+
+  // 12.5.1 (Вариант Б): выбор суммы зачисления
+  static const seedAmountLabel = 'Сумма зачисления';
+  static const seedAmountHint = 'Пусто = весь баланс';
+  static const seedAmountFull = 'Весь баланс';
+  static const seedAvailablePrefix = 'Доступно на счёте:';
+  static const seedSelectAccountHint =
+      'Выберите счёт, чтобы задать сумму зачисления';
 
   static const deadlineLabel = 'Дедлайн (опционально)';
   static const deadlineChoose = 'Выбрать дату';
   static const deadlineHint = 'Оставьте пустым, если цель без срока';
   static const deadlinePastWarning =
       'Дедлайн уже истёк. Цель появится в списке «Просрочено»';
-
   static const typeVirtual = '💭 Виртуальная';
   static const typeLinked = '🏦 Привязать к счёту';
   static const typeVirtualHint =
@@ -142,42 +150,35 @@ abstract final class SavingsGoalsStrings {
       'Для семейной привязанной цели нужен счёт с общим балансом';
   static const addAccountAction = 'Добавить счёт';
   static const makeVirtualAction = 'Создать виртуальную цель';
-
   static const autoReminderTitle = 'Включить автонапоминания';
   static const autoReminderHint =
       'Если в течение месяца не было пополнений, приложение напомнит о цели';
   static const recurringTitle = 'Создать регулярное пополнение';
   static const recurringDisabled = 'Появится на Этапе 14 (регулярные платежи)';
-
   static const visibilityPersonal = '🔒 Только я';
   static const visibilityFamily = '👨‍👩‍👧 Вся семья';
   static const visibilityHint =
       'Семейные цели видны всем членам семьи и синхронизируются между устройствами';
   static const familyUnavailable =
       'Сначала присоединитесь к семейному пространству';
-
   static const saveAction = 'Сохранить';
   static const updateAction = 'Обновить';
   static const goalCreatedSnack = 'Цель создана';
   static const goalUpdatedSnack = 'Цель обновлена';
   static const syncLaterNote = 'Синхронизируется при появлении интернета';
-
   static const cancelCreateTitle = 'Отменить создание?';
   static const cancelEditTitle = 'Отменить редактирование?';
   static const cancelSubtitle = 'Несохранённые данные будут потеряны.';
   static const continueEditing = 'Продолжить редактирование';
   static const discardAction = 'Отменить';
-
   static const draftRestoreTitle = 'Найден черновик';
   static const draftRestoreText = 'Восстановить несохранённую форму цели?';
   static const draftRestoreAction = 'Восстановить';
   static const draftStartFresh = 'Начать заново';
-
   static const planMonthlyPrefix = '💡 Это примерно';
   static const planMonthlySuffix = 'в месяц';
   static const planTenYears = 'если копить 10 лет';
   static const planByDeadline = 'чтобы успеть к дедлайну';
-
   static const currentAmountLabel = 'Накоплено';
   static const currentAmountTooltip =
       'Прогресс обновляется автоматически при пополнениях';

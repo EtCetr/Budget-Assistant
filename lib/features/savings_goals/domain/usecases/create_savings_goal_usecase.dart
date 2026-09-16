@@ -5,7 +5,10 @@ import '../repositories/savings_goals_repository.dart';
 
 /// Создание цели накопления.
 ///
-/// current_amount = 0 (пополнения через ContributeToSavingsGoalUseCase).
+/// [initialAmountKopecks] — разовое стартовое зачисление current_amount
+/// из баланса привязанного счёта (чекбокс формы, решение владельца).
+/// В историю транзакций НЕ пишется: это стартовое выделение, не операция.
+/// Баланс счёта при этом не списывается.
 class CreateSavingsGoalUseCase {
   CreateSavingsGoalUseCase({
     required SavingsGoalsRepository repository,
@@ -25,6 +28,7 @@ class CreateSavingsGoalUseCase {
     String? linkedAccountId,
     bool autoReminderEnabled = true,
     String? spaceId,
+    int initialAmountKopecks = 0,
   }) async {
     try {
       final now = DateTime.now().toUtc();
@@ -34,7 +38,7 @@ class CreateSavingsGoalUseCase {
         spaceId: spaceId,
         name: name,
         targetAmount: targetAmountKopecks,
-        currentAmount: 0,
+        currentAmount: initialAmountKopecks < 0 ? 0 : initialAmountKopecks,
         deadline: deadline,
         linkedAccountId: linkedAccountId,
         currency: currency,

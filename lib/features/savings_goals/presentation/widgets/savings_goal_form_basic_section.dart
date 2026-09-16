@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:budget_assistant/core/constants/currency_codes.dart';
+import 'package:budget_assistant/core/formatting/money_text_input_formatter.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import '../providers/create_savings_goal_providers.dart';
@@ -86,6 +87,7 @@ class SavingsGoalFormBasicSection extends ConsumerWidget {
                 controller: amountController,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [MoneyTextInputFormatter()],
                 decoration: const InputDecoration(
                   labelText: SavingsGoalsStrings.amountFormLabel,
                   hintText: SavingsGoalsStrings.amountHint,

@@ -1,4 +1,5 @@
 import 'package:logger/logger.dart';
+
 import '../entities/savings_goal_form_draft.dart';
 
 /// Построение DTO из формы создания/редактирования цели.
@@ -20,6 +21,9 @@ class BuildSavingsGoalDraftUseCase {
     String? linkedAccountId,
     required bool autoReminderEnabled,
     required String visibility,
+    // 12.5.1: параметры чекбокса зачисления баланса.
+    bool seedBalanceOnCreate = true,
+    int? seedAmountKopecks,
   }) {
     try {
       return SavingsGoalFormDraft(
@@ -33,6 +37,8 @@ class BuildSavingsGoalDraftUseCase {
         linkedAccountId: linkedAccountId,
         autoReminderEnabled: autoReminderEnabled,
         visibility: visibility,
+        seedBalanceOnCreate: seedBalanceOnCreate,
+        seedAmountKopecks: seedAmountKopecks,
         updatedAt: DateTime.now().toUtc(),
       );
     } catch (e, st) {

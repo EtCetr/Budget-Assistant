@@ -1,4 +1,5 @@
 import 'package:logger/logger.dart';
+
 import '../entities/savings_goal_form_draft.dart';
 
 /// Валидация формы создания/редактирования цели.
@@ -11,7 +12,9 @@ class ValidateSavingsGoalFormUseCase {
 
   final Logger _logger;
 
-  String? call(SavingsGoalFormDraft draft) {
+  /// [linkedAccountBalanceKopecks] — баланс выбранного счёта для проверки
+  /// суммы зачисления (микро-коммит 12.5.1, Вариант Б).
+  String? call(SavingsGoalFormDraft draft, {int? linkedAccountBalanceKopecks}) {
     try {
       // Имя: обязательное, 1-50 символов
       final name = draft.name.trim();
@@ -44,6 +47,20 @@ class ValidateSavingsGoalFormUseCase {
       // Привязанная цель: обязательно выбрать счёт
       if (draft.goalType == 'linked' && draft.linkedAccountId == null) {
         return 'Выберите счёт для привязанной цели';
+      }
+
+      // Сумма зачисления баланса счёта (12.5.1, Вариант Б):
+      // пустое поле = 100% баланса (валидно); если указана — > 0 и не больше баланса.
+      if (draft.goalType == 'linked' &&
+          draft.seedBalanceOnCreate &&
+          draft.seedAmountKopecks != null) {
+        if (draft.seedAmountKopecks! <= 0) {
+          return 'Сумма зачисления должна быть больше нуля';
+        }
+        if (linkedAccountBalanceKopecks != null &&
+            draft.seedAmountKopecks! > linkedAccountBalanceKopecks) {
+          return 'Сумма зачисления не может превышать баланс счёта';
+        }
       }
 
       return null;

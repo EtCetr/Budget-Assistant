@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/core/errors/result.dart';
 import 'package:budget_assistant/core/formatting/money_input_parser.dart';
+import 'package:budget_assistant/core/formatting/money_text_input_formatter.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/features/accounts/domain/entities/account.dart';
@@ -61,6 +62,7 @@ class _ContributeToGoalSheetState extends ConsumerState<ContributeToGoalSheet> {
             TextField(
               controller: _amountController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [MoneyTextInputFormatter()],
               decoration: const InputDecoration(
                 labelText: SavingsGoalsStrings.amountLabel,
                 hintText: SavingsGoalsStrings.amountHint,
@@ -80,7 +82,7 @@ class _ContributeToGoalSheetState extends ConsumerState<ContributeToGoalSheet> {
                   TextButton(
                     onPressed: () {
                       HapticFeedback.selectionClick();
-                      _amountController.text = kopecksToInputText(widget.goal.draftAmount!);
+                      _amountController.text = MoneyTextInputFormatter.kopecksToInputText(widget.goal.draftAmount!);
                     },
                     child: const Text(SavingsGoalsStrings.draftUse),
                   ),
@@ -194,11 +196,4 @@ class _ContributeToGoalSheetState extends ConsumerState<ContributeToGoalSheet> {
       messenger.showSnackBar(const SnackBar(content: Text(SavingsGoalsStrings.operationFailed)));
     }
   }
-}
-
-String kopecksToInputText(int kopecks) {
-  final whole = kopecks ~/ 100;
-  final kop = kopecks % 100;
-  if (kop == 0) return '$whole';
-  return '$whole,${kop.toString().padLeft(2, '0')}';
 }

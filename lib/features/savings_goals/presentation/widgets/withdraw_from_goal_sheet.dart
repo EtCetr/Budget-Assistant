@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/core/errors/result.dart';
 import 'package:budget_assistant/core/formatting/money_input_parser.dart';
+import 'package:budget_assistant/core/formatting/money_text_input_formatter.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/features/accounts/domain/entities/account.dart';
@@ -66,6 +67,7 @@ class _WithdrawFromGoalSheetState extends ConsumerState<WithdrawFromGoalSheet> {
             TextField(
               controller: _amountController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [MoneyTextInputFormatter()],
               decoration: const InputDecoration(
                 labelText: SavingsGoalsStrings.amountLabel,
                 hintText: SavingsGoalsStrings.amountHint,
