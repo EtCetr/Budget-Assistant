@@ -30,16 +30,14 @@ import 'package:budget_assistant/features/cashback/presentation/screens/cashback
 import 'package:budget_assistant/features/savings_goals/presentation/providers/savings_goals_screen_providers.dart';
 import 'package:budget_assistant/features/savings_goals/presentation/screens/create_savings_goal_screen.dart';
 import 'package:budget_assistant/features/savings_goals/presentation/screens/savings_goals_screen.dart';
-
+import 'package:budget_assistant/features/savings_goals/presentation/screens/savings_analytics_screen.dart';
 part 'app_router.g.dart';
 
 @riverpod
 class AppLock extends _$AppLock {
   @override
   bool build() => false;
-
   void lock() => state = true;
-
   void unlock() => state = false;
 }
 
@@ -47,7 +45,6 @@ class AppLock extends _$AppLock {
 class OnboardingStatus extends _$OnboardingStatus {
   @override
   String build() => AppBootstrapFlags.onboardingStatus;
-
   void complete() {
     state = 'completed';
     AppBootstrapFlags.onboardingStatus = 'completed';
@@ -76,9 +73,7 @@ class OnboardingStatus extends _$OnboardingStatus {
 class CurrentSpaceId extends _$CurrentSpaceId {
   @override
   String? build() => null;
-
   void setSpaceId(String? id) => state = id;
-
   void clear() => state = null;
 }
 
@@ -86,15 +81,12 @@ class CurrentSpaceId extends _$CurrentSpaceId {
 class PendingInviteToken extends _$PendingInviteToken {
   @override
   String? build() => null;
-
   void setToken(String? token) => state = token;
-
   void clear() => state = null;
 }
 
 class _AuthRefreshNotifier extends ChangeNotifier {
   late final ProviderSubscription _sub;
-
   _AuthRefreshNotifier(Ref ref) {
     _sub = ref.listen(authProvider, (_, __) {
       notifyListeners();
@@ -115,7 +107,6 @@ GoRouter appRouter(Ref ref) {
   ref.onDispose(() {
     refreshNotifier.dispose();
   });
-
   return GoRouter(
     initialLocation: AppRoutes.home,
     debugLogDiagnostics: true,
@@ -266,17 +257,20 @@ GoRouter appRouter(Ref ref) {
           return CreateSavingsGoalScreen(goalId: goalId);
         },
       ),
+      GoRoute(
+        path: '/savings-analytics',
+        name: 'savings-analytics',
+        builder: (context, state) => const SavingsAnalyticsScreen(),
+      ),
     ],
     redirect: (context, state) {
       final location = state.uri.toString();
       final isAppLocked = ref.read(appLockProvider);
       final onboardingCompleted =
           ref.read(onboardingStatusProvider) == 'completed';
-
       if (isAppLocked && location != AppRoutes.lock) {
         return AppRoutes.lock;
       }
-
       if (authStatus == AuthStatus.unauthenticated) {
         if (!location.startsWith(AppRoutes.auth) &&
             !location.startsWith(AppRoutes.invite)) {
@@ -284,19 +278,16 @@ GoRouter appRouter(Ref ref) {
         }
         return null;
       }
-
       if (authStatus == AuthStatus.authenticated) {
         if (!onboardingCompleted &&
             !location.startsWith(AppRoutes.onboarding) &&
             !location.startsWith('/security/')) {
           return AppRoutes.onboarding;
         }
-
         if (onboardingCompleted && location.startsWith(AppRoutes.auth)) {
           return AppRoutes.home;
         }
       }
-
       return null;
     },
   );

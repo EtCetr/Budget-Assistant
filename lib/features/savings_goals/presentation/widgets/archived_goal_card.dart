@@ -11,10 +11,12 @@ import 'package:budget_assistant/features/auth/presentation/providers/current_us
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
 import '../../domain/entities/savings_goal.dart';
 import '../savings_goals_strings.dart';
+import 'goal_history_sheet.dart';
 import 'restore_goal_dialog.dart';
 import 'savings_goal_card.dart';
 
 /// Карточка архивной цели (ТЗ 6.3.47.5).
+/// Микро-коммит 12.6: добавлена кнопка «📜 История» (BottomSheet истории).
 class ArchivedGoalCard extends ConsumerWidget {
   const ArchivedGoalCard({super.key, required this.goal});
 
@@ -27,24 +29,20 @@ class ArchivedGoalCard extends ConsumerWidget {
     final mode = ref.watch(privacyModeProvider);
     final formatter = ref.watch(privacyFormatterProvider);
     final theme = Theme.of(context);
-
     final userId = ref.watch(currentUserIdProvider);
     final accounts = ref.watch(accountsListProvider(userId)).value;
     final account = findAccountById(accounts, goal.linkedAccountId);
-
     final name = formatter.formatName(goal.name, mode);
     final currentText =
         formatter.formatAmount(goal.currentAmount, goal.currency, mode);
     final targetText =
         formatter.formatAmount(goal.targetAmount, goal.currency, mode);
     final percentText = formatter.formatPercent(goal.progressPercent, mode);
-
     final date = (goal.completedAt ?? goal.updatedAt).toLocal();
     final dateText = DateFormat('d MMMM yyyy', 'ru').format(date);
     final statusPrefix = _isCompleted
         ? SavingsGoalsStrings.completedPrefix
         : SavingsGoalsStrings.cancelledPrefix;
-
     return Opacity(
       opacity: _isCompleted ? 1.0 : 0.7,
       child: Container(
@@ -100,16 +98,33 @@ class ArchivedGoalCard extends ConsumerWidget {
                   ?.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: AppSpacing.spacing12),
-            OutlinedButton.icon(
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                showDialog(
-                  context: context,
-                  builder: (_) => RestoreGoalDialog(goal: goal),
-                );
-              },
-              icon: const Icon(Icons.restore, size: 18),
-              label: const Text(SavingsGoalsStrings.actionRestore),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      showGoalHistorySheet(context, goal);
+                    },
+                    icon: const Icon(Icons.history, size: 18),
+                    label: const Text(SavingsGoalsStrings.actionHistory),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.spacing8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      showDialog(
+                        context: context,
+                        builder: (_) => RestoreGoalDialog(goal: goal),
+                      );
+                    },
+                    icon: const Icon(Icons.restore, size: 18),
+                    label: const Text(SavingsGoalsStrings.actionRestore),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

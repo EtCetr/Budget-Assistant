@@ -37,6 +37,7 @@ abstract final class SavingsGoalsStrings {
   static const actionRestore = '🔄 Восстановить';
   static const actionArchive = '🗂 Архивировать';
   static const actionEdit = '✏️ Редактировать';
+  static const actionHistory = '📜 История';
 
   // Дедлайн
   static const deadlinePrefix = '📅 до';
@@ -156,7 +157,7 @@ abstract final class SavingsGoalsStrings {
   static const recurringTitle = 'Создать регулярное пополнение';
   static const recurringDisabled = 'Появится на Этапе 14 (регулярные платежи)';
   static const visibilityPersonal = '🔒 Только я';
-  static const visibilityFamily = '👨‍👩‍👧 Вся семья';
+  static const visibilityFamily = '👨👩‍👧 Вся семья';
   static const visibilityHint =
       'Семейные цели видны всем членам семьи и синхронизируются между устройствами';
   static const familyUnavailable =
@@ -182,6 +183,38 @@ abstract final class SavingsGoalsStrings {
   static const currentAmountLabel = 'Накоплено';
   static const currentAmountTooltip =
       'Прогресс обновляется автоматически при пополнениях';
+
+  // ═══ История цели (микро-коммит 12.6, ТЗ 6.3.47.6) ═══
+  static const historySheetTitle = 'История цели';
+  static const historyTransactionsHeader = 'Транзакции';
+  static const historyContribute = 'Пополнение';
+  static const historyWithdraw = 'Изъятие';
+  static const historyEmpty = 'По этой цели ещё нет операций';
+  static const historyError = 'Не удалось загрузить историю';
+  static const historyChartHidden = 'График скрыт в режиме приватности';
+  static const historyClose = 'Закрыть';
+
+  // ═══ Аналитика копилок (микро-коммит 12.7.1, ТЗ 6.3.18) ═══
+  static const analyticsTitle = 'Аналитика копилок';
+  static const periodMonth = 'Месяц';
+  static const periodQuarter = 'Квартал';
+  static const periodYear = 'Год';
+  static const periodAllTime = 'Всё время';
+  static const statGoals = 'Целей';
+  static const statTarget = 'Целевая';
+  static const statSaved = 'Накоплено';
+  static const statProgress = 'Прогресс';
+  static const statNewInPeriod = 'за период';
+  static const statNoChanges = '0 изменений';
+  static const statInPeriod = 'за период';
+  static const chartTitle = 'Динамика накопления';
+  static const chartHiddenNote = 'График скрыт в режиме приватности';
+  static const chartEmptyTitle = 'В этом периоде не было пополнений';
+  static const chartEmptySubtitle =
+      'Попробуйте выбрать другой период или пополните одну из целей';
+  static const legendAccumulated = 'Накоплено';
+  static const legendTarget = 'Целевая линия';
+  static const legendForecast = 'Прогноз';
 
   /// Склонение слова «день».
   static String daysLabel(int n) {

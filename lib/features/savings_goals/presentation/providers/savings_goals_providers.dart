@@ -26,7 +26,6 @@ import 'savings_goals_repository_providers.dart';
 final Logger _logger = Logger();
 
 // ═══ UseCases целей накопления (Этап 12) ═══
-
 final createSavingsGoalUseCaseProvider = Provider<CreateSavingsGoalUseCase>((ref) {
   return CreateSavingsGoalUseCase(
     repository: ref.watch(savingsGoalsRepositoryProvider),
@@ -132,21 +131,36 @@ final calculateSavingsPlanUseCaseProvider =
   return CalculateSavingsPlanUseCase(logger: _logger);
 });
 
+final calculateSavingsForecastUseCaseProvider =
+    Provider<CalculateSavingsForecastUseCase>((ref) {
+  return CalculateSavingsForecastUseCase(
+    convertCurrency: ref.watch(convertCurrencyUseCaseProvider),
+    logger: _logger,
+  );
+});
+
 final calculateSavingsAnalyticsUseCaseProvider =
     Provider<CalculateSavingsAnalyticsUseCase>((ref) {
-  return CalculateSavingsAnalyticsUseCase(logger: _logger);
+  return CalculateSavingsAnalyticsUseCase(
+    convertCurrency: ref.watch(convertCurrencyUseCaseProvider),
+    logger: _logger,
+  );
 });
 
 final buildAccumulationChartUseCaseProvider =
     Provider<BuildAccumulationChartUseCase>((ref) {
-  return BuildAccumulationChartUseCase(logger: _logger);
-});
-
-final calculateSavingsForecastUseCaseProvider =
-    Provider<CalculateSavingsForecastUseCase>((ref) {
-  return CalculateSavingsForecastUseCase(logger: _logger);
+  return BuildAccumulationChartUseCase(
+    forecast: ref.watch(calculateSavingsForecastUseCaseProvider),
+    convertCurrency: ref.watch(convertCurrencyUseCaseProvider),
+    logger: _logger,
+  );
 });
 
 final sortGoalsTableUseCaseProvider = Provider<SortGoalsTableUseCase>((ref) {
   return SortGoalsTableUseCase(logger: _logger);
+});
+/// Микро-коммит 12.6: история пополнений/изъятий цели (BottomSheet «История цели»).
+final goalHistoryProvider =
+    FutureProvider.family<GoalHistory, String>((ref, goalId) {
+  return ref.watch(getGoalHistoryUseCaseProvider)(goalId);
 });
