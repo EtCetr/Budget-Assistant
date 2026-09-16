@@ -7,7 +7,9 @@ import '../entities/savings_goal.dart';
 import 'calculate_savings_forecast_usecase.dart';
 
 /// График суммарного накопления по всем целям за период (ТЗ 6.3.18.5).
-/// Все вычисления строго локально; конвертация по курсу на дату транзакции.
+/// Кумулятива считается локально в Dart по транзакциям с savings_goal_id
+/// (E2E: сервер видит только шифртекст и не может построить график).
+/// Валюта суммы транзакции резолвится через счёт (txn.accountId).
 class BuildAccumulationChartUseCase {
   BuildAccumulationChartUseCase({
     required CalculateSavingsForecastUseCase forecast,
@@ -32,25 +34,18 @@ class BuildAccumulationChartUseCase {
   }) async {
     try {
       final daySums = <String, int>{};
-      var stale = false;
+      var hasStaleRates = false;
+      final startDay =
+          DateTime(periodStart.year, periodStart.month, periodStart.day);
       for (final txn in savingsTransactions) {
         if (txn.isWithdrawal || txn.auditStatus == AuditStatus.ignored) {
           continue;
         }
         final local = txn.date.toLocal();
-        if (local.isBefore(DateTime(periodStart.year, periodStart.month, periodStart.day)) ||
-            local.isAfter(periodEnd)) {
-          continue;
-        }
-        String? currency;
-        for (final account in accounts) {
-          if (account.id == txn.accountId) {
-            currency = account.currency;
-            break;
-          }
-        }
+        if (local.isBefore(startDay) || local.isAfter(periodEnd)) continue;
+        final currency = _txnCurrency(txn, accounts);
         if (currency == null) {
-          stale = true;
+          hasStaleRates = true;
           continue;
         }
         final converted = await _convertCurrency(
@@ -60,7 +55,7 @@ class BuildAccumulationChartUseCase {
           dateUtc: txn.date,
         );
         if (converted == null) {
-          stale = true;
+          hasStaleRates = true;
           continue;
         }
         final key = '${local.year}-${local.month}-${local.day}';
@@ -73,13 +68,17 @@ class BuildAccumulationChartUseCase {
         cumulative += daySums[key]!;
         final parts = key.split('-');
         points.add(AccumulationPoint(
-          date: DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2])),
+          date: DateTime(
+            int.parse(parts[0]),
+            int.parse(parts[1]),
+            int.parse(parts[2]),
+          ),
           cumulativeAmountKopecks: cumulative,
         ));
       }
       var targetLine = 0;
       final nowUtc = DateTime.now().toUtc();
-      for (final goal in goals) {
+      for (final goal in goals.where((g) => g.isActive)) {
         final target = await _convertCurrency(
           amountKopecks: goal.targetAmount,
           fromCurrency: goal.currency,
@@ -87,10 +86,10 @@ class BuildAccumulationChartUseCase {
           dateUtc: nowUtc,
         );
         if (target == null) {
-          stale = true;
-          continue;
+          hasStaleRates = true;
+        } else {
+          targetLine += target;
         }
-        targetLine += target;
       }
       var forecast = const <ForecastPoint>[];
       if (points.isNotEmpty) {
@@ -109,12 +108,19 @@ class BuildAccumulationChartUseCase {
         forecast: forecast,
         targetLineKopecks: targetLine,
         baseCurrency: baseCurrency,
-        hasStaleRates: stale,
+        hasStaleRates: hasStaleRates,
       );
     } catch (e, st) {
       _logger.e('BuildAccumulationChartUseCase failed', error: e, stackTrace: st);
       rethrow;
     }
+  }
+
+  String? _txnCurrency(Transaction txn, List<Account> accounts) {
+    for (final account in accounts) {
+      if (account.id == txn.accountId) return account.currency;
+    }
+    return null;
   }
 }
 

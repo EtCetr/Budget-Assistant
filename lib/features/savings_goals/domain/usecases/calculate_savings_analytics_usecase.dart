@@ -6,8 +6,9 @@ import 'package:budget_assistant/features/transactions/domain/models/transaction
 import '../entities/savings_goal.dart';
 
 /// Мультивалютная агрегация для SavingsAnalyticsScreen (ТЗ 6.3.18.4).
-/// Конвертация — в Dart через ConvertCurrencyUseCase (согласованное отклонение:
-/// не SQL-JOIN), курсы на дату транзакции / на сегодня для целей.
+/// Конвертация — в Dart через ConvertCurrencyUseCase (согласованное отклонение
+/// от SQL-JOIN): курсы на дату транзакции, для остатков — на сегодня.
+/// Валюта суммы транзакции резолвится через счёт (txn.accountId).
 class CalculateSavingsAnalyticsUseCase {
   CalculateSavingsAnalyticsUseCase({
     required ConvertCurrencyUseCase convertCurrency,
@@ -34,8 +35,9 @@ class CalculateSavingsAnalyticsUseCase {
       var totalCurrent = 0;
       var targetAtStart = 0;
       var targetAtEnd = 0;
-      var stale = false;
+      var hasStaleRates = false;
       for (final goal in goals) {
+        final created = goal.createdAt.toLocal();
         final target = await _convertCurrency(
           amountKopecks: goal.targetAmount,
           fromCurrency: goal.currency,
@@ -49,19 +51,17 @@ class CalculateSavingsAnalyticsUseCase {
           dateUtc: now,
         );
         if (target == null || current == null) {
-          stale = true;
-          continue;
+          hasStaleRates = true;
+        } else if (goal.isActive) {
+          totalTarget += target;
+          totalCurrent += current;
         }
-        totalTarget += target;
-        totalCurrent += current;
-        final created = goal.createdAt.toLocal();
-        if (!created.isBefore(periodEnd)) {
-          continue;
+        if (!created.isAfter(periodEnd)) {
+          if (target != null) {
+            targetAtEnd += target;
+            if (created.isBefore(periodStart)) targetAtStart += target;
+          }
         }
-        if (created.isBefore(periodStart)) {
-          targetAtStart += target;
-        }
-        targetAtEnd += target;
       }
       var contributed = 0;
       var prevContributed = 0;
@@ -71,7 +71,7 @@ class CalculateSavingsAnalyticsUseCase {
         }
         final currency = _txnCurrency(txn, accounts);
         if (currency == null) {
-          stale = true;
+          hasStaleRates = true;
           continue;
         }
         final converted = await _convertCurrency(
@@ -81,7 +81,7 @@ class CalculateSavingsAnalyticsUseCase {
           dateUtc: txn.date,
         );
         if (converted == null) {
-          stale = true;
+          hasStaleRates = true;
           continue;
         }
         final local = txn.date.toLocal();
@@ -91,28 +91,27 @@ class CalculateSavingsAnalyticsUseCase {
           prevContributed += converted;
         }
       }
-      final goalsCreatedInPeriod = goals
+      final createdInPeriod = goals
           .where((g) => _inRange(g.createdAt.toLocal(), periodStart, periodEnd))
           .length;
-      final overall = totalTarget > 0
-          ? (totalCurrent * 100 ~/ totalTarget).clamp(0, 100).toInt()
-          : 0;
       return AnalyticsSummary(
         activeGoalsCount: goals.where((g) => g.isActive).length,
         completedGoalsCount:
             goals.where((g) => g.status == SavingsGoalStatus.completed).length,
         totalTargetKopecks: totalTarget,
         totalCurrentKopecks: totalCurrent,
-        overallProgressPercent: overall,
+        overallProgressPercent: totalTarget > 0
+            ? (totalCurrent * 100 ~/ totalTarget).clamp(0, 100)
+            : 0,
         contributedInPeriodKopecks: contributed,
         contributionDeltaPercent: prevContributed > 0
-            ? ((contributed - prevContributed) * 100 ~/ prevContributed)
+            ? (contributed - prevContributed) * 100 ~/ prevContributed
             : null,
-        goalsCreatedInPeriod: goalsCreatedInPeriod,
+        goalsCreatedInPeriod: createdInPeriod,
         targetDeltaPercent: targetAtStart > 0
-            ? ((targetAtEnd - targetAtStart) * 100 ~/ targetAtStart)
+            ? (targetAtEnd - targetAtStart) * 100 ~/ targetAtStart
             : null,
-        hasStaleRates: stale,
+        hasStaleRates: hasStaleRates,
       );
     } catch (e, st) {
       _logger.e('CalculateSavingsAnalyticsUseCase failed', error: e, stackTrace: st);
@@ -124,6 +123,7 @@ class CalculateSavingsAnalyticsUseCase {
       !local.isBefore(DateTime(start.year, start.month, start.day)) &&
       !local.isAfter(end);
 
+  /// Валюта суммы транзакции = валюта счёта-источника.
   String? _txnCurrency(Transaction txn, List<Account> accounts) {
     for (final account in accounts) {
       if (account.id == txn.accountId) return account.currency;

@@ -1,29 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
+import 'package:budget_assistant/core/widgets/empty_state_widget.dart';
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+import '../providers/savings_analytics_providers.dart';
 import '../savings_goals_strings.dart';
 import '../widgets/accumulation_chart.dart';
 import '../widgets/savings_analytics_period_selector.dart';
 import '../widgets/savings_analytics_summary_grid.dart';
 
 /// Экран аналитики копилок (ТЗ 6.3.18). Микро-коммит 12.7.1:
-/// период, Summary Grid, график накопления с прогнозом.
-/// Таблица целей, фильтры, валютный баннер и экспорт — следующие коммиты.
-class SavingsAnalyticsScreen extends ConsumerWidget {
+/// период-селектор, Summary 2×2, график накопления с прогнозом.
+/// Таблица целей, Filter Row, баннер валют и экспорт — микро-коммит 12.7.2.
+class SavingsAnalyticsScreen extends ConsumerStatefulWidget {
   const SavingsAnalyticsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SavingsAnalyticsScreen> createState() =>
+      _SavingsAnalyticsScreenState();
+}
+
+class _SavingsAnalyticsScreenState extends ConsumerState<SavingsAnalyticsScreen> {
+  @override
+  Widget build(BuildContext context) {
     final privacyMode = ref.watch(privacyModeProvider);
+    final goalsAsync = ref.watch(analyticsAllGoalsProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text(SavingsGoalsStrings.analyticsTitle),
         actions: [
           GestureDetector(
-            onLongPress: () => _showPrivacySheet(context, ref),
+            onLongPress: _showPrivacySheet,
             child: IconButton(
               icon: Icon(
                 privacyMode == BalanceVisibilityMode.hidden
@@ -38,21 +48,40 @@ class SavingsAnalyticsScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.spacing16),
-        children: const [
-          SavingsAnalyticsPeriodSelector(),
-          SizedBox(height: AppSpacing.spacing12),
-          SavingsAnalyticsSummaryGrid(),
-          SizedBox(height: AppSpacing.spacing12),
-          AccumulationChart(),
-          SizedBox(height: AppSpacing.spacing24),
-        ],
+      body: goalsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, __) => const Center(
+          child: Text(SavingsGoalsStrings.loadingError),
+        ),
+        data: (goals) {
+          if (goals.isEmpty) {
+            return EmptyStateWidget(
+              animationAsset: 'assets/animations/empty_piggy.json',
+              title: SavingsGoalsStrings.emptyAllTitle,
+              subtitle: SavingsGoalsStrings.analyticsEmptySubtitle,
+              primaryAction: EmptyStateAction(
+                label: SavingsGoalsStrings.emptyAllAction,
+                onPressed: () => context.push('/savings-goals/create'),
+              ),
+            );
+          }
+          return ListView(
+            padding: const EdgeInsets.all(AppSpacing.spacing16),
+            children: const [
+              SavingsAnalyticsPeriodSelector(),
+              SizedBox(height: AppSpacing.spacing12),
+              SavingsAnalyticsSummaryGrid(),
+              SizedBox(height: AppSpacing.spacing12),
+              AccumulationChart(),
+              SizedBox(height: AppSpacing.spacing24),
+            ],
+          );
+        },
       ),
     );
   }
 
-  void _showPrivacySheet(BuildContext context, WidgetRef ref) {
+  void _showPrivacySheet() {
     showModalBottomSheet(
       context: context,
       builder: (sheetContext) => SafeArea(

@@ -1,0 +1,1170 @@
+﻿===== FILE: lib\features\savings_goals\domain\usecases\build_accumulation_chart_usecase.dart =====
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
+import 'package:budget_assistant/features/cashback/domain/usecases/convert_currency_usecase.dart';
+import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
+import '../entities/savings_goal.dart';
+import 'calculate_savings_forecast_usecase.dart';
+
+/// Р“СЂР°С„РёРє СЃСѓРјРјР°СЂРЅРѕРіРѕ РЅР°РєРѕРїР»РµРЅРёСЏ РїРѕ РІСЃРµРј С†РµР»СЏРј Р·Р° РїРµСЂРёРѕРґ (РўР— 6.3.18.5).
+/// РљСѓРјСѓР»СЏС‚РёРІР° СЃС‡РёС‚Р°РµС‚СЃСЏ Р»РѕРєР°Р»СЊРЅРѕ РІ Dart РїРѕ С‚СЂР°РЅР·Р°РєС†РёСЏРј СЃ savings_goal_id
+/// (E2E: СЃРµСЂРІРµСЂ РІРёРґРёС‚ С‚РѕР»СЊРєРѕ С€РёС„СЂС‚РµРєСЃС‚ Рё РЅРµ РјРѕР¶РµС‚ РїРѕСЃС‚СЂРѕРёС‚СЊ РіСЂР°С„РёРє).
+class BuildAccumulationChartUseCase {
+  BuildAccumulationChartUseCase({
+    required CalculateSavingsForecastUseCase forecast,
+    required ConvertCurrencyUseCase convertCurrency,
+    required Logger logger,
+  })  : _forecast = forecast,
+        _convertCurrency = convertCurrency,
+        _logger = logger;
+
+  final CalculateSavingsForecastUseCase _forecast;
+  final ConvertCurrencyUseCase _convertCurrency;
+  final Logger _logger;
+
+  Future<AccumulationChartData> call({
+    required List<SavingsGoal> goals,
+    required List<Transaction> savingsTransactions,
+    required String baseCurrency,
+    required DateTime periodStart,
+    required DateTime periodEnd,
+    required DateTime now,
+  }) async {
+    try {
+      final daySums = <String, int>{};
+      var hasStaleRates = false;
+      final startDay = DateTime(periodStart.year, periodStart.month, periodStart.day);
+      for (final txn in savingsTransactions) {
+        if (txn.isWithdrawal || txn.auditStatus == AuditStatus.ignored) continue;
+        final local = txn.date.toLocal();
+        if (local.isBefore(startDay) || local.isAfter(periodEnd)) continue;
+        final converted = await _convertCurrency(
+          amountKopecks: txn.amount,
+          fromCurrency: txn.currency,
+          toCurrency: baseCurrency,
+          dateUtc: txn.date,
+        );
+        if (converted == null) {
+          hasStaleRates = true;
+          continue;
+        }
+        final key = '${local.year}-${local.month}-${local.day}';
+        daySums[key] = (daySums[key] ?? 0) + converted;
+      }
+      final keys = daySums.keys.toList()..sort();
+      final points = <AccumulationPoint>[];
+      var cumulative = 0;
+      for (final key in keys) {
+        cumulative += daySums[key]!;
+        final parts = key.split('-');
+        points.add(AccumulationPoint(
+          date: DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2])),
+          cumulativeAmountKopecks: cumulative,
+        ));
+      }
+      var targetLine = 0;
+      final nowUtc = DateTime.now().toUtc();
+      for (final goal in goals.where((g) => g.isActive)) {
+        final target = await _convertCurrency(
+          amountKopecks: goal.targetAmount,
+          fromCurrency: goal.currency,
+          toCurrency: baseCurrency,
+          dateUtc: nowUtc,
+        );
+        if (target == null) {
+          hasStaleRates = true;
+        } else {
+          targetLine += target;
+        }
+      }
+      var forecast = const <ForecastPoint>[];
+      if (points.isNotEmpty) {
+        forecast = await _forecast(
+          savingsTransactions: savingsTransactions,
+          baseCurrency: baseCurrency,
+          now: now,
+          projectUntil: periodEnd,
+          startCumulativeKopecks: points.last.cumulativeAmountKopecks,
+          startDate: points.last.date,
+        );
+      }
+      return AccumulationChartData(
+        points: points,
+        forecast: forecast,
+        targetLineKopecks: targetLine,
+        baseCurrency: baseCurrency,
+        hasStaleRates: hasStaleRates,
+      );
+    } catch (e, st) {
+      _logger.e('BuildAccumulationChartUseCase failed', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+}
+
+class AccumulationPoint {
+  const AccumulationPoint({
+    required this.date,
+    required this.cumulativeAmountKopecks,
+  });
+
+  final DateTime date;
+  final int cumulativeAmountKopecks;
+}
+
+class AccumulationChartData {
+  const AccumulationChartData({
+    required this.points,
+    required this.forecast,
+    required this.targetLineKopecks,
+    required this.baseCurrency,
+    required this.hasStaleRates,
+  });
+
+  final List<AccumulationPoint> points;
+  final List<ForecastPoint> forecast;
+  final int targetLineKopecks;
+  final String baseCurrency;
+  final bool hasStaleRates;
+}
+
+===== FILE: lib\features\savings_goals\domain\usecases\calculate_savings_analytics_usecase.dart =====
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
+import 'package:budget_assistant/features/cashback/domain/usecases/convert_currency_usecase.dart';
+import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
+import '../entities/savings_goal.dart';
+
+/// РњСѓР»СЊС‚РёРІР°Р»СЋС‚РЅР°СЏ Р°РіСЂРµРіР°С†РёСЏ РґР»СЏ SavingsAnalyticsScreen (РўР— 6.3.18.4).
+/// РљРѕРЅРІРµСЂС‚Р°С†РёСЏ вЂ” РІ Dart С‡РµСЂРµР· ConvertCurrencyUseCase (РєСѓСЂСЃ РЅР° РґР°С‚Сѓ С‚СЂР°РЅР·Р°РєС†РёРё,
+/// РґР»СЏ РѕСЃС‚Р°С‚РєРѕРІ вЂ” РЅР° СЃРµРіРѕРґРЅСЏ); СЃРѕРіР»Р°СЃРѕРІР°РЅРЅРѕРµ РѕС‚РєР»РѕРЅРµРЅРёРµ РѕС‚ SQL-JOIN.
+class CalculateSavingsAnalyticsUseCase {
+  CalculateSavingsAnalyticsUseCase({
+    required ConvertCurrencyUseCase convertCurrency,
+    required Logger logger,
+  })  : _convertCurrency = convertCurrency,
+        _logger = logger;
+
+  final ConvertCurrencyUseCase _convertCurrency;
+  final Logger _logger;
+
+  Future<AnalyticsSummary> call({
+    required List<SavingsGoal> goals,
+    required List<Transaction> savingsTransactions,
+    required String baseCurrency,
+    required DateTime periodStart,
+    required DateTime periodEnd,
+    required DateTime prevPeriodStart,
+    required DateTime prevPeriodEnd,
+  }) async {
+    try {
+      final now = DateTime.now().toUtc();
+      var totalTarget = 0;
+      var totalCurrent = 0;
+      var targetAtStart = 0;
+      var targetAtEnd = 0;
+      var hasStaleRates = false;
+      for (final goal in goals) {
+        final created = goal.createdAt.toLocal();
+        final inWindow = !created.isAfter(periodEnd);
+        if (goal.isActive) {
+          final target = await _convertCurrency(
+            amountKopecks: goal.targetAmount,
+            fromCurrency: goal.currency,
+            toCurrency: baseCurrency,
+            dateUtc: now,
+          );
+          final current = await _convertCurrency(
+            amountKopecks: goal.currentAmount,
+            fromCurrency: goal.currency,
+            toCurrency: baseCurrency,
+            dateUtc: now,
+          );
+          if (target == null || current == null) {
+            hasStaleRates = true;
+          } else {
+            totalTarget += target;
+            totalCurrent += current;
+          }
+        }
+        if (inWindow) {
+          final target = await _convertCurrency(
+            amountKopecks: goal.targetAmount,
+            fromCurrency: goal.currency,
+            toCurrency: baseCurrency,
+            dateUtc: now,
+          );
+          if (target != null) {
+            targetAtEnd += target;
+            if (created.isBefore(periodStart)) targetAtStart += target;
+          }
+        }
+      }
+      var contributed = 0;
+      var prevContributed = 0;
+      for (final txn in savingsTransactions) {
+        if (txn.isWithdrawal || txn.auditStatus == AuditStatus.ignored) {
+          continue;
+        }
+        final converted = await _convertCurrency(
+          amountKopecks: txn.amount,
+          fromCurrency: txn.currency,
+          toCurrency: baseCurrency,
+          dateUtc: txn.date,
+        );
+        if (converted == null) {
+          hasStaleRates = true;
+          continue;
+        }
+        final local = txn.date.toLocal();
+        if (_inRange(local, periodStart, periodEnd)) {
+          contributed += converted;
+        } else if (_inRange(local, prevPeriodStart, prevPeriodEnd)) {
+          prevContributed += converted;
+        }
+      }
+      final createdInPeriod = goals
+          .where((g) => _inRange(g.createdAt.toLocal(), periodStart, periodEnd))
+          .length;
+      return AnalyticsSummary(
+        activeGoalsCount: goals.where((g) => g.isActive).length,
+        completedGoalsCount:
+            goals.where((g) => g.status == SavingsGoalStatus.completed).length,
+        totalTargetKopecks: totalTarget,
+        totalCurrentKopecks: totalCurrent,
+        overallProgressPercent: totalTarget > 0
+            ? (totalCurrent * 100 ~/ totalTarget).clamp(0, 100)
+            : 0,
+        contributedInPeriodKopecks: contributed,
+        contributionDeltaPercent: prevContributed > 0
+            ? (contributed - prevContributed) * 100 ~/ prevContributed
+            : null,
+        goalsCreatedInPeriod: createdInPeriod,
+        targetDeltaPercent: targetAtStart > 0
+            ? (targetAtEnd - targetAtStart) * 100 ~/ targetAtStart
+            : null,
+        hasStaleRates: hasStaleRates,
+      );
+    } catch (e, st) {
+      _logger.e('CalculateSavingsAnalyticsUseCase failed', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  bool _inRange(DateTime local, DateTime start, DateTime end) =>
+      !local.isBefore(DateTime(start.year, start.month, start.day)) &&
+      !local.isAfter(end);
+}
+
+class AnalyticsSummary {
+  const AnalyticsSummary({
+    required this.activeGoalsCount,
+    required this.completedGoalsCount,
+    required this.totalTargetKopecks,
+    required this.totalCurrentKopecks,
+    required this.overallProgressPercent,
+    required this.contributedInPeriodKopecks,
+    required this.contributionDeltaPercent,
+    required this.goalsCreatedInPeriod,
+    required this.targetDeltaPercent,
+    required this.hasStaleRates,
+  });
+
+  final int activeGoalsCount;
+  final int completedGoalsCount;
+  final int totalTargetKopecks;
+  final int totalCurrentKopecks;
+  final int overallProgressPercent;
+  final int contributedInPeriodKopecks;
+  final int? contributionDeltaPercent;
+  final int goalsCreatedInPeriod;
+  final int? targetDeltaPercent;
+  final bool hasStaleRates;
+}
+
+===== FILE: lib\features\savings_goals\domain\usecases\calculate_savings_forecast_usecase.dart =====
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
+import 'package:budget_assistant/features/cashback/domain/usecases/convert_currency_usecase.dart';
+import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
+
+/// РџСЂРѕРіРЅРѕР·РЅР°СЏ Р»РёРЅРёСЏ: СЃСЂРµРґРЅРµРµ РґРЅРµРІРЅРѕРµ РїРѕРїРѕР»РЅРµРЅРёРµ Р·Р° РїРѕСЃР»РµРґРЅРёРµ 30 РґРЅРµР№,
+/// РїСЂРѕРµРєС†РёСЏ РґРѕ РєРѕРЅС†Р° РїРµСЂРёРѕРґР° (РўР— 6.3.18.5). Р”Р°РЅРЅС‹С… < 7 РґРЅРµР№ в†’ Р»РёРЅРёРё РЅРµС‚.
+class CalculateSavingsForecastUseCase {
+  CalculateSavingsForecastUseCase({
+    required ConvertCurrencyUseCase convertCurrency,
+    required Logger logger,
+  })  : _convertCurrency = convertCurrency,
+        _logger = logger;
+
+  final ConvertCurrencyUseCase _convertCurrency;
+  final Logger _logger;
+
+  Future<List<ForecastPoint>> call({
+    required List<Transaction> savingsTransactions,
+    required String baseCurrency,
+    required DateTime now,
+    required DateTime projectUntil,
+    required int startCumulativeKopecks,
+    required DateTime startDate,
+  }) async {
+    try {
+      if (!projectUntil.isAfter(startDate)) return const [];
+      final windowStart = now.subtract(const Duration(days: 30));
+      var sum = 0;
+      final dayKeys = <String>{};
+      for (final txn in savingsTransactions) {
+        if (txn.isWithdrawal || txn.auditStatus == AuditStatus.ignored) {
+          continue;
+        }
+        if (txn.date.isBefore(windowStart) || txn.date.isAfter(now)) continue;
+        final converted = await _convertCurrency(
+          amountKopecks: txn.amount,
+          fromCurrency: txn.currency,
+          toCurrency: baseCurrency,
+          dateUtc: txn.date,
+        );
+        if (converted == null) continue;
+        sum += converted;
+        final local = txn.date.toLocal();
+        dayKeys.add('${local.year}-${local.month}-${local.day}');
+      }
+      if (dayKeys.length < 7) return const [];
+      final avgPerDay = sum ~/ 30;
+      if (avgPerDay <= 0) return const [];
+      final days = projectUntil.difference(startDate).inDays;
+      if (days <= 0) return const [];
+      return [
+        ForecastPoint(date: startDate, forecastedAmountKopecks: startCumulativeKopecks),
+        ForecastPoint(
+          date: projectUntil,
+          forecastedAmountKopecks: startCumulativeKopecks + avgPerDay * days,
+        ),
+      ];
+    } catch (e, st) {
+      _logger.e('CalculateSavingsForecastUseCase failed', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+}
+
+class ForecastPoint {
+  const ForecastPoint({
+    required this.date,
+    required this.forecastedAmountKopecks,
+  });
+
+  final DateTime date;
+  final int forecastedAmountKopecks;
+}
+
+===== FILE: lib\features\savings_goals\presentation\providers\savings_analytics_providers.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
+import 'package:budget_assistant/features/transactions/presentation/providers/create_transaction_providers.dart';
+import '../../domain/entities/savings_goal.dart';
+import '../../domain/usecases/build_accumulation_chart_usecase.dart';
+import '../../domain/usecases/calculate_savings_analytics_usecase.dart';
+import 'savings_goals_providers.dart';
+import 'savings_goals_screen_providers.dart';
+
+/// РџРµСЂРёРѕРґ Р°РЅР°Р»РёС‚РёРєРё (РўР— 6.3.18.3), РґРµС„РѕР»С‚ вЂ” Р“РѕРґ.
+enum AnalyticsPeriod { month, quarter, year, allTime }
+
+class AnalyticsPeriodNotifier extends Notifier<AnalyticsPeriod> {
+  @override
+  AnalyticsPeriod build() => AnalyticsPeriod.year;
+
+  void set(AnalyticsPeriod period) => state = period;
+}
+
+final analyticsPeriodProvider =
+    NotifierProvider<AnalyticsPeriodNotifier, AnalyticsPeriod>(
+  AnalyticsPeriodNotifier.new,
+);
+
+class AnalyticsPeriodRange {
+  const AnalyticsPeriodRange({
+    required this.start,
+    required this.end,
+    required this.prevStart,
+    required this.prevEnd,
+  });
+
+  final DateTime start;
+  final DateTime end;
+  final DateTime prevStart;
+  final DateTime prevEnd;
+
+  int get totalDays => end.difference(start).inDays + 1;
+}
+
+final analyticsPeriodRangeProvider = Provider<AnalyticsPeriodRange>((ref) {
+  final period = ref.watch(analyticsPeriodProvider);
+  final now = DateTime.now();
+  final DateTime start;
+  switch (period) {
+    case AnalyticsPeriod.month:
+      start = DateTime(now.year, now.month, 1);
+    case AnalyticsPeriod.quarter:
+      start = DateTime(now.year, ((now.month - 1) ~/ 3) * 3 + 1, 1);
+    case AnalyticsPeriod.year:
+      start = DateTime(now.year, 1, 1);
+    case AnalyticsPeriod.allTime:
+      start = DateTime(2000, 1, 1);
+  }
+  if (period == AnalyticsPeriod.allTime) {
+    return AnalyticsPeriodRange(
+      start: start,
+      end: now,
+      prevStart: start,
+      prevEnd: start.subtract(const Duration(days: 1)),
+    );
+  }
+  final days = now.difference(start).inDays + 1;
+  final prevEnd = start.subtract(const Duration(days: 1));
+  final prevStart = prevEnd.subtract(Duration(days: days - 1));
+  return AnalyticsPeriodRange(
+    start: start,
+    end: now,
+    prevStart: prevStart,
+    prevEnd: prevEnd,
+  );
+});
+
+/// Р’СЃРµ С†РµР»Рё (Р°РєС‚РёРІРЅС‹Рµ + Р°СЂС…РёРІ) РґР»СЏ Р°РЅР°Р»РёС‚РёРєРё.
+final analyticsAllGoalsProvider = FutureProvider<List<SavingsGoal>>((ref) async {
+  final active = await ref.watch(allActiveSavingsGoalsProvider.future);
+  final archived = await ref.watch(allArchivedSavingsGoalsProvider.future);
+  return [...active, ...archived];
+});
+
+/// Р’СЃРµ С‚СЂР°РЅР·Р°РєС†РёРё С†РµР»РµР№ (РїРѕРїРѕР»РЅРµРЅРёСЏ + РёР·СЉСЏС‚РёСЏ) Р·Р° РІСЃС‘ РІСЂРµРјСЏ.
+final analyticsSavingsTxnsProvider = FutureProvider<List<Transaction>>((ref) async {
+  final goals = await ref.watch(analyticsAllGoalsProvider.future);
+  final repository = ref.watch(transactionsRepositoryProvider);
+  final out = <Transaction>[];
+  for (final goal in goals) {
+    out.addAll(await repository.getTransactionsByGoalId(goal.id));
+  }
+  return out;
+});
+
+final savingsAnalyticsSummaryProvider =
+    FutureProvider<AnalyticsSummary>((ref) async {
+  final goals = await ref.watch(analyticsAllGoalsProvider.future);
+  final txns = await ref.watch(analyticsSavingsTxnsProvider.future);
+  final baseCurrency = await ref.watch(savingsBaseCurrencyProvider.future);
+  final range = ref.watch(analyticsPeriodRangeProvider);
+  return ref.watch(calculateSavingsAnalyticsUseCaseProvider)(
+    goals: goals,
+    savingsTransactions: txns,
+    baseCurrency: baseCurrency,
+    periodStart: range.start,
+    periodEnd: range.end,
+    prevPeriodStart: range.prevStart,
+    prevPeriodEnd: range.prevEnd,
+  );
+});
+
+final accumulationChartProvider =
+    FutureProvider<AccumulationChartData>((ref) async {
+  final goals = await ref.watch(analyticsAllGoalsProvider.future);
+  final txns = await ref.watch(analyticsSavingsTxnsProvider.future);
+  final baseCurrency = await ref.watch(savingsBaseCurrencyProvider.future);
+  final range = ref.watch(analyticsPeriodRangeProvider);
+  return ref.watch(buildAccumulationChartUseCaseProvider)(
+    goals: goals,
+    savingsTransactions: txns,
+    baseCurrency: baseCurrency,
+    periodStart: range.start,
+    periodEnd: range.end,
+    now: DateTime.now(),
+  );
+});
+
+===== FILE: lib\features\savings_goals\presentation\widgets\savings_analytics_summary_grid.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/core/theme/app_colors.dart';
+import 'package:budget_assistant/core/theme/app_spacing.dart';
+import 'package:budget_assistant/core/widgets/skeleton_shimmer.dart';
+import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+import '../providers/savings_analytics_providers.dart';
+import '../savings_goals_strings.dart';
+
+/// РЎРµС‚РєР° 2Г—2 РєР»СЋС‡РµРІС‹С… РјРµС‚СЂРёРє (РўР— 6.3.18.4). РњР°СЃРєРёСЂРѕРІР°РЅРёРµ вЂ” С‚РѕР»СЊРєРѕ PrivacyFormatter.
+class SavingsAnalyticsSummaryGrid extends ConsumerWidget {
+  const SavingsAnalyticsSummaryGrid({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summaryAsync = ref.watch(savingsAnalyticsSummaryProvider);
+    final mode = ref.watch(privacyModeProvider);
+    final formatter = ref.watch(privacyFormatterProvider);
+    final baseCurrency =
+        ref.watch(savingsBaseCurrencyProvider).value ?? 'RUB';
+    return summaryAsync.when(
+      loading: () => const SkeletonShimmer(height: 200),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (summary) {
+        final percentText =
+            formatter.formatPercent(summary.overallProgressPercent, mode);
+        final targetDelta = summary.targetDeltaPercent;
+        final contribDelta = summary.contributionDeltaPercent;
+        return Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _StatCard(
+                    label: SavingsGoalsStrings.statGoals,
+                    value: '${summary.activeGoalsCount} '
+                        '${SavingsGoalsStrings.statActiveSuffix}',
+                    valueColor: AppColors.textPrimary,
+                    sub: summary.goalsCreatedInPeriod > 0
+                        ? '+${summary.goalsCreatedInPeriod} '
+                            '${SavingsGoalsStrings.statNewInPeriod}'
+                        : SavingsGoalsStrings.statNoChanges,
+                    subColor: summary.goalsCreatedInPeriod > 0
+                        ? AppColors.colorIncome
+                        : AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.spacing12),
+                Expanded(
+                  child: _StatCard(
+                    label: SavingsGoalsStrings.statTarget,
+                    value: formatter.formatAmount(
+                        summary.totalTargetKopecks, baseCurrency, mode),
+                    valueColor: AppColors.colorTransfer,
+                    sub: targetDelta == null
+                        ? ''
+                        : '${targetDelta >= 0 ? 'в†‘' : 'в†“'}${targetDelta.abs()}% '
+                            '${SavingsGoalsStrings.statVsPrevPeriod}',
+                    subColor: targetDelta == null
+                        ? AppColors.textSecondary
+                        : (targetDelta >= 0
+                            ? AppColors.colorIncome
+                            : AppColors.colorExpense),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.spacing12),
+            Row(
+              children: [
+                Expanded(
+                  child: _StatCard(
+                    label: SavingsGoalsStrings.statSaved,
+                    value: formatter.formatAmount(
+                        summary.totalCurrentKopecks, baseCurrency, mode),
+                    valueColor: AppColors.colorIncome,
+                    sub: '${contribDelta == null ? '' : '${contribDelta >= 0 ? 'в†‘' : 'в†“'}${contribDelta.abs()}% '}'
+                        '${formatter.formatAmount(summary.contributedInPeriodKopecks, baseCurrency, mode)} '
+                        '${SavingsGoalsStrings.statInPeriod}',
+                    subColor: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.spacing12),
+                Expanded(
+                  child: _StatCard(
+                    label: SavingsGoalsStrings.statProgress,
+                    value: percentText,
+                    valueColor: AppColors.colorIncome,
+                    progress: summary.overallProgressPercent,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.valueColor,
+    this.sub = '',
+    this.subColor = AppColors.textSecondary,
+    this.progress,
+  });
+
+  final String label;
+  final String value;
+  final Color valueColor;
+  final String sub;
+  final Color subColor;
+  final int? progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.spacing12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(AppRadius.radiusMd),
+        border: Border.all(color: AppColors.borderDivider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.labelMedium
+                ?.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: AppSpacing.spacing4),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleLarge
+                ?.copyWith(color: valueColor, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: AppSpacing.spacing4),
+          if (progress != null)
+            ClipRRect(
+              borderRadius: AppRadius.radiusFull,
+              child: Container(
+                height: 6,
+                color: AppColors.borderDivider,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: FractionallySizedBox(
+                    widthFactor: (progress! / 100).clamp(0.0, 1.0),
+                    child: Container(color: AppColors.colorIncome),
+                  ),
+                ),
+              ),
+            )
+          else
+            Text(
+              sub,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelMedium?.copyWith(color: subColor),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+===== FILE: lib\features\savings_goals\presentation\widgets\accumulation_chart.dart =====
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
+import 'package:budget_assistant/core/theme/app_colors.dart';
+import 'package:budget_assistant/core/theme/app_spacing.dart';
+import 'package:budget_assistant/core/widgets/offline_error_card.dart';
+import 'package:budget_assistant/core/widgets/skeleton_shimmer.dart';
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+import '../providers/savings_analytics_providers.dart';
+import '../savings_goals_strings.dart';
+
+/// РљР°СЂС‚РѕС‡РєР° РіСЂР°С„РёРєР° РЅР°РєРѕРїР»РµРЅРёСЏ (РўР— 6.3.18.5): Р»РёРЅРёСЏ В«РќР°РєРѕРїР»РµРЅРѕВ»,
+/// РїСѓРЅРєС‚РёСЂ В«Р¦РµР»РµРІР°СЏВ», РїСѓРЅРєС‚РёСЂ В«РџСЂРѕРіРЅРѕР·В». hidden в†’ РіСЂР°С„РёРє СЃРєСЂС‹С‚ С†РµР»РёРєРѕРј.
+class AccumulationChart extends ConsumerWidget {
+  const AccumulationChart({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final chartAsync = ref.watch(accumulationChartProvider);
+    final range = ref.watch(analyticsPeriodRangeProvider);
+    final mode = ref.watch(privacyModeProvider);
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.spacing16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(AppRadius.radiusLg),
+        border: Border.all(color: AppColors.borderDivider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            SavingsGoalsStrings.chartTitle,
+            style: theme.textTheme.titleLarge
+                ?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: AppSpacing.spacing12),
+          chartAsync.when(
+            loading: () => const SkeletonShimmer(height: 220),
+            error: (_, __) => OfflineErrorCard(
+              message: SavingsGoalsStrings.loadingError,
+              retryLabel: SavingsGoalsStrings.retry,
+              onRetry: () => ref.invalidate(accumulationChartProvider),
+            ),
+            data: (data) {
+              if (mode == BalanceVisibilityMode.hidden) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.spacing24),
+                  child: Center(
+                    child: Text(
+                      SavingsGoalsStrings.chartHiddenNote,
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: AppColors.textSecondary),
+                    ),
+                  ),
+                );
+              }
+              if (data.points.isEmpty) {
+                return Column(
+                  children: [
+                    Lottie.asset(
+                      'assets/animations/pause_savings.json',
+                      height: 140,
+                      repeat: false,
+                    ),
+                    const SizedBox(height: AppSpacing.spacing8),
+                    Text(
+                      SavingsGoalsStrings.chartEmptyTitle,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: AppSpacing.spacing4),
+                    Text(
+                      SavingsGoalsStrings.chartEmptySubtitle,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: AppColors.textSecondary),
+                    ),
+                  ],
+                );
+              }
+              return Column(
+                children: [
+                  SizedBox(
+                    height: 220,
+                    child: _ChartPlot(
+                      data: data,
+                      rangeStart: range.start,
+                      totalDays: range.totalDays,
+                      showYNumbers: mode == BalanceVisibilityMode.visible,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.spacing8),
+                  Wrap(
+                    spacing: AppSpacing.spacing16,
+                    runSpacing: AppSpacing.spacing4,
+                    children: [
+                      _legend(AppColors.colorIncome,
+                          SavingsGoalsStrings.legendAccumulated, false),
+                      _legend(AppColors.colorTransfer,
+                          SavingsGoalsStrings.legendTarget, true),
+                      if (data.forecast.isNotEmpty)
+                        _legend(AppColors.textSecondary,
+                            SavingsGoalsStrings.legendForecast, true),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _legend(Color color, String label, bool dashed) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 16,
+          height: 2,
+          color: color,
+          // Р”Р»СЏ РїСѓРЅРєС‚РёСЂР° РІРёР·СѓР°Р»СЊРЅРѕ РґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РєРѕСЂРѕС‚РєРѕРіРѕ С€С‚СЂРёС…Р°.
+          margin: dashed ? const EdgeInsets.symmetric(vertical: 1) : null,
+        ),
+        const SizedBox(width: AppSpacing.spacing4),
+        Text(label,
+            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+      ],
+    );
+  }
+}
+
+class _ChartPlot extends StatelessWidget {
+  const _ChartPlot({
+    required this.data,
+    required this.rangeStart,
+    required this.totalDays,
+    required this.showYNumbers,
+  });
+
+  final dynamic data;
+  final DateTime rangeStart;
+  final int totalDays;
+  final bool showYNumbers;
+
+  double _x(DateTime date) =>
+      date.difference(rangeStart).inDays.toDouble();
+
+  String _label(int dayIndex) {
+    final date = rangeStart.add(Duration(days: dayIndex));
+    if (totalDays > 350) return DateFormat.y('ru').format(date);
+    if (totalDays > 100) return DateFormat.MMM('ru').format(date);
+    return DateFormat('dd.MM').format(date);
+  }
+
+  String _compact(double rubles) {
+    final rounded = rubles.round();
+    if (rounded >= 1000000) return '${(rounded / 1000000).toStringAsFixed(1)}M';
+    if (rounded >= 1000) return '${(rounded / 1000).round()}k';
+    return '$rounded';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final points = data.points as List<dynamic>;
+    final forecast = data.forecast as List<dynamic>;
+    final targetKopecks = data.targetLineKopecks as int;
+    final spots = points
+        .map((p) => FlSpot(
+              _x(p.date as DateTime),
+              (p.cumulativeAmountKopecks as int) / 100.0,
+            ))
+        .toList();
+    final forecastSpots = forecast
+        .map((p) => FlSpot(
+              _x(p.date as DateTime),
+              (p.forecastedAmountKopecks as int) / 100.0,
+            ))
+        .toList();
+    var maxKopecks = targetKopecks;
+    for (final p in points) {
+      final v = p.cumulativeAmountKopecks as int;
+      if (v > maxKopecks) maxKopecks = v;
+    }
+    for (final p in forecast) {
+      final v = p.forecastedAmountKopecks as int;
+      if (v > maxKopecks) maxKopecks = v;
+    }
+    final maxY = maxKopecks <= 0 ? 1.0 : (maxKopecks / 100.0) * 1.15;
+    final step = totalDays ~/ 6 <= 0 ? 1 : totalDays ~/ 6;
+    return LineChart(
+      LineChartData(
+        minY: 0,
+        maxY: maxY,
+        borderData: FlBorderData(show: false),
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: maxY / 4,
+        ),
+        lineTouchData: LineTouchData(enabled: false),
+        extraLinesData: ExtraLinesData(
+          horizontalLines: [
+            HorizontalLine(
+              y: targetKopecks / 100.0,
+              color: AppColors.colorTransfer,
+              strokeWidth: 1,
+              dashArray: const [6, 4],
+            ),
+          ],
+        ),
+        titlesData: FlTitlesData(
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: showYNumbers,
+              reservedSize: 40,
+              getTitlesWidget: (value, meta) => Text(
+                _compact(value),
+                style: const TextStyle(
+                    fontSize: 10, color: AppColors.textSecondary),
+              ),
+            ),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 22,
+              getTitlesWidget: (value, meta) {
+                final i = value.round();
+                if (i % step != 0) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    _label(i),
+                    style: const TextStyle(
+                        fontSize: 10, color: AppColors.textSecondary),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        lineBarsData: [
+          LineChartBarData(
+            spots: spots.cast<FlSpot>(),
+            isCurved: true,
+            curveSmoothness: 0.2,
+            color: AppColors.colorIncome,
+            barWidth: 2,
+            isStrokeCapRound: true,
+            dotData: FlDotData(show: false),
+            belowBarData: BarAreaData(
+              show: true,
+              color: AppColors.colorIncome.withValues(alpha: 0.15),
+            ),
+          ),
+          if (forecastSpots.length > 1)
+            LineChartBarData(
+              spots: forecastSpots.cast<FlSpot>(),
+              isCurved: false,
+              color: AppColors.textSecondary,
+              barWidth: 1.5,
+              dashArray: const [2, 4],
+              dotData: FlDotData(show: false),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+===== FILE: lib\features\savings_goals\presentation\savings_goals_strings.dart =====
+/// РЎС‚СЂРѕРєРё СЌРєСЂР°РЅР° В«Р¦РµР»Рё РЅР°РєРѕРїР»РµРЅРёСЏВ» (Р­С‚Р°Рї 12).
+///
+/// РҐР°СЂРґРєРѕРґ СЃС‚СЂРѕРє РІ РІРёРґР¶РµС‚Р°С… Р·Р°РїСЂРµС‰С‘РЅ (DECISIONS.md):
+/// РІСЃРµ С‚РµРєСЃС‚С‹ Р±РµСЂСѓС‚СЃСЏ С‚РѕР»СЊРєРѕ РѕС‚СЃСЋРґР°.
+abstract final class SavingsGoalsStrings {
+  static const screenTitle = 'Р¦РµР»Рё РЅР°РєРѕРїР»РµРЅРёСЏ';
+  static const newGoalTitle = 'РќРѕРІР°СЏ С†РµР»СЊ';
+  static const editGoalTitle = 'Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ С†РµР»СЊ';
+
+  // Р’РєР»Р°РґРєРё
+  static const tabActive = 'РђРєС‚РёРІРЅС‹Рµ';
+  static const tabArchive = 'рџ—‚ РђСЂС…РёРІ';
+
+  // РЎРІРѕРґРєР° Р°РєС‚РёРІРЅС‹С… С†РµР»РµР№
+  static const summaryGoals = 'Р¦РµР»РµР№';
+  static const summaryTarget = 'Р¦РµР»РµРІР°СЏ';
+  static const summarySaved = 'РќР°РєРѕРїР»РµРЅРѕ';
+  static const summaryStaleRate =
+      'вљ пёЏ РљСѓСЂСЃ СѓСЃС‚Р°СЂРµР» вЂ” СЃСѓРјРјС‹ РјРѕРіСѓС‚ Р±С‹С‚СЊ РЅРµС‚РѕС‡РЅС‹РјРё';
+
+  // РЎС‚Р°С‚РёСЃС‚РёРєР° Р°СЂС…РёРІР°
+  static const archiveStatsSaved = 'Р’СЃРµРіРѕ РЅР°РєРѕРїР»РµРЅРѕ';
+  static const archiveStatsProgress = 'РЎСЂРµРґРЅРёР№ РїСЂРѕРіСЂРµСЃСЃ';
+
+  // Р¤РёР»СЊС‚СЂС‹
+  static const filterAll = 'Р’СЃРµ';
+  static const filterVirtual = 'рџ’­ Р’РёСЂС‚СѓР°Р»СЊРЅС‹Рµ';
+  static const filterLinked = 'рџЏ¦ РџСЂРёРІСЏР·Р°РЅРЅС‹Рµ';
+  static const filterWithDeadline = 'вЏ° РЎ РґРµРґР»Р°Р№РЅРѕРј';
+  static const filterCompleted = 'Р—Р°РІРµСЂС€С‘РЅРЅС‹Рµ';
+  static const filterCancelled = 'РћС‚РјРµРЅС‘РЅРЅС‹Рµ';
+  static const filterReset = 'РЎР±СЂРѕСЃРёС‚СЊ С„РёР»СЊС‚СЂС‹';
+
+  // Р”РµР№СЃС‚РІРёСЏ
+  static const actionContribute = 'рџ’° РџРѕРїРѕР»РЅРёС‚СЊ';
+  static const actionWithdraw = 'рџ’ё РР·СЉСЏС‚СЊ';
+  static const actionRestore = 'рџ”„ Р’РѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ';
+  static const actionArchive = 'рџ—‚ РђСЂС…РёРІРёСЂРѕРІР°С‚СЊ';
+  static const actionEdit = 'вњЏпёЏ Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ';
+  static const actionHistory = 'рџ“њ РСЃС‚РѕСЂРёСЏ';
+
+  // Р”РµРґР»Р°Р№РЅ
+  static const deadlinePrefix = 'рџ“… РґРѕ';
+  static const overduePrefix = 'вљ пёЏ РџСЂРѕСЃСЂРѕС‡РµРЅРѕ РЅР°';
+
+  // Р›РёСЃС‚С‹ РїРѕРїРѕР»РЅРµРЅРёСЏ/РёР·СЉСЏС‚РёСЏ
+  static const contributeTitle = 'РџРѕРїРѕР»РЅРёС‚СЊ С†РµР»СЊ';
+  static const withdrawTitle = 'РР·СЉСЏС‚СЊ РёР· С†РµР»Рё';
+  static const amountLabel = 'РЎСѓРјРјР°';
+  static const amountHint = 'РќР°РїСЂРёРјРµСЂ, 10 000';
+  static const commentLabel = 'РљРѕРјРјРµРЅС‚Р°СЂРёР№';
+  static const commentHint = 'РќРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ';
+  static const accountLabel = 'РЎС‡С‘С‚';
+  static const accountHint = 'Р’С‹Р±РµСЂРёС‚Рµ СЃС‡С‘С‚';
+  static const noAccountsForCurrency = 'РќРµС‚ СЃС‡РµС‚РѕРІ РІ РІР°Р»СЋС‚Рµ С†РµР»Рё';
+  static const draftHint = 'РџРѕСЃР»РµРґРЅСЏСЏ СЃСѓРјРјР°:';
+  static const draftUse = 'РџРѕРґСЃС‚Р°РІРёС‚СЊ';
+  static const withdrawAvailable = 'Р”РѕСЃС‚СѓРїРЅРѕ РґР»СЏ РёР·СЉСЏС‚РёСЏ:';
+  static const submitContribute = 'РџРѕРїРѕР»РЅРёС‚СЊ';
+  static const submitWithdraw = 'РР·СЉСЏС‚СЊ';
+
+  // Р”РёР°Р»РѕРіРё
+  static const achievedTitle = 'рџЋ‰ Р¦РµР»СЊ РґРѕСЃС‚РёРіРЅСѓС‚Р°!';
+  static const continueSaving = 'РџСЂРѕРґРѕР»Р¶РёС‚СЊ РєРѕРїРёС‚СЊ';
+  static const markCompleted = 'РћС‚РјРµС‚РёС‚СЊ РєР°Рє Р·Р°РІРµСЂС€С‘РЅРЅСѓСЋ';
+  static const restoreTitle = 'рџ”„ Р’РѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ С†РµР»СЊ?';
+  static const restoreText =
+      'Р¦РµР»СЊ Р±СѓРґРµС‚ РІРѕР·РІСЂР°С‰РµРЅР° РІ СЃРїРёСЃРѕРє Р°РєС‚РёРІРЅС‹С…. Р’С‹ СЃРјРѕР¶РµС‚Рµ РїСЂРѕРґРѕР»Р¶РёС‚СЊ РїРѕРїРѕР»РЅРµРЅРёРµ.';
+  static const archiveTitle = 'РђСЂС…РёРІРёСЂРѕРІР°С‚СЊ С†РµР»СЊ?';
+  static const archiveText =
+      'Р¦РµР»СЊ Р±СѓРґРµС‚ СЃРєСЂС‹С‚Р° РёР· СЃРїРёСЃРєР° Р°РєС‚РёРІРЅС‹С… Рё РїРµСЂРµРјРµС‰РµРЅР° РІ Р°СЂС…РёРІ.';
+  static const cancel = 'РћС‚РјРµРЅР°';
+  static const completedPrefix = 'Р—Р°РІРµСЂС€РµРЅР°';
+  static const cancelledPrefix = 'РћС‚РјРµРЅРµРЅР°';
+
+  // РЎРЅР°Р№РєР±Р°СЂС‹
+  static const contributeSuccess = 'РџРѕРїРѕР»РЅРµРЅРёРµ СЃРѕР·РґР°РЅРѕ';
+  static const withdrawSuccess = 'РР·СЉСЏС‚РёРµ СЃРѕР·РґР°РЅРѕ';
+  static const restoreSuccess = 'Р¦РµР»СЊ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅР°';
+  static const archiveSuccess = 'Р¦РµР»СЊ РїРµСЂРµРјРµС‰РµРЅР° РІ Р°СЂС…РёРІ';
+  static const completeSuccess = 'Р¦РµР»СЊ Р·Р°РІРµСЂС€РµРЅР°';
+  static const operationFailed = 'РќРµ СѓРґР°Р»РѕСЃСЊ РІС‹РїРѕР»РЅРёС‚СЊ РѕРїРµСЂР°С†РёСЋ';
+
+  // РћС€РёР±РєРё Рё РІР°Р»РёРґР°С†РёСЏ
+  static const loadingError = 'РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ С†РµР»Рё';
+  static const retry = 'РџРѕРІС‚РѕСЂРёС‚СЊ';
+  static const validationAmount = 'Р’РІРµРґРёС‚Рµ СЃСѓРјРјСѓ Р±РѕР»СЊС€Рµ РЅСѓР»СЏ';
+  static const validationAccount = 'Р’С‹Р±РµСЂРёС‚Рµ СЃС‡С‘С‚';
+  static const validationTooMuch = 'РќРµР»СЊР·СЏ РёР·СЉСЏС‚СЊ Р±РѕР»СЊС€Рµ, С‡РµРј РЅР°РєРѕРїР»РµРЅРѕ';
+
+  // РџСЂРёРІР°С‚РЅРѕСЃС‚СЊ
+  static const privacyVisible = 'Р’РёРґРёРјС‹Р№';
+  static const privacyPartial = 'Р§Р°СЃС‚РёС‡РЅС‹Р№';
+  static const privacyHidden = 'РЎРєСЂС‹С‚С‹Р№';
+
+  // РџСѓСЃС‚С‹Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ
+  static const emptyAllTitle = 'РЈ РІР°СЃ РїРѕРєР° РЅРµС‚ С„РёРЅР°РЅСЃРѕРІС‹С… С†РµР»РµР№';
+  static const emptyAllSubtitle =
+      'РЎРѕР·РґР°Р№С‚Рµ РїРµСЂРІСѓСЋ С†РµР»СЊ Рё РЅР°С‡РЅРёС‚Рµ РєРѕРїРёС‚СЊ РЅР° РјРµС‡С‚Сѓ. Р¦РµР»Рё РёСЃРєР»СЋС‡Р°СЋС‚СЃСЏ РёР· СЂР°СЃС…РѕРґРѕРІ Рё РїРѕРєР°Р·С‹РІР°СЋС‚СЃСЏ РѕС‚РґРµР»СЊРЅС‹Рј РїСЂРѕРіСЂРµСЃСЃ-Р±Р°СЂРѕРј';
+  static const emptyAllAction = 'РЎРѕР·РґР°С‚СЊ РїРµСЂРІСѓСЋ С†РµР»СЊ';
+  static const emptyActiveTitle = 'Р’СЃРµ С†РµР»Рё РІ Р°СЂС…РёРІРµ';
+  static const emptyActiveSubtitle =
+      'РЈ РІР°СЃ РЅРµС‚ Р°РєС‚РёРІРЅС‹С… С†РµР»РµР№. РџРµСЂРµРєР»СЋС‡РёС‚РµСЃСЊ РЅР° РІРєР»Р°РґРєСѓ В«РђСЂС…РёРІВ» РёР»Рё СЃРѕР·РґР°Р№С‚Рµ РЅРѕРІСѓСЋ С†РµР»СЊ';
+  static const emptyActivePrimary = 'РЎРѕР·РґР°С‚СЊ РЅРѕРІСѓСЋ С†РµР»СЊ';
+  static const emptyActiveSecondary = 'РџРµСЂРµР№С‚Рё РІ Р°СЂС…РёРІ';
+  static const emptyArchiveTitle = 'РђСЂС…РёРІ РїСѓСЃС‚';
+  static const emptyArchiveSubtitle =
+      'Р—Р°РІРµСЂС€С‘РЅРЅС‹Рµ РёР»Рё РѕС‚РјРµРЅС‘РЅРЅС‹Рµ С†РµР»Рё Р±СѓРґСѓС‚ РїРѕСЏРІР»СЏС‚СЊСЃСЏ Р·РґРµСЃСЊ';
+  static const emptyArchiveAction = 'Р’РµСЂРЅСѓС‚СЊСЃСЏ Рє Р°РєС‚РёРІРЅС‹Рј';
+  static const emptyFilterTitle = 'РќРµС‚ С†РµР»РµР№ РїРѕ СЌС‚РѕРјСѓ С„РёР»СЊС‚СЂСѓ';
+  static const emptyFilterSubtitle =
+      'РџРѕРїСЂРѕР±СѓР№С‚Рµ РёР·РјРµРЅРёС‚СЊ С„РёР»СЊС‚СЂ РёР»Рё СЃРѕР·РґР°С‚СЊ РЅРѕРІСѓСЋ С†РµР»СЊ';
+
+  // в•ђв•ђв•ђ Р¤РѕСЂРјР° СЃРѕР·РґР°РЅРёСЏ/СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ (С€Р°Рі 12.5, РўР— 6.3.17) в•ђв•ђв•ђ
+  static const formSectionBasic = 'РћСЃРЅРѕРІРЅР°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ';
+  static const formSectionType = 'РўРёРї С†РµР»Рё';
+  static const formSectionAutomation = 'РђРІС‚РѕРјР°С‚РёР·Р°С†РёСЏ';
+  static const formSectionVisibility = 'РћР±Р»Р°СЃС‚СЊ РІРёРґРёРјРѕСЃС‚Рё';
+  static const nameLabel = 'РќР°Р·РІР°РЅРёРµ С†РµР»Рё*';
+  static const nameHint = 'РќР°РїСЂРёРјРµСЂ, В«РћС‚РїСѓСЃРє РІ РџСЂР°РіРµВ»';
+  static const emojiTooltip = 'Р’С‹Р±РµСЂРёС‚Рµ СЌРјРѕРґР·Рё РґР»СЏ РІРёР·СѓР°Р»СЊРЅРѕР№ РёРґРµРЅС‚РёС„РёРєР°С†РёРё';
+  static const emojiNone = 'Р‘РµР· СЌРјРѕРґР·Рё';
+  static const amountFormLabel = 'Р¦РµР»РµРІР°СЏ СЃСѓРјРјР°*';
+  static const currencyInherited = 'Р’Р°Р»СЋС‚Р° РЅР°СЃР»РµРґСѓРµС‚СЃСЏ РѕС‚ РїСЂРёРІСЏР·Р°РЅРЅРѕРіРѕ СЃС‡С‘С‚Р°';
+  static const seedBalanceTitle = 'Р—Р°С‡РёСЃР»РёС‚СЊ С‚РµРєСѓС‰РёР№ Р±Р°Р»Р°РЅСЃ СЃС‡С‘С‚Р° РІ С†РµР»СЊ';
+  static const seedBalanceHint =
+      'РќР°РєРѕРїР»РµРЅРЅРѕРµ СЃС‚Р°СЂС‚СѓРµС‚ СЃ С‚РµРєСѓС‰РµРіРѕ Р±Р°Р»Р°РЅСЃР° СЃС‡С‘С‚Р° (СЂР°Р·РѕРІРѕ, РїСЂРё СЃРѕР·РґР°РЅРёРё)';
+
+  // 12.5.1 (Р’Р°СЂРёР°РЅС‚ Р‘): РІС‹Р±РѕСЂ СЃСѓРјРјС‹ Р·Р°С‡РёСЃР»РµРЅРёСЏ
+  static const seedAmountLabel = 'РЎСѓРјРјР° Р·Р°С‡РёСЃР»РµРЅРёСЏ';
+  static const seedAmountHint = 'РџСѓСЃС‚Рѕ = РІРµСЃСЊ Р±Р°Р»Р°РЅСЃ';
+  static const seedAmountFull = 'Р’РµСЃСЊ Р±Р°Р»Р°РЅСЃ';
+  static const seedAvailablePrefix = 'Р”РѕСЃС‚СѓРїРЅРѕ РЅР° СЃС‡С‘С‚Рµ:';
+  static const seedSelectAccountHint =
+      'Р’С‹Р±РµСЂРёС‚Рµ СЃС‡С‘С‚, С‡С‚РѕР±С‹ Р·Р°РґР°С‚СЊ СЃСѓРјРјСѓ Р·Р°С‡РёСЃР»РµРЅРёСЏ';
+
+  static const deadlineLabel = 'Р”РµРґР»Р°Р№РЅ (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)';
+  static const deadlineChoose = 'Р’С‹Р±СЂР°С‚СЊ РґР°С‚Сѓ';
+  static const deadlineHint = 'РћСЃС‚Р°РІСЊС‚Рµ РїСѓСЃС‚С‹Рј, РµСЃР»Рё С†РµР»СЊ Р±РµР· СЃСЂРѕРєР°';
+  static const deadlinePastWarning =
+      'Р”РµРґР»Р°Р№РЅ СѓР¶Рµ РёСЃС‚С‘Рє. Р¦РµР»СЊ РїРѕСЏРІРёС‚СЃСЏ РІ СЃРїРёСЃРєРµ В«РџСЂРѕСЃСЂРѕС‡РµРЅРѕВ»';
+  static const typeVirtual = 'рџ’­ Р’РёСЂС‚СѓР°Р»СЊРЅР°СЏ';
+  static const typeLinked = 'рџЏ¦ РџСЂРёРІСЏР·Р°С‚СЊ Рє СЃС‡С‘С‚Сѓ';
+  static const typeVirtualHint =
+      'Р’РёСЂС‚СѓР°Р»СЊРЅС‹Рµ С†РµР»Рё РЅРµ РїСЂРёРІСЏР·Р°РЅС‹ Рє СЂРµР°Р»СЊРЅРѕРјСѓ СЃС‡С‘С‚Сѓ Рё СЃСѓС‰РµСЃС‚РІСѓСЋС‚ С‚РѕР»СЊРєРѕ РєР°Рє РїСЂРѕРіСЂРµСЃСЃ-Р±Р°СЂ';
+  static const accountSelectLabel = 'Р’С‹Р±РµСЂРёС‚Рµ СЃС‡С‘С‚*';
+  static const noAccountsTitle = 'РЈ РІР°СЃ РЅРµС‚ РїРѕРґС…РѕРґСЏС‰РёС… СЃС‡РµС‚РѕРІ';
+  static const noAccountsSubtitle =
+      'Р”Р»СЏ РїСЂРёРІСЏР·РєРё РїРѕРґС…РѕРґСЏС‚ РґРµР±РµС‚РѕРІС‹Рµ, РЅР°РєРѕРїРёС‚РµР»СЊРЅС‹Рµ СЃС‡РµС‚Р° Рё РЅР°Р»РёС‡РЅС‹Рµ';
+  static const familyNoSharedAccounts =
+      'Р”Р»СЏ СЃРµРјРµР№РЅРѕР№ РїСЂРёРІСЏР·Р°РЅРЅРѕР№ С†РµР»Рё РЅСѓР¶РµРЅ СЃС‡С‘С‚ СЃ РѕР±С‰РёРј Р±Р°Р»Р°РЅСЃРѕРј';
+  static const addAccountAction = 'Р”РѕР±Р°РІРёС‚СЊ СЃС‡С‘С‚';
+  static const makeVirtualAction = 'РЎРѕР·РґР°С‚СЊ РІРёСЂС‚СѓР°Р»СЊРЅСѓСЋ С†РµР»СЊ';
+  static const autoReminderTitle = 'Р’РєР»СЋС‡РёС‚СЊ Р°РІС‚РѕРЅР°РїРѕРјРёРЅР°РЅРёСЏ';
+  static const autoReminderHint =
+      'Р•СЃР»Рё РІ С‚РµС‡РµРЅРёРµ РјРµСЃСЏС†Р° РЅРµ Р±С‹Р»Рѕ РїРѕРїРѕР»РЅРµРЅРёР№, РїСЂРёР»РѕР¶РµРЅРёРµ РЅР°РїРѕРјРЅРёС‚ Рѕ С†РµР»Рё';
+  static const recurringTitle = 'РЎРѕР·РґР°С‚СЊ СЂРµРіСѓР»СЏСЂРЅРѕРµ РїРѕРїРѕР»РЅРµРЅРёРµ';
+  static const recurringDisabled = 'РџРѕСЏРІРёС‚СЃСЏ РЅР° Р­С‚Р°РїРµ 14 (СЂРµРіСѓР»СЏСЂРЅС‹Рµ РїР»Р°С‚РµР¶Рё)';
+  static const visibilityPersonal = 'рџ”’ РўРѕР»СЊРєРѕ СЏ';
+  static const visibilityFamily = 'рџ‘Ёрџ‘©вЂЌрџ‘§ Р’СЃСЏ СЃРµРјСЊСЏ';
+  static const visibilityHint =
+      'РЎРµРјРµР№РЅС‹Рµ С†РµР»Рё РІРёРґРЅС‹ РІСЃРµРј С‡Р»РµРЅР°Рј СЃРµРјСЊРё Рё СЃРёРЅС…СЂРѕРЅРёР·РёСЂСѓСЋС‚СЃСЏ РјРµР¶РґСѓ СѓСЃС‚СЂРѕР№СЃС‚РІР°РјРё';
+  static const familyUnavailable =
+      'РЎРЅР°С‡Р°Р»Р° РїСЂРёСЃРѕРµРґРёРЅРёС‚РµСЃСЊ Рє СЃРµРјРµР№РЅРѕРјСѓ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІСѓ';
+  static const saveAction = 'РЎРѕС…СЂР°РЅРёС‚СЊ';
+  static const updateAction = 'РћР±РЅРѕРІРёС‚СЊ';
+  static const goalCreatedSnack = 'Р¦РµР»СЊ СЃРѕР·РґР°РЅР°';
+  static const goalUpdatedSnack = 'Р¦РµР»СЊ РѕР±РЅРѕРІР»РµРЅР°';
+  static const syncLaterNote = 'РЎРёРЅС…СЂРѕРЅРёР·РёСЂСѓРµС‚СЃСЏ РїСЂРё РїРѕСЏРІР»РµРЅРёРё РёРЅС‚РµСЂРЅРµС‚Р°';
+  static const cancelCreateTitle = 'РћС‚РјРµРЅРёС‚СЊ СЃРѕР·РґР°РЅРёРµ?';
+  static const cancelEditTitle = 'РћС‚РјРµРЅРёС‚СЊ СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ?';
+  static const cancelSubtitle = 'РќРµСЃРѕС…СЂР°РЅС‘РЅРЅС‹Рµ РґР°РЅРЅС‹Рµ Р±СѓРґСѓС‚ РїРѕС‚РµСЂСЏРЅС‹.';
+  static const continueEditing = 'РџСЂРѕРґРѕР»Р¶РёС‚СЊ СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ';
+  static const discardAction = 'РћС‚РјРµРЅРёС‚СЊ';
+  static const draftRestoreTitle = 'РќР°Р№РґРµРЅ С‡РµСЂРЅРѕРІРёРє';
+  static const draftRestoreText = 'Р’РѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ РЅРµСЃРѕС…СЂР°РЅС‘РЅРЅСѓСЋ С„РѕСЂРјСѓ С†РµР»Рё?';
+  static const draftRestoreAction = 'Р’РѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ';
+  static const draftStartFresh = 'РќР°С‡Р°С‚СЊ Р·Р°РЅРѕРІРѕ';
+  static const planMonthlyPrefix = 'рџ’Ў Р­С‚Рѕ РїСЂРёРјРµСЂРЅРѕ';
+  static const planMonthlySuffix = 'РІ РјРµСЃСЏС†';
+  static const planTenYears = 'РµСЃР»Рё РєРѕРїРёС‚СЊ 10 Р»РµС‚';
+  static const planByDeadline = 'С‡С‚РѕР±С‹ СѓСЃРїРµС‚СЊ Рє РґРµРґР»Р°Р№РЅСѓ';
+  static const currentAmountLabel = 'РќР°РєРѕРїР»РµРЅРѕ';
+  static const currentAmountTooltip =
+      'РџСЂРѕРіСЂРµСЃСЃ РѕР±РЅРѕРІР»СЏРµС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РїСЂРё РїРѕРїРѕР»РЅРµРЅРёСЏС…';
+
+  // в•ђв•ђв•ђ РСЃС‚РѕСЂРёСЏ С†РµР»Рё (РјРёРєСЂРѕ-РєРѕРјРјРёС‚ 12.6, РўР— 6.3.47.6) в•ђв•ђв•ђ
+  static const historySheetTitle = 'РСЃС‚РѕСЂРёСЏ С†РµР»Рё';
+  static const historyTransactionsHeader = 'РўСЂР°РЅР·Р°РєС†РёРё';
+  static const historyContribute = 'РџРѕРїРѕР»РЅРµРЅРёРµ';
+  static const historyWithdraw = 'РР·СЉСЏС‚РёРµ';
+  static const historyEmpty = 'РџРѕ СЌС‚РѕР№ С†РµР»Рё РµС‰С‘ РЅРµС‚ РѕРїРµСЂР°С†РёР№';
+  static const historyError = 'РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РёСЃС‚РѕСЂРёСЋ';
+  static const historyChartHidden = 'Р“СЂР°С„РёРє СЃРєСЂС‹С‚ РІ СЂРµР¶РёРјРµ РїСЂРёРІР°С‚РЅРѕСЃС‚Рё';
+  static const historyClose = 'Р—Р°РєСЂС‹С‚СЊ';
+
+  // в•ђв•ђв•ђ РђРЅР°Р»РёС‚РёРєР° РєРѕРїРёР»РѕРє (РјРёРєСЂРѕ-РєРѕРјРјРёС‚ 12.7.1, РўР— 6.3.18) в•ђв•ђв•ђ
+  static const analyticsTitle = 'РђРЅР°Р»РёС‚РёРєР° РєРѕРїРёР»РѕРє';
+  static const periodMonth = 'РњРµСЃСЏС†';
+  static const periodQuarter = 'РљРІР°СЂС‚Р°Р»';
+  static const periodYear = 'Р“РѕРґ';
+  static const periodAllTime = 'Р’СЃС‘ РІСЂРµРјСЏ';
+  static const statGoals = 'Р¦РµР»РµР№';
+  static const statTarget = 'Р¦РµР»РµРІР°СЏ';
+  static const statSaved = 'РќР°РєРѕРїР»РµРЅРѕ';
+  static const statProgress = 'РџСЂРѕРіСЂРµСЃСЃ';
+  static const statNewInPeriod = 'Р·Р° РїРµСЂРёРѕРґ';
+  static const statNoChanges = '0 РёР·РјРµРЅРµРЅРёР№';
+  static const statInPeriod = 'Р·Р° РїРµСЂРёРѕРґ';
+  static const chartTitle = 'Р”РёРЅР°РјРёРєР° РЅР°РєРѕРїР»РµРЅРёСЏ';
+  static const chartHiddenNote = 'Р“СЂР°С„РёРє СЃРєСЂС‹С‚ РІ СЂРµР¶РёРјРµ РїСЂРёРІР°С‚РЅРѕСЃС‚Рё';
+  static const chartEmptyTitle = 'Р’ СЌС‚РѕРј РїРµСЂРёРѕРґРµ РЅРµ Р±С‹Р»Рѕ РїРѕРїРѕР»РЅРµРЅРёР№';
+  static const chartEmptySubtitle =
+      'РџРѕРїСЂРѕР±СѓР№С‚Рµ РІС‹Р±СЂР°С‚СЊ РґСЂСѓРіРѕР№ РїРµСЂРёРѕРґ РёР»Рё РїРѕРїРѕР»РЅРёС‚Рµ РѕРґРЅСѓ РёР· С†РµР»РµР№';
+  static const legendAccumulated = 'РќР°РєРѕРїР»РµРЅРѕ';
+  static const legendTarget = 'Р¦РµР»РµРІР°СЏ Р»РёРЅРёСЏ';
+  static const legendForecast = 'РџСЂРѕРіРЅРѕР·';
+
+  /// РЎРєР»РѕРЅРµРЅРёРµ СЃР»РѕРІР° В«РґРµРЅСЊВ».
+  static String daysLabel(int n) {
+    final abs = n.abs();
+    final mod10 = abs % 10;
+    final mod100 = abs % 100;
+    if (mod10 == 1 && mod100 != 11) return 'РґРµРЅСЊ';
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'РґРЅСЏ';
+    return 'РґРЅРµР№';
+  }
+}
+

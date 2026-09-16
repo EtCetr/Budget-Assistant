@@ -10,7 +10,7 @@ import '../../domain/usecases/calculate_savings_analytics_usecase.dart';
 import 'savings_goals_providers.dart';
 import 'savings_goals_screen_providers.dart';
 
-/// Период аналитики (ТЗ 6.3.18.3): дефолт — Год.
+/// Период аналитики (ТЗ 6.3.18.3), дефолт — Год.
 enum AnalyticsPeriod { month, quarter, year, allTime }
 
 class AnalyticsPeriodNotifier extends Notifier<AnalyticsPeriod> {
@@ -44,7 +44,6 @@ class AnalyticsPeriodRange {
 final analyticsPeriodRangeProvider = Provider<AnalyticsPeriodRange>((ref) {
   final period = ref.watch(analyticsPeriodProvider);
   final now = DateTime.now();
-  final end = now;
   final DateTime start;
   switch (period) {
     case AnalyticsPeriod.month:
@@ -62,13 +61,13 @@ final analyticsPeriodRangeProvider = Provider<AnalyticsPeriodRange>((ref) {
     prevStart = start;
     prevEnd = start.subtract(const Duration(days: 1));
   } else {
-    final days = end.difference(start).inDays + 1;
+    final days = now.difference(start).inDays + 1;
     prevEnd = start.subtract(const Duration(days: 1));
     prevStart = prevEnd.subtract(Duration(days: days - 1));
   }
   return AnalyticsPeriodRange(
     start: start,
-    end: end,
+    end: now,
     prevStart: prevStart,
     prevEnd: prevEnd,
   );
@@ -81,13 +80,15 @@ final analyticsAllGoalsProvider = FutureProvider<List<SavingsGoal>>((ref) async 
   return [...active, ...archived];
 });
 
+/// Счета пользователя: валюта суммы транзакции резолвится через счёт.
 final analyticsAccountsProvider = FutureProvider<List<Account>>((ref) async {
   final userId = ref.watch(currentUserIdProvider);
   return ref.watch(accountsListProvider(userId).future);
 });
 
-/// Все транзакции целей (пополнения + изъятия) одной выборкой.
-final analyticsSavingsTxnsProvider = FutureProvider<List<Transaction>>((ref) async {
+/// Все транзакции целей (пополнения + изъятия) за всё время.
+final analyticsSavingsTxnsProvider =
+    FutureProvider<List<Transaction>>((ref) async {
   final goals = await ref.watch(analyticsAllGoalsProvider.future);
   final repository = ref.watch(transactionsRepositoryProvider);
   final out = <Transaction>[];
@@ -97,7 +98,8 @@ final analyticsSavingsTxnsProvider = FutureProvider<List<Transaction>>((ref) asy
   return out;
 });
 
-final savingsAnalyticsSummaryProvider = FutureProvider<AnalyticsSummary>((ref) async {
+final savingsAnalyticsSummaryProvider =
+    FutureProvider<AnalyticsSummary>((ref) async {
   final goals = await ref.watch(analyticsAllGoalsProvider.future);
   final txns = await ref.watch(analyticsSavingsTxnsProvider.future);
   final accounts = await ref.watch(analyticsAccountsProvider.future);
@@ -115,7 +117,8 @@ final savingsAnalyticsSummaryProvider = FutureProvider<AnalyticsSummary>((ref) a
   );
 });
 
-final accumulationChartProvider = FutureProvider<AccumulationChartData>((ref) async {
+final accumulationChartProvider =
+    FutureProvider<AccumulationChartData>((ref) async {
   final goals = await ref.watch(analyticsAllGoalsProvider.future);
   final txns = await ref.watch(analyticsSavingsTxnsProvider.future);
   final accounts = await ref.watch(analyticsAccountsProvider.future);

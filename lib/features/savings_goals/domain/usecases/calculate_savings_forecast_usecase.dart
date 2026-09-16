@@ -6,6 +6,7 @@ import 'package:budget_assistant/features/transactions/domain/models/transaction
 
 /// Прогнозная линия: среднее дневное пополнение за последние 30 дней,
 /// проекция до конца периода (ТЗ 6.3.18.5). Данных < 7 дней → линии нет.
+/// Валюта суммы транзакции резолвится через счёт (txn.accountId).
 class CalculateSavingsForecastUseCase {
   CalculateSavingsForecastUseCase({
     required ConvertCurrencyUseCase convertCurrency,
@@ -27,21 +28,15 @@ class CalculateSavingsForecastUseCase {
   }) async {
     try {
       if (!projectUntil.isAfter(startDate)) return const [];
-      final from = now.subtract(const Duration(days: 30));
+      final windowStart = now.subtract(const Duration(days: 30));
       var sum = 0;
       final dayKeys = <String>{};
       for (final txn in savingsTransactions) {
         if (txn.isWithdrawal || txn.auditStatus == AuditStatus.ignored) {
           continue;
         }
-        if (txn.date.isBefore(from) || txn.date.isAfter(now)) continue;
-        String? currency;
-        for (final account in accounts) {
-          if (account.id == txn.accountId) {
-            currency = account.currency;
-            break;
-          }
-        }
+        if (txn.date.isBefore(windowStart) || txn.date.isAfter(now)) continue;
+        final currency = _txnCurrency(txn, accounts);
         if (currency == null) continue;
         final converted = await _convertCurrency(
           amountKopecks: txn.amount,
@@ -73,6 +68,13 @@ class CalculateSavingsForecastUseCase {
       _logger.e('CalculateSavingsForecastUseCase failed', error: e, stackTrace: st);
       rethrow;
     }
+  }
+
+  String? _txnCurrency(Transaction txn, List<Account> accounts) {
+    for (final account in accounts) {
+      if (account.id == txn.accountId) return account.currency;
+    }
+    return null;
   }
 }
 

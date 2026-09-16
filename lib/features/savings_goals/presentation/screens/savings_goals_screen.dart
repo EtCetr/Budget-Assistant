@@ -50,15 +50,20 @@ class _SavingsGoalsScreenState extends ConsumerState<SavingsGoalsScreen> {
   Widget build(BuildContext context) {
     final tab = ref.watch(savingsGoalsTabProvider);
     final privacyMode = ref.watch(privacyModeProvider);
-
     ref.listen(activeSavingsGoalsProvider, (_, next) {
       _checkForAchievements(next.value ?? const []);
     });
-
     return Scaffold(
       appBar: AppBar(
         title: const Text(SavingsGoalsStrings.screenTitle),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.bar_chart),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              context.push('/savings-analytics');
+            },
+          ),
           GestureDetector(
             onLongPress: () => _showPrivacySheet(context),
             child: IconButton(
@@ -167,7 +172,6 @@ class _ActiveTabBody extends ConsumerWidget {
         ref.watch(allActiveSavingsGoalsProvider).value ?? const <SavingsGoal>[];
     final allArchived =
         ref.watch(allArchivedSavingsGoalsProvider).value ?? const <SavingsGoal>[];
-
     return goalsAsync.when(
       loading: () => ListView(
         padding: const EdgeInsets.all(AppSpacing.spacing16),
@@ -258,7 +262,6 @@ class _ArchiveTabBody extends ConsumerWidget {
     final goalsAsync = ref.watch(archivedSavingsGoalsProvider);
     final allArchived =
         ref.watch(allArchivedSavingsGoalsProvider).value ?? const <SavingsGoal>[];
-
     return goalsAsync.when(
       loading: () => ListView(
         padding: const EdgeInsets.all(AppSpacing.spacing16),

@@ -1,0 +1,58 @@
+﻿
+> lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:59:      appBar: AppBar(
+> lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:60:        title: const Text(SavingsGoalsStrings.screenTitle),
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:61:        
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:62:        param($m)
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:63:        $before = $m.Groups[1].Value
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:64:        $inside = $m.Groups[2].Value
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:65:        $after  = $m.Groups[3].Value
+> lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:128:                title: const Text(SavingsGoalsStrings.privacy
+Visible),
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:129:                onTap: () {
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:130:                  ref
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:131:                      .read(privacyModeProvider.notifier)
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:132:                      .setMode(BalanceVisibilityMode.visible)
+;
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:133:                  Navigator.of(sheetContext).pop();
+> lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:137:                title: const Text(SavingsGoalsStrings.privacy
+Partial),
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:138:                onTap: () {
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:139:                  ref
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:140:                      .read(privacyModeProvider.notifier)
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:141:                      .setMode(BalanceVisibilityMode.partial)
+;
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:142:                  Navigator.of(sheetContext).pop();
+> lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:146:                title: const Text(SavingsGoalsStrings.privacy
+Hidden),
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:147:                onTap: () {
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:148:                  ref
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:149:                      .read(privacyModeProvider.notifier)
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:150:                      .setMode(BalanceVisibilityMode.hidden);
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:151:                  Navigator.of(sheetContext).pop();
+> lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:193:            title: SavingsGoalsStrings.emptyAllTitle,
+> lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:194:            subtitle: SavingsGoalsStrings.emptyAllSubtitle,
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:195:            primaryAction: EmptyStateAction(
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:196:              label: SavingsGoalsStrings.emptyAllAction,
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:197:              onPressed: () => context.push('/savings-goals/c
+reate'),
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:198:            ),
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:199:          );
+> lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:204:            title: SavingsGoalsStrings.emptyActiveTitle,
+> lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:205:            subtitle: SavingsGoalsStrings.emptyActiveSubtitle
+,
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:206:            primaryAction: EmptyStateAction(
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:207:              label: SavingsGoalsStrings.emptyActivePrimary,
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:208:              onPressed: () => context.push('/savings-goals/c
+reate'),
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:209:            ),
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:210:            secondaryAction: EmptyStateAction(
+> lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:284:            title: SavingsGoalsStrings.emptyArchiveTitle,
+> lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:285:            subtitle: SavingsGoalsStrings.emptyArchiveSubtitl
+e,
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:286:            primaryAction: EmptyStateAction(
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:287:              label: SavingsGoalsStrings.emptyArchiveAction,
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:288:              isPrimary: false,
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:289:              onPressed: () => ref
+  lib\features\savings_goals\presentation\screens\savings_goals_screen.dart:290:                  .read(savingsGoalsTabProvider.notifier)
+
+

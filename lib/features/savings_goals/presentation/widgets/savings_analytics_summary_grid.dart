@@ -5,10 +5,10 @@ import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/core/widgets/skeleton_shimmer.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
 import '../providers/savings_analytics_providers.dart';
-import '../savings_goals_strings.dart';
 import '../providers/savings_goals_screen_providers.dart';
+import '../savings_goals_strings.dart';
 
-/// Сетка 2×2 ключевых метрик (ТЗ 6.3.18.4).
+/// Сетка 2×2 ключевых метрик (ТЗ 6.3.18.4). Маскирование — только PrivacyFormatter.
 class SavingsAnalyticsSummaryGrid extends ConsumerWidget {
   const SavingsAnalyticsSummaryGrid({super.key});
 
@@ -17,15 +17,16 @@ class SavingsAnalyticsSummaryGrid extends ConsumerWidget {
     final summaryAsync = ref.watch(savingsAnalyticsSummaryProvider);
     final mode = ref.watch(privacyModeProvider);
     final formatter = ref.watch(privacyFormatterProvider);
-    final baseCurrency = ref.watch(savingsBaseCurrencyProvider).value ?? 'RUB';
+    final baseCurrency =
+        ref.watch(savingsBaseCurrencyProvider).value ?? 'RUB';
     return summaryAsync.when(
       loading: () => const SkeletonShimmer(height: 200),
       error: (_, __) => const SizedBox.shrink(),
       data: (summary) {
         final percentText =
             formatter.formatPercent(summary.overallProgressPercent, mode);
-        final delta2 = summary.targetDeltaPercent;
-        final delta3 = summary.contributionDeltaPercent;
+        final targetDelta = summary.targetDeltaPercent;
+        final contribDelta = summary.contributionDeltaPercent;
         return Column(
           children: [
             Row(
@@ -33,10 +34,12 @@ class SavingsAnalyticsSummaryGrid extends ConsumerWidget {
                 Expanded(
                   child: _StatCard(
                     label: SavingsGoalsStrings.statGoals,
-                    value: '${summary.activeGoalsCount}',
+                    value: '${summary.activeGoalsCount} '
+                        '${SavingsGoalsStrings.statActiveSuffix}',
                     valueColor: AppColors.textPrimary,
                     sub: summary.goalsCreatedInPeriod > 0
-                        ? '+${summary.goalsCreatedInPeriod} ${SavingsGoalsStrings.statNewInPeriod}'
+                        ? '+${summary.goalsCreatedInPeriod} '
+                            '${SavingsGoalsStrings.statNewInPeriod}'
                         : SavingsGoalsStrings.statNoChanges,
                     subColor: summary.goalsCreatedInPeriod > 0
                         ? AppColors.colorIncome
@@ -50,12 +53,13 @@ class SavingsAnalyticsSummaryGrid extends ConsumerWidget {
                     value: formatter.formatAmount(
                         summary.totalTargetKopecks, baseCurrency, mode),
                     valueColor: AppColors.colorTransfer,
-                    sub: delta2 == null
+                    sub: targetDelta == null
                         ? ''
-                        : '${delta2 >= 0 ? '↑' : '↓'}${delta2.abs()}% ${SavingsGoalsStrings.statInPeriod}',
-                    subColor: delta2 == null
+                        : '${targetDelta >= 0 ? SavingsGoalsStrings.statIncreasePrefix : SavingsGoalsStrings.statDecreasePrefix}${targetDelta.abs()}% '
+                            '${SavingsGoalsStrings.statVsPrevPeriod}',
+                    subColor: targetDelta == null
                         ? AppColors.textSecondary
-                        : (delta2 >= 0
+                        : (targetDelta >= 0
                             ? AppColors.colorIncome
                             : AppColors.colorExpense),
                   ),
@@ -71,8 +75,9 @@ class SavingsAnalyticsSummaryGrid extends ConsumerWidget {
                     value: formatter.formatAmount(
                         summary.totalCurrentKopecks, baseCurrency, mode),
                     valueColor: AppColors.colorIncome,
-                    sub: '${delta3 == null ? '' : '${delta3 >= 0 ? '↑' : '↓'}${delta3.abs()}% '}'
-                        '${formatter.formatAmount(summary.contributedInPeriodKopecks, baseCurrency, mode)}',
+                    sub: '${contribDelta == null ? '' : '${contribDelta >= 0 ? SavingsGoalsStrings.statIncreasePrefix : SavingsGoalsStrings.statDecreasePrefix}${contribDelta.abs()}% '}'
+                        '${formatter.formatAmount(summary.contributedInPeriodKopecks, baseCurrency, mode)} '
+                        '${SavingsGoalsStrings.statNewInPeriod}',
                     subColor: AppColors.textSecondary,
                   ),
                 ),

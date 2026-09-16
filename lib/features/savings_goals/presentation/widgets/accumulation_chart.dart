@@ -12,8 +12,8 @@ import 'package:budget_assistant/features/privacy/presentation/providers/privacy
 import '../providers/savings_analytics_providers.dart';
 import '../savings_goals_strings.dart';
 
-/// Карточка графика накопления: линия «Накоплено», пунктир «Целевая»,
-/// точечная «Прогноз» (ТЗ 6.3.18.5). В hidden график скрыт целиком.
+/// Карточка графика накопления (ТЗ 6.3.18.5): линия «Накоплено», пунктир
+/// «Целевая», пунктир «Прогноз». В hidden график скрыт целиком.
 class AccumulationChart extends ConsumerWidget {
   const AccumulationChart({super.key});
 
@@ -22,7 +22,6 @@ class AccumulationChart extends ConsumerWidget {
     final chartAsync = ref.watch(accumulationChartProvider);
     final range = ref.watch(analyticsPeriodRangeProvider);
     final mode = ref.watch(privacyModeProvider);
-    final formatter = ref.watch(privacyFormatterProvider);
     final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.spacing16),
@@ -36,8 +35,8 @@ class AccumulationChart extends ConsumerWidget {
         children: [
           Text(
             SavingsGoalsStrings.chartTitle,
-            style:
-                theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+            style: theme.textTheme.titleLarge
+                ?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: AppSpacing.spacing12),
           chartAsync.when(
@@ -88,12 +87,10 @@ class AccumulationChart extends ConsumerWidget {
                 children: [
                   SizedBox(
                     height: 220,
-                    child: _Chart(
+                    child: _ChartPlot(
                       data: data,
                       rangeStart: range.start,
                       totalDays: range.totalDays,
-                      showYNumbers: mode == BalanceVisibilityMode.visible,
-                      formatter: formatter,
                       mode: mode,
                     ),
                   ),
@@ -126,46 +123,36 @@ class AccumulationChart extends ConsumerWidget {
       children: [
         Container(width: 16, height: 2, color: color),
         const SizedBox(width: AppSpacing.spacing4),
-        Text(label,
-            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        ),
       ],
     );
   }
 }
 
-class _Chart extends StatelessWidget {
-  const _Chart({
+class _ChartPlot extends ConsumerWidget {
+  const _ChartPlot({
     required this.data,
     required this.rangeStart,
     required this.totalDays,
-    required this.showYNumbers,
-    required this.formatter,
     required this.mode,
   });
 
   final dynamic data;
   final DateTime rangeStart;
   final int totalDays;
-  final bool showYNumbers;
-  final dynamic formatter;
   final BalanceVisibilityMode mode;
 
   double _x(DateTime date) =>
       date.difference(rangeStart).inDays.toDouble();
 
-  String? _xLabel(double value) {
-    final date = rangeStart.add(Duration(days: value.round()));
-    if (totalDays > 1200) {
-      return (date.month == 1 && date.day == 1)
-          ? DateFormat.y().format(date)
-          : null;
-    }
-    if (totalDays > 100) {
-      return date.day == 1 ? DateFormat.MMM('ru').format(date) : null;
-    }
-    return (date.day == 1 || date.day % 7 == 1)
-        ? DateFormat('dd.MM').format(date)
-        : null;
+  String _xLabel(int dayIndex) {
+    final date = rangeStart.add(Duration(days: dayIndex));
+    if (totalDays > 350) return DateFormat.y('ru').format(date);
+    if (totalDays > 100) return DateFormat.MMM('ru').format(date);
+    return DateFormat('dd.MM').format(date);
   }
 
   String _compact(double rubles) {
@@ -176,11 +163,12 @@ class _Chart extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final formatter = ref.watch(privacyFormatterProvider);
+    final baseCurrency = data.baseCurrency as String;
     final points = data.points as List<dynamic>;
     final forecast = data.forecast as List<dynamic>;
     final targetKopecks = data.targetLineKopecks as int;
-    final baseCurrency = data.baseCurrency as String;
     final spots = points
         .map((p) => FlSpot(
               _x(p.date as DateTime),
@@ -203,39 +191,46 @@ class _Chart extends StatelessWidget {
       if (v > maxKopecks) maxKopecks = v;
     }
     final maxY = maxKopecks <= 0 ? 1.0 : (maxKopecks / 100.0) * 1.15;
-    final bars = <LineChartBarData>[
-      LineChartBarData(
-        spots: spots.cast<FlSpot>(),
-        isCurved: true,
-        curveSmoothness: 0.2,
-        color: AppColors.colorIncome,
-        barWidth: 2,
-        isStrokeCapRound: true,
-        dotData: FlDotData(show: points.length <= 60),
-        belowBarData: BarAreaData(
-          show: true,
-          color: AppColors.colorIncome.withValues(alpha: 0.15),
-        ),
-      ),
-      if (forecastSpots.length > 1)
-        LineChartBarData(
-          spots: forecastSpots.cast<FlSpot>(),
-          isCurved: false,
-          color: AppColors.textSecondary,
-          barWidth: 1,
-          dashArray: const [2, 4],
-          dotData: const FlDotData(show: false),
-        ),
-    ];
+    final step = totalDays ~/ 6 <= 0 ? 1 : totalDays ~/ 6;
+    final showYNumbers = mode == BalanceVisibilityMode.visible;
     return LineChart(
       LineChartData(
         minY: 0,
         maxY: maxY,
         borderData: FlBorderData(show: false),
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: false,
-          horizontalInterval: maxY / 4,
+        gridData: const FlGridData(show: true, drawVerticalLine: false),
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipItems: (touched) => touched
+                .map((s) {
+                  if (s.barIndex != 0 || s.spotIndex >= points.length) {
+                    return null;
+                  }
+                  final point = points[s.spotIndex];
+                  final dateText = DateFormat('dd.MM.yyyy')
+                      .format((point.date as DateTime).toLocal());
+                  final amountText = formatter.formatAmount(
+                    (s.y * 100).round(),
+                    baseCurrency,
+                    mode,
+                  );
+                  return LineTooltipItem(
+                    '$dateText\n$amountText',
+                    const TextStyle(color: Colors.white, fontSize: 12),
+                  );
+                })
+                .toList(),
+          ),
+        ),
+        extraLinesData: ExtraLinesData(
+          horizontalLines: [
+            HorizontalLine(
+              y: targetKopecks / 100.0,
+              color: AppColors.colorTransfer,
+              strokeWidth: 1,
+              dashArray: const [6, 4],
+            ),
+          ],
         ),
         titlesData: FlTitlesData(
           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -257,12 +252,12 @@ class _Chart extends StatelessWidget {
               showTitles: true,
               reservedSize: 22,
               getTitlesWidget: (value, meta) {
-                final label = _xLabel(value);
-                if (label == null) return const SizedBox.shrink();
+                final i = value.round();
+                if (i % step != 0) return const SizedBox.shrink();
                 return Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    label,
+                    _xLabel(i),
                     style: const TextStyle(
                         fontSize: 10, color: AppColors.textSecondary),
                   ),
@@ -271,34 +266,30 @@ class _Chart extends StatelessWidget {
             ),
           ),
         ),
-        extraLinesData: ExtraLinesData(
-          horizontalLines: [
-            HorizontalLine(
-              y: targetKopecks / 100.0,
-              color: AppColors.colorTransfer,
-              strokeWidth: 1,
-              dashArray: const [4, 4],
+        lineBarsData: [
+          LineChartBarData(
+            spots: spots.cast<FlSpot>(),
+            isCurved: true,
+            curveSmoothness: 0.2,
+            color: AppColors.colorIncome,
+            barWidth: 2,
+            isStrokeCapRound: true,
+            dotData: const FlDotData(show: false),
+            belowBarData: BarAreaData(
+              show: true,
+              color: AppColors.colorIncome.withValues(alpha: 0.15),
             ),
-          ],
-        ),
-        lineTouchData: LineTouchData(
-          touchTooltipData: LineTouchTooltipData(
-            getTooltipItems: (touched) => touched
-                .map((s) {
-                  if (s.barIndex != 0 || s.spotIndex >= points.length) {
-                    return null;
-                  }
-                  final point = points[s.spotIndex];
-                  return LineTooltipItem(
-                    '${DateFormat('dd.MM.yyyy').format((point.date as DateTime).toLocal())}\n'
-                    '${formatter.formatAmount(point.cumulativeAmountKopecks as int, baseCurrency, mode)}',
-                    const TextStyle(color: Colors.white, fontSize: 12),
-                  );
-                })
-                .toList(),
           ),
-        ),
-        lineBarsData: bars,
+          if (forecastSpots.length > 1)
+            LineChartBarData(
+              spots: forecastSpots.cast<FlSpot>(),
+              isCurved: false,
+              color: AppColors.textSecondary,
+              barWidth: 1,
+              dashArray: const [2, 4],
+              dotData: const FlDotData(show: false),
+            ),
+        ],
       ),
     );
   }

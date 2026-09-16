@@ -216,6 +216,12 @@ abstract final class SavingsGoalsStrings {
   static const legendTarget = 'Целевая линия';
   static const legendForecast = 'Прогноз';
 
+  static const analyticsEmptySubtitle = 'Создайте первую цель и начните копить. Аналитика появится здесь после первых пополнений';
+  static const statActiveSuffix = 'активных';
+  static const statIncreasePrefix = '↑';
+  static const statDecreasePrefix = '↓';
+  static const statVsPrevPeriod = 'vs прошлый период';
+
   /// Склонение слова «день».
   static String daysLabel(int n) {
     final abs = n.abs();
