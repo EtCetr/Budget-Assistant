@@ -3,12 +3,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
-import '../../domain/usecases/export_savings_analytics_usecase.dart';
 import '../providers/savings_analytics_providers.dart';
 import '../savings_goals_strings.dart';
 
 /// BottomSheet экспорта аналитики (ТЗ 6.3.18.13): XLSX / CSV / PNG.
 /// В hidden-режиме экспорт полностью заблокирован.
+Future<void> showExportBottomSheet(BuildContext context) {
+  return showModalBottomSheet<void>(
+    context: context,
+    builder: (_) => const ExportBottomSheet(),
+  );
+}
+
 class ExportBottomSheet extends ConsumerWidget {
   const ExportBottomSheet({super.key});
 
@@ -16,9 +22,9 @@ class ExportBottomSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(privacyModeProvider);
     if (mode == BalanceVisibilityMode.hidden) {
-      return SafeArea(
+      return const SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24),
           child: Text(
             SavingsGoalsStrings.exportBlocked,
             textAlign: TextAlign.center,
@@ -32,25 +38,25 @@ class ExportBottomSheet extends ConsumerWidget {
         children: [
           ListTile(
             leading: const Icon(Icons.grid_on),
-            title: const Text('Excel (.xlsx)'),
-            subtitle: const Text('Цели + пополнения (2 листа)'),
-            onTap: () => _run(context, ref, 'xlsx'),
+            title: const Text(SavingsGoalsStrings.exportXlsx),
+            subtitle: const Text(SavingsGoalsStrings.exportXlsxSub),
+            onTap: () => _run(ref, 'xlsx'),
           ),
           ListTile(
             leading: const Icon(Icons.description),
-            title: const Text('CSV (.csv)'),
-            subtitle: const Text('Таблица целей'),
-            onTap: () => _run(context, ref, 'csv'),
+            title: const Text(SavingsGoalsStrings.exportCsv),
+            subtitle: const Text(SavingsGoalsStrings.exportCsvSub),
+            onTap: () => _run(ref, 'csv'),
           ),
           ListTile(
             leading: const Icon(Icons.image),
-            title: const Text('PNG (график)'),
-            subtitle: const Text('Скриншот графика накопления'),
-            onTap: () => _run(context, ref, 'png'),
+            title: const Text(SavingsGoalsStrings.exportPng),
+            subtitle: const Text(SavingsGoalsStrings.exportPngSub),
+            onTap: () => _run(ref, 'png'),
           ),
           ListTile(
             leading: const Icon(Icons.close),
-            title: const Text(SavingsGoalsStrings.cancel),
+            title: const Text(SavingsGoalsStrings.exportCancel),
             onTap: () => Navigator.of(context).pop(),
           ),
         ],
@@ -58,36 +64,35 @@ class ExportBottomSheet extends ConsumerWidget {
     );
   }
 
-  Future<void> _run(BuildContext context, WidgetRef ref, String kind) async {
+  Future<void> _run(WidgetRef ref, String kind) async {
     HapticFeedback.lightImpact();
+    final context = ref.context;
     Navigator.of(context).pop();
     final messenger = ScaffoldMessenger.of(context);
-    final usecase = ExportSavingsAnalyticsUseCase();
     try {
-      String path;
+      final useCase = ref.read(exportSavingsAnalyticsUseCaseProvider);
+      final String path;
       if (kind == 'png') {
-        path = await usecase.exportPng();
+        path = await useCase.exportPng(ref.read(chartRepaintBoundaryKeyProvider));
       } else {
         final goals = await ref.read(analyticsAllGoalsProvider.future);
         if (kind == 'xlsx') {
-          final tx = await ref.read(analyticsSavingsTxnsProvider.future);
-          path = await usecase.exportXlsx(goals: goals, transactions: tx);
+          final txns = await ref.read(analyticsSavingsTxnsProvider.future);
+          path = await useCase.exportXlsx(goals: goals, transactions: txns);
         } else {
-          path = await usecase.exportCsv(goals: goals);
+          path = await useCase.exportCsv(goals: goals);
         }
       }
-      await usecase.share(path);
+      await useCase.share(path, SavingsGoalsStrings.exportShareText);
       HapticFeedback.mediumImpact();
+      messenger.showSnackBar(
+        const SnackBar(content: Text(SavingsGoalsStrings.exportSuccess)),
+      );
     } catch (e) {
       HapticFeedback.vibrate();
-      messenger.showSnackBar(SnackBar(content: Text('${SavingsGoalsStrings.operationFailed}: $e')));
+      messenger.showSnackBar(
+        SnackBar(content: Text('${SavingsGoalsStrings.exportFailed}: $e')),
+      );
     }
   }
-}
-
-Future<void> showExportBottomSheet(BuildContext context) {
-  return showModalBottomSheet(
-    context: context,
-    builder: (_) => const ExportBottomSheet(),
-  );
 }

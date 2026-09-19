@@ -222,6 +222,11 @@ abstract final class SavingsGoalsStrings {
   static const statDecreasePrefix = '↓';
   static const statVsPrevPeriod = 'vs прошлый период';
 
+  static const exportXlsx = 'Excel (.xlsx)';
+  static const exportXlsxSub = 'Полная таблица с целями и пополнениями';
+  static const exportShareText = 'Моя аналитика копилок с Budget Assistant 🚀';
+  static const exportSuccess = 'Экспорт завершён';
+  static const exportFailed = 'Не удалось экспортировать';
   /// Склонение слова «день».
   static String daysLabel(int n) {
     final abs = n.abs();
