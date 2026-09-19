@@ -1,4 +1,6 @@
+import 'package:flutter/widgets.dart' show GlobalKey;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
 import 'package:budget_assistant/features/accounts/domain/entities/account.dart';
 import 'package:budget_assistant/features/accounts/presentation/providers/account_providers.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
@@ -7,16 +9,17 @@ import 'package:budget_assistant/features/transactions/presentation/providers/cr
 import '../../domain/entities/savings_goal.dart';
 import '../../domain/usecases/build_accumulation_chart_usecase.dart';
 import '../../domain/usecases/calculate_savings_analytics_usecase.dart';
+import '../../domain/usecases/export_savings_analytics_usecase.dart';
 import 'savings_goals_providers.dart';
 import 'savings_goals_screen_providers.dart';
 
-/// Период аналитики (ТЗ 6.3.18.3), дефолт — Год.
+final Logger _logger = Logger();
+
 enum AnalyticsPeriod { month, quarter, year, allTime }
 
 class AnalyticsPeriodNotifier extends Notifier<AnalyticsPeriod> {
   @override
   AnalyticsPeriod build() => AnalyticsPeriod.year;
-
   void set(AnalyticsPeriod period) => state = period;
 }
 
@@ -32,12 +35,10 @@ class AnalyticsPeriodRange {
     required this.prevStart,
     required this.prevEnd,
   });
-
   final DateTime start;
   final DateTime end;
   final DateTime prevStart;
   final DateTime prevEnd;
-
   int get totalDays => end.difference(start).inDays + 1;
 }
 
@@ -73,20 +74,17 @@ final analyticsPeriodRangeProvider = Provider<AnalyticsPeriodRange>((ref) {
   );
 });
 
-/// Все цели (активные + архив) для аналитики.
 final analyticsAllGoalsProvider = FutureProvider<List<SavingsGoal>>((ref) async {
   final active = await ref.watch(allActiveSavingsGoalsProvider.future);
   final archived = await ref.watch(allArchivedSavingsGoalsProvider.future);
   return [...active, ...archived];
 });
 
-/// Счета пользователя: валюта суммы транзакции резолвится через счёт.
 final analyticsAccountsProvider = FutureProvider<List<Account>>((ref) async {
   final userId = ref.watch(currentUserIdProvider);
   return ref.watch(accountsListProvider(userId).future);
 });
 
-/// Все транзакции целей (пополнения + изъятия) за всё время.
 final analyticsSavingsTxnsProvider =
     FutureProvider<List<Transaction>>((ref) async {
   final goals = await ref.watch(analyticsAllGoalsProvider.future);
@@ -133,4 +131,10 @@ final accumulationChartProvider =
     periodEnd: range.end,
     now: DateTime.now(),
   );
+});
+
+final chartRepaintBoundaryKeyProvider = Provider<GlobalKey>((ref) => GlobalKey());
+
+final exportSavingsAnalyticsUseCaseProvider = Provider<ExportSavingsAnalyticsUseCase>((ref) {
+  return ExportSavingsAnalyticsUseCase(logger: _logger);
 });

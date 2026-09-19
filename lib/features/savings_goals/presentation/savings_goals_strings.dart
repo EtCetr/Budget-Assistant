@@ -231,4 +231,11 @@ abstract final class SavingsGoalsStrings {
     if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'дня';
     return 'дней';
   }
+  static const exportBlocked = 'Экспорт в скрытом режиме невозможен';
+  static const exportTitle = 'Экспортировать аналитику';
+  static const exportCsv = 'CSV (таблица целей)';
+  static const exportCsvSub = 'Для Excel или Google Таблиц';
+  static const exportPng = 'PNG (график)';
+  static const exportPngSub = 'Скриншот для соцсетей';
+  static const exportCancel = 'Отмена';
 }

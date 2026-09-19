@@ -11,13 +11,10 @@ import '../savings_goals_strings.dart';
 import '../widgets/accumulation_chart.dart';
 import '../widgets/savings_analytics_period_selector.dart';
 import '../widgets/savings_analytics_summary_grid.dart';
+import '../widgets/export_bottom_sheet.dart';
 
-/// Экран аналитики копилок (ТЗ 6.3.18). Микро-коммит 12.7.1:
-/// период-селектор, Summary 2×2, график накопления с прогнозом.
-/// Таблица целей, Filter Row, баннер валют и экспорт — микро-коммит 12.7.2.
 class SavingsAnalyticsScreen extends ConsumerStatefulWidget {
   const SavingsAnalyticsScreen({super.key});
-
   @override
   ConsumerState<SavingsAnalyticsScreen> createState() =>
       _SavingsAnalyticsScreenState();
@@ -46,6 +43,15 @@ class _SavingsAnalyticsScreenState extends ConsumerState<SavingsAnalyticsScreen>
               },
             ),
           ),
+          IconButton(
+            icon: const Icon(Icons.download_outlined),
+            onPressed: privacyMode == BalanceVisibilityMode.hidden
+                ? null
+                : () {
+                    HapticFeedback.lightImpact();
+                    showExportBottomSheet(context);
+                  },
+          ),
         ],
       ),
       body: goalsAsync.when(
@@ -67,13 +73,16 @@ class _SavingsAnalyticsScreenState extends ConsumerState<SavingsAnalyticsScreen>
           }
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.spacing16),
-            children: const [
-              SavingsAnalyticsPeriodSelector(),
-              SizedBox(height: AppSpacing.spacing12),
-              SavingsAnalyticsSummaryGrid(),
-              SizedBox(height: AppSpacing.spacing12),
-              AccumulationChart(),
-              SizedBox(height: AppSpacing.spacing24),
+            children: [
+              const SavingsAnalyticsPeriodSelector(),
+              const SizedBox(height: AppSpacing.spacing12),
+              const SavingsAnalyticsSummaryGrid(),
+              const SizedBox(height: AppSpacing.spacing12),
+              RepaintBoundary(
+                key: ref.watch(chartRepaintBoundaryKeyProvider),
+                child: const AccumulationChart(),
+              ),
+              const SizedBox(height: AppSpacing.spacing24),
             ],
           );
         },

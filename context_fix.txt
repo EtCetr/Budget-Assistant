@@ -1,0 +1,1264 @@
+﻿===== FILE: lib\features\savings_goals\domain\usecases\export_savings_analytics_usecase.dart =====
+import 'dart:io';
+import 'dart:ui' as ui;
+import 'package:excel/excel.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:logger/logger.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:flutter/widgets.dart' show GlobalKey, RepaintBoundary;
+import '../entities/savings_goal.dart';
+
+enum SavingsExportFormat { xlsx, csv, png, pdf }
+
+class ExportSavingsAnalyticsUseCase {
+  ExportSavingsAnalyticsUseCase({required Logger logger}) : _logger = logger;
+  final Logger _logger;
+
+  Future<String> call({
+    required SavingsExportFormat format,
+    required List<SavingsGoal> goals,
+    required String baseCurrency,
+    GlobalKey? chartKey,
+  }) async {
+    try {
+      final dir = await getTemporaryDirectory();
+      final stamp = DateTime.now().toUtc().toIso8601String().substring(0, 10);
+      switch (format) {
+        case SavingsExportFormat.xlsx:
+          return _xlsx(dir, stamp, goals, baseCurrency);
+        case SavingsExportFormat.csv:
+          return _csv(dir, stamp, goals, baseCurrency);
+        case SavingsExportFormat.pdf:
+          return _pdf(dir, stamp, goals, baseCurrency);
+        case SavingsExportFormat.png:
+          return _png(dir, stamp, chartKey);
+      }
+    } catch (e, st) {
+      _logger.e('ExportSavingsAnalyticsUseCase failed', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  Future<String> _xlsx(Directory dir, String stamp, List<SavingsGoal> goals, String cur) async {
+    final excel = Excel.createExcel();
+    final sheetGoals = excel['Р¦РµР»Рё'];
+    sheetGoals.appendRow([TextCellValue('Р¦РµР»СЊ'), TextCellValue('Р¦РµР»РµРІР°СЏ'), TextCellValue('РќР°РєРѕРїР»РµРЅРѕ'), TextCellValue('%'), TextCellValue('Р”РµРґР»Р°Р№РЅ'), TextCellValue('РЎС‚Р°С‚СѓСЃ')]);
+    for (final g in goals) {
+      sheetGoals.appendRow([
+        TextCellValue(g.name),
+        TextCellValue((g.targetAmount / 100).toStringAsFixed(2)),
+        TextCellValue((g.currentAmount / 100).toStringAsFixed(2)),
+        TextCellValue('${g.progressPercent}'),
+        TextCellValue(g.deadline?.toIso8601String() ?? ''),
+        TextCellValue(g.status),
+      ]);
+    }
+    final path = '${dir.path}/savings_analytics_$stamp.xlsx';
+    excel.save(path);
+    return path;
+  }
+
+  Future<String> _csv(Directory dir, String stamp, List<SavingsGoal> goals, String cur) async {
+    final sb = StringBuffer();
+    sb.writeln('Р¦РµР»СЊ,Р¦РµР»РµРІР°СЏ,РќР°РєРѕРїР»РµРЅРѕ,%,Р”РµРґР»Р°Р№РЅ,РЎС‚Р°С‚СѓСЃ');
+    for (final g in goals) {
+      sb.writeln([
+        '"${g.name.replaceAll('"', '""')}"',
+        (g.targetAmount / 100).toStringAsFixed(2),
+        (g.currentAmount / 100).toStringAsFixed(2),
+        '${g.progressPercent}',
+        g.deadline?.toIso8601String() ?? '',
+        g.status,
+      ].join(','));
+    }
+    final path = '${dir.path}/savings_goals_$stamp.csv';
+    // UTF-8 СЃ BOM РґР»СЏ Excel
+    await File(path).writeAsBytes([0xEF, 0xBB, 0xBF] + sb.toString().codeUnits);
+    return path;
+  }
+
+  Future<String> _pdf(Directory dir, String stamp, List<SavingsGoal> goals, String cur) async {
+    final pdf = pw.Document();
+    pdf.addPage(pw.TableHelper.fromTextArray(
+      header: ['Р¦РµР»СЊ', 'Р¦РµР»РµРІР°СЏ', 'РќР°РєРѕРїР»РµРЅРѕ', '%', 'РЎС‚Р°С‚СѓСЃ'],
+      data: goals.map((g) => [
+        g.name,
+        (g.targetAmount / 100).toStringAsFixed(2),
+        (g.currentAmount / 100).toStringAsFixed(2),
+        '${g.progressPercent}',
+        g.status,
+      ]).toList(),
+    ));
+    final path = '${dir.path}/savings_analytics_$stamp.pdf';
+    await File(path).writeAsBytes(await pdf.save());
+    return path;
+  }
+
+  Future<String> _png(Directory dir, String stamp, GlobalKey? chartKey) async {
+    if (chartKey == null) throw StateError('chartKey is null');
+    final boundary = chartKey.currentContext?.findRenderObject() as RepaintBoundary?;
+    if (boundary == null) throw StateError('RepaintBoundary not found');
+    final image = await boundary.toImage(pixelRatio: 3.0);
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    if (bytes == null) throw StateError('PNG encode failed');
+    final path = '${dir.path}/savings_chart_$stamp.png';
+    await File(path).writeAsBytes(bytes.buffer.asUint8List());
+    return path;
+  }
+
+  Future<void> share(String path) async {
+    await SharePlus.instance.share(ShareParams(files: [XFile(path)], text: 'РњРѕСЏ Р°РЅР°Р»РёС‚РёРєР° РєРѕРїРёР»РѕРє СЃ Budget Assistant рџљЂ'));
+  }
+}
+
+===== FILE: lib\features\savings_goals\presentation\providers\savings_analytics_providers.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/features/accounts/domain/entities/account.dart';
+import 'package:budget_assistant/features/accounts/presentation/providers/account_providers.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
+import 'package:budget_assistant/features/transactions/presentation/providers/create_transaction_providers.dart';
+import '../../domain/entities/savings_goal.dart';
+import '../../domain/usecases/build_accumulation_chart_usecase.dart';
+import '../../domain/usecases/calculate_savings_analytics_usecase.dart';
+import 'savings_goals_providers.dart';
+import 'savings_goals_screen_providers.dart';
+
+/// РџРµСЂРёРѕРґ Р°РЅР°Р»РёС‚РёРєРё (РўР— 6.3.18.3), РґРµС„РѕР»С‚ вЂ” Р“РѕРґ.
+enum AnalyticsPeriod { month, quarter, year, allTime }
+
+class AnalyticsPeriodNotifier extends Notifier<AnalyticsPeriod> {
+  @override
+  AnalyticsPeriod build() => AnalyticsPeriod.year;
+
+  void set(AnalyticsPeriod period) => state = period;
+}
+
+final analyticsPeriodProvider =
+    NotifierProvider<AnalyticsPeriodNotifier, AnalyticsPeriod>(
+  AnalyticsPeriodNotifier.new,
+);
+
+class AnalyticsPeriodRange {
+  const AnalyticsPeriodRange({
+    required this.start,
+    required this.end,
+    required this.prevStart,
+    required this.prevEnd,
+  });
+
+  final DateTime start;
+  final DateTime end;
+  final DateTime prevStart;
+  final DateTime prevEnd;
+
+  int get totalDays => end.difference(start).inDays + 1;
+}
+
+final analyticsPeriodRangeProvider = Provider<AnalyticsPeriodRange>((ref) {
+  final period = ref.watch(analyticsPeriodProvider);
+  final now = DateTime.now();
+  final DateTime start;
+  switch (period) {
+    case AnalyticsPeriod.month:
+      start = DateTime(now.year, now.month, 1);
+    case AnalyticsPeriod.quarter:
+      start = DateTime(now.year, ((now.month - 1) ~/ 3) * 3 + 1, 1);
+    case AnalyticsPeriod.year:
+      start = DateTime(now.year, 1, 1);
+    case AnalyticsPeriod.allTime:
+      start = DateTime(2000, 1, 1);
+  }
+  final DateTime prevStart;
+  final DateTime prevEnd;
+  if (period == AnalyticsPeriod.allTime) {
+    prevStart = start;
+    prevEnd = start.subtract(const Duration(days: 1));
+  } else {
+    final days = now.difference(start).inDays + 1;
+    prevEnd = start.subtract(const Duration(days: 1));
+    prevStart = prevEnd.subtract(Duration(days: days - 1));
+  }
+  return AnalyticsPeriodRange(
+    start: start,
+    end: now,
+    prevStart: prevStart,
+    prevEnd: prevEnd,
+  );
+});
+
+/// Р’СЃРµ С†РµР»Рё (Р°РєС‚РёРІРЅС‹Рµ + Р°СЂС…РёРІ) РґР»СЏ Р°РЅР°Р»РёС‚РёРєРё.
+final analyticsAllGoalsProvider = FutureProvider<List<SavingsGoal>>((ref) async {
+  final active = await ref.watch(allActiveSavingsGoalsProvider.future);
+  final archived = await ref.watch(allArchivedSavingsGoalsProvider.future);
+  return [...active, ...archived];
+});
+
+/// РЎС‡РµС‚Р° РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ: РІР°Р»СЋС‚Р° СЃСѓРјРјС‹ С‚СЂР°РЅР·Р°РєС†РёРё СЂРµР·РѕР»РІРёС‚СЃСЏ С‡РµСЂРµР· СЃС‡С‘С‚.
+final analyticsAccountsProvider = FutureProvider<List<Account>>((ref) async {
+  final userId = ref.watch(currentUserIdProvider);
+  return ref.watch(accountsListProvider(userId).future);
+});
+
+/// Р’СЃРµ С‚СЂР°РЅР·Р°РєС†РёРё С†РµР»РµР№ (РїРѕРїРѕР»РЅРµРЅРёСЏ + РёР·СЉСЏС‚РёСЏ) Р·Р° РІСЃС‘ РІСЂРµРјСЏ.
+final analyticsSavingsTxnsProvider =
+    FutureProvider<List<Transaction>>((ref) async {
+  final goals = await ref.watch(analyticsAllGoalsProvider.future);
+  final repository = ref.watch(transactionsRepositoryProvider);
+  final out = <Transaction>[];
+  for (final goal in goals) {
+    out.addAll(await repository.getTransactionsByGoalId(goal.id));
+  }
+  return out;
+});
+
+final savingsAnalyticsSummaryProvider =
+    FutureProvider<AnalyticsSummary>((ref) async {
+  final goals = await ref.watch(analyticsAllGoalsProvider.future);
+  final txns = await ref.watch(analyticsSavingsTxnsProvider.future);
+  final accounts = await ref.watch(analyticsAccountsProvider.future);
+  final baseCurrency = await ref.watch(savingsBaseCurrencyProvider.future);
+  final range = ref.watch(analyticsPeriodRangeProvider);
+  return ref.watch(calculateSavingsAnalyticsUseCaseProvider)(
+    goals: goals,
+    savingsTransactions: txns,
+    accounts: accounts,
+    baseCurrency: baseCurrency,
+    periodStart: range.start,
+    periodEnd: range.end,
+    prevPeriodStart: range.prevStart,
+    prevPeriodEnd: range.prevEnd,
+  );
+});
+
+final accumulationChartProvider =
+    FutureProvider<AccumulationChartData>((ref) async {
+  final goals = await ref.watch(analyticsAllGoalsProvider.future);
+  final txns = await ref.watch(analyticsSavingsTxnsProvider.future);
+  final accounts = await ref.watch(analyticsAccountsProvider.future);
+  final baseCurrency = await ref.watch(savingsBaseCurrencyProvider.future);
+  final range = ref.watch(analyticsPeriodRangeProvider);
+  return ref.watch(buildAccumulationChartUseCaseProvider)(
+    goals: goals,
+    savingsTransactions: txns,
+    accounts: accounts,
+    baseCurrency: baseCurrency,
+    periodStart: range.start,
+    periodEnd: range.end,
+    now: DateTime.now(),
+  );
+});
+import 'package:flutter/widgets.dart' show GlobalKey;
+import '../../domain/usecases/export_savings_analytics_usecase.dart';
+
+final chartRepaintBoundaryKeyProvider = Provider<GlobalKey>((ref) => GlobalKey());
+
+final exportSavingsAnalyticsUseCaseProvider = Provider<ExportSavingsAnalyticsUseCase>((ref) {
+  return ExportSavingsAnalyticsUseCase(logger: _logger);
+});
+
+===== FILE: lib\features\savings_goals\presentation\screens\savings_analytics_screen.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../widgets/export_bottom_sheet.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/providers/savings_analytics_providers.dart';
+import 'package:go_router/go_router.dart';
+import 'package:budget_assistant/core/theme/app_spacing.dart';
+import 'package:budget_assistant/core/widgets/empty_state_widget.dart';
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+import '../providers/savings_analytics_providers.dart';
+import '../savings_goals_strings.dart';
+import '../widgets/accumulation_chart.dart';
+import '../widgets/savings_analytics_period_selector.dart';
+import '../widgets/savings_analytics_summary_grid.dart';
+
+/// Р­РєСЂР°РЅ Р°РЅР°Р»РёС‚РёРєРё РєРѕРїРёР»РѕРє (РўР— 6.3.18). РњРёРєСЂРѕ-РєРѕРјРјРёС‚ 12.7.1:
+/// РїРµСЂРёРѕРґ-СЃРµР»РµРєС‚РѕСЂ, Summary 2Г—2, РіСЂР°С„РёРє РЅР°РєРѕРїР»РµРЅРёСЏ СЃ РїСЂРѕРіРЅРѕР·РѕРј.
+/// РўР°Р±Р»РёС†Р° С†РµР»РµР№, Filter Row, Р±Р°РЅРЅРµСЂ РІР°Р»СЋС‚ Рё СЌРєСЃРїРѕСЂС‚ вЂ” РјРёРєСЂРѕ-РєРѕРјРјРёС‚ 12.7.2.
+class SavingsAnalyticsScreen extends ConsumerStatefulWidget {
+  const SavingsAnalyticsScreen({super.key});
+
+  @override
+  ConsumerState<SavingsAnalyticsScreen> createState() =>
+      _SavingsAnalyticsScreenState();
+}
+
+class _SavingsAnalyticsScreenState extends ConsumerState<SavingsAnalyticsScreen> {
+  @override
+  Widget build(BuildContext context) {
+    final privacyMode = ref.watch(privacyModeProvider);
+    final goalsAsync = ref.watch(analyticsAllGoalsProvider);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(SavingsGoalsStrings.analyticsTitle),
+        actions: [
+          GestureDetector(
+            onLongPress: _showPrivacySheet,
+            child: IconButton(
+              icon: Icon(
+                privacyMode == BalanceVisibilityMode.hidden
+                    ? Icons.visibility_off
+                    : Icons.visibility,
+              ),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                ref.read(privacyModeProvider.notifier).toggle();
+              },
+            ),
+          ),
+        ],
+      ),
+      body: goalsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, __) => const Center(
+          child: Text(SavingsGoalsStrings.loadingError),
+        ),
+        data: (goals) {
+          if (goals.isEmpty) {
+            return EmptyStateWidget(
+              animationAsset: 'assets/animations/empty_piggy.json',
+              title: SavingsGoalsStrings.emptyAllTitle,
+              subtitle: SavingsGoalsStrings.analyticsEmptySubtitle,
+              primaryAction: EmptyStateAction(
+                label: SavingsGoalsStrings.emptyAllAction,
+                onPressed: () => context.push('/savings-goals/create'),
+              ),
+            );
+          }
+          return ListView(
+            padding: const EdgeInsets.all(AppSpacing.spacing16),
+            children: const [
+              SavingsAnalyticsPeriodSelector(),
+              SizedBox(height: AppSpacing.spacing12),
+              SavingsAnalyticsSummaryGrid(),
+              SizedBox(height: AppSpacing.spacing12),
+RepaintBoundary(key: chartRepaintBoundaryKeyProvider as GlobalKey? ?? GlobalKey(), child: const AccumulationChart()),
+              SizedBox(height: AppSpacing.spacing24),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  void _showPrivacySheet() {
+    showModalBottomSheet(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const Text(SavingsGoalsStrings.privacyVisible),
+              onTap: () {
+                ref
+                    .read(privacyModeProvider.notifier)
+                    .setMode(BalanceVisibilityMode.visible);
+                Navigator.of(sheetContext).pop();
+              },
+            ),
+            ListTile(
+              title: const Text(SavingsGoalsStrings.privacyPartial),
+              onTap: () {
+                ref
+                    .read(privacyModeProvider.notifier)
+                    .setMode(BalanceVisibilityMode.partial);
+                Navigator.of(sheetContext).pop();
+              },
+            ),
+            ListTile(
+              title: const Text(SavingsGoalsStrings.privacyHidden),
+              onTap: () {
+                ref
+                    .read(privacyModeProvider.notifier)
+                    .setMode(BalanceVisibilityMode.hidden);
+                Navigator.of(sheetContext).pop();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+===== FILE: lib\features\savings_goals\presentation\widgets\export_bottom_sheet.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+import '../../domain/usecases/export_savings_analytics_usecase.dart';
+import '../providers/savings_analytics_providers.dart';
+
+Future<void> showExportBottomSheet(BuildContext context) {
+  return showModalBottomSheet(context: context, builder: (_) => const ExportBottomSheet());
+}
+
+class ExportBottomSheet extends ConsumerWidget {
+  const ExportBottomSheet({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(privacyModeProvider);
+    final blocked = mode == BalanceVisibilityMode.hidden;
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (blocked)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Р­РєСЃРїРѕСЂС‚ РІ СЃРєСЂС‹С‚РѕРј СЂРµР¶РёРјРµ РЅРµРІРѕР·РјРѕР¶РµРЅ. РџРµСЂРµРєР»СЋС‡РёС‚РµСЃСЊ РІ visible РёР»Рё partial'),
+            )
+          else ...[
+            ListTile(leading: const Icon(Icons.grid_on), title: const Text('Excel (.xlsx)'), subtitle: const Text('РџРѕР»РЅР°СЏ С‚Р°Р±Р»РёС†Р° СЃ С†РµР»СЏРјРё Рё РїРѕРїРѕР»РЅРµРЅРёСЏРјРё'), onTap: () => _export(context, ref, SavingsExportFormat.xlsx)),
+            ListTile(leading: const Icon(Icons.description), title: const Text('CSV (.csv)'), subtitle: const Text('РўР°Р±Р»РёС†Р° С†РµР»РµР№ РґР»СЏ РёРјРїРѕСЂС‚Р°'), onTap: () => _export(context, ref, SavingsExportFormat.csv)),
+            ListTile(leading: const Icon(Icons.image), title: const Text('PNG (РіСЂР°С„РёРє)'), subtitle: const Text('РЎРєСЂРёРЅС€РѕС‚ РіСЂР°С„РёРєР° РЅР°РєРѕРїР»РµРЅРёСЏ'), onTap: () => _export(context, ref, SavingsExportFormat.png)),
+            ListTile(leading: const Icon(Icons.picture_as_pdf), title: const Text('PDF (.pdf)'), subtitle: const Text('РўР°Р±Р»РёС†Р° С†РµР»РµР№ РІ PDF'), onTap: () => _export(context, ref, SavingsExportFormat.pdf)),
+          ],
+          ListTile(leading: const Icon(Icons.close), title: const Text('РћС‚РјРµРЅР°'), onTap: () => Navigator.of(context).pop()),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _export(BuildContext context, WidgetRef ref, SavingsExportFormat fmt) async {
+    HapticFeedback.lightImpact();
+    Navigator.of(context).pop();
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final goals = await ref.read(analyticsAllGoalsProvider.future);
+      final base = await ref.read(savingsBaseCurrencyProvider.future);
+      final useCase = ref.read(exportSavingsAnalyticsUseCaseProvider);
+      final path = await useCase(format: fmt, goals: goals, baseCurrency: base, chartKey: fmt == SavingsExportFormat.png ? ref.read(chartRepaintBoundaryKeyProvider) : null);
+      await useCase.share(path);
+      HapticFeedback.mediumImpact();
+    } catch (e) {
+      HapticFeedback.vibrate();
+      messenger.showSnackBar(SnackBar(content: Text('РћС€РёР±РєР° СЌРєСЃРїРѕСЂС‚Р°: $e')));
+    }
+  }
+}
+
+===== FILE: lib\features\dashboard\presentation\providers\dashboard_providers.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/database/database_provider.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+import 'package:budget_assistant/core/providers/security_providers.dart';
+import 'package:budget_assistant/features/cashback/presentation/providers/cashback_providers.dart';
+import '../../data/repositories/dashboard_data_repository_impl.dart';
+import '../../data/repositories/dashboard_layout_repository_impl.dart';
+import '../../domain/entities/dashboard_widget_item.dart';
+import '../../domain/usecases/update_dashboard_layout_usecase.dart';
+
+final Logger _logger = Logger();
+
+final dashboardLayoutRepositoryProvider = Provider<DashboardLayoutRepositoryImpl>(
+  (ref) => DashboardLayoutRepositoryImpl(
+    db: ref.watch(appDatabaseProvider),
+    logger: _logger,
+  ),
+);
+
+final dashboardDataRepositoryProvider = Provider<DashboardDataRepositoryImpl>(
+  (ref) => DashboardDataRepositoryImpl(
+    db: ref.watch(appDatabaseProvider),
+    logger: _logger,
+  ),
+);
+
+final dashboardLayoutProvider =
+    StreamProvider.autoDispose<List<DashboardWidgetItem>>((ref) {
+  final userId = ref.watch(currentUserIdProvider);
+  final repository = ref.watch(dashboardLayoutRepositoryProvider);
+  return Stream.fromFuture(repository.ensureDefaults(userId)).asyncExpand(
+    (_) => repository.watchLayout(userId),
+  );
+});
+
+final updateDashboardLayoutUseCaseProvider =
+    Provider<UpdateDashboardLayoutUseCase>(
+  (ref) => UpdateDashboardLayoutUseCase(
+    repository: ref.watch(dashboardLayoutRepositoryProvider),
+    logger: _logger,
+  ),
+);
+
+final dashboardExpenseFlowProvider =
+    FutureProvider.autoDispose<List<ExpenseFlowPoint>>((ref) async {
+  final userId = ref.watch(currentUserIdProvider);
+  final spaceId = ref.watch(currentSpaceIdProvider);
+  final repository = ref.watch(dashboardDataRepositoryProvider);
+  return repository.getExpenseFlow(
+    userId: userId,
+    spaceId: spaceId,
+    excludeLargeExpenses: false,
+  );
+});
+
+/// Р’РёРґР¶РµС‚ В«РђРєС‚РёРІРЅС‹Р№ РєСЌС€Р±СЌРєВ».
+///
+/// Р­С‚Р°Рї 12 (С„РёРєСЃ СЂРµР°РєС‚РёРІРЅРѕСЃС‚Рё): РїРѕРґРїРёСЃР°РЅ РЅР° cashbackMatrixTriggerProvider вЂ”
+/// РїРµСЂРµР·Р°РіСЂСѓР¶Р°РµС‚СЃСЏ СЃСЂР°Р·Сѓ РїСЂРё РёР·РјРµРЅРµРЅРёРё cashback_matrix / С‚СЂР°РЅР·Р°РєС†РёР№ / СЃС‡РµС‚РѕРІ,
+/// РїРѕСЌС‚РѕРјСѓ РґРѕР±Р°РІР»РµРЅРёРµ, СѓРґР°Р»РµРЅРёРµ Рё СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ РєР°С‚РµРіРѕСЂРёРё РєСЌС€Р±СЌРєР°
+/// РјРіРЅРѕРІРµРЅРЅРѕ РѕС‚СЂР°Р¶Р°РµС‚СЃСЏ РЅР° РґР°С€Р±РѕСЂРґРµ.
+final dashboardActiveCashbackProvider =
+    FutureProvider.autoDispose<List<ActiveCashbackUi>>((ref) async {
+  ref.watch(cashbackMatrixTriggerProvider);
+  final userId = ref.watch(currentUserIdProvider);
+  final repository = ref.watch(dashboardDataRepositoryProvider);
+  return repository.getActiveCashback(userId);
+});
+
+===== FILE: lib\features\dashboard\presentation\widgets\expense_flow_chart_widget.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/empty_state_widget.dart';
+import '../../../../core/widgets/offline_error_card.dart';
+import '../../../../core/widgets/skeleton_shimmer.dart';
+import '../../../../features/budget/presentation/providers/budget_providers.dart';
+import '../../../../features/privacy/presentation/providers/privacy_mode_provider.dart';
+import '../dashboard_strings.dart';
+import '../providers/dashboard_providers.dart';
+
+class ExpenseFlowChartWidget extends ConsumerWidget {
+  const ExpenseFlowChartWidget({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final flowAsync = ref.watch(dashboardExpenseFlowProvider);
+    final formatter = ref.watch(privacyFormatterProvider);
+    final privacyMode = ref.watch(privacyModeProvider);
+    final pnlAsync = ref.watch(monthlyPnlForCurrentMonthProvider);
+
+    return flowAsync.when(
+      loading: () => const SkeletonShimmer(height: 220),
+      error: (error, _) => OfflineErrorCard(
+        message: DashboardStrings.loadingError,
+        retryLabel: DashboardStrings.retry,
+        onRetry: () => ref.invalidate(dashboardExpenseFlowProvider),
+      ),
+      data: (points) {
+        final total = points.fold<int>(
+          0,
+          (sum, point) => sum + point.totalKopecks,
+        );
+
+        if (total == 0) {
+          return const EmptyStateWidget(
+            animationAsset: 'assets/animations/empty_chart.json',
+            title: DashboardStrings.expenseEmptyTitle,
+            subtitle: DashboardStrings.expenseEmptySubtitle,
+          );
+        }
+
+        final spots = <FlSpot>[];
+        for (int i = 0; i < points.length; i++) {
+          spots.add(
+            FlSpot(i.toDouble(), points[i].totalKopecks / 100.0),
+          );
+        }
+
+        final pnl = pnlAsync.value;
+
+        return Container(
+          padding: const EdgeInsets.all(AppSpacing.spacing16),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceCard,
+            borderRadius: BorderRadius.circular(AppRadius.radiusLg),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                DashboardStrings.expenseFlowTitle,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: AppSpacing.spacing16),
+              SizedBox(
+                height: 180,
+                child: LineChart(
+                  LineChartData(
+                    gridData: const FlGridData(show: false),
+                    titlesData: const FlTitlesData(show: false),
+                    borderData: FlBorderData(show: false),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: spots,
+                        isCurved: true,
+                        color: AppColors.colorExpense,
+                        barWidth: 2,
+                        dotData: const FlDotData(show: false),
+                        belowBarData: BarAreaData(
+                          show: true,
+                          color: AppColors.colorExpense.withValues(alpha: 0.18),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (privacyMode != BalanceVisibilityMode.hidden && pnl != null) ...[
+                const SizedBox(height: AppSpacing.spacing16),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.arrow_upward,
+                      size: 18,
+                      color: AppColors.colorIncome,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      formatter.formatAmount(
+                        pnl.totalIncome,
+                        'RUB',
+                        privacyMode,
+                      ),
+                      style: const TextStyle(color: AppColors.colorIncome),
+                    ),
+                    const SizedBox(width: AppSpacing.spacing24),
+                    const Icon(
+                      Icons.arrow_downward,
+                      size: 18,
+                      color: AppColors.colorExpense,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      formatter.formatAmount(
+                        pnl.totalExpense,
+                        'RUB',
+                        privacyMode,
+                      ),
+                      style: const TextStyle(color: AppColors.colorExpense),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+===== FILE: lib\features\transactions\presentation\screens\create_transaction_screen.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:budget_assistant/core/constants/currency_codes.dart';
+import 'package:budget_assistant/core/database/app_database.dart';
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
+import 'package:budget_assistant/core/errors/result.dart';
+import 'package:budget_assistant/core/formatting/money_input_parser.dart';
+import 'package:budget_assistant/core/formatting/money_text_input_formatter.dart';
+import 'package:budget_assistant/core/formatting/money_formatter.dart';
+import 'package:budget_assistant/core/theme/app_colors.dart';
+import 'package:budget_assistant/core/theme/app_spacing.dart';
+import 'package:budget_assistant/features/cashback/presentation/providers/cashback_providers.dart';
+import '../../../../core/providers/security_providers.dart';
+import '../../domain/entities/lookup_item.dart';
+import '../../domain/models/secrecy_config.dart';
+import '../../domain/models/transaction_draft.dart';
+import '../labels/transactions_log_labels.dart';
+import '../providers/create_transaction_providers.dart';
+import '../providers/transactions_log_providers.dart';
+
+/// Р­РєСЂР°РЅ СЃРѕР·РґР°РЅРёСЏ С‚СЂР°РЅР·Р°РєС†РёРё.
+///
+/// Р РѕСѓС‚: /transactions/create?type=expense|income|transfer
+/// Р­С‚Р°Рї 10: РІС‹Р±РѕСЂ РІР°Р»СЋС‚С‹ РѕРїРµСЂР°С†РёРё + Р°РІС‚Рѕ-РєРѕРЅРІРµСЂС‚Р°С†РёСЏ РІ РІР°Р»СЋС‚Сѓ СЃС‡С‘С‚Р°
+/// РїРѕ РєСѓСЂСЃСѓ РЅР° РґР°С‚Сѓ (РѕСЂРёРіРёРЅР°Р» С…СЂР°РЅРёС‚СЃСЏ РІ original_amount/original_currency).
+class CreateTransactionScreen extends ConsumerStatefulWidget {
+  const CreateTransactionScreen({super.key, required this.type});
+
+  final TransactionType type;
+
+  @override
+  ConsumerState<CreateTransactionScreen> createState() =>
+      _CreateTransactionScreenState();
+}
+
+class _CreateTransactionScreenState
+    extends ConsumerState<CreateTransactionScreen> {
+  late TransactionDraft _draft;
+  final _amountController = TextEditingController();
+  final _merchantController = TextEditingController();
+  final _commentController = TextEditingController();
+  bool _isSaving = false;
+  String? _amountError;
+  String? _selectedCurrency;
+  String? _previewText;
+
+  @override
+  void initState() {
+    super.initState();
+    _invalidateLookups();
+    _draft = TransactionDraft(
+      type: widget.type,
+      accountId: '',
+      date: DateTime.now(),
+      amount: 0,
+    );
+  }
+
+  /// РџСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ РїРµСЂРµС‡РёС‚С‹РІР°РµС‚ СЃРїРёСЃРєРё СЃС‡РµС‚РѕРІ Рё РєР°С‚РµРіРѕСЂРёР№ РёР· Р‘Р”,
+  /// С‡С‚РѕР±С‹ РЅРѕРІС‹Рµ Р·Р°РїРёСЃРё Р±С‹Р»Рё РІРёРґРЅС‹ Р±РµР· РїРµСЂРµР·Р°РїСѓСЃРєР° РїСЂРёР»РѕР¶РµРЅРёСЏ.
+  void _invalidateLookups() {
+    Future.microtask(() {
+      if (!mounted) return;
+      ref.invalidate(transactionAccountLookupProvider);
+      ref.invalidate(transactionCategoryLookupProvider);
+      ref.invalidate(accountCurrencyMapProvider);
+    });
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _merchantController.dispose();
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final accountsAsync = ref.watch(transactionAccountLookupProvider);
+    final categoriesAsync = ref.watch(transactionCategoryLookupProvider);
+    return Scaffold(
+      appBar: AppBar(title: Text(_screenTitle())),
+      body: accountsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ СЃС‡РµС‚Р°: $e')),
+        data: (accounts) {
+          if (accounts.isEmpty) {
+            return _buildNoAccounts();
+          }
+          // РђРІС‚Рѕ-РІС‹Р±РѕСЂ РїРµСЂРІРѕРіРѕ СЃС‡С‘С‚Р° РїСЂРё РїРµСЂРІРѕРј Р±РёР»РґРµ
+          if (_draft.accountId.isEmpty) {
+            _draft = _draft.copyWith(accountId: accounts.first.id);
+          }
+          return categoriesAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) =>
+                Center(child: Text('РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РєР°С‚РµРіРѕСЂРёРё: $e')),
+            data: (categories) => _buildForm(accounts, categories),
+          );
+        },
+      ),
+      bottomNavigationBar: _buildActionBar(),
+    );
+  }
+
+  String _screenTitle() {
+    switch (widget.type) {
+      case TransactionType.expense:
+        return 'РќРѕРІС‹Р№ СЂР°СЃС…РѕРґ';
+      case TransactionType.income:
+        return 'РќРѕРІС‹Р№ РґРѕС…РѕРґ';
+      case TransactionType.transfer:
+        return 'РќРѕРІС‹Р№ РїРµСЂРµРІРѕРґ';
+    }
+  }
+
+  Widget _buildNoAccounts() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.spacing32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.account_balance_wallet_outlined, size: 72),
+            const SizedBox(height: 16),
+            Text(
+              'РЎРЅР°С‡Р°Р»Р° РґРѕР±Р°РІСЊС‚Рµ СЃС‡С‘С‚',
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Р‘РµР· СЃС‡С‘С‚Р° РЅРµР»СЊР·СЏ СЃРѕР·РґР°С‚СЊ С‚СЂР°РЅР·Р°РєС†РёСЋ',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => context.pop(),
+              child: const Text('РќР°Р·Р°Рґ'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForm(List<LookupItem> accounts, List<LookupItem> categories) {
+    final currencyMap =
+        ref.watch(accountCurrencyMapProvider).value ?? const <String, String>{};
+    final accountCurrency = currencyMap[_draft.accountId] ?? 'RUB';
+    return ListView(
+      padding: const EdgeInsets.all(AppSpacing.spacing16),
+      children: [
+        _buildAmountField(_selectedCurrency ?? accountCurrency),
+        const SizedBox(height: AppSpacing.spacing16),
+        _buildAccountDropdown(accounts),
+        const SizedBox(height: AppSpacing.spacing16),
+        _buildCurrencyDropdown(accountCurrency),
+        if (widget.type == TransactionType.transfer) ...[
+          const SizedBox(height: AppSpacing.spacing16),
+          _buildLinkedAccountDropdown(accounts),
+        ],
+        if (widget.type != TransactionType.transfer) ...[
+          const SizedBox(height: AppSpacing.spacing16),
+          _buildCategoryDropdown(categories),
+        ],
+        const SizedBox(height: AppSpacing.spacing16),
+        _buildDatePicker(),
+        const SizedBox(height: AppSpacing.spacing16),
+        _buildMerchantField(),
+        const SizedBox(height: AppSpacing.spacing16),
+        _buildCommentField(),
+        const SizedBox(height: AppSpacing.spacing32),
+      ],
+    );
+  }
+
+  Widget _buildAmountField(String suffixCurrency) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: _amountController,
+          keyboardType: const TextInputType.numberWithOptions(
+            decimal: true,
+            signed: false,
+          ),
+          inputFormatters: [
+            MoneyTextInputFormatter(),
+          ],
+          autofocus: true,
+          decoration: InputDecoration(
+            labelText: 'РЎСѓРјРјР°',
+            errorText: _amountError,
+            border: const OutlineInputBorder(),
+            suffixText: suffixCurrency,
+          ),
+          onChanged: (value) {
+            final parsed = MoneyInputParser.parseKopecks(value);
+            setState(() {
+              if (parsed == null) {
+                _amountError = 'РќРµРєРѕСЂСЂРµРєС‚РЅР°СЏ СЃСѓРјРјР°';
+              } else {
+                _amountError = null;
+                _draft = _draft.copyWith(amount: parsed);
+              }
+            });
+            _updatePreview();
+          },
+        ),
+        if (_previewText != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6, left: 4),
+            child: Text(
+              _previewText!,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildAccountDropdown(List<LookupItem> accounts) {
+    return DropdownButtonFormField<String>(
+      initialValue: _draft.accountId.isEmpty ? null : _draft.accountId,
+      decoration: const InputDecoration(
+        labelText: 'РЎС‡С‘С‚',
+        border: OutlineInputBorder(),
+      ),
+      items: accounts
+          .map((a) => DropdownMenuItem(value: a.id, child: Text(a.name)))
+          .toList(),
+      onChanged: (value) {
+        if (value != null) {
+          setState(() {
+            _draft = _draft.copyWith(accountId: value);
+            _selectedCurrency = null;
+            _previewText = null;
+          });
+          _updatePreview();
+        }
+      },
+    );
+  }
+
+  Widget _buildCurrencyDropdown(String accountCurrency) {
+    final current = _selectedCurrency ?? accountCurrency;
+    return DropdownButtonFormField<String>(
+      initialValue: current,
+      decoration: const InputDecoration(
+        labelText: 'Р’Р°Р»СЋС‚Р° РѕРїРµСЂР°С†РёРё',
+        border: OutlineInputBorder(),
+      ),
+      items: [
+        for (final code in kCurrencyCodes)
+          DropdownMenuItem(value: code, child: Text(code)),
+      ],
+      onChanged: (value) {
+        setState(() {
+          _selectedCurrency =
+              (value == null || value == accountCurrency) ? null : value;
+          _previewText = null;
+        });
+        _updatePreview();
+      },
+    );
+  }
+
+  Widget _buildLinkedAccountDropdown(List<LookupItem> accounts) {
+    final others = accounts.where((a) => a.id != _draft.accountId).toList();
+    return DropdownButtonFormField<String>(
+      initialValue: _draft.linkedAccountId,
+      decoration: const InputDecoration(
+        labelText: 'РЎС‡С‘С‚-РїРѕР»СѓС‡Р°С‚РµР»СЊ',
+        border: OutlineInputBorder(),
+      ),
+      items: others
+          .map((a) => DropdownMenuItem(value: a.id, child: Text(a.name)))
+          .toList(),
+      onChanged: (value) {
+        setState(() => _draft = _draft.copyWith(linkedAccountId: value));
+      },
+    );
+  }
+
+  Widget _buildCategoryDropdown(List<LookupItem> categories) {
+    return DropdownButtonFormField<String>(
+      initialValue: _draft.customCategoryId,
+      decoration: const InputDecoration(
+        labelText: 'РљР°С‚РµРіРѕСЂРёСЏ (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)',
+        border: OutlineInputBorder(),
+      ),
+      items: categories
+          .map((c) => DropdownMenuItem(value: c.id, child: Text(c.name)))
+          .toList(),
+      onChanged: (value) {
+        setState(() => _draft = _draft.copyWith(customCategoryId: value));
+      },
+    );
+  }
+
+  Widget _buildDatePicker() {
+    return InkWell(
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: _draft.date,
+          firstDate: DateTime(2000),
+          lastDate: DateTime.now().add(const Duration(days: 365)),
+        );
+        if (picked != null) {
+          setState(() => _draft = _draft.copyWith(date: picked));
+          _updatePreview();
+        }
+      },
+      child: InputDecorator(
+        decoration: const InputDecoration(
+          labelText: 'Р”Р°С‚Р°',
+          border: OutlineInputBorder(),
+        ),
+        child: Text(DateFormat('dd.MM.yyyy').format(_draft.date)),
+      ),
+    );
+  }
+
+  Widget _buildMerchantField() {
+    return TextField(
+      controller: _merchantController,
+      decoration: const InputDecoration(
+        labelText: 'РњРµСЂС‡Р°РЅС‚ (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)',
+        border: OutlineInputBorder(),
+      ),
+      onChanged: (v) => _draft = _draft.copyWith(merchantName: v),
+    );
+  }
+
+  Widget _buildCommentField() {
+    return TextField(
+      controller: _commentController,
+      decoration: const InputDecoration(
+        labelText: 'РљРѕРјРјРµРЅС‚Р°СЂРёР№ (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)',
+        border: OutlineInputBorder(),
+      ),
+      maxLines: 2,
+      onChanged: (v) => _draft = _draft.copyWith(comment: v),
+    );
+  }
+
+  Widget _buildActionBar() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.spacing16),
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceCard,
+        border: Border(top: BorderSide(color: AppColors.borderDivider)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: _isSaving ? null : () => context.pop(),
+              child: const Text(TransactionsLogLabels.cancel),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.spacing12),
+          Expanded(
+            child: FilledButton(
+              onPressed: _isSaving ? null : _onSave,
+              child: _isSaving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('РЎРѕС…СЂР°РЅРёС‚СЊ'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Р–РёРІРѕР№ РїСЂРµРґРїСЂРѕСЃРјРѕС‚СЂ РєРѕРЅРІРµСЂС‚Р°С†РёРё РІ РІР°Р»СЋС‚Сѓ СЃС‡С‘С‚Р° (Р­С‚Р°Рї 10).
+  Future<void> _updatePreview() async {
+    if (_draft.amount <= 0) {
+      if (mounted) setState(() => _previewText = null);
+      return;
+    }
+    try {
+      final map = await ref.read(accountCurrencyMapProvider.future);
+      final accountCurrency = map[_draft.accountId] ?? 'RUB';
+      final txCurrency = _selectedCurrency ?? accountCurrency;
+      if (txCurrency == accountCurrency) {
+        if (mounted) setState(() => _previewText = null);
+        return;
+      }
+      final converted = await ref.read(convertCurrencyUseCaseProvider)(
+        amountKopecks: _draft.amount,
+        fromCurrency: txCurrency,
+        toCurrency: accountCurrency,
+        dateUtc: _draft.date.toUtc(),
+      );
+      if (!mounted) return;
+      setState(() {
+        _previewText = converted == null
+            ? 'РќРµС‚ РєСѓСЂСЃР° $txCurrency в†’ $accountCurrency РЅР° РґР°С‚Сѓ: РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё РїРѕС‚СЂРµР±СѓРµС‚СЃСЏ РёСЃРєР»СЋС‡РµРЅРёРµ'
+            : 'в‰€ ${MoneyFormatter.formatKopecks(converted, accountCurrency)} РїРѕ РєСѓСЂСЃСѓ РЅР° РґР°С‚Сѓ';
+      });
+    } catch (_) {
+      if (mounted) setState(() => _previewText = null);
+    }
+  }
+
+  Future<void> _onSave() async {
+    HapticFeedback.mediumImpact();
+    if (_draft.amount <= 0) {
+      setState(() => _amountError = 'Р’РІРµРґРёС‚Рµ СЃСѓРјРјСѓ Р±РѕР»СЊС€Рµ РЅСѓР»СЏ');
+      return;
+    }
+    if (widget.type == TransactionType.transfer &&
+        (_draft.linkedAccountId == null || _draft.linkedAccountId!.isEmpty)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Р’С‹Р±РµСЂРёС‚Рµ СЃС‡С‘С‚-РїРѕР»СѓС‡Р°С‚РµР»СЊ')));
+      return;
+    }
+    setState(() => _isSaving = true);
+    try {
+      final usecase = ref.read(createTransactionUseCaseProvider);
+      final userId = ref.read(currentUserIdForCreateProvider);
+      final spaceId = ref.read(currentSpaceIdProvider);
+      final currencyMap =
+          await ref.read(accountCurrencyMapProvider.future);
+      final accountCurrency = currencyMap[_draft.accountId] ?? 'RUB';
+      final txCurrency = _selectedCurrency ?? accountCurrency;
+
+      var saveDraft = _draft.copyWith(spaceId: spaceId);
+      if (txCurrency != accountCurrency) {
+        final converted = await ref.read(convertCurrencyUseCaseProvider)(
+          amountKopecks: _draft.amount,
+          fromCurrency: txCurrency,
+          toCurrency: accountCurrency,
+          dateUtc: _draft.date.toUtc(),
+        );
+        if (converted == null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'РќРµС‚ РєСѓСЂСЃР° $txCurrency в†’ $accountCurrency РЅР° РґР°С‚Сѓ РѕРїРµСЂР°С†РёРё. '
+                  'Р”РѕР±Р°РІСЊС‚Рµ РёСЃРєР»СЋС‡РµРЅРёРµ: СЌРєСЂР°РЅ В«РљСЌС€Р±СЌРєВ» в†’ РёРєРѕРЅРєР° в‡„.',
+                ),
+                backgroundColor: AppColors.colorExpense,
+              ),
+            );
+          }
+          return;
+        }
+        saveDraft = saveDraft.copyWith(
+          amount: converted,
+          originalCurrency: txCurrency,
+          originalAmount: _draft.amount,
+        );
+      }
+
+      // Р§РёС‚Р°РµРј РЅР°СЃС‚СЂРѕР№РєРё СЃРµРєСЂРµС‚РЅРѕСЃС‚Рё РёР· app_settings
+      final secrecyConfig = await _loadSecrecyConfig(userId);
+      final result = await usecase.call(
+        draft: saveDraft,
+        userId: userId,
+        secrecyConfig: secrecyConfig,
+      );
+      if (!mounted) return;
+      switch (result) {
+        case Success(:final value):
+          HapticFeedback.mediumImpact();
+          ref.invalidate(transactionsLogProvider);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'РЎРѕС…СЂР°РЅРµРЅРѕ: ${MoneyFormatter.formatKopecks(value.amount, accountCurrency)}',
+              ),
+            ),
+          );
+          context.pop();
+        case Error(:final failure):
+          HapticFeedback.vibrate();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('РћС€РёР±РєР°: ${failure.message}'),
+              backgroundColor: AppColors.colorExpense,
+            ),
+          );
+      }
+    } catch (e) {
+      HapticFeedback.vibrate();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('РќРµРїСЂРµРґРІРёРґРµРЅРЅР°СЏ РѕС€РёР±РєР°: $e'),
+            backgroundColor: AppColors.colorExpense,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
+
+  /// Р§РёС‚Р°РµС‚ РЅР°СЃС‚СЂРѕР№РєРё СЂРµР¶РёРјР° СЃРµРєСЂРµС‚РЅРѕСЃС‚Рё РёР· app_settings.
+  Future<SecrecyConfig?> _loadSecrecyConfig(String userId) async {
+    try {
+      final db = AppDatabase();
+      final settings = await db.appSettingsDao.getForUser(userId);
+      if (!settings.enableSecrecyMode) {
+        return null;
+      }
+      return SecrecyConfig(
+        enabled: true,
+        threshold: settings.largeTransactionThreshold,
+        timeoutSeconds: settings.secrecyTimeoutSeconds,
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+}
+
+===== MISSING: lib\features\transactions\data\datasources\transactions_dao.dart =====
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\dashboard\presentation\providers\dashboard_providers.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/database/database_provider.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+import 'package:budget_assistant/core/providers/security_providers.dart';
+import 'package:budget_assistant/features/cashback/presentation/providers/cashback_providers.dart';
+import '../../data/repositories/dashboard_data_repository_impl.dart';
+import '../../data/repositories/dashboard_layout_repository_impl.dart';
+import '../../domain/entities/dashboard_widget_item.dart';
+import '../../domain/usecases/update_dashboard_layout_usecase.dart';
+
+final Logger _logger = Logger();
+
+final dashboardLayoutRepositoryProvider = Provider<DashboardLayoutRepositoryImpl>(
+  (ref) => DashboardLayoutRepositoryImpl(
+    db: ref.watch(appDatabaseProvider),
+    logger: _logger,
+  ),
+);
+
+final dashboardDataRepositoryProvider = Provider<DashboardDataRepositoryImpl>(
+  (ref) => DashboardDataRepositoryImpl(
+    db: ref.watch(appDatabaseProvider),
+    logger: _logger,
+  ),
+);
+
+final dashboardLayoutProvider =
+    StreamProvider.autoDispose<List<DashboardWidgetItem>>((ref) {
+  final userId = ref.watch(currentUserIdProvider);
+  final repository = ref.watch(dashboardLayoutRepositoryProvider);
+  return Stream.fromFuture(repository.ensureDefaults(userId)).asyncExpand(
+    (_) => repository.watchLayout(userId),
+  );
+});
+
+final updateDashboardLayoutUseCaseProvider =
+    Provider<UpdateDashboardLayoutUseCase>(
+  (ref) => UpdateDashboardLayoutUseCase(
+    repository: ref.watch(dashboardLayoutRepositoryProvider),
+    logger: _logger,
+  ),
+);
+
+final dashboardExpenseFlowProvider =
+    FutureProvider.autoDispose<List<ExpenseFlowPoint>>((ref) async {
+  final userId = ref.watch(currentUserIdProvider);
+  final spaceId = ref.watch(currentSpaceIdProvider);
+  final repository = ref.watch(dashboardDataRepositoryProvider);
+  return repository.getExpenseFlow(
+    userId: userId,
+    spaceId: spaceId,
+    excludeLargeExpenses: false,
+  );
+});
+
+/// Р’РёРґР¶РµС‚ В«РђРєС‚РёРІРЅС‹Р№ РєСЌС€Р±СЌРєВ».
+///
+/// Р­С‚Р°Рї 12 (С„РёРєСЃ СЂРµР°РєС‚РёРІРЅРѕСЃС‚Рё): РїРѕРґРїРёСЃР°РЅ РЅР° cashbackMatrixTriggerProvider вЂ”
+/// РїРµСЂРµР·Р°РіСЂСѓР¶Р°РµС‚СЃСЏ СЃСЂР°Р·Сѓ РїСЂРё РёР·РјРµРЅРµРЅРёРё cashback_matrix / С‚СЂР°РЅР·Р°РєС†РёР№ / СЃС‡РµС‚РѕРІ,
+/// РїРѕСЌС‚РѕРјСѓ РґРѕР±Р°РІР»РµРЅРёРµ, СѓРґР°Р»РµРЅРёРµ Рё СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ РєР°С‚РµРіРѕСЂРёРё РєСЌС€Р±СЌРєР°
+/// РјРіРЅРѕРІРµРЅРЅРѕ РѕС‚СЂР°Р¶Р°РµС‚СЃСЏ РЅР° РґР°С€Р±РѕСЂРґРµ.
+final dashboardActiveCashbackProvider =
+    FutureProvider.autoDispose<List<ActiveCashbackUi>>((ref) async {
+  ref.watch(cashbackMatrixTriggerProvider);
+  final userId = ref.watch(currentUserIdProvider);
+  final repository = ref.watch(dashboardDataRepositoryProvider);
+  return repository.getActiveCashback(userId);
+});
+

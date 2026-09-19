@@ -1,0 +1,688 @@
+﻿===== FILE: lib\features\savings_goals\domain\usecases\export_savings_analytics_usecase.dart =====
+import 'dart:io';
+import 'package:archive/archive.dart';
+import 'package:flutter/widgets.dart' show GlobalKey, RenderRepaintBoundary;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:budget_assistant/features/savings_goals/domain/entities/savings_goal.dart';
+import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
+
+/// Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ РєР»СЋС‡ RepaintBoundary РІРѕРєСЂСѓРі РіСЂР°С„РёРєР° РЅР°РєРѕРїР»РµРЅРёСЏ (РґР»СЏ PNG-СЌРєСЃРїРѕСЂС‚Р°).
+final GlobalKey chartRepaintBoundaryKey = GlobalKey();
+
+/// Р­РєСЃРїРѕСЂС‚ Р°РЅР°Р»РёС‚РёРєРё РєРѕРїРёР»РѕРє: XLSX (2 Р»РёСЃС‚Р°), CSV, PNG (РіСЂР°С„РёРє), С€РµСЂРёРЅРі (РўР— 6.3.18.13).
+/// XLSX СЃРѕР±РёСЂР°РµС‚СЃСЏ РІСЂСѓС‡РЅСѓСЋ РєР°Рє OOXML-zip С‡РµСЂРµР· package:archive (excel-РїР°РєРµС‚
+/// РєРѕРЅС„Р»РёРєС‚СѓРµС‚ СЃ lottie РїРѕ РІРµСЂСЃРёРё archive).
+class ExportSavingsAnalyticsUseCase {
+  ExportSavingsAnalyticsUseCase();
+
+  Future<String> exportXlsx({
+    required List<SavingsGoal> goals,
+    required List<Transaction> transactions,
+  }) async {
+    final dir = await getTemporaryDirectory();
+    final stamp = DateTime.now().toUtc().toIso8601String().substring(0, 10);
+    final path = '${dir.path}/savings_analytics_$stamp.xlsx';
+    final archive = Archive();
+    void add(String name, String content) {
+      final bytes = List<int>.from(content.codeUnits);
+      archive.addFile(ArchiveFile(name, bytes.length, bytes));
+    }
+    add('[Content_Types].xml', _contentTypes);
+    add('_rels/.rels', _rootRels);
+    add('xl/workbook.xml', _workbook);
+    add('xl/_rels/workbook.xml.rels', _workbookRels);
+    add('xl/worksheets/sheet1.xml', _goalsSheet(goals));
+    add('xl/worksheets/sheet2.xml', _txSheet(transactions));
+    final zip = ZipEncoder().encode(archive);
+    await File(path).writeAsBytes(zip!);
+    return path;
+  }
+
+  Future<String> exportCsv({required List<SavingsGoal> goals}) async {
+    final dir = await getTemporaryDirectory();
+    final stamp = DateTime.now().toUtc().toIso8601String().substring(0, 10);
+    final path = '${dir.path}/savings_goals_$stamp.csv';
+    final sb = StringBuffer();
+    sb.writeln('РќР°Р·РІР°РЅРёРµ,Р¦РµР»РµРІР°СЏ,РќР°РєРѕРїР»РµРЅРѕ,РџСЂРѕС†РµРЅС‚,Р”РµРґР»Р°Р№РЅ,РЎС‚Р°С‚СѓСЃ');
+    for (final g in goals) {
+      sb.writeln([
+        '"${g.name.replaceAll('"', '""')}"',
+        g.targetAmount,
+        g.currentAmount,
+        g.progressPercent,
+        g.deadline?.toIso8601String() ?? '',
+        g.status,
+      ].join(','));
+    }
+    // UTF-8 СЃ BOM РґР»СЏ РєРѕСЂСЂРµРєС‚РЅРѕРіРѕ РѕС‚РєСЂС‹С‚РёСЏ РІ Excel
+    await File(path).writeAsBytes([0xEF, 0xBB, 0xBF] + sb.toString().codeUnits);
+    return path;
+  }
+
+  Future<String> exportPng() async {
+    final ctx = chartRepaintBoundaryKey.currentContext;
+    if (ctx == null) throw StateError('Chart not rendered');
+    final boundary = ctx.findRenderObject()! as RenderRepaintBoundary;
+    final image = await boundary.toImage(pixelRatio: 3.0);
+    final bytes = await image.toByteData();
+    if (bytes == null) throw StateError('PNG encode failed');
+    final dir = await getTemporaryDirectory();
+    final stamp = DateTime.now().toUtc().toIso8601String().substring(0, 10);
+    final path = '${dir.path}/savings_chart_$stamp.png';
+    await File(path).writeAsBytes(bytes.buffer.asUint8List());
+    return path;
+  }
+
+  Future<void> share(String path) async {
+    await Share.shareXFiles(
+      [XFile(path)],
+      text: 'РњРѕСЏ Р°РЅР°Р»РёС‚РёРєР° РєРѕРїРёР»РѕРє СЃ Budget Assistant рџљЂ',
+    );
+  }
+
+  String _esc(String s) => s
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;');
+
+  String _cell(String v) => '<c t="inlineStr"><is><t>${_esc(v)}</t></is></c>';
+
+  String _goalsSheet(List<SavingsGoal> goals) {
+    final sb = StringBuffer();
+    sb.write('<?xml version="1.0" encoding="UTF-8"?>');
+    sb.write('<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>');
+    sb.write('<row>${_cell('РќР°Р·РІР°РЅРёРµ')}${_cell('Р¦РµР»РµРІР°СЏ')}${_cell('РќР°РєРѕРїР»РµРЅРѕ')}${_cell('%')}${_cell('Р”РµРґР»Р°Р№РЅ')}${_cell('РЎС‚Р°С‚СѓСЃ')}</row>');
+    for (final g in goals) {
+      sb.write('<row>'
+          '${_cell(g.name)}'
+          '${_cell(g.targetAmount.toString())}'
+          '${_cell(g.currentAmount.toString())}'
+          '${_cell(g.progressPercent.toString())}'
+          '${_cell(g.deadline?.toIso8601String() ?? '')}'
+          '${_cell(g.status)}'
+          '</row>');
+    }
+    sb.write('</sheetData></worksheet>');
+    return sb.toString();
+  }
+
+  String _txSheet(List<Transaction> tx) {
+    final sb = StringBuffer();
+    sb.write('<?xml version="1.0" encoding="UTF-8"?>');
+    sb.write('<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>');
+    sb.write('<row>${_cell('Р”Р°С‚Р°')}${_cell('РЎСѓРјРјР°')}${_cell('РР·СЉСЏС‚РёРµ')}</row>');
+    for (final t in tx) {
+      sb.write('<row>'
+          '${_cell(t.date.toIso8601String())}'
+          '${_cell(t.amount.toString())}'
+          '${_cell(t.isWithdrawal ? 'РґР°' : 'РЅРµС‚')}'
+          '</row>');
+    }
+    sb.write('</sheetData></worksheet>');
+    return sb.toString();
+  }
+
+  static const _contentTypes = '<?xml version="1.0" encoding="UTF-8"?>'
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+      '<Default Extension="xml" ContentType="application/xml"/>'
+      '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+      '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+      '<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+      '</Types>';
+
+  static const _rootRels = '<?xml version="1.0" encoding="UTF-8"?>'
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+      '</Relationships>';
+
+  static const _workbook = '<?xml version="1.0" encoding="UTF-8"?>'
+      '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+      '<sheets><sheet name="Р¦РµР»Рё" sheetId="1" r:id="rId1"/><sheet name="РџРѕРїРѕР»РЅРµРЅРёСЏ" sheetId="2" r:id="rId2"/></sheets>'
+      '</workbook>';
+
+  static const _workbookRels = '<?xml version="1.0" encoding="UTF-8"?>'
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+      '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>'
+      '</Relationships>';
+}
+
+===== FILE: lib\features\savings_goals\presentation\providers\savings_analytics_providers.dart =====
+import 'package:flutter/widgets.dart' show GlobalKey;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/features/accounts/domain/entities/account.dart';
+import 'package:budget_assistant/features/accounts/presentation/providers/account_providers.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
+import 'package:budget_assistant/features/transactions/presentation/providers/create_transaction_providers.dart';
+import '../../domain/entities/savings_goal.dart';
+import '../../domain/usecases/build_accumulation_chart_usecase.dart';
+import '../../domain/usecases/calculate_savings_analytics_usecase.dart';
+import '../../domain/usecases/export_savings_analytics_usecase.dart';
+import 'savings_goals_providers.dart';
+import 'savings_goals_screen_providers.dart';
+
+final Logger _logger = Logger();
+
+enum AnalyticsPeriod { month, quarter, year, allTime }
+
+class AnalyticsPeriodNotifier extends Notifier<AnalyticsPeriod> {
+  @override
+  AnalyticsPeriod build() => AnalyticsPeriod.year;
+  void set(AnalyticsPeriod period) => state = period;
+}
+
+final analyticsPeriodProvider =
+    NotifierProvider<AnalyticsPeriodNotifier, AnalyticsPeriod>(
+  AnalyticsPeriodNotifier.new,
+);
+
+class AnalyticsPeriodRange {
+  const AnalyticsPeriodRange({
+    required this.start,
+    required this.end,
+    required this.prevStart,
+    required this.prevEnd,
+  });
+  final DateTime start;
+  final DateTime end;
+  final DateTime prevStart;
+  final DateTime prevEnd;
+  int get totalDays => end.difference(start).inDays + 1;
+}
+
+final analyticsPeriodRangeProvider = Provider<AnalyticsPeriodRange>((ref) {
+  final period = ref.watch(analyticsPeriodProvider);
+  final now = DateTime.now();
+  final DateTime start;
+  switch (period) {
+    case AnalyticsPeriod.month:
+      start = DateTime(now.year, now.month, 1);
+    case AnalyticsPeriod.quarter:
+      start = DateTime(now.year, ((now.month - 1) ~/ 3) * 3 + 1, 1);
+    case AnalyticsPeriod.year:
+      start = DateTime(now.year, 1, 1);
+    case AnalyticsPeriod.allTime:
+      start = DateTime(2000, 1, 1);
+  }
+  final DateTime prevStart;
+  final DateTime prevEnd;
+  if (period == AnalyticsPeriod.allTime) {
+    prevStart = start;
+    prevEnd = start.subtract(const Duration(days: 1));
+  } else {
+    final days = now.difference(start).inDays + 1;
+    prevEnd = start.subtract(const Duration(days: 1));
+    prevStart = prevEnd.subtract(Duration(days: days - 1));
+  }
+  return AnalyticsPeriodRange(
+    start: start,
+    end: now,
+    prevStart: prevStart,
+    prevEnd: prevEnd,
+  );
+});
+
+final analyticsAllGoalsProvider = FutureProvider<List<SavingsGoal>>((ref) async {
+  final active = await ref.watch(allActiveSavingsGoalsProvider.future);
+  final archived = await ref.watch(allArchivedSavingsGoalsProvider.future);
+  return [...active, ...archived];
+});
+
+final analyticsAccountsProvider = FutureProvider<List<Account>>((ref) async {
+  final userId = ref.watch(currentUserIdProvider);
+  return ref.watch(accountsListProvider(userId).future);
+});
+
+final analyticsSavingsTxnsProvider =
+    FutureProvider<List<Transaction>>((ref) async {
+  final goals = await ref.watch(analyticsAllGoalsProvider.future);
+  final repository = ref.watch(transactionsRepositoryProvider);
+  final out = <Transaction>[];
+  for (final goal in goals) {
+    out.addAll(await repository.getTransactionsByGoalId(goal.id));
+  }
+  return out;
+});
+
+final savingsAnalyticsSummaryProvider =
+    FutureProvider<AnalyticsSummary>((ref) async {
+  final goals = await ref.watch(analyticsAllGoalsProvider.future);
+  final txns = await ref.watch(analyticsSavingsTxnsProvider.future);
+  final accounts = await ref.watch(analyticsAccountsProvider.future);
+  final baseCurrency = await ref.watch(savingsBaseCurrencyProvider.future);
+  final range = ref.watch(analyticsPeriodRangeProvider);
+  return ref.watch(calculateSavingsAnalyticsUseCaseProvider)(
+    goals: goals,
+    savingsTransactions: txns,
+    accounts: accounts,
+    baseCurrency: baseCurrency,
+    periodStart: range.start,
+    periodEnd: range.end,
+    prevPeriodStart: range.prevStart,
+    prevPeriodEnd: range.prevEnd,
+  );
+});
+
+final accumulationChartProvider =
+    FutureProvider<AccumulationChartData>((ref) async {
+  final goals = await ref.watch(analyticsAllGoalsProvider.future);
+  final txns = await ref.watch(analyticsSavingsTxnsProvider.future);
+  final accounts = await ref.watch(analyticsAccountsProvider.future);
+  final baseCurrency = await ref.watch(savingsBaseCurrencyProvider.future);
+  final range = ref.watch(analyticsPeriodRangeProvider);
+  return ref.watch(buildAccumulationChartUseCaseProvider)(
+    goals: goals,
+    savingsTransactions: txns,
+    accounts: accounts,
+    baseCurrency: baseCurrency,
+    periodStart: range.start,
+    periodEnd: range.end,
+    now: DateTime.now(),
+  );
+});
+
+final chartRepaintBoundaryKeyProvider = Provider<GlobalKey>((ref) => GlobalKey());
+
+final exportSavingsAnalyticsUseCaseProvider = Provider<ExportSavingsAnalyticsUseCase>((ref) {
+  return ExportSavingsAnalyticsUseCase(logger: _logger);
+});
+
+===== FILE: lib\features\savings_goals\presentation\widgets\accumulation_chart.dart =====
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/features/savings_goals/domain/usecases/export_savings_analytics_usecase.dart';
+import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
+import 'package:budget_assistant/core/theme/app_colors.dart';
+import 'package:budget_assistant/core/theme/app_spacing.dart';
+import 'package:budget_assistant/core/widgets/offline_error_card.dart';
+import 'package:budget_assistant/core/widgets/skeleton_shimmer.dart';
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+import '../providers/savings_analytics_providers.dart';
+import '../savings_goals_strings.dart';
+
+/// РљР°СЂС‚РѕС‡РєР° РіСЂР°С„РёРєР° РЅР°РєРѕРїР»РµРЅРёСЏ (РўР— 6.3.18.5): Р»РёРЅРёСЏ В«РќР°РєРѕРїР»РµРЅРѕВ», РїСѓРЅРєС‚РёСЂ
+/// В«Р¦РµР»РµРІР°СЏВ», РїСѓРЅРєС‚РёСЂ В«РџСЂРѕРіРЅРѕР·В». Р’ hidden РіСЂР°С„РёРє СЃРєСЂС‹С‚ С†РµР»РёРєРѕРј.
+class AccumulationChart extends ConsumerWidget {
+  const AccumulationChart({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final chartAsync = ref.watch(accumulationChartProvider);
+    final range = ref.watch(analyticsPeriodRangeProvider);
+    final mode = ref.watch(privacyModeProvider);
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.spacing16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(AppRadius.radiusLg),
+        border: Border.all(color: AppColors.borderDivider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            SavingsGoalsStrings.chartTitle,
+            style: theme.textTheme.titleLarge
+                ?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: AppSpacing.spacing12),
+          chartAsync.when(
+            loading: () => const SkeletonShimmer(height: 220),
+            error: (_, __) => OfflineErrorCard(
+              message: SavingsGoalsStrings.loadingError,
+              retryLabel: SavingsGoalsStrings.retry,
+              onRetry: () => ref.invalidate(accumulationChartProvider),
+            ),
+            data: (data) {
+              if (mode == BalanceVisibilityMode.hidden) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.spacing24),
+                  child: Center(
+                    child: Text(
+                      SavingsGoalsStrings.chartHiddenNote,
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: AppColors.textSecondary),
+                    ),
+                  ),
+                );
+              }
+              if (data.points.isEmpty) {
+                return Column(
+                  children: [
+                    Lottie.asset(
+                      'assets/animations/pause_savings.json',
+                      height: 140,
+                      repeat: false,
+                    ),
+                    const SizedBox(height: AppSpacing.spacing8),
+                    Text(
+                      SavingsGoalsStrings.chartEmptyTitle,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: AppSpacing.spacing4),
+                    Text(
+                      SavingsGoalsStrings.chartEmptySubtitle,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: AppColors.textSecondary),
+                    ),
+                  ],
+                );
+              }
+              return Column(
+                children: [
+                  SizedBox(
+                    height: 220,
+                    child: _ChartPlot(
+                      data: data,
+                      rangeStart: range.start,
+                      totalDays: range.totalDays,
+                      mode: mode,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.spacing8),
+                  Wrap(
+                    spacing: AppSpacing.spacing16,
+                    runSpacing: AppSpacing.spacing4,
+                    children: [
+                      _legend(AppColors.colorIncome,
+                          SavingsGoalsStrings.legendAccumulated),
+                      _legend(AppColors.colorTransfer,
+                          SavingsGoalsStrings.legendTarget),
+                      if (data.forecast.isNotEmpty)
+                        _legend(AppColors.textSecondary,
+                            SavingsGoalsStrings.legendForecast),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _legend(Color color, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(width: 16, height: 2, color: color),
+        const SizedBox(width: AppSpacing.spacing4),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        ),
+      ],
+    );
+  }
+}
+
+class _ChartPlot extends ConsumerWidget {
+  const _ChartPlot({
+    required this.data,
+    required this.rangeStart,
+    required this.totalDays,
+    required this.mode,
+  });
+
+  final dynamic data;
+  final DateTime rangeStart;
+  final int totalDays;
+  final BalanceVisibilityMode mode;
+
+  double _x(DateTime date) =>
+      date.difference(rangeStart).inDays.toDouble();
+
+  String _xLabel(int dayIndex) {
+    final date = rangeStart.add(Duration(days: dayIndex));
+    if (totalDays > 350) return DateFormat.y('ru').format(date);
+    if (totalDays > 100) return DateFormat.MMM('ru').format(date);
+    return DateFormat('dd.MM').format(date);
+  }
+
+  String _compact(double rubles) {
+    final rounded = rubles.round();
+    if (rounded >= 1000000) return '${(rounded / 1000000).toStringAsFixed(1)}M';
+    if (rounded >= 1000) return '${(rounded / 1000).round()}k';
+    return '$rounded';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final formatter = ref.watch(privacyFormatterProvider);
+    final baseCurrency = data.baseCurrency as String;
+    final points = data.points as List<dynamic>;
+    final forecast = data.forecast as List<dynamic>;
+    final targetKopecks = data.targetLineKopecks as int;
+    final spots = points
+        .map((p) => FlSpot(
+              _x(p.date as DateTime),
+              (p.cumulativeAmountKopecks as int) / 100.0,
+            ))
+        .toList();
+    final forecastSpots = forecast
+        .map((p) => FlSpot(
+              _x(p.date as DateTime),
+              (p.forecastedAmountKopecks as int) / 100.0,
+            ))
+        .toList();
+    var maxKopecks = targetKopecks;
+    for (final p in points) {
+      final v = p.cumulativeAmountKopecks as int;
+      if (v > maxKopecks) maxKopecks = v;
+    }
+    for (final p in forecast) {
+      final v = p.forecastedAmountKopecks as int;
+      if (v > maxKopecks) maxKopecks = v;
+    }
+    final maxY = maxKopecks <= 0 ? 1.0 : (maxKopecks / 100.0) * 1.15;
+    final step = totalDays ~/ 6 <= 0 ? 1 : totalDays ~/ 6;
+    final showYNumbers = mode == BalanceVisibilityMode.visible;
+    return LineChart(
+      LineChartData(
+        minY: 0,
+        maxY: maxY,
+        borderData: FlBorderData(show: false),
+        gridData: const FlGridData(show: true, drawVerticalLine: false),
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipItems: (touched) => touched
+                .map((s) {
+                  if (s.barIndex != 0 || s.spotIndex >= points.length) {
+                    return null;
+                  }
+                  final point = points[s.spotIndex];
+                  final dateText = DateFormat('dd.MM.yyyy')
+                      .format((point.date as DateTime).toLocal());
+                  final amountText = formatter.formatAmount(
+                    (s.y * 100).round(),
+                    baseCurrency,
+                    mode,
+                  );
+                  return LineTooltipItem(
+                    '$dateText\n$amountText',
+                    const TextStyle(color: Colors.white, fontSize: 12),
+                  );
+                })
+                .toList(),
+          ),
+        ),
+        extraLinesData: ExtraLinesData(
+          horizontalLines: [
+            HorizontalLine(
+              y: targetKopecks / 100.0,
+              color: AppColors.colorTransfer,
+              strokeWidth: 1,
+              dashArray: const [6, 4],
+            ),
+          ],
+        ),
+        titlesData: FlTitlesData(
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: showYNumbers,
+              reservedSize: 40,
+              getTitlesWidget: (value, meta) => Text(
+                _compact(value),
+                style: const TextStyle(
+                    fontSize: 10, color: AppColors.textSecondary),
+              ),
+            ),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 22,
+              getTitlesWidget: (value, meta) {
+                final i = value.round();
+                if (i % step != 0) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    _xLabel(i),
+                    style: const TextStyle(
+                        fontSize: 10, color: AppColors.textSecondary),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        lineBarsData: [
+          LineChartBarData(
+            spots: spots.cast<FlSpot>(),
+            isCurved: true,
+            curveSmoothness: 0.2,
+            color: AppColors.colorIncome,
+            barWidth: 2,
+            isStrokeCapRound: true,
+            dotData: const FlDotData(show: false),
+            belowBarData: BarAreaData(
+              show: true,
+              color: AppColors.colorIncome.withValues(alpha: 0.15),
+            ),
+          ),
+          if (forecastSpots.length > 1)
+            LineChartBarData(
+              spots: forecastSpots.cast<FlSpot>(),
+              isCurved: false,
+              color: AppColors.textSecondary,
+              barWidth: 1,
+              dashArray: const [2, 4],
+              dotData: const FlDotData(show: false),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+===== FILE: lib\features\savings_goals\presentation\widgets\export_bottom_sheet.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+import '../../domain/usecases/export_savings_analytics_usecase.dart';
+import '../providers/savings_analytics_providers.dart';
+import '../savings_goals_strings.dart';
+
+/// BottomSheet СЌРєСЃРїРѕСЂС‚Р° Р°РЅР°Р»РёС‚РёРєРё (РўР— 6.3.18.13): XLSX / CSV / PNG.
+/// Р’ hidden-СЂРµР¶РёРјРµ СЌРєСЃРїРѕСЂС‚ РїРѕР»РЅРѕСЃС‚СЊСЋ Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ.
+class ExportBottomSheet extends ConsumerWidget {
+  const ExportBottomSheet({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(privacyModeProvider);
+    if (mode == BalanceVisibilityMode.hidden) {
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            SavingsGoalsStrings.exportBlocked,
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.grid_on),
+            title: const Text('Excel (.xlsx)'),
+            subtitle: const Text('Р¦РµР»Рё + РїРѕРїРѕР»РЅРµРЅРёСЏ (2 Р»РёСЃС‚Р°)'),
+            onTap: () => _run(context, ref, 'xlsx'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.description),
+            title: const Text('CSV (.csv)'),
+            subtitle: const Text('РўР°Р±Р»РёС†Р° С†РµР»РµР№'),
+            onTap: () => _run(context, ref, 'csv'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.image),
+            title: const Text('PNG (РіСЂР°С„РёРє)'),
+            subtitle: const Text('РЎРєСЂРёРЅС€РѕС‚ РіСЂР°С„РёРєР° РЅР°РєРѕРїР»РµРЅРёСЏ'),
+            onTap: () => _run(context, ref, 'png'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.close),
+            title: const Text(SavingsGoalsStrings.cancel),
+            onTap: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _run(BuildContext context, WidgetRef ref, String kind) async {
+    HapticFeedback.lightImpact();
+    Navigator.of(context).pop();
+    final messenger = ScaffoldMessenger.of(context);
+    final usecase = ExportSavingsAnalyticsUseCase();
+    try {
+      String path;
+      if (kind == 'png') {
+        path = await usecase.exportPng();
+      } else {
+        final goals = await ref.read(analyticsAllGoalsProvider.future);
+        if (kind == 'xlsx') {
+          final tx = await ref.read(analyticsSavingsTxnsProvider.future);
+          path = await usecase.exportXlsx(goals: goals, transactions: tx);
+        } else {
+          path = await usecase.exportCsv(goals: goals);
+        }
+      }
+      await usecase.share(path);
+      HapticFeedback.mediumImpact();
+    } catch (e) {
+      HapticFeedback.vibrate();
+      messenger.showSnackBar(SnackBar(content: Text('${SavingsGoalsStrings.operationFailed}: $e')));
+    }
+  }
+}
+
+Future<void> showExportBottomSheet(BuildContext context) {
+  return showModalBottomSheet(
+    context: context,
+    builder: (_) => const ExportBottomSheet(),
+  );
+}
+
