@@ -12,8 +12,9 @@ import 'package:budget_assistant/features/privacy/presentation/providers/privacy
 import '../providers/savings_analytics_providers.dart';
 import '../savings_goals_strings.dart';
 
-/// Карточка графика накопления (ТЗ 6.3.18.5): линия «Накоплено», пунктир
-/// «Целевая», пунктир «Прогноз». В hidden график скрыт целиком.
+/// Карточка графика накопления (ТЗ 6.3.18.5). RepaintBoundary обернут вокруг
+/// ВСЕГО контейнера, чтобы ключ был прикреплён всегда (в т.ч. в empty-состоянии)
+/// и PNG-экспорт работал независимо от наличия точек.
 class AccumulationChart extends ConsumerWidget {
   const AccumulationChart({super.key});
 
@@ -23,96 +24,94 @@ class AccumulationChart extends ConsumerWidget {
     final range = ref.watch(analyticsPeriodRangeProvider);
     final mode = ref.watch(privacyModeProvider);
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.spacing16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceCard,
-        borderRadius: BorderRadius.circular(AppRadius.radiusLg),
-        border: Border.all(color: AppColors.borderDivider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            SavingsGoalsStrings.chartTitle,
-            style: theme.textTheme.titleLarge
-                ?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: AppSpacing.spacing12),
-          chartAsync.when(
-            loading: () => const SkeletonShimmer(height: 220),
-            error: (_, __) => OfflineErrorCard(
-              message: SavingsGoalsStrings.loadingError,
-              retryLabel: SavingsGoalsStrings.retry,
-              onRetry: () => ref.invalidate(accumulationChartProvider),
+    return RepaintBoundary(
+      key: ref.watch(chartRepaintBoundaryKeyProvider),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.spacing16),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceCard,
+          borderRadius: BorderRadius.circular(AppRadius.radiusLg),
+          border: Border.all(color: AppColors.borderDivider),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              SavingsGoalsStrings.chartTitle,
+              style: theme.textTheme.titleLarge
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
-            data: (data) {
-              if (mode == BalanceVisibilityMode.hidden) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.spacing24),
-                  child: Center(
-                    child: Text(
-                      SavingsGoalsStrings.chartHiddenNote,
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(color: AppColors.textSecondary),
+            const SizedBox(height: AppSpacing.spacing12),
+            chartAsync.when(
+              loading: () => const SkeletonShimmer(height: 220),
+              error: (_, __) => OfflineErrorCard(
+                message: SavingsGoalsStrings.loadingError,
+                retryLabel: SavingsGoalsStrings.retry,
+                onRetry: () => ref.invalidate(accumulationChartProvider),
+              ),
+              data: (data) {
+                if (mode == BalanceVisibilityMode.hidden) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.spacing24),
+                    child: Center(
+                      child: Text(
+                        SavingsGoalsStrings.chartHiddenNote,
+                        style: theme.textTheme.bodyMedium
+                            ?.copyWith(color: AppColors.textSecondary),
+                      ),
                     ),
-                  ),
-                );
-              }
-              if (data.points.isEmpty) {
+                  );
+                }
+                if (data.points.isEmpty) {
+                  return Column(
+                    children: [
+                      Lottie.asset('assets/animations/pause_savings.json',
+                          height: 140, repeat: false),
+                      const SizedBox(height: AppSpacing.spacing8),
+                      Text(SavingsGoalsStrings.chartEmptyTitle,
+                          style: theme.textTheme.titleMedium),
+                      const SizedBox(height: AppSpacing.spacing4),
+                      Text(
+                        SavingsGoalsStrings.chartEmptySubtitle,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium
+                            ?.copyWith(color: AppColors.textSecondary),
+                      ),
+                    ],
+                  );
+                }
                 return Column(
                   children: [
-                    Lottie.asset(
-                      'assets/animations/pause_savings.json',
-                      height: 140,
-                      repeat: false,
+                    SizedBox(
+                      height: 220,
+                      child: _ChartPlot(
+                        data: data,
+                        rangeStart: range.start,
+                        totalDays: range.totalDays,
+                        mode: mode,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.spacing8),
-                    Text(
-                      SavingsGoalsStrings.chartEmptyTitle,
-                      style: theme.textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: AppSpacing.spacing4),
-                    Text(
-                      SavingsGoalsStrings.chartEmptySubtitle,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium
-                          ?.copyWith(color: AppColors.textSecondary),
+                    Wrap(
+                      spacing: AppSpacing.spacing16,
+                      runSpacing: AppSpacing.spacing4,
+                      children: [
+                        _legend(AppColors.colorIncome,
+                            SavingsGoalsStrings.legendAccumulated),
+                        _legend(AppColors.colorTransfer,
+                            SavingsGoalsStrings.legendTarget),
+                        if (data.forecast.isNotEmpty)
+                          _legend(AppColors.textSecondary,
+                              SavingsGoalsStrings.legendForecast),
+                      ],
                     ),
                   ],
                 );
-              }
-              return Column(
-                children: [
-                  SizedBox(
-                    height: 220,
-                    child: _ChartPlot(
-                      data: data,
-                      rangeStart: range.start,
-                      totalDays: range.totalDays,
-                      mode: mode,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.spacing8),
-                  Wrap(
-                    spacing: AppSpacing.spacing16,
-                    runSpacing: AppSpacing.spacing4,
-                    children: [
-                      _legend(AppColors.colorIncome,
-                          SavingsGoalsStrings.legendAccumulated),
-                      _legend(AppColors.colorTransfer,
-                          SavingsGoalsStrings.legendTarget),
-                      if (data.forecast.isNotEmpty)
-                        _legend(AppColors.textSecondary,
-                            SavingsGoalsStrings.legendForecast),
-                    ],
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -123,10 +122,8 @@ class AccumulationChart extends ConsumerWidget {
       children: [
         Container(width: 16, height: 2, color: color),
         const SizedBox(width: AppSpacing.spacing4),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-        ),
+        Text(label,
+            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
       ],
     );
   }
@@ -145,10 +142,9 @@ class _ChartPlot extends ConsumerWidget {
   final int totalDays;
   final BalanceVisibilityMode mode;
 
-  double _x(DateTime date) =>
-      date.difference(rangeStart).inDays.toDouble();
+  double _x(DateTime date) => date.difference(rangeStart).inDays.toDouble();
 
-  String _xLabel(int dayIndex) {
+  String _label(int dayIndex) {
     final date = rangeStart.add(Duration(days: dayIndex));
     if (totalDays > 350) return DateFormat.y('ru').format(date);
     if (totalDays > 100) return DateFormat.MMM('ru').format(date);
@@ -156,30 +152,24 @@ class _ChartPlot extends ConsumerWidget {
   }
 
   String _compact(double rubles) {
-    final rounded = rubles.round();
-    if (rounded >= 1000000) return '${(rounded / 1000000).toStringAsFixed(1)}M';
-    if (rounded >= 1000) return '${(rounded / 1000).round()}k';
-    return '$rounded';
+    final r = rubles.round();
+    if (r >= 1000000) return '${(r / 1000000).toStringAsFixed(1)}M';
+    if (r >= 1000) return '${(r / 1000).round()}k';
+    return '$r';
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final formatter = ref.watch(privacyFormatterProvider);
-    final baseCurrency = data.baseCurrency as String;
     final points = data.points as List<dynamic>;
     final forecast = data.forecast as List<dynamic>;
     final targetKopecks = data.targetLineKopecks as int;
     final spots = points
-        .map((p) => FlSpot(
-              _x(p.date as DateTime),
-              (p.cumulativeAmountKopecks as int) / 100.0,
-            ))
+        .map((p) =>
+            FlSpot(_x(p.date as DateTime), (p.cumulativeAmountKopecks as int) / 100.0))
         .toList();
     final forecastSpots = forecast
-        .map((p) => FlSpot(
-              _x(p.date as DateTime),
-              (p.forecastedAmountKopecks as int) / 100.0,
-            ))
+        .map((p) =>
+            FlSpot(_x(p.date as DateTime), (p.forecastedAmountKopecks as int) / 100.0))
         .toList();
     var maxKopecks = targetKopecks;
     for (final p in points) {
@@ -192,36 +182,14 @@ class _ChartPlot extends ConsumerWidget {
     }
     final maxY = maxKopecks <= 0 ? 1.0 : (maxKopecks / 100.0) * 1.15;
     final step = totalDays ~/ 6 <= 0 ? 1 : totalDays ~/ 6;
-    final showYNumbers = mode == BalanceVisibilityMode.visible;
+    final showY = mode == BalanceVisibilityMode.visible;
     return LineChart(
       LineChartData(
         minY: 0,
         maxY: maxY,
         borderData: FlBorderData(show: false),
         gridData: const FlGridData(show: true, drawVerticalLine: false),
-        lineTouchData: LineTouchData(
-          touchTooltipData: LineTouchTooltipData(
-            getTooltipItems: (touched) => touched
-                .map((s) {
-                  if (s.barIndex != 0 || s.spotIndex >= points.length) {
-                    return null;
-                  }
-                  final point = points[s.spotIndex];
-                  final dateText = DateFormat('dd.MM.yyyy')
-                      .format((point.date as DateTime).toLocal());
-                  final amountText = formatter.formatAmount(
-                    (s.y * 100).round(),
-                    baseCurrency,
-                    mode,
-                  );
-                  return LineTooltipItem(
-                    '$dateText\n$amountText',
-                    const TextStyle(color: Colors.white, fontSize: 12),
-                  );
-                })
-                .toList(),
-          ),
-        ),
+        lineTouchData: const LineTouchData(enabled: false),
         extraLinesData: ExtraLinesData(
           horizontalLines: [
             HorizontalLine(
@@ -234,16 +202,14 @@ class _ChartPlot extends ConsumerWidget {
         ),
         titlesData: FlTitlesData(
           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
-              showTitles: showYNumbers,
+              showTitles: showY,
               reservedSize: 40,
               getTitlesWidget: (value, meta) => Text(
                 _compact(value),
-                style: const TextStyle(
-                    fontSize: 10, color: AppColors.textSecondary),
+                style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
               ),
             ),
           ),
@@ -257,9 +223,8 @@ class _ChartPlot extends ConsumerWidget {
                 return Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    _xLabel(i),
-                    style: const TextStyle(
-                        fontSize: 10, color: AppColors.textSecondary),
+                    _label(i),
+                    style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
                   ),
                 );
               },
@@ -285,7 +250,7 @@ class _ChartPlot extends ConsumerWidget {
               spots: forecastSpots.cast<FlSpot>(),
               isCurved: false,
               color: AppColors.textSecondary,
-              barWidth: 1,
+              barWidth: 1.5,
               dashArray: const [2, 4],
               dotData: const FlDotData(show: false),
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/core/providers/transactions_trigger_provider.dart';
 import 'package:budget_assistant/core/errors/result.dart';
 import 'package:budget_assistant/core/formatting/money_input_parser.dart';
 import 'package:budget_assistant/core/formatting/money_text_input_formatter.dart';
@@ -172,8 +173,10 @@ class _WithdrawFromGoalSheetState extends ConsumerState<WithdrawFromGoalSheet> {
       if (!mounted) return;
       switch (result) {
         case Success<Transaction>():
-          HapticFeedback.mediumImpact();
+          ref.read(transactionsTriggerProvider.notifier).bump();
+      HapticFeedback.mediumImpact();
           messenger.showSnackBar(const SnackBar(content: Text(SavingsGoalsStrings.withdrawSuccess)));
+      ref.read(transactionsTriggerProvider.notifier).bump();
           Navigator.of(context).pop();
         case Error<Transaction>(:final failure):
           setState(() => _saving = false);

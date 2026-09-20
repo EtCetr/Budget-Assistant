@@ -4,6 +4,7 @@ import 'package:budget_assistant/core/database/database_provider.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/core/providers/security_providers.dart';
 import 'package:budget_assistant/features/cashback/presentation/providers/cashback_providers.dart';
+import 'package:budget_assistant/core/providers/transactions_trigger_provider.dart';
 import '../../data/repositories/dashboard_data_repository_impl.dart';
 import '../../data/repositories/dashboard_layout_repository_impl.dart';
 import '../../domain/entities/dashboard_widget_item.dart';
@@ -44,6 +45,8 @@ final updateDashboardLayoutUseCaseProvider =
 
 final dashboardExpenseFlowProvider =
     FutureProvider.autoDispose<List<ExpenseFlowPoint>>((ref) async {
+  ref.watch(transactionsTriggerProvider);
+  ref.watch(transactionsTriggerProvider);
   final userId = ref.watch(currentUserIdProvider);
   final spaceId = ref.watch(currentSpaceIdProvider);
   final repository = ref.watch(dashboardDataRepositoryProvider);

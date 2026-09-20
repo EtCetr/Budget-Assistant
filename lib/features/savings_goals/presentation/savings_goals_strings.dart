@@ -227,7 +227,8 @@ abstract final class SavingsGoalsStrings {
   static const exportShareText = 'Моя аналитика копилок с Budget Assistant 🚀';
   static const exportSuccess = 'Экспорт завершён';
   static const exportFailed = 'Не удалось экспортировать';
-  /// Склонение слова «день».
+  static const exportShareAction = 'Поделиться';
+  static const exportSavedPrefix = 'Файл сохранён:';  /// Склонение слова «день».
   static String daysLabel(int n) {
     final abs = n.abs();
     final mod10 = abs % 10;
@@ -243,4 +244,10 @@ abstract final class SavingsGoalsStrings {
   static const exportPng = 'PNG (график)';
   static const exportPngSub = 'Скриншот для соцсетей';
   static const exportCancel = 'Отмена';
-}
+  static const exportTooltip = 'Экспорт аналитики';
+  static const exportSaved = 'Файл сохранён';
+  static const exportShare = 'Поделиться';
+
+  static const exportChooseDestination = 'Файл готов. Куда его положить?';
+  static const exportSaveToDevice = 'Сохранить в память';
+  static const exportSavedTo = 'Сохранено:';}

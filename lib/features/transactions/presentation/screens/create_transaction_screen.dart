@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:budget_assistant/core/providers/transactions_trigger_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:budget_assistant/core/constants/currency_codes.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
@@ -479,8 +480,10 @@ class _CreateTransactionScreenState
       if (!mounted) return;
       switch (result) {
         case Success(:final value):
-          HapticFeedback.mediumImpact();
+      HapticFeedback.mediumImpact();
+      ref.read(transactionsTriggerProvider.notifier).bump();
           ref.invalidate(transactionsLogProvider);
+      ref.read(transactionsTriggerProvider.notifier).bump();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(

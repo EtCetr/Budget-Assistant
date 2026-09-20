@@ -44,7 +44,7 @@ class DashboardDataRepositoryImpl {
           DateTime(now.year, now.month, now.day, 23, 59, 59, 999).toUtc();
       final variables = <Variable>[Variable.withString(userId)];
       final spaceClause = spaceId == null
-          ? 'AND space_id IS NULL'
+          ? ''
           : 'AND (space_id = ? OR space_id IS NULL)';
       if (spaceId != null) {
         variables.add(Variable.withString(spaceId));
