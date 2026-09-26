@@ -667,27 +667,31 @@ class AppDatabase extends _$AppDatabase {
       }
       // РРЎРўРћР РР§Р•РЎРљРђРЇ РњРРќРђ РЈР”РђР›Р•РќРђ: РІРµС‚РєР° from < 2 СЃ DROP TABLE
       // Р±РѕР»СЊС€Рµ РЅРµ РЅСѓР¶РЅР°, С‚.Рє. СЃС…РµРјР° СЃС‚Р°Р±РёР»РёР·РёСЂРѕРІР°РЅР° РЅР° v4+
-                                                if (from < 12) {
-                        // Этап 13.3: флаг авто-закрытия долга при связанной транзакции.
-                        await customStatement(
-                        'ALTER TABLE debts ADD COLUMN auto_resolve INTEGER NOT NULL DEFAULT 1',
-                        );
-                        }
-                        if (from < 11) {
-            // Этап 13, D13-2: creditor_id стал nullable (внешний контрагент с обеих
-            // сторон). Таблица debts новая и пустая (dev) — пересоздаём без переноса.
-            await customStatement('DROP TABLE IF EXISTS debts');
-            await m.createTable(debts);
-            await _createDebtsIndexes();
-            }
-            if (from < 10) {
-      // Этап 13: взаимные долги + локальные черновики форм долга/сплита.
-      await m.createTable(debts);
-      await m.createTable(debtDrafts);
-      await m.createTable(splitDrafts);
-      await _createDebtsIndexes();
-      }
-      if (from < 3) {
+                                                                                                if (from < 12) {
+                                                // Этап 13: консолидированная миграция v10–v12 (порядок не важен, идемпотентна).
+                                                // debts + локальные черновики; debts пересоздаётся с нуля (таблица новая,
+                                                // данные dev); auto_resolve приходит из определения таблицы — ALTER не нужен.
+                                                final debtsExists = await customSelect(
+                                                "SELECT COUNT(*) AS c FROM sqlite_master WHERE type='table' AND name='debts'",
+                                                ).getSingle();
+                                                if (debtsExists.read<int>('c') != 0) {
+                                                await customStatement('DROP TABLE debts');
+                                                }
+                                                await m.createTable(debts);
+                                                final debtDraftsExists = await customSelect(
+                                                "SELECT COUNT(*) AS c FROM sqlite_master WHERE type='table' AND name='debt_drafts'",
+                                                ).getSingle();
+                                                if (debtDraftsExists.read<int>('c') == 0) {
+                                                await m.createTable(debtDrafts);
+                                                }
+                                                final splitDraftsExists = await customSelect(
+                                                "SELECT COUNT(*) AS c FROM sqlite_master WHERE type='table' AND name='split_drafts'",
+                                                ).getSingle();
+                                                if (splitDraftsExists.read<int>('c') == 0) {
+                                                await m.createTable(splitDrafts);
+                                                }
+                                                await _createDebtsIndexes();
+                                                }if (from < 3) {
         await m.createTable(transactions);
         await m.createTable(transactionSplits);
         await _createAllIndexes();

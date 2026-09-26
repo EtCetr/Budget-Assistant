@@ -21,6 +21,7 @@ import '../widgets/dashboard_empty_state.dart';
 import '../widgets/dashboard_settings_sheet.dart';
 import '../widgets/expense_flow_chart_widget.dart';
 import '../widgets/limit_cards_widget.dart';
+import 'package:budget_assistant/features/debts/presentation/debts_strings.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -219,6 +220,14 @@ class DashboardScreen extends ConsumerWidget {
                 onTap: () {
                   Navigator.of(context).pop();
                   context.push('/savings-goals');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.handshake_outlined),
+                title: const Text(DebtsStrings.screenTitle),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  context.push('/debts');
                 },
               ),
             ],
