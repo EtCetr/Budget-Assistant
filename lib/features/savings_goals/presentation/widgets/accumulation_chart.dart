@@ -11,11 +11,14 @@ import 'package:budget_assistant/features/privacy/presentation/providers/privacy
 import '../providers/savings_analytics_providers.dart';
 import '../savings_goals_strings.dart';
 
-/// Карточка графика накопления (ТЗ 6.3.18.5). RepaintBoundary обернут вокруг
-/// ВСЕГО контейнера, чтобы ключ был прикреплён всегда (в т.ч. в empty-состоянии)
-/// и PNG-экспорт работал независимо от наличия точек.
+/// Карточка графика накопления (ТЗ 6.3.18.5): линия «Накоплено», пунктир
+/// «Целевая», пунктир «Прогноз». В hidden график скрыт целиком.
+/// RepaintBoundary обёрнут вокруг ВСЕГО контейнера (ключ для PNG-экспорта).
+/// Тап по точке линии «Накоплено» открывает day-details sheet.
 class AccumulationChart extends ConsumerWidget {
-  const AccumulationChart({super.key});
+  const AccumulationChart({super.key, this.onDayTapped});
+
+  final void Function(DateTime day)? onDayTapped;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -88,6 +91,7 @@ class AccumulationChart extends ConsumerWidget {
                         rangeStart: range.start,
                         totalDays: range.totalDays,
                         mode: mode,
+                        onDayTapped: onDayTapped,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.spacing8),
@@ -133,16 +137,18 @@ class _ChartPlot extends ConsumerWidget {
     required this.rangeStart,
     required this.totalDays,
     required this.mode,
+    this.onDayTapped,
   });
 
   final dynamic data;
   final DateTime rangeStart;
   final int totalDays;
   final BalanceVisibilityMode mode;
+  final void Function(DateTime day)? onDayTapped;
 
   double _x(DateTime date) => date.difference(rangeStart).inDays.toDouble();
 
-  String _label(int dayIndex) {
+  String _xLabel(int dayIndex) {
     final date = rangeStart.add(Duration(days: dayIndex));
     if (totalDays > 350) return DateFormat.y('ru').format(date);
     if (totalDays > 100) return DateFormat.MMM('ru').format(date);
@@ -150,24 +156,30 @@ class _ChartPlot extends ConsumerWidget {
   }
 
   String _compact(double rubles) {
-    final r = rubles.round();
-    if (r >= 1000000) return '${(r / 1000000).toStringAsFixed(1)}M';
-    if (r >= 1000) return '${(r / 1000).round()}k';
-    return '$r';
+    final rounded = rubles.round();
+    if (rounded >= 1000000) return '${(rounded / 1000000).toStringAsFixed(1)}M';
+    if (rounded >= 1000) return '${(rounded / 1000).round()}k';
+    return '$rounded';
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final formatter = ref.watch(privacyFormatterProvider);
+    final baseCurrency = data.baseCurrency as String;
     final points = data.points as List<dynamic>;
     final forecast = data.forecast as List<dynamic>;
     final targetKopecks = data.targetLineKopecks as int;
     final spots = points
-        .map((p) =>
-            FlSpot(_x(p.date as DateTime), (p.cumulativeAmountKopecks as int) / 100.0))
+        .map((p) => FlSpot(
+              _x(p.date as DateTime),
+              (p.cumulativeAmountKopecks as int) / 100.0,
+            ))
         .toList();
     final forecastSpots = forecast
-        .map((p) =>
-            FlSpot(_x(p.date as DateTime), (p.forecastedAmountKopecks as int) / 100.0))
+        .map((p) => FlSpot(
+              _x(p.date as DateTime),
+              (p.forecastedAmountKopecks as int) / 100.0,
+            ))
         .toList();
     var maxKopecks = targetKopecks;
     for (final p in points) {
@@ -180,14 +192,47 @@ class _ChartPlot extends ConsumerWidget {
     }
     final maxY = maxKopecks <= 0 ? 1.0 : (maxKopecks / 100.0) * 1.15;
     final step = totalDays ~/ 6 <= 0 ? 1 : totalDays ~/ 6;
-    final showY = mode == BalanceVisibilityMode.visible;
+    final showYNumbers = mode == BalanceVisibilityMode.visible;
     return LineChart(
       LineChartData(
         minY: 0,
         maxY: maxY,
         borderData: FlBorderData(show: false),
         gridData: const FlGridData(show: true, drawVerticalLine: false),
-        lineTouchData: const LineTouchData(enabled: false),
+        lineTouchData: LineTouchData(
+          touchCallback: (event, response) {
+            final cb = onDayTapped;
+            if (cb == null) return;
+            if (event is! FlTapUpEvent) return;
+            final touched = response?.lineBarSpots;
+            if (touched == null || touched.isEmpty) return;
+            final spot = touched.first;
+            if (spot.barIndex != 0) return;
+            if (spot.spotIndex < 0 || spot.spotIndex >= points.length) return;
+            cb(points[spot.spotIndex].date as DateTime);
+          },
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipItems: (touched) => touched
+                .map((s) {
+                  if (s.barIndex != 0 || s.spotIndex >= points.length) {
+                    return null;
+                  }
+                  final point = points[s.spotIndex];
+                  final dateText = DateFormat('dd.MM.yyyy')
+                      .format((point.date as DateTime).toLocal());
+                  final amountText = formatter.formatAmount(
+                    (s.y * 100).round(),
+                    baseCurrency,
+                    mode,
+                  );
+                  return LineTooltipItem(
+                    '$dateText\n$amountText',
+                    const TextStyle(color: Colors.white, fontSize: 12),
+                  );
+                })
+                .toList(),
+          ),
+        ),
         extraLinesData: ExtraLinesData(
           horizontalLines: [
             HorizontalLine(
@@ -200,14 +245,16 @@ class _ChartPlot extends ConsumerWidget {
         ),
         titlesData: FlTitlesData(
           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
-              showTitles: showY,
+              showTitles: showYNumbers,
               reservedSize: 40,
               getTitlesWidget: (value, meta) => Text(
                 _compact(value),
-                style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                style: const TextStyle(
+                    fontSize: 10, color: AppColors.textSecondary),
               ),
             ),
           ),
@@ -221,8 +268,9 @@ class _ChartPlot extends ConsumerWidget {
                 return Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    _label(i),
-                    style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                    _xLabel(i),
+                    style: const TextStyle(
+                        fontSize: 10, color: AppColors.textSecondary),
                   ),
                 );
               },
@@ -237,7 +285,16 @@ class _ChartPlot extends ConsumerWidget {
             color: AppColors.colorIncome,
             barWidth: 2,
             isStrokeCapRound: true,
-            dotData: const FlDotData(show: false),
+            dotData: FlDotData(
+              show: true,
+              getDotPainter: (spot, percent, barData, index) =>
+                  FlDotCirclePainter(
+                    radius: 3,
+                    color: AppColors.colorIncome,
+                    strokeWidth: 1,
+                    strokeColor: AppColors.surfaceCard,
+                  ),
+            ),
             belowBarData: BarAreaData(
               show: true,
               color: AppColors.colorIncome.withValues(alpha: 0.15),
@@ -248,7 +305,7 @@ class _ChartPlot extends ConsumerWidget {
               spots: forecastSpots.cast<FlSpot>(),
               isCurved: false,
               color: AppColors.textSecondary,
-              barWidth: 1.5,
+              barWidth: 1,
               dashArray: const [2, 4],
               dotData: const FlDotData(show: false),
             ),

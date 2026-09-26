@@ -250,4 +250,14 @@ abstract final class SavingsGoalsStrings {
 
   static const exportChooseDestination = 'Файл готов. Куда его положить?';
   static const exportSaveToDevice = 'Сохранить в память';
-  static const exportSavedTo = 'Сохранено:';}
+  static const exportSavedTo = 'Сохранено:';
+  // Таблица целей и баннер валют (12.7.2, ТЗ 6.3.18.6)
+  static const tableTitle = 'Цели';
+  static const tableGoal = 'Цель';
+  static const tableTarget = 'Целевая';
+  static const tableSaved = 'Накоплено';
+  static const tableProgress = '%';
+  static const tableDeadline = 'Дедлайн';
+  static const bannerStaleRate = '⚠️ Часть курсов устарела — суммы могут быть неточными';
+  static String bannerConverted(String cur) => 'Суммы конвертированы в  по курсу на дату операции';
+  static const daySheetEmpty = 'В этот день пополнений не было';}

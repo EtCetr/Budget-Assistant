@@ -9,12 +9,16 @@ import 'package:budget_assistant/features/privacy/presentation/providers/privacy
 import '../providers/savings_analytics_providers.dart';
 import '../savings_goals_strings.dart';
 import '../widgets/accumulation_chart.dart';
+import '../widgets/analytics_currency_banner.dart';
+import '../widgets/analytics_day_sheet.dart';
 import '../widgets/export_bottom_sheet.dart';
 import '../widgets/savings_analytics_period_selector.dart';
 import '../widgets/savings_analytics_summary_grid.dart';
+import '../widgets/savings_goals_table.dart';
 
 /// Экран аналитики копилок (ТЗ 6.3.18).
 /// AppBar: [←] [📥 Экспорт] [👁 Privacy]. Экспорт disabled в hidden.
+/// 12.7.2: валютный баннер, сортируемая таблица целей, day-details по тапу.
 class SavingsAnalyticsScreen extends ConsumerStatefulWidget {
   const SavingsAnalyticsScreen({super.key});
 
@@ -78,13 +82,18 @@ class _SavingsAnalyticsScreenState extends ConsumerState<SavingsAnalyticsScreen>
           }
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.spacing16),
-            children: const [
-              SavingsAnalyticsPeriodSelector(),
-              SizedBox(height: AppSpacing.spacing12),
-              SavingsAnalyticsSummaryGrid(),
-              SizedBox(height: AppSpacing.spacing12),
-              AccumulationChart(),
-              SizedBox(height: AppSpacing.spacing24),
+            children: [
+              const SavingsAnalyticsPeriodSelector(),
+              const SizedBox(height: AppSpacing.spacing12),
+              const SavingsAnalyticsSummaryGrid(),
+              const SizedBox(height: AppSpacing.spacing12),
+              const AnalyticsCurrencyBanner(),
+              AccumulationChart(
+                onDayTapped: (day) => showAnalyticsDaySheet(context, day),
+              ),
+              const SizedBox(height: AppSpacing.spacing12),
+              const SavingsGoalsTable(),
+              const SizedBox(height: AppSpacing.spacing24),
             ],
           );
         },

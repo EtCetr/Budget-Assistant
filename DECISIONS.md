@@ -64,3 +64,10 @@
 | Экспорт аналитики: XLSX + CSV + PNG + **PDF** | Требование владельца (формат банковских сводок). В режиме hidden экспорт полностью заблокирован. |
 | Эмодзи цели хранится внутри `name` | Отдельной колонки в ТОМ 2 нет; форма склеивает эмодзи и название при сохранении. |
 | `savings_goals` не в SyncTableSpec до Этапа 25 | Прецедент cashback_matrix/dashboard_widgets: локальные данные с `sync_status='pending'`, облачная синхронизация после создания таблиц в Supabase. |
+
+Обновления решений (2026-09-21, Этап 12 финал)
+- Lottie-анимации ПОЛНОСТЬЮ удалены из проекта решением владельца (12.9 отменён): пакет lottie снят с зависимостей, папка assets/animations удалена, EmptyStateWidget принимает IconData, конфетти достижения цели заменено статичной иконкой Icons.emoji_events_outlined + HapticFeedback.
+- Экспорт аналитики (12.8): XLSX — ручной OOXML-zip через package:archive (листы «Цели»/«Пополнения»); CSV — UTF-8 с BOM; PNG — снимок RepaintBoundary (pixelRatio 3). PDF исключён: package:pdf конфликтует по archive, кириллице нужен TTF-ассет.
+- Флоу экспорта: формат → файл во временной папке → диалог «Сохранить в память / Поделиться». Сохранение — нативно в Downloads/BudgetAssistant через MediaStore (MethodChannel budget_assistant/clock, без runtime-разрешений на Android 10+); шеринг — системный Share Sheet (share_plus). В privacy-режиме hidden экспорт заблокирован на уровне UI.
+- Реактивность дашборда: transactionsTriggerProvider (Notifier<int>) — bump() после любого CRUD транзакций и пополнений/изъятий целей; dashboardExpenseFlowProvider подписан на триггер. getExpenseFlow при spaceId == null не фильтрует по space (фикс пустого виджета на холодном старте).
+- Мультивалютность аналитики и экспорта: конвертация в Dart через ConvertCurrencyUseCase (курс на дату транзакции); флаг hasStaleRates выводит предупреждение в сводке.

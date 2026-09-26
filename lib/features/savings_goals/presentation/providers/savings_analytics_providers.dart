@@ -10,9 +10,9 @@ import '../../domain/entities/savings_goal.dart';
 import '../../domain/usecases/build_accumulation_chart_usecase.dart';
 import '../../domain/usecases/calculate_savings_analytics_usecase.dart';
 import '../../domain/usecases/export_savings_analytics_usecase.dart';
+import '../../domain/usecases/sort_goals_table_usecase.dart';
 import 'savings_goals_providers.dart';
 import 'savings_goals_screen_providers.dart';
-
 
 final Logger _logger = Logger();
 
@@ -136,6 +136,46 @@ final accumulationChartProvider =
 
 final chartRepaintBoundaryKeyProvider = Provider<GlobalKey>((ref) => GlobalKey());
 
-final exportSavingsAnalyticsUseCaseProvider = Provider<ExportSavingsAnalyticsUseCase>((ref) {
+final exportSavingsAnalyticsUseCaseProvider =
+    Provider<ExportSavingsAnalyticsUseCase>((ref) {
   return ExportSavingsAnalyticsUseCase(logger: _logger);
+});
+
+// ─── 12.7.2: сортировка таблицы целей ───
+final sortGoalsTableUseCaseProvider = Provider<SortGoalsTableUseCase>((ref) {
+  return SortGoalsTableUseCase(logger: _logger);
+});
+
+class GoalsSortFieldNotifier extends Notifier<GoalSortField> {
+  @override
+  GoalSortField build() => GoalSortField.progress;
+  void set(GoalSortField field) => state = field;
+}
+
+final goalsSortFieldProvider =
+    NotifierProvider<GoalsSortFieldNotifier, GoalSortField>(
+  GoalsSortFieldNotifier.new,
+);
+
+class GoalsSortAscendingNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+  void set(bool value) => state = value;
+  void toggle() => state = !state;
+}
+
+final goalsSortAscendingProvider =
+    NotifierProvider<GoalsSortAscendingNotifier, bool>(
+  GoalsSortAscendingNotifier.new,
+);
+
+final sortedAnalyticsGoalsProvider = FutureProvider<List<SavingsGoal>>((ref) async {
+  final goals = await ref.watch(analyticsAllGoalsProvider.future);
+  final field = ref.watch(goalsSortFieldProvider);
+  final ascending = ref.watch(goalsSortAscendingProvider);
+  return ref.watch(sortGoalsTableUseCaseProvider)(
+    goals: goals,
+    field: field,
+    ascending: ascending,
+  );
 });

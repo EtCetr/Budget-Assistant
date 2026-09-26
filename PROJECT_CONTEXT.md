@@ -60,6 +60,11 @@ UI/UX
   [x] 12.3 Интеграция: CreateTransactionUseCase двигает прогресс через порт; getTransactionsByGoalId; фикс smoke-теста.
   [x] 12.4 Экран целей: вкладки Активные/Архив, мультивалютная сводка, фильтры (тип + тумблер дедлайна), карточки, листы пополнения/изъятия, long-press меню, конфетти (кроме hidden), empty states, privacy.
   [x] 12.5 Форма создания/редактирования: секции, эмодзи, пикер счёта (BottomSheet с балансами), автосейв черновика (5 сек) + восстановление, live-предпросмотр плана, privacy.
+[x] 12.6 Архив: BottomSheet «История цели» (fl_chart график + список транзакций) + кнопка «📜 История» на карточке архива.
+[x] 12.7 SavingsAnalyticsScreen (/savings-analytics): период-селектор, Summary Grid 2×2, график накопления + прогноз, иконка 📊 в AppBar целей. ТАБЛИЦА ЦЕЛЕЙ И ВАЛЮТНЫЙ БАННЕР — не реализованы, см. «Открыто».
+[x] 12.8 Экспорт аналитики: XLSX (OOXML через archive, 2 листа) + CSV (UTF-8 BOM) + PNG (RepaintBoundary); диалог «Сохранить в память» (MediaStore Downloads) / «Поделиться» (Share Sheet); блок в hidden.
+[x] 12.9 — ОТМЕНЁН решением владельца: Lottie-анимации и assets/animations удалены; empty states = статичные иконки.
+[x] 12.10 Финал: обновление PROJECT_CONTEXT.md + DECISIONS.md + коммит этапа.
 [x] 12.5.1 Чекбокс «Зачислить текущий баланс счёта в цель» (Вариант Б): вкл. по умолчанию, поле суммы + кнопка «Весь баланс», пусто = 100%; правки draft/usecase/валидации.
 [x] 12.6 Архив: BottomSheet «История цели» (fl_chart график накопления + список транзакций) + кнопка «📜 История» на карточке архива.
 [x] 12.7 SavingsAnalyticsScreen (/savings-analytics): период-селектор, Summary Grid 2×2, график накопления + прогноз, сортируемая таблица целей, валютный баннер, иконка 📊 в AppBar SavingsGoalsScreen.
@@ -97,6 +102,9 @@ v9 (Этап 12): savings_goals (name/target_amount/current_amount/draft_amount 
 - Достижение цели: конфетти + диалог «Отметить завершённой / Продолжить копить»; completed_at ставится только через CompleteSavingsGoalUseCase (одноразовое конфетти).
 - Выбор счёта в форме и в листах пополнения/изъятия: BottomSheet-пикер с балансами счетов (privacy-aware), вместо DropdownButton.
 - Виртуальная цель: пополнение всегда expense с выбранного счёта (не transfer).
+Аналитика (12.7): периоды Месяц/Квартал/Год/Всё время (дефолт Год); агрегация в Dart через ConvertCurrencyUseCase (курс на дату транзакции); hasStaleRates → предупреждение «Курс устарел».
+Экспорт (12.8): формат → файл во temp → диалог «Сохранить в память» (MediaStore: Downloads/BudgetAssistant, без разрешений на Android 10+) / «Поделиться» (Share Sheet); в hidden экспорт заблокирован на уровне UI.
+Реактивность дашборда (фикс 12.8): transactionsTriggerProvider (Notifier<int>) — bump() после CRUD транзакций и пополнений/изъятий целей; dashboardExpenseFlowProvider пересчитывается без захода в лог транзакций.
 
 🔧 Журнал фиксов Этапа 12
 1. drift orderBy: нужны лямбды ((g) => OrderingTerm...) — исправлено в DAO.
@@ -110,6 +118,11 @@ v9 (Этап 12): savings_goals (name/target_amount/current_amount/draft_amount 
 9. const [MoneyTextInputFormatter()] → [MoneyTextInputFormatter()] (конструктор не const).
 10. Черновик удаляется после успешного сохранения цели (ранее воскресал).
 11. Фильтры и компактные empty-состояния приведены к решениям владельца (см. отклонения).
+getExpenseFlow: spaceId == null → без space-фильтра (ранее «AND space_id IS NULL» обесцвечивал виджет на холодном старте).
+Экспорт: диалог выбора назначения показывается ДО закрытия шита (fix unmounted context); действия — через захваченные messenger/usecase.
+MediaStore: EXTERNAL_CONTENT_URI (не CONTENT_URI) — исправление ошибки компиляции Kotlin.
+accumulation_chart: RepaintBoundary вокруг ВСЕГО контейнера графика — PNG-экспорт работает и в empty-состоянии.
+Удаление Lottie: regex-замена Lottie.asset учитывает вызов без завершающей запятой; папка assets/animations и пакет lottie удалены.
 Чекбокс зачисления баланса (12.5.1): Variant B — чекбокс вкл. по умолчанию + поле суммы + кнопка «Весь баланс»; пусто = 100% баланса; стартовое зачисление без транзакции (current_amount стартует с суммы), баланс счёта не списывается.
 12.7: мультивалютная агрегация аналитики — в Dart через ConvertCurrencyUseCase (не SQL-JOIN); экспорт и Year-in-Review-ссылка — в 12.8/Этап 19.
 
@@ -127,6 +140,10 @@ v9 (Этап 12): savings_goals (name/target_amount/current_amount/draft_amount 
 - Пополнение привязанной цели = expense с выбранного счёта (не transfer).
 - Мультивалютная агрегация сводок — в Dart через ConvertCurrencyUseCase (цепочка Этапа 10), не SQL-JOIN.
 - Движение расходов на дашборде: 30 дней, только расходы, без линии доходов (владелец).
+12.9 отменён владельцем: Lottie-анимации и assets/animations удалены; empty states — статичные Material-иконки; конфетти достижения — Icons.emoji_events_outlined + HapticFeedback.
+12.8: PDF-экспорт исключён (package:pdf конфликтует по archive; кириллице нужен TTF-ассет).
+12.8: «Сохранить в память» — MediaStore Downloads через MethodChannel budget_assistant/clock (file_saver/SAF не открывал пикер на устройстве).
+12.7: сортируемая таблица целей и валютный баннер SavingsAnalyticsScreen НЕ реализованы — перенесены в «Открыто».
 - Ввод сумм с группировкой разрядов (MoneyTextInputFormatter) во всех формах приложения.
 
 ✅ Закрыто (архив — НЕ удалять, это история)
@@ -137,18 +154,20 @@ v9 (Этап 12): savings_goals (name/target_amount/current_amount/draft_amount 
 [x] 12.3 Интеграция: прогресс через порт, getTransactionsByGoalId, фикс теста.
 [x] 12.4 Экран целей: вкладки, сводка, фильтры, карточки, листы, конфетти, empty states.
 [x] 12.5 Форма создания/редактирования цели.
+[x] 12.6 Архив: sheet истории цели + кнопка «📜 История».
+[x] 12.7 SavingsAnalyticsScreen + иконка 📊 (таблица/баннер — долг).
+[x] 12.8 Экспорт XLSX/CSV/PNG + диалог сохранить/поделиться.
+[x] 12.9 — отменён: Lottie и анимации удалены решением владельца.
+[x] 12.10 Финальные документы + коммит этапа.
 [x] 12.5.1 Чекбокс зачисления баланса счёта в цель (Вариант Б).
 [x] 12.6 Архив: BottomSheet «История цели» + кнопка «📜 История».
 [x] 12.7 SavingsAnalyticsScreen + иконка 📊 в AppBar целей.
 
 📂 Открыто (долги и примечания)
-(прежние открытые пункты без изменений: l10n, excludeLargeExpenses UI, засекретить подарок, drag-and-drop счетов, ипотека, системные счета, biometric_login, space_selector, onlyDebts, workmanager KGP, PGRST205 до Этапа 25, cashback_matrix/dashboard_widgets не в defaultSpecs, exchange_rates не синхронизируется, семейные счета в матрице после Этапа 25, approved авто, use_historical_exchange_rate, источники privacy-режимов, виджеты 13/14, Lottie-дизайн, BottomNavigation.)
+(прежние открытые пункты без изменений: l10n, excludeLargeExpenses UI, засекретить подарок, drag-and-drop счетов, ипотека, системные счета, biometric_login, space_selector, onlyDebts, workmanager KGP, PGRST205 до Этапа 25, cashback_matrix/dashboard_widgets не в defaultSpecs, exchange_rates не синхронизируется, семейные счета в матрице после Этапа 25, approved авто, use_historical_exchange_rate, источники privacy-режимов, виджеты 13/14, BottomNavigation.)
 Добавлено:
-[ ] 12.6 Архив: BottomSheet «История цели» + кнопка «📜 История».
-[ ] 12.7 SavingsAnalyticsScreen + иконка 📊 в AppBar целей.
-[ ] 12.8 Экспорт XLSX/CSV/PNG/PDF (зависимости excel, pdf, share_plus).
-[ ] 12.9 Lottie: 9 рабочих анимаций вместо заглушек.
-[ ] 12.10 Финал: PROJECT_CONTEXT.md + DECISIONS.md + коммит.
+[ ] SavingsAnalyticsScreen: сортируемая таблица целей + валютный баннер (ТЗ 6.3.18) — долг Этапа 12.
+[ ] PDF-экспорт аналитики — исключён (отклонение); вернуть после выбора TTF для кириллицы.
 [ ] Создание семейного (shared) счёта в UI — Этапы 17/21.
 
 Примечания:
