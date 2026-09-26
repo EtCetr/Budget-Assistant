@@ -1,0 +1,638 @@
+﻿===== FILE: lib\features\debts\domain\entities\debt.dart =====
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
+part 'debt.freezed.dart';
+
+/// Статусы разрешения долга (ТОМ 2 §13.3).
+abstract final class DebtResolutionStatus {
+  static const String active = 'active';
+  static const String forgiven = 'forgiven';
+  static const String paidOffline = 'paid_offline';
+  static const String resolved = 'resolved';
+}
+
+/// Направление долга относительно текущего пользователя.
+enum DebtDirection { payable, receivable }
+
+/// Взаимный долг (ТОМ 2 §13.3, ТЗ 6.3.13/6.3.14).
+///
+/// E2E-поля (amount, description, counterparty_name_dative) хранятся
+/// локально открыто и шифруются AES-256-GCM перед формированием
+/// sync-пейлоада (Этап 25) — та же стратегия, что у счетов и целей.
+/// Закрытие долга НЕ пересчитывает аналитику задним числом:
+/// CloseDebtUseCase создаёт компенсирующие транзакции (ТОМ 4 §6).
+@freezed
+abstract class Debt with _$Debt {
+  const factory Debt({
+    required String id,
+    /// Кому должны (кредитор).
+    String? creditorId,
+    /// Кто должен (должник). NULL = внешний контрагент.
+    String? debtorId,
+    /// Семейный долг — пространство; NULL = личный/внешний.
+    String? spaceId,
+    /// Категория исходной траты (для компенсирующих транзакций).
+    String? categoryId,
+    /// Копейки, всегда > 0.
+    required int amount,
+    @Default('RUB') String currency,
+    /// «За что» [E2E].
+    String? description,
+    /// Имя внешнего контрагента в дательном падеже [E2E].
+    String? counterpartyNameDative,
+    /// Транзакция, породившая долг.
+    String? originalTransactionId,
+    /// Связь с частью сплит-чека (transaction_splits.id).
+    String? splitId,
+    /// Срок погашения (UTC).
+    DateTime? dueDate,
+    /// Дата закрытия.
+    DateTime? resolvedAt,
+    @Default(DebtResolutionStatus.active) String resolutionStatus,
+    @Default(false) bool isExMemberDebt,
+    @Default(true) bool autoResolve,
+    /// Создатель (только он может редактировать/удалять).
+    required String createdBy,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    @Default(SyncStatus.pending) SyncStatus syncStatus,
+  }) = _Debt;
+}
+
+extension DebtX on Debt {
+  bool get isActive => resolutionStatus == DebtResolutionStatus.active;
+  bool get isResolved => resolutionStatus == DebtResolutionStatus.resolved;
+  /// Внешний контрагент: одна сторона NULL + имя в дательном (D13-2).
+  bool get isExternal => debtorId == null || creditorId == null;
+  /// Направление относительно пользователя [userId].
+  DebtDirection? directionFor(String userId) {
+    if (debtorId == userId) return DebtDirection.payable;
+    if (creditorId == userId) return DebtDirection.receivable;
+    return null;
+  }
+  /// Просрочка на момент [nowUtc] (только для активных долгов).
+  bool isOverdueAt(DateTime nowUtc) {
+    final due = dueDate;
+    if (due == null || !isActive) return false;
+    return due.isBefore(nowUtc);
+  }
+}
+
+===== FILE: lib\features\debts\domain\entities\debts_stats.dart =====
+import 'package:freezed_annotation/freezed_annotation.dart';
+part 'debts_stats.freezed.dart';
+
+/// Статистика долгов для шапки DebtsScreen (6.3.13.4): только активные.
+@freezed
+abstract class DebtsStats with _$DebtsStats {
+  const factory DebtsStats({
+    required int payableTotalKopecks,
+    required int receivableTotalKopecks,
+    required int overdueCount,
+  }) = _DebtsStats;
+}
+
+===== FILE: lib\features\debts\domain\entities\debts_groups.dart =====
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'debt.dart';
+part 'debts_groups.freezed.dart';
+
+/// Группировка долгов по направлению и статусу (6.3.13.3/.5).
+@freezed
+abstract class DebtsGroups with _$DebtsGroups {
+  const factory DebtsGroups({
+    required List<Debt> payableActive,
+    required List<Debt> payableClosed,
+    required List<Debt> receivableActive,
+    required List<Debt> receivableClosed,
+  }) = _DebtsGroups;
+}
+
+===== FILE: lib\features\debts\domain\usecases\format_debt_title_usecase.dart =====
+import '../entities/debt.dart';
+import 'decline_name_usecase.dart';
+
+/// Дательный падеж контрагента для карточки долга (6.3.13.6):
+/// внешний контрагент — сохранённое counterpartyNameDative [E2E],
+/// член семьи — склонение display_name через DeclineNameUseCase.
+class FormatDebtTitleUseCase {
+  FormatDebtTitleUseCase({required DeclineNameUseCase declineName})
+      : _declineName = declineName;
+
+  final DeclineNameUseCase _declineName;
+
+  /// [familyDisplayName] — display_name члена семьи (если долг семейный).
+  /// Возвращает пустую строку, если данных нет (UI покажет плейсхолдер).
+  String call({required Debt debt, String? familyDisplayName}) {
+    if (debt.isExternal) {
+      return (debt.counterpartyNameDative ?? '').trim();
+    }
+    final base = (familyDisplayName ?? '').trim();
+    if (base.isEmpty) return '';
+    return _declineName(base).dative;
+  }
+}
+
+===== FILE: lib\features\debts\domain\usecases\calculate_debts_stats_usecase.dart =====
+import '../entities/debt.dart';
+import '../entities/debts_stats.dart';
+
+/// Статистика для шапки DebtsScreen (6.3.13.4): суммы только активных
+/// долгов, просрочка — по due_date < now (UTC).
+class CalculateDebtsStatsUseCase {
+  DebtsStats call(List<Debt> debts, {required String userId, DateTime? nowUtc}) {
+    final now = nowUtc ?? DateTime.now().toUtc();
+    var payable = 0;
+    var receivable = 0;
+    var overdue = 0;
+    for (final d in debts) {
+      if (!d.isActive) continue;
+      final dir = d.directionFor(userId);
+      if (dir == null) continue;
+      if (dir == DebtDirection.payable) {
+        payable += d.amount;
+      } else {
+        receivable += d.amount;
+      }
+      if (d.isOverdueAt(now)) overdue++;
+    }
+    return DebtsStats(
+      payableTotalKopecks: payable,
+      receivableTotalKopecks: receivable,
+      overdueCount: overdue,
+    );
+  }
+}
+
+===== FILE: lib\features\debts\domain\usecases\group_debts_by_status_usecase.dart =====
+import '../entities/debt.dart';
+import '../entities/debts_groups.dart';
+
+/// Группировка по вкладкам «Я должен» / «Мне должны» и секциям
+/// активные/закрытые (6.3.13.3/.5). Порядок — как из репозитория
+/// (due_date nulls last, затем createdAt desc).
+class GroupDebtsByStatusUseCase {
+  DebtsGroups call(List<Debt> debts, {required String userId}) {
+    final payableActive = <Debt>[];
+    final payableClosed = <Debt>[];
+    final receivableActive = <Debt>[];
+    final receivableClosed = <Debt>[];
+    for (final d in debts) {
+      final dir = d.directionFor(userId);
+      if (dir == null) continue;
+      if (dir == DebtDirection.payable) {
+        d.isActive ? payableActive.add(d) : payableClosed.add(d);
+      } else {
+        d.isActive ? receivableActive.add(d) : receivableClosed.add(d);
+      }
+    }
+    return DebtsGroups(
+      payableActive: payableActive,
+      payableClosed: payableClosed,
+      receivableActive: receivableActive,
+      receivableClosed: receivableClosed,
+    );
+  }
+}
+
+===== FILE: lib\features\debts\presentation\providers\debts_providers.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/database/database_provider.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+import 'package:budget_assistant/features/transactions/presentation/providers/create_transaction_providers.dart';
+import '../../data/datasources/system_category_source.dart';
+import '../../domain/entities/debt.dart';
+import '../../domain/entities/debts_groups.dart';
+import '../../domain/entities/debts_stats.dart';
+import '../../domain/services/system_category_port.dart';
+import '../../domain/usecases/calculate_debts_stats_usecase.dart';
+import '../../domain/usecases/check_overdue_debts_usecase.dart';
+import '../../domain/usecases/close_debt_usecase.dart';
+import '../../domain/usecases/create_debts_batch_usecase.dart';
+import '../../domain/usecases/decline_name_usecase.dart';
+import '../../domain/usecases/delete_debt_usecase.dart';
+import '../../domain/usecases/extend_debt_due_date_usecase.dart';
+import '../../domain/usecases/format_debt_title_usecase.dart';
+import '../../domain/usecases/group_debts_by_status_usecase.dart';
+import '../../domain/usecases/mark_debts_as_ex_member_usecase.dart';
+import '../../domain/usecases/resolve_debt_usecase.dart';
+import '../../domain/usecases/update_debt_usecase.dart';
+import 'debts_repository_providers.dart';
+
+final Logger _logger = Logger();
+
+// ═══ UseCases долгов (Этап 13.2–13.3) ═══
+final declineNameUseCaseProvider = Provider<DeclineNameUseCase>((ref) {
+  return DeclineNameUseCase();
+});
+
+final formatDebtTitleUseCaseProvider = Provider<FormatDebtTitleUseCase>((ref) {
+  return FormatDebtTitleUseCase(
+    declineName: ref.watch(declineNameUseCaseProvider),
+  );
+});
+
+final calculateDebtsStatsUseCaseProvider =
+    Provider<CalculateDebtsStatsUseCase>((ref) {
+  return CalculateDebtsStatsUseCase();
+});
+
+final groupDebtsByStatusUseCaseProvider =
+    Provider<GroupDebtsByStatusUseCase>((ref) {
+  return GroupDebtsByStatusUseCase();
+});
+
+final checkOverdueDebtsUseCaseProvider =
+    Provider<CheckOverdueDebtsUseCase>((ref) {
+  return CheckOverdueDebtsUseCase();
+});
+
+final markDebtsAsExMemberUseCaseProvider =
+    Provider<MarkDebtsAsExMemberUseCase>((ref) {
+  return MarkDebtsAsExMemberUseCase(
+    repository: ref.watch(debtsRepositoryProvider),
+  );
+});
+
+final resolveDebtUseCaseProvider = Provider<ResolveDebtUseCase>((ref) {
+  return ResolveDebtUseCase(repository: ref.watch(debtsRepositoryProvider));
+});
+
+final extendDebtDueDateUseCaseProvider =
+    Provider<ExtendDebtDueDateUseCase>((ref) {
+  return ExtendDebtDueDateUseCase(
+    repository: ref.watch(debtsRepositoryProvider),
+  );
+});
+
+final updateDebtUseCaseProvider = Provider<UpdateDebtUseCase>((ref) {
+  return UpdateDebtUseCase(repository: ref.watch(debtsRepositoryProvider));
+});
+
+final deleteDebtUseCaseProvider = Provider<DeleteDebtUseCase>((ref) {
+  return DeleteDebtUseCase(repository: ref.watch(debtsRepositoryProvider));
+});
+
+final createDebtsBatchUseCaseProvider =
+    Provider<CreateDebtsBatchUseCase>((ref) {
+  return CreateDebtsBatchUseCase(repository: ref.watch(debtsRepositoryProvider));
+});
+
+final systemCategoryPortProvider = Provider<SystemCategoryPort>((ref) {
+  return SystemCategorySource(
+    db: ref.watch(appDatabaseProvider),
+    logger: _logger,
+  );
+});
+
+final closeDebtUseCaseProvider = Provider<CloseDebtUseCase>((ref) {
+  return CloseDebtUseCase(
+    debtsRepository: ref.watch(debtsRepositoryProvider),
+    transactionsRepository: ref.watch(transactionsRepositoryProvider),
+    systemCategory: ref.watch(systemCategoryPortProvider),
+    logger: _logger,
+  );
+});
+
+// ═══ Реактивные данные экрана долгов (6.3.13) ═══
+final debtsStreamProvider = StreamProvider<List<Debt>>((ref) {
+  return ref
+      .watch(debtsRepositoryProvider)
+      .watchForUser(userId: ref.watch(currentUserIdProvider));
+});
+
+final debtsStatsProvider = Provider<DebtsStats>((ref) {
+  final debts = ref.watch(debtsStreamProvider).value ?? const <Debt>[];
+  return ref.watch(calculateDebtsStatsUseCaseProvider)(
+    debts,
+    userId: ref.watch(currentUserIdProvider),
+  );
+});
+
+final debtsGroupsProvider = Provider<DebtsGroups>((ref) {
+  final debts = ref.watch(debtsStreamProvider).value ?? const <Debt>[];
+  return ref.watch(groupDebtsByStatusUseCaseProvider)(
+    debts,
+    userId: ref.watch(currentUserIdProvider),
+  );
+});
+
+===== FILE: lib\features\debts\presentation\providers\debts_repository_providers.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/database/database_provider.dart';
+import '../../data/datasources/debts_dao.dart';
+import '../../data/repositories/debts_repository_impl.dart';
+import '../../domain/repositories/debts_repository.dart';
+
+final Logger _logger = Logger();
+
+final debtsDaoProvider = Provider<DebtsDao>((ref) {
+  return DebtsDao(ref.watch(appDatabaseProvider));
+});
+
+final debtsRepositoryProvider = Provider<DebtsRepository>((ref) {
+  return DebtsRepositoryImpl(
+    dao: ref.watch(debtsDaoProvider),
+    logger: _logger,
+  );
+});
+
+===== FILE: lib\core\router\app_router.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:budget_assistant/features/auth/domain/notifiers/auth_notifier.dart';
+import 'package:budget_assistant/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:budget_assistant/features/onboarding/presentation/widgets/onboarding_wrapper.dart';
+import 'package:budget_assistant/features/auth/presentation/screens/auth_wrapper.dart';
+import 'package:budget_assistant/features/spaces/presentation/screens/space_selector_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/app_lock_screen.dart';
+import 'package:budget_assistant/features/invites/presentation/screens/accept_invite_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/pin_onboarding_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/pin_entry_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/biometric_onboarding_screen.dart';
+import 'package:budget_assistant/core/router/routes.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:budget_assistant/features/accounts/presentation/screens/accounts_screen.dart';
+import 'package:budget_assistant/features/categories/presentation/screens/categories_screen.dart';
+import 'package:budget_assistant/core/bootstrap/app_bootstrap_flags.dart';
+import 'package:budget_assistant/core/services/secure_storage_service.dart';
+import 'package:budget_assistant/core/logger.dart';
+import 'package:budget_assistant/features/transactions/presentation/screens/transactions_log_screen.dart';
+import 'package:budget_assistant/features/import/presentation/screens/import_onboarding_stub_screen.dart';
+import 'package:budget_assistant/features/transactions/presentation/screens/create_transaction_screen.dart';
+import 'package:budget_assistant/features/transactions/presentation/screens/edit_transaction_screen.dart';
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
+import 'package:budget_assistant/features/budget/presentation/screens/budget_limits_screen.dart';
+import 'package:budget_assistant/features/budget/presentation/screens/edit_budget_limit_screen.dart';
+import 'package:budget_assistant/features/cashback/presentation/screens/cashback_screen.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/providers/savings_goals_screen_providers.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/screens/create_savings_goal_screen.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/screens/savings_goals_screen.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/screens/savings_analytics_screen.dart';
+part 'app_router.g.dart';
+
+@riverpod
+class AppLock extends _$AppLock {
+  @override
+  bool build() => false;
+  void lock() => state = true;
+  void unlock() => state = false;
+}
+
+@riverpod
+class OnboardingStatus extends _$OnboardingStatus {
+  @override
+  String build() => AppBootstrapFlags.onboardingStatus;
+  void complete() {
+    state = 'completed';
+    AppBootstrapFlags.onboardingStatus = 'completed';
+    _persist();
+  }
+
+  void setStatus(String status) {
+    state = status;
+    AppBootstrapFlags.onboardingStatus = status;
+    _persist();
+  }
+
+  Future<void> _persist() async {
+    try {
+      await SecureStorageService().write(
+        'onboarding_completed',
+        state == 'completed' ? 'true' : 'false',
+      );
+    } catch (e, st) {
+      AppLogger.e('Failed to persist onboarding flag', e, st);
+    }
+  }
+}
+
+@riverpod
+class CurrentSpaceId extends _$CurrentSpaceId {
+  @override
+  String? build() => null;
+  void setSpaceId(String? id) => state = id;
+  void clear() => state = null;
+}
+
+@riverpod
+class PendingInviteToken extends _$PendingInviteToken {
+  @override
+  String? build() => null;
+  void setToken(String? token) => state = token;
+  void clear() => state = null;
+}
+
+class _AuthRefreshNotifier extends ChangeNotifier {
+  late final ProviderSubscription _sub;
+  _AuthRefreshNotifier(Ref ref) {
+    _sub = ref.listen(authProvider, (_, __) {
+      notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _sub.close();
+    super.dispose();
+  }
+}
+
+@riverpod
+GoRouter appRouter(Ref ref) {
+  final authStatus = ref.watch(authProvider);
+  final refreshNotifier = _AuthRefreshNotifier(ref);
+  ref.onDispose(() {
+    refreshNotifier.dispose();
+  });
+  return GoRouter(
+    initialLocation: AppRoutes.home,
+    debugLogDiagnostics: true,
+    refreshListenable: refreshNotifier,
+    routes: [
+      GoRoute(
+        path: AppRoutes.home,
+        name: 'home',
+        builder: (context, state) => const DashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.onboarding,
+        name: 'onboarding',
+        builder: (context, state) => const OnboardingWrapper(),
+      ),
+      GoRoute(
+        path: AppRoutes.auth,
+        name: 'auth',
+        builder: (context, state) => const AuthWrapper(),
+      ),
+      GoRoute(
+        path: AppRoutes.spaceSelector,
+        name: 'space_selector',
+        builder: (context, state) => const SpaceSelectorScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.lock,
+        name: 'lock',
+        builder: (context, state) => const AppLockScreen(),
+      ),
+      GoRoute(
+        path: '${AppRoutes.invite}/accept',
+        name: 'accept_invite',
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'];
+          return AcceptInviteScreen(token: token);
+        },
+      ),
+      GoRoute(
+        path: '/security/pin-onboarding',
+        name: 'pin_onboarding',
+        builder: (context, state) => const PinOnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/security/pin-entry',
+        name: 'pin_entry',
+        builder: (context, state) => const PinEntryScreen(),
+      ),
+      GoRoute(
+        path: '/security/biometric-onboarding',
+        name: 'biometric_onboarding',
+        builder: (context, state) => const BiometricOnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/accounts',
+        name: 'accounts',
+        builder: (context, state) => AccountsScreen(
+          userId: Supabase.instance.client.auth.currentUser?.id ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/categories',
+        name: 'categories',
+        builder: (context, state) => CategoriesScreen(
+          userId: Supabase.instance.client.auth.currentUser?.id ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/transactions',
+        builder: (context, state) => const TransactionsLogScreen(),
+      ),
+      GoRoute(
+        path: '/import/onboarding',
+        name: 'import-onboarding',
+        builder: (context, state) => const ImportOnboardingStubScreen(),
+      ),
+      GoRoute(
+        path: '/transactions/create',
+        name: 'create-transaction',
+        builder: (context, state) {
+          final typeStr = state.uri.queryParameters['type'] ?? 'expense';
+          final type = TransactionType.values.firstWhere(
+            (t) => t.name == typeStr,
+            orElse: () => TransactionType.expense,
+          );
+          return CreateTransactionScreen(type: type);
+        },
+      ),
+      GoRoute(
+        path: '/transactions/edit/:id',
+        name: 'edit-transaction',
+        builder: (context, state) {
+          final id = state.pathParameters['id'];
+          if (id == null || id.isEmpty) {
+            return const Scaffold(
+              body: Center(child: Text('ID транзакции не указан')),
+            );
+          }
+          return EditTransactionScreen(transactionId: id);
+        },
+      ),
+      GoRoute(
+        path: '/budget',
+        name: 'budget',
+        builder: (context, state) => const BudgetLimitsScreen(),
+      ),
+      GoRoute(
+        path: '/budget/create',
+        name: 'create-budget-limit',
+        builder: (context, state) => const EditBudgetLimitScreen(),
+      ),
+      GoRoute(
+        path: '/budget/edit/:id',
+        name: 'edit-budget-limit',
+        builder: (context, state) {
+          final id = state.pathParameters['id'];
+          if (id == null || id.isEmpty) {
+            return const Scaffold(
+              body: Center(child: Text('ID лимита не указан')),
+            );
+          }
+          return EditBudgetLimitScreen(limitId: id);
+        },
+      ),
+      GoRoute(
+        path: '/cashback',
+        name: 'cashback',
+        builder: (context, state) => const CashbackScreen(),
+      ),
+      // Этап 12: цели накопления
+      GoRoute(
+        path: '/savings-goals',
+        name: 'savings-goals',
+        builder: (context, state) => const SavingsGoalsScreen(),
+      ),
+      GoRoute(
+        path: '/savings-goals/archive',
+        name: 'savings-goals-archive',
+        builder: (context, state) => const SavingsGoalsScreen(
+          initialTab: SavingsGoalsTab.archive,
+        ),
+      ),
+      GoRoute(
+        path: '/savings-goals/create',
+        name: 'create-savings-goal',
+        builder: (context, state) {
+          final goalId = state.uri.queryParameters['id'];
+          return CreateSavingsGoalScreen(goalId: goalId);
+        },
+      ),
+      GoRoute(
+        path: '/savings-analytics',
+        name: 'savings-analytics',
+        builder: (context, state) => const SavingsAnalyticsScreen(),
+      ),
+    ],
+    redirect: (context, state) {
+      final location = state.uri.toString();
+      final isAppLocked = ref.read(appLockProvider);
+      final onboardingCompleted =
+          ref.read(onboardingStatusProvider) == 'completed';
+      if (isAppLocked && location != AppRoutes.lock) {
+        return AppRoutes.lock;
+      }
+      if (authStatus == AuthStatus.unauthenticated) {
+        if (!location.startsWith(AppRoutes.auth) &&
+            !location.startsWith(AppRoutes.invite)) {
+          return AppRoutes.auth;
+        }
+        return null;
+      }
+      if (authStatus == AuthStatus.authenticated) {
+        if (!onboardingCompleted &&
+            !location.startsWith(AppRoutes.onboarding) &&
+            !location.startsWith('/security/')) {
+          return AppRoutes.onboarding;
+        }
+        if (onboardingCompleted && location.startsWith(AppRoutes.auth)) {
+          return AppRoutes.home;
+        }
+      }
+      return null;
+    },
+  );
+}
+
+===== MISSING: lib\features\profile\presentation\screens\profile_screen.dart =====

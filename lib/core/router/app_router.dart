@@ -31,6 +31,7 @@ import 'package:budget_assistant/features/savings_goals/presentation/providers/s
 import 'package:budget_assistant/features/savings_goals/presentation/screens/create_savings_goal_screen.dart';
 import 'package:budget_assistant/features/savings_goals/presentation/screens/savings_goals_screen.dart';
 import 'package:budget_assistant/features/savings_goals/presentation/screens/savings_analytics_screen.dart';
+import 'package:budget_assistant/features/debts/presentation/screens/debts_screen.dart';
 part 'app_router.g.dart';
 
 @riverpod
@@ -112,6 +113,11 @@ GoRouter appRouter(Ref ref) {
     debugLogDiagnostics: true,
     refreshListenable: refreshNotifier,
     routes: [
+      GoRoute(
+      path: '/debts',
+      name: 'debts',
+      builder: (context, state) => const DebtsScreen(),
+      ),
       GoRoute(
         path: AppRoutes.home,
         name: 'home',
