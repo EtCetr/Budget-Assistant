@@ -44,6 +44,8 @@ class DebtFormDetailsSection extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.spacing12),
+        // ВАЖНО: DropdownButtonFormField не может быть в Row без ширины.
+        // Валюта получает фиксированные 110px, сумма — остаток через Expanded.
         Row(
           children: [
             Expanded(
@@ -62,23 +64,26 @@ class DebtFormDetailsSection extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: AppSpacing.spacing8),
-            DropdownButtonFormField<String>(
-              initialValue: form.currency,
-              decoration: const InputDecoration(
-                labelText: DebtsStrings.currencyLabel,
-                border: OutlineInputBorder(),
+            SizedBox(
+              width: 110,
+              child: DropdownButtonFormField<String>(
+                initialValue: form.currency,
+                decoration: const InputDecoration(
+                  labelText: DebtsStrings.currencyLabel,
+                  border: OutlineInputBorder(),
+                ),
+                items: [
+                  for (final code in kCurrencyCodes)
+                    DropdownMenuItem<String>(value: code, child: Text(code)),
+                ],
+                onChanged: locked
+                    ? null
+                    : (value) {
+                        if (value == null) return;
+                        HapticFeedback.selectionClick();
+                        ref.read(createDebtFormProvider.notifier).setCurrency(value);
+                      },
               ),
-              items: [
-                for (final code in kCurrencyCodes)
-                  DropdownMenuItem(value: code, child: Text(code)),
-              ],
-              onChanged: locked
-                  ? null
-                  : (value) {
-                      if (value == null) return;
-                      HapticFeedback.selectionClick();
-                      ref.read(createDebtFormProvider.notifier).setCurrency(value);
-                    },
             ),
           ],
         ),
@@ -94,7 +99,7 @@ class DebtFormDetailsSection extends ConsumerWidget {
             ),
             items: [
               for (final c in categories)
-                DropdownMenuItem(value: c.id, child: Text(c.name)),
+                DropdownMenuItem<String>(value: c.id, child: Text(c.name)),
             ],
             onChanged: locked
                 ? null

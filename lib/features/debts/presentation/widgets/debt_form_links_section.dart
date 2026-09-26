@@ -31,19 +31,20 @@ class DebtFormLinksSection extends ConsumerWidget {
         recentAsync.when(
           loading: () => const SizedBox.shrink(),
           error: (_, __) => const SizedBox.shrink(),
-          data: (transactions) => DropdownButtonFormField<String>(
+          data: (transactions) => DropdownButtonFormField<String?>(
             initialValue: form.linkedTransactionId,
             decoration: const InputDecoration(
               labelText: DebtsStrings.linkTransactionLabel,
               border: OutlineInputBorder(),
             ),
+            isExpanded: true,
             items: [
-              const DropdownMenuItem(
+              const DropdownMenuItem<String?>(
                 value: null,
                 child: Text(DebtsStrings.linkNone),
               ),
               for (final t in transactions)
-                DropdownMenuItem(
+                DropdownMenuItem<String?>(
                   value: t.id,
                   child: Text(
                     '${DateFormat('dd.MM.yyyy').format(t.date.toLocal())} · '
