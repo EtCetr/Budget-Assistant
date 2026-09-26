@@ -145,6 +145,21 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
     }
   }
 
+  @override
+  Future<TransactionSplit?> getSplitById(String splitId) async {
+    try {
+      final row = await (_db.select(
+        _db.transactionSplits,
+      )..where((t) => t.id.equals(splitId))).getSingleOrNull();
+      if (row == null) {
+        return null;
+      }
+      return _splitFromDb(row);
+    } catch (e, stack) {
+      _logger.e('Failed to get split by id', error: e, stackTrace: stack);
+      rethrow;
+    }
+  }
   TransactionsCompanion _toTransactionsCompanion(Transaction t) {
     return TransactionsCompanion(
       id: Value(t.id),

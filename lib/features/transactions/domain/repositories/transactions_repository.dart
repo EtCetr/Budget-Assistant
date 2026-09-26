@@ -21,6 +21,7 @@ abstract interface class TransactionsRepository {
   Future<Transaction?> getTransactionById(String id);
 
   Future<List<TransactionSplit>> getSplitsForTransaction(String transactionId);
+  Future<TransactionSplit?> getSplitById(String splitId);
 
   /// Все транзакции цели накопления (пополнения и изъятия),
   /// отсортированные по дате по возрастанию — для графика накопления

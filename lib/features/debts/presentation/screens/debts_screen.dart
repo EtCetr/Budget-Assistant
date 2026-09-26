@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/core/widgets/offline_error_card.dart';
@@ -19,7 +20,7 @@ import '../widgets/debts_tab_selector.dart';
 import '../widgets/ex_member_debt_actions_sheet.dart';
 
 /// Экран долгов (ТЗ 6.3.13): табы, сводка, фильтры, секции карточек,
-/// empty states, privacy toggle, FAB.
+/// empty states, privacy toggle, FAB → /debts/create.
 class DebtsScreen extends ConsumerWidget {
   const DebtsScreen({super.key});
 
@@ -51,9 +52,7 @@ class DebtsScreen extends ConsumerWidget {
         backgroundColor: AppColors.colorFAB,
         onPressed: () {
           HapticFeedback.heavyImpact();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text(DebtsStrings.fabPendingNote)),
-          );
+          context.push('/debts/create');
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -98,9 +97,7 @@ class DebtsScreen extends ConsumerWidget {
 
     if (debts.isEmpty) {
       return DebtsEmptyState.noDebts(
-        onAdd: () => ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(DebtsStrings.fabPendingNote)),
-        ),
+        onAdd: () => context.push('/debts/create'),
       );
     }
     if (sections.isEmpty) {

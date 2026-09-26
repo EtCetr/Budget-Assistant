@@ -32,6 +32,7 @@ import 'package:budget_assistant/features/savings_goals/presentation/screens/cre
 import 'package:budget_assistant/features/savings_goals/presentation/screens/savings_goals_screen.dart';
 import 'package:budget_assistant/features/savings_goals/presentation/screens/savings_analytics_screen.dart';
 import 'package:budget_assistant/features/debts/presentation/screens/debts_screen.dart';
+import 'package:budget_assistant/features/debts/presentation/screens/create_debt_screen.dart';
 part 'app_router.g.dart';
 
 @riverpod
@@ -118,6 +119,18 @@ GoRouter appRouter(Ref ref) {
       name: 'debts',
       builder: (context, state) => const DebtsScreen(),
       ),
+    GoRoute(
+    path: '/debts/create',
+    name: 'create-debt',
+    builder: (context, state) {
+    final q = state.uri.queryParameters;
+    return CreateDebtScreen(
+    debtId: q['id'],
+    transactionId: q['transaction_id'],
+    splitId: q['split_id'],
+    );
+    },
+    ),
       GoRoute(
         path: AppRoutes.home,
         name: 'home',

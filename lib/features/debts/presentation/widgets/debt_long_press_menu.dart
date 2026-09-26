@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:budget_assistant/core/formatting/money_formatter.dart';
 import 'package:budget_assistant/features/accounts/domain/entities/account.dart';
@@ -10,9 +11,8 @@ import '../../domain/entities/debt.dart';
 import '../debts_strings.dart';
 import '../providers/debts_providers.dart';
 
-/// Long-press меню карточки долга (6.3.13.9, редакция 13.4):
-/// доступны только действия, реализуемые текущими UseCases.
-/// «Редактировать», «Посмотреть транзакцию/split» добавятся в 13.5–13.7.
+/// Long-press меню карточки долга (6.3.13.9): выполнить / редактировать /
+/// продлить срок / напомнить / удалить (только создатель).
 Future<void> showDebtLongPressMenu({
   required BuildContext context,
   required WidgetRef ref,
@@ -38,6 +38,16 @@ Future<void> showDebtLongPressMenu({
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   _confirmResolve(context, ref, messenger, debt);
+                },
+              ),
+            if (isCreator)
+              ListTile(
+                leading: const Icon(Icons.edit_outlined),
+                title: const Text(DebtsStrings.menuEdit),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  HapticFeedback.lightImpact();
+                  context.push('/debts/create?id=${debt.id}');
                 },
               ),
             if (debt.isActive && overdue)
@@ -110,10 +120,14 @@ Future<void> _confirmResolve(
       compensationAccountId: accountId,
     );
     HapticFeedback.mediumImpact();
-    messenger.showSnackBar(const SnackBar(content: Text(DebtsStrings.debtResolved)));
+    messenger.showSnackBar(
+      const SnackBar(content: Text(DebtsStrings.debtResolved)),
+    );
   } catch (_) {
     HapticFeedback.vibrate();
-    messenger.showSnackBar(const SnackBar(content: Text(DebtsStrings.operationFailed)));
+    messenger.showSnackBar(
+      const SnackBar(content: Text(DebtsStrings.operationFailed)),
+    );
   }
 }
 
@@ -174,10 +188,14 @@ Future<void> _extendDueDate(
       actorUserId: me,
     );
     HapticFeedback.mediumImpact();
-    messenger.showSnackBar(const SnackBar(content: Text(DebtsStrings.dueDateExtended)));
+    messenger.showSnackBar(
+      const SnackBar(content: Text(DebtsStrings.dueDateExtended)),
+    );
   } catch (_) {
     HapticFeedback.vibrate();
-    messenger.showSnackBar(const SnackBar(content: Text(DebtsStrings.operationFailed)));
+    messenger.showSnackBar(
+      const SnackBar(content: Text(DebtsStrings.operationFailed)),
+    );
   }
 }
 
@@ -212,10 +230,14 @@ Future<void> _confirmDelete(
       actorUserId: me,
     );
     HapticFeedback.mediumImpact();
-    messenger.showSnackBar(const SnackBar(content: Text(DebtsStrings.debtDeleted)));
+    messenger.showSnackBar(
+      const SnackBar(content: Text(DebtsStrings.debtDeleted)),
+    );
   } catch (_) {
     HapticFeedback.vibrate();
-    messenger.showSnackBar(const SnackBar(content: Text(DebtsStrings.operationFailed)));
+    messenger.showSnackBar(
+      const SnackBar(content: Text(DebtsStrings.operationFailed)),
+    );
   }
 }
 

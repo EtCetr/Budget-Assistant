@@ -1,4 +1,4 @@
-/// Строки экрана долгов (Этап 13, ТЗ 6.3.13).
+/// Строки экранов долгов (Этап 13, ТЗ 6.3.13/6.3.14).
 /// Хардкод строк в виджетах запрещён (DECISIONS.md).
 abstract final class DebtsStrings {
   static const screenTitle = 'Долги';
@@ -31,13 +31,14 @@ abstract final class DebtsStrings {
 
   // Карточка долга
   static const duePrefix = 'Срок: до';
-  static const daysLeftSuffix = 'осталось';
   static const overduePrefix = 'Просрочено на';
+  static const daysLeftSuffix = 'осталось';
   static const exMemberWarning = 'Участник вышел из группы';
   static const nameLoading = '…';
 
   // Long-press меню
   static const menuMarkResolved = 'Отметить выполненным';
+  static const menuEdit = 'Редактировать';
   static const menuExtendDueDate = 'Продлить срок';
   static const menuDelete = 'Удалить';
   static const menuRemindViaSms = 'Напомнить через SMS';
@@ -58,11 +59,6 @@ abstract final class DebtsStrings {
   static const emptyAllResolvedSubtitle =
       'История закрытых долгов доступна ниже';
   static const emptyAllResolvedAction = 'Посмотреть историю';
-
-  // FAB
-  static const fabAddDebt = 'Добавить долг';
-  static const fabPendingNote =
-      'Форма создания долга появится в следующем микро-коммите (13.5)';
 
   // Privacy
   static const privacyVisible = 'Видимый';
@@ -93,6 +89,64 @@ abstract final class DebtsStrings {
   // Errors
   static const loadingError = 'Не удалось загрузить долги';
   static const retry = 'Повторить';
+
+  // ═══ Форма создания/редактирования (6.3.14) ═══
+  static const formTitleNew = 'Новый долг';
+  static const formTitleEdit = 'Редактировать долг';
+  static const formTitleFromTransaction = 'Из транзакции';
+  static const formSectionType = 'Тип долга';
+  static const typePayable = '💳 Я должен';
+  static const typeReceivable = '💰 Мне должны';
+  static const formSectionCounterparty = 'Контрагент';
+  static const counterpartyFamily = '👥 Член семьи';
+  static const counterpartyExternal = '👤 Внешний человек';
+  static const familyUnavailable =
+      'Сначала присоединитесь к семейному пространству';
+  static const familyEmptyList = 'В семье пока нет других участников';
+  static const familyMultiHint =
+      '💡 При выборе нескольких участников сумма будет разделена поровну. '
+      'Для неравных долей создайте отдельные долги.';
+  static const editMultiMembersNote =
+      'В режиме редактирования смена контрагента ограничена';
+  static const memberWillOwe = 'будет должен';
+  static const memberWillOweMe = 'вам будет должен';
+  static const externalLabel = 'Имя в дательном падеже*';
+  static const externalHint = 'Например, "Ивану" или "Анне Петровне"';
+  static const externalSavedAs = 'Сохранится как';
+  static const externalDeclineFail =
+      'Не удалось автоматически склонить имя. Проверьте форму «кому?»';
+  static const formSectionDetails = 'Детали';
+  static const amountLabel = 'Сумма*';
+  static const currencyLabel = 'Валюта';
+  static const categoryLabel = 'Категория';
+  static const descriptionLabel = 'Описание';
+  static const descriptionHint = 'За что долг? Например, "За поездку в Прагу"';
+  static const dueDateLabel = 'Срок погашения (опционально)';
+  static const dueDateChoose = 'Выбрать дату';
+  static const dueDatePastWarning =
+      'Срок уже истёк. Долг появится в списке "Просрочено"';
+  static const formSectionLinks = 'Связи';
+  static const linkTransactionLabel = '🔗 Связать с транзакцией';
+  static const linkNone = 'Нет связи';
+  static const autoResolveLabel =
+      'Автоматически отметить выполненным при закрытии';
+  static const previewPayable = 'Вы должны';
+  static const previewReceivable = 'Долг вам:';
+  static const saveAction = 'Сохранить';
+  static const updateAction = 'Обновить';
+  static const debtCreatedSnack = 'Долг создан';
+  static const debtsCreatedSnack = 'Создано долгов';
+  static const debtUpdatedSnack = 'Долг обновлён';
+  static const syncLaterNote = 'Синхронизируется при появлении интернета';
+  static const cancelCreateTitle = 'Отменить создание?';
+  static const cancelEditTitle = 'Отменить редактирование?';
+  static const cancelSubtitle = 'Несохранённые данные будут потеряны.';
+  static const continueEditing = 'Продолжить редактирование';
+  static const discardAction = 'Отменить';
+  static const draftRestoreTitle = 'Найден черновик';
+  static const draftRestoreText = 'Восстановить несохранённую форму долга?';
+  static const draftRestoreAction = 'Восстановить';
+  static const draftStartFresh = 'Начать заново';
 
   /// Склонение слова «день».
   static String daysWord(int n) {

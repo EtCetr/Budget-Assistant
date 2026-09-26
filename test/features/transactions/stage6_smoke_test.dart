@@ -28,7 +28,9 @@ class FakeClock implements ClockPort {
 ///
 /// Нам не нужна реальная БД в этом тесте: здесь проверяется БИЗНЕС-ЛОГИКА
 /// (валидация, pending, блокировка). Реальные Drift-тесты будут в Этапе 24.
-class FakeTransactionsRepository implements TransactionsRepository {
+class FakeTransactionsRepository implements TransactionsRepository {
+  @override
+  Future<TransactionSplit?> getSplitById(String splitId) async => null;
   final Map<String, Transaction> store = {};
   final Map<String, List<TransactionSplit>> splitsStore = {};
 
