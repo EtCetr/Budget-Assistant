@@ -7,8 +7,8 @@ part 'split_position_draft.g.dart';
 @freezed
 abstract class SplitPositionDraft with _$SplitPositionDraft {
   const factory SplitPositionDraft({
-    /// id существующего сплита при переразделении; null для новых.
-    String? id,
+    /// Id позиции: id сплита при переразделении или клиентский temp-id.
+    required String id,
     /// Название позиции (товар из OCR или ручной ввод).
     @Default('') String name,
     /// Копейки, > 0.

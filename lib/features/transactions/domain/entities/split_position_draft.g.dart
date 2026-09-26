@@ -9,7 +9,7 @@ part of 'split_position_draft.dart';
 _SplitPositionDraft _$SplitPositionDraftFromJson(Map<String, dynamic> json) =>
     $checkedCreate('_SplitPositionDraft', json, ($checkedConvert) {
       final val = _SplitPositionDraft(
-        id: $checkedConvert('id', (v) => v as String?),
+        id: $checkedConvert('id', (v) => v as String),
         name: $checkedConvert('name', (v) => v as String? ?? ''),
         amount: $checkedConvert('amount', (v) => (v as num?)?.toInt() ?? 0),
         categoryId: $checkedConvert('categoryId', (v) => v as String?),

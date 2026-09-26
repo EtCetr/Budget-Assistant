@@ -15,8 +15,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SplitPositionDraft {
 
-/// id существующего сплита при переразделении; null для новых.
- String? get id;/// Название позиции (товар из OCR или ручной ввод).
+/// Id позиции: id сплита при переразделении или клиентский temp-id.
+ String get id;/// Название позиции (товар из OCR или ручной ввод).
  String get name;/// Копейки, > 0.
  int get amount; String? get categoryId; String? get description;/// true — позиция из OCR (название/сумма read-only).
  bool get fromOcr;
@@ -52,7 +52,7 @@ abstract mixin class $SplitPositionDraftCopyWith<$Res>  {
   factory $SplitPositionDraftCopyWith(SplitPositionDraft value, $Res Function(SplitPositionDraft) _then) = _$SplitPositionDraftCopyWithImpl;
 @useResult
 $Res call({
- String? id, String name, int amount, String? categoryId, String? description, bool fromOcr
+ String id, String name, int amount, String? categoryId, String? description, bool fromOcr
 });
 
 
@@ -69,10 +69,10 @@ class _$SplitPositionDraftCopyWithImpl<$Res>
 
 /// Create a copy of SplitPositionDraft
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? name = null,Object? amount = null,Object? categoryId = freezed,Object? description = freezed,Object? fromOcr = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? amount = null,Object? categoryId = freezed,Object? description = freezed,Object? fromOcr = null,}) {
   return _then(_self.copyWith(
-id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as int,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
@@ -157,11 +157,11 @@ return $default(_that);case _:
 @JsonSerializable()
 
 class _SplitPositionDraft implements SplitPositionDraft {
-  const _SplitPositionDraft({this.id, this.name = '', this.amount = 0, this.categoryId, this.description, this.fromOcr = false});
+  const _SplitPositionDraft({required this.id, this.name = '', this.amount = 0, this.categoryId, this.description, this.fromOcr = false});
   factory _SplitPositionDraft.fromJson(Map<String, dynamic> json) => _$SplitPositionDraftFromJson(json);
 
-/// id существующего сплита при переразделении; null для новых.
-@override final  String? id;
+/// Id позиции: id сплита при переразделении или клиентский temp-id.
+@override final  String id;
 /// Название позиции (товар из OCR или ручной ввод).
 @override@JsonKey() final  String name;
 /// Копейки, > 0.
@@ -204,7 +204,7 @@ abstract mixin class _$SplitPositionDraftCopyWith<$Res> implements $SplitPositio
   factory _$SplitPositionDraftCopyWith(_SplitPositionDraft value, $Res Function(_SplitPositionDraft) _then) = __$SplitPositionDraftCopyWithImpl;
 @override @useResult
 $Res call({
- String? id, String name, int amount, String? categoryId, String? description, bool fromOcr
+ String id, String name, int amount, String? categoryId, String? description, bool fromOcr
 });
 
 
@@ -221,10 +221,10 @@ class __$SplitPositionDraftCopyWithImpl<$Res>
 
 /// Create a copy of SplitPositionDraft
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? name = null,Object? amount = null,Object? categoryId = freezed,Object? description = freezed,Object? fromOcr = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? amount = null,Object? categoryId = freezed,Object? description = freezed,Object? fromOcr = null,}) {
   return _then(_SplitPositionDraft(
-id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String?,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
 as int,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String?,description: freezed == description ? _self.description : description // ignore: cast_nullable_to_non_nullable

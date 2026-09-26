@@ -1,5 +1,4 @@
 import 'package:logger/logger.dart';
-import 'package:uuid/uuid.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import '../entities/split_position_draft.dart';
 import '../models/transaction_split.dart';
@@ -41,7 +40,7 @@ class CreateTransactionSplitUseCase {
       final splits = positions
           .map(
             (p) => TransactionSplit(
-              id: p.id ?? const Uuid().v4(),
+              id: p.id,
               transactionId: transactionId,
               categoryId: p.categoryId!,
               amount: p.amount,

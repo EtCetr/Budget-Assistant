@@ -33,6 +33,7 @@ import 'package:budget_assistant/features/savings_goals/presentation/screens/sav
 import 'package:budget_assistant/features/savings_goals/presentation/screens/savings_analytics_screen.dart';
 import 'package:budget_assistant/features/debts/presentation/screens/debts_screen.dart';
 import 'package:budget_assistant/features/debts/presentation/screens/create_debt_screen.dart';
+import 'package:budget_assistant/features/transactions/presentation/screens/split_transaction_screen.dart';
 part 'app_router.g.dart';
 
 @riverpod
@@ -131,6 +132,13 @@ GoRouter appRouter(Ref ref) {
     );
     },
     ),
+  GoRoute(
+    path: '/transactions/split/:id',
+    name: 'split-transaction',
+    builder: (context, state) => SplitTransactionScreen(
+      transactionId: state.pathParameters['id']!,
+  ),
+  ),
       GoRoute(
         path: AppRoutes.home,
         name: 'home',
