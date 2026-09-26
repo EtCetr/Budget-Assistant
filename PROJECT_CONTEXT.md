@@ -1,5 +1,5 @@
 КОНТЕКСТ ПРОЕКТА: Budget Assistant v6.0
-Навигатор по проекту. Обновлено: Этап 12 в работе (микро-коммиты 12.1–12.7 + фикс чекбокса готовы; остались 12.8–12.10).
+Навигатор по проекту. Обновлено: Этап 13 завершён (Debts + Split Transactions).
 
 📌 Иерархия документов
 1. DECISIONS.md — Конституция проекта. Жёсткие ограничения (IntColumn, E2E, Offline-First, Riverpod, Drift). Приоритет №1.
@@ -82,7 +82,9 @@ UI/UX
   [ ] 12.10 Финал: обновление PROJECT_CONTEXT.md + DECISIONS.md + коммит этапа.
 
 🗄 Текущая схема БД
-schemaVersion = 9.
+schemaVersion = 12.
+v10 (Этап 13): debts (обе стороны nullable — D13-2; amount/currency, description и counterparty_name_dative [E2E], due_date, resolution_status, is_ex_member_debt, created_by) + debt_drafts и split_drafts (локальные, без sync) + индексы (creditor/debtor+status, space, due_date, sync_status).
+v11–v12 (Этап 13): консолидированы в один идемпотентный блок from<12: пересоздание debts (creditor_id nullable, auto_resolve из определения таблицы), создание черновиков при отсутствии, пересоздание индексов.
 v4: transactions.is_large_expense; sync_locked_started_at / sync_locked_duration_ms (монотонные часы); sync_conflicts; sync_logs.
 v5 (Этап 9): budget_limits + уникальный индекс (space_id, user_id, category_id, year, month) + индексы.
 v6 (Этап 10): exchange_rates (уникальный индекс from_currency + to_currency + date); cashback_matrix + индексы.
@@ -199,3 +201,40 @@ accumulation_chart: RepaintBoundary вокруг ВСЕГО контейнера
 Примечания:
 Эмулятор dev-среды: internal storage 10 GB, после wipe данные стабильны; полный flutter run безопасен, основной workflow — hot reload/restart.
 Два терминала: №1 — flutter run (r/R/q); №2 — скрипты правок, flutter analyze, git.
+
+🎯 Справка по механикам Этапа 13 (Debts + Split)
+Долги: таблица debts (v10); обе стороны nullable — внешний контрагент = NULL-сторона + counterparty_name_dative [E2E] (D13-2); направление — Debt.directionFor(userId); семейные долги space_id = currentSpaceId, внешние — NULL.
+Дательный падеж: DeclineNameUseCase — собственный правил-бейсд склонятель (вариант «а», без пакетов); при неудаче success=false → ручной ввод; для семьи склоняет display_name при рендере.
+CloseDebtUseCase: компенсирующие транзакции без ретро-пересчёта; Сценарий А (тот же месяц) — категория исходной траты, Сценарий Б — SYSTEM_DEBT_REPAYMENT (getOrCreate с детерминированным id); компенсации пишутся с spaceId = NULL (D13-3).
+auto_resolve: колонка + DebtsDao.resolveAutoLinked готовы, триггер НЕ подключён (D13-6) — точка подключения Этапы 15/25.
+Split: SplitTransactionScreen (/transactions/split/:id): позиции = transaction_splits, Σ = сумме транзакции точно (копейки), минимум 2 позиции; при сохранении исходная получает is_split = TRUE (исключение из P&L; учёт только сплитов — фильтры аналитики в Этапе 19). Защита от спама: offer_receipt_split_count / auto_offer_receipt_split (≥3 отказов → авто-выкл).
+Черновики: debt_drafts / split_drafts — автосейв 5 сек, восстановление если младше 24 ч, удаление после сохранения, cleanup старше 7 дней.
+Фильтр лога «Только долги»: EXISTS-подзапрос по debts (original_transaction_id ИЛИ split_id через transaction_splits) — CustomExpression с type-safe именами колонок.
+Вход: Drawer «Долги» → /debts; роуты /debts/create (?id / ?transaction_id / ?split_id), /transactions/split/:id. Виджет debts_section для ProfileScreen создан, встраивается в Этапе 21.
+Ex-member: MarkDebtsAsExMemberUseCase (флаг is_ex_member_debt, статусы не меняются); отдельная секция + sheet (погашен=resolved, списать=forgiven только кредитор — D13-4, напомнить=Share Sheet — D13-5).
+
+✅ Этап 13 — ЗАКРЫТ:
+[x] 13.1 Data: debts/debt_drafts/split_drafts (v10→v12 консолидировано), Freezed-сущности, DAO, репозитории, onlyDebts EXISTS-фильтр.
+[x] 13.2 Domain: 14 usecases долгов (включая DeclineNameUseCase) + провайдеры.
+[x] 13.3 CloseDebtUseCase (Сценарии А/Б) + split-usecases + spam-счётчики + порты (SystemCategoryPort, SplitOfferSettingsPort).
+[x] 13.4 DebtsScreen: табы, сводка, фильтры, секции (активные/просрочено/ex-member/закрытые), long-press, empty states, privacy.
+[x] 13.5 CreateDebtScreen: секции формы, множественный выбор с равным делением, склонение + warning, черновики, prefill-режимы, live-превью.
+[x] 13.6 SplitTransactionScreen: source-карточка, ReorderableListView позиций, остаток, сводка, action bar, sheet категорий, черновики.
+[x] 13.7 Интеграции: пункт Drawer, long-press «Разделить по категориям» / «Создать долг», навигационные фиксы (pop вместо go), роуты.
+
+🔧 Журнал фиксов Этапа 13
+Миграции v10–v12 вставлялись prepend-ом → ALTER выполнялся раньше CREATE при апгрейде с v9: консолидировано в один идемпотентный блок from<12. Правило на будущее: новые миграции только аппендом в конец onUpgrade.
+PowerShell-интерполяция в двойных кавычках съела ${transaction.id} при вставке пунктов меню → push без id (GoException) и пустой transaction_id; интерполяция восстановлена, меню Column→ListView(shrinkWrap) (overflow после добавления пунктов).
+CreateDebtScreen: context.go('/debts') сбрасывал стек (нет кнопки назад) → canPop ? pop : go(home); пустые query-параметры приравнены к отсутствию (_nullIfEmpty).
+Riverpod: CircularDependencyError автосейва черновика — нотификатор читал провайдер, зависящий от формы; черновик строится из state.
+Drift: в WHERE-выражениях нет exists()/selectOne() → CustomExpression с EXISTS; syncStatus debts — textEnum<SyncStatus> (Value(SyncStatus.pending), не строки).
+Freezed: copyWith не принимает nullable для non-null полей (позиции сплита) → пересоздание конструктором; SplitPositionDraft.id стал required.
+Flutter: DropdownButtonFormField в Row требует ограничения ширины (SizedBox); ConsumerState.build без параметра WidgetRef; AsyncValue.valueOrNull → .value (Riverpod 3).
+
+📂 Открыто (долги Этапа 13, перенесены):
+[ ] Локальные пуши долгов (6.3.13.15 п.6: за 3 дня / в день срока / при просрочке) — после LocalNotificationService (Этап 14/18).
+[ ] Триггер auto_resolve — Этап 15/25 (D13-6).
+[ ] 6.3.48 SplitReceiptScreen / 6.3.49 ProductNamingDialog — Этап 16 (вместе с таблицами receipts).
+[ ] Встраивание debts_section в ProfileScreen — Этап 21.
+[ ] Аналитика: фильтр is_split = FALSE и учёт только transaction_splits — Этап 19 (CalculateYearlyAnalyticsUseCase).
+[ ] «Посмотреть транзакцию / split» из long-press долга — вместе с деталями долга (вне роадмапа, решение владельца).
