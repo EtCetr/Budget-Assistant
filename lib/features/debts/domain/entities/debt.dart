@@ -25,7 +25,7 @@ abstract class Debt with _$Debt {
   const factory Debt({
     required String id,
     /// Кому должны (кредитор).
-    required String creditorId,
+    String? creditorId,
     /// Кто должен (должник). NULL = внешний контрагент.
     String? debtorId,
     /// Семейный долг — пространство; NULL = личный/внешний.
@@ -60,6 +60,8 @@ abstract class Debt with _$Debt {
 extension DebtX on Debt {
   bool get isActive => resolutionStatus == DebtResolutionStatus.active;
   bool get isResolved => resolutionStatus == DebtResolutionStatus.resolved;
+  /// Внешний контрагент: одна сторона NULL + имя в дательном (D13-2).
+  bool get isExternal => debtorId == null || creditorId == null;
   /// Направление относительно пользователя [userId].
   DebtDirection? directionFor(String userId) {
     if (debtorId == userId) return DebtDirection.payable;

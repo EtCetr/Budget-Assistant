@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 mixin _$Debt {
 
  String get id;/// Кому должны (кредитор).
- String get creditorId;/// Кто должен (должник). NULL = внешний контрагент.
+ String? get creditorId;/// Кто должен (должник). NULL = внешний контрагент.
  String? get debtorId;/// Семейный долг — пространство; NULL = личный/внешний.
  String? get spaceId;/// Категория исходной траты (для компенсирующих транзакций).
  String? get categoryId;/// Копейки, всегда > 0.
@@ -57,7 +57,7 @@ abstract mixin class $DebtCopyWith<$Res>  {
   factory $DebtCopyWith(Debt value, $Res Function(Debt) _then) = _$DebtCopyWithImpl;
 @useResult
 $Res call({
- String id, String creditorId, String? debtorId, String? spaceId, String? categoryId, int amount, String currency, String? description, String? counterpartyNameDative, String? originalTransactionId, String? splitId, DateTime? dueDate, DateTime? resolvedAt, String resolutionStatus, bool isExMemberDebt, String createdBy, DateTime createdAt, DateTime updatedAt, SyncStatus syncStatus
+ String id, String? creditorId, String? debtorId, String? spaceId, String? categoryId, int amount, String currency, String? description, String? counterpartyNameDative, String? originalTransactionId, String? splitId, DateTime? dueDate, DateTime? resolvedAt, String resolutionStatus, bool isExMemberDebt, String createdBy, DateTime createdAt, DateTime updatedAt, SyncStatus syncStatus
 });
 
 
@@ -74,11 +74,11 @@ class _$DebtCopyWithImpl<$Res>
 
 /// Create a copy of Debt
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? creditorId = null,Object? debtorId = freezed,Object? spaceId = freezed,Object? categoryId = freezed,Object? amount = null,Object? currency = null,Object? description = freezed,Object? counterpartyNameDative = freezed,Object? originalTransactionId = freezed,Object? splitId = freezed,Object? dueDate = freezed,Object? resolvedAt = freezed,Object? resolutionStatus = null,Object? isExMemberDebt = null,Object? createdBy = null,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? creditorId = freezed,Object? debtorId = freezed,Object? spaceId = freezed,Object? categoryId = freezed,Object? amount = null,Object? currency = null,Object? description = freezed,Object? counterpartyNameDative = freezed,Object? originalTransactionId = freezed,Object? splitId = freezed,Object? dueDate = freezed,Object? resolvedAt = freezed,Object? resolutionStatus = null,Object? isExMemberDebt = null,Object? createdBy = null,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,creditorId: null == creditorId ? _self.creditorId : creditorId // ignore: cast_nullable_to_non_nullable
-as String,debtorId: freezed == debtorId ? _self.debtorId : debtorId // ignore: cast_nullable_to_non_nullable
+as String,creditorId: freezed == creditorId ? _self.creditorId : creditorId // ignore: cast_nullable_to_non_nullable
+as String?,debtorId: freezed == debtorId ? _self.debtorId : debtorId // ignore: cast_nullable_to_non_nullable
 as String?,spaceId: freezed == spaceId ? _self.spaceId : spaceId // ignore: cast_nullable_to_non_nullable
 as String?,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String?,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
@@ -175,12 +175,12 @@ return $default(_that);case _:
 
 
 class _Debt implements Debt {
-  const _Debt({required this.id, required this.creditorId, this.debtorId, this.spaceId, this.categoryId, required this.amount, this.currency = 'RUB', this.description, this.counterpartyNameDative, this.originalTransactionId, this.splitId, this.dueDate, this.resolvedAt, this.resolutionStatus = DebtResolutionStatus.active, this.isExMemberDebt = false, required this.createdBy, required this.createdAt, required this.updatedAt, this.syncStatus = SyncStatus.pending});
+  const _Debt({required this.id, this.creditorId, this.debtorId, this.spaceId, this.categoryId, required this.amount, this.currency = 'RUB', this.description, this.counterpartyNameDative, this.originalTransactionId, this.splitId, this.dueDate, this.resolvedAt, this.resolutionStatus = DebtResolutionStatus.active, this.isExMemberDebt = false, required this.createdBy, required this.createdAt, required this.updatedAt, this.syncStatus = SyncStatus.pending});
   
 
 @override final  String id;
 /// Кому должны (кредитор).
-@override final  String creditorId;
+@override final  String? creditorId;
 /// Кто должен (должник). NULL = внешний контрагент.
 @override final  String? debtorId;
 /// Семейный долг — пространство; NULL = личный/внешний.
@@ -240,7 +240,7 @@ abstract mixin class _$DebtCopyWith<$Res> implements $DebtCopyWith<$Res> {
   factory _$DebtCopyWith(_Debt value, $Res Function(_Debt) _then) = __$DebtCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String creditorId, String? debtorId, String? spaceId, String? categoryId, int amount, String currency, String? description, String? counterpartyNameDative, String? originalTransactionId, String? splitId, DateTime? dueDate, DateTime? resolvedAt, String resolutionStatus, bool isExMemberDebt, String createdBy, DateTime createdAt, DateTime updatedAt, SyncStatus syncStatus
+ String id, String? creditorId, String? debtorId, String? spaceId, String? categoryId, int amount, String currency, String? description, String? counterpartyNameDative, String? originalTransactionId, String? splitId, DateTime? dueDate, DateTime? resolvedAt, String resolutionStatus, bool isExMemberDebt, String createdBy, DateTime createdAt, DateTime updatedAt, SyncStatus syncStatus
 });
 
 
@@ -257,11 +257,11 @@ class __$DebtCopyWithImpl<$Res>
 
 /// Create a copy of Debt
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? creditorId = null,Object? debtorId = freezed,Object? spaceId = freezed,Object? categoryId = freezed,Object? amount = null,Object? currency = null,Object? description = freezed,Object? counterpartyNameDative = freezed,Object? originalTransactionId = freezed,Object? splitId = freezed,Object? dueDate = freezed,Object? resolvedAt = freezed,Object? resolutionStatus = null,Object? isExMemberDebt = null,Object? createdBy = null,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? creditorId = freezed,Object? debtorId = freezed,Object? spaceId = freezed,Object? categoryId = freezed,Object? amount = null,Object? currency = null,Object? description = freezed,Object? counterpartyNameDative = freezed,Object? originalTransactionId = freezed,Object? splitId = freezed,Object? dueDate = freezed,Object? resolvedAt = freezed,Object? resolutionStatus = null,Object? isExMemberDebt = null,Object? createdBy = null,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
   return _then(_Debt(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as String,creditorId: null == creditorId ? _self.creditorId : creditorId // ignore: cast_nullable_to_non_nullable
-as String,debtorId: freezed == debtorId ? _self.debtorId : debtorId // ignore: cast_nullable_to_non_nullable
+as String,creditorId: freezed == creditorId ? _self.creditorId : creditorId // ignore: cast_nullable_to_non_nullable
+as String?,debtorId: freezed == debtorId ? _self.debtorId : debtorId // ignore: cast_nullable_to_non_nullable
 as String?,spaceId: freezed == spaceId ? _self.spaceId : spaceId // ignore: cast_nullable_to_non_nullable
 as String?,categoryId: freezed == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as String?,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable

@@ -15724,9 +15724,9 @@ class $DebtsTable extends Debts with TableInfo<$DebtsTable, DebtDb> {
   late final GeneratedColumn<String> creditorId = GeneratedColumn<String>(
     'creditor_id',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'REFERENCES users (id)',
     ),
@@ -15985,8 +15985,6 @@ class $DebtsTable extends Debts with TableInfo<$DebtsTable, DebtDb> {
         _creditorIdMeta,
         creditorId.isAcceptableOrUnknown(data['creditor_id']!, _creditorIdMeta),
       );
-    } else if (isInserting) {
-      context.missing(_creditorIdMeta);
     }
     if (data.containsKey('debtor_id')) {
       context.handle(
@@ -16119,7 +16117,7 @@ class $DebtsTable extends Debts with TableInfo<$DebtsTable, DebtDb> {
       creditorId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}creditor_id'],
-      )!,
+      ),
       debtorId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}debtor_id'],
@@ -16206,7 +16204,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
   final String id;
 
   /// Кому должны (кредитор). Индекс.
-  final String creditorId;
+  final String? creditorId;
 
   /// Кто должен (должник). NULL = внешний контрагент
   /// (используется counterparty_name_dative).
@@ -16254,7 +16252,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
   final SyncStatus syncStatus;
   const DebtDb({
     required this.id,
-    required this.creditorId,
+    this.creditorId,
     this.debtorId,
     this.spaceId,
     this.categoryId,
@@ -16277,7 +16275,9 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
-    map['creditor_id'] = Variable<String>(creditorId);
+    if (!nullToAbsent || creditorId != null) {
+      map['creditor_id'] = Variable<String>(creditorId);
+    }
     if (!nullToAbsent || debtorId != null) {
       map['debtor_id'] = Variable<String>(debtorId);
     }
@@ -16325,7 +16325,9 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
   DebtsCompanion toCompanion(bool nullToAbsent) {
     return DebtsCompanion(
       id: Value(id),
-      creditorId: Value(creditorId),
+      creditorId: creditorId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(creditorId),
       debtorId: debtorId == null && nullToAbsent
           ? const Value.absent()
           : Value(debtorId),
@@ -16371,7 +16373,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DebtDb(
       id: serializer.fromJson<String>(json['id']),
-      creditorId: serializer.fromJson<String>(json['creditorId']),
+      creditorId: serializer.fromJson<String?>(json['creditorId']),
       debtorId: serializer.fromJson<String?>(json['debtorId']),
       spaceId: serializer.fromJson<String?>(json['spaceId']),
       categoryId: serializer.fromJson<String?>(json['categoryId']),
@@ -16402,7 +16404,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'creditorId': serializer.toJson<String>(creditorId),
+      'creditorId': serializer.toJson<String?>(creditorId),
       'debtorId': serializer.toJson<String?>(debtorId),
       'spaceId': serializer.toJson<String?>(spaceId),
       'categoryId': serializer.toJson<String?>(categoryId),
@@ -16431,7 +16433,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
 
   DebtDb copyWith({
     String? id,
-    String? creditorId,
+    Value<String?> creditorId = const Value.absent(),
     Value<String?> debtorId = const Value.absent(),
     Value<String?> spaceId = const Value.absent(),
     Value<String?> categoryId = const Value.absent(),
@@ -16451,7 +16453,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
     SyncStatus? syncStatus,
   }) => DebtDb(
     id: id ?? this.id,
-    creditorId: creditorId ?? this.creditorId,
+    creditorId: creditorId.present ? creditorId.value : this.creditorId,
     debtorId: debtorId.present ? debtorId.value : this.debtorId,
     spaceId: spaceId.present ? spaceId.value : this.spaceId,
     categoryId: categoryId.present ? categoryId.value : this.categoryId,
@@ -16591,7 +16593,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
 
 class DebtsCompanion extends UpdateCompanion<DebtDb> {
   final Value<String> id;
-  final Value<String> creditorId;
+  final Value<String?> creditorId;
   final Value<String?> debtorId;
   final Value<String?> spaceId;
   final Value<String?> categoryId;
@@ -16634,7 +16636,7 @@ class DebtsCompanion extends UpdateCompanion<DebtDb> {
   });
   DebtsCompanion.insert({
     required String id,
-    required String creditorId,
+    this.creditorId = const Value.absent(),
     this.debtorId = const Value.absent(),
     this.spaceId = const Value.absent(),
     this.categoryId = const Value.absent(),
@@ -16654,7 +16656,6 @@ class DebtsCompanion extends UpdateCompanion<DebtDb> {
     this.syncStatus = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
-       creditorId = Value(creditorId),
        amount = Value(amount),
        createdBy = Value(createdBy);
   static Insertable<DebtDb> custom({
@@ -16707,7 +16708,7 @@ class DebtsCompanion extends UpdateCompanion<DebtDb> {
 
   DebtsCompanion copyWith({
     Value<String>? id,
-    Value<String>? creditorId,
+    Value<String?>? creditorId,
     Value<String?>? debtorId,
     Value<String?>? spaceId,
     Value<String?>? categoryId,
@@ -31521,7 +31522,7 @@ typedef $$SavingsGoalDraftsTableProcessedTableManager =
 typedef $$DebtsTableCreateCompanionBuilder =
     DebtsCompanion Function({
       required String id,
-      required String creditorId,
+      Value<String?> creditorId,
       Value<String?> debtorId,
       Value<String?> spaceId,
       Value<String?> categoryId,
@@ -31544,7 +31545,7 @@ typedef $$DebtsTableCreateCompanionBuilder =
 typedef $$DebtsTableUpdateCompanionBuilder =
     DebtsCompanion Function({
       Value<String> id,
-      Value<String> creditorId,
+      Value<String?> creditorId,
       Value<String?> debtorId,
       Value<String?> spaceId,
       Value<String?> categoryId,
@@ -31572,9 +31573,9 @@ final class $$DebtsTableReferences
   static $UsersTable _creditorIdTable(_$AppDatabase db) =>
       db.users.createAlias('debts__creditor_id__users__id');
 
-  $$UsersTableProcessedTableManager get creditorId {
-    final $_column = $_itemColumn<String>('creditor_id')!;
-
+  $$UsersTableProcessedTableManager? get creditorId {
+    final $_column = $_itemColumn<String>('creditor_id');
+    if ($_column == null) return null;
     final manager = $$UsersTableTableManager(
       $_db,
       $_db.users,
@@ -32413,7 +32414,7 @@ class $$DebtsTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
-                Value<String> creditorId = const Value.absent(),
+                Value<String?> creditorId = const Value.absent(),
                 Value<String?> debtorId = const Value.absent(),
                 Value<String?> spaceId = const Value.absent(),
                 Value<String?> categoryId = const Value.absent(),
@@ -32457,7 +32458,7 @@ class $$DebtsTableTableManager
           createCompanionCallback:
               ({
                 required String id,
-                required String creditorId,
+                Value<String?> creditorId = const Value.absent(),
                 Value<String?> debtorId = const Value.absent(),
                 Value<String?> spaceId = const Value.absent(),
                 Value<String?> categoryId = const Value.absent(),

@@ -334,7 +334,7 @@ class SavingsGoalDrafts extends Table {
 class Debts extends Table {
   TextColumn get id => text()();
   /// Кому должны (кредитор). Индекс.
-  TextColumn get creditorId => text().references(Users, #id)();
+  TextColumn get creditorId => text().nullable().references(Users, #id)();
   /// Кто должен (должник). NULL = внешний контрагент
   /// (используется counterparty_name_dative).
   TextColumn get debtorId => text().nullable().references(Users, #id)();
@@ -457,7 +457,7 @@ class AppDatabase extends _$AppDatabase {
   /// v4: Р­С‚Р°Рї 8+ вЂ” РїРѕР»Рµ is_large_expense
   /// v5: Р­С‚Р°Рї 9 вЂ” С‚Р°Р±Р»РёС†Р° budget_limits + РёРЅРґРµРєСЃС‹
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   Future<void> _createSavingsIndexes() async {
     // ТОМ 2 §22: фильтрация целей по владельцу/пространству/статусу/дедлайну
@@ -664,6 +664,13 @@ class AppDatabase extends _$AppDatabase {
       }
       // РРЎРўРћР РР§Р•РЎРљРђРЇ РњРРќРђ РЈР”РђР›Р•РќРђ: РІРµС‚РєР° from < 2 СЃ DROP TABLE
       // Р±РѕР»СЊС€Рµ РЅРµ РЅСѓР¶РЅР°, С‚.Рє. СЃС…РµРјР° СЃС‚Р°Р±РёР»РёР·РёСЂРѕРІР°РЅР° РЅР° v4+
+                        if (from < 11) {
+            // Этап 13, D13-2: creditor_id стал nullable (внешний контрагент с обеих
+            // сторон). Таблица debts новая и пустая (dev) — пересоздаём без переноса.
+            await customStatement('DROP TABLE IF EXISTS debts');
+            await m.createTable(debts);
+            await _createDebtsIndexes();
+            }
             if (from < 10) {
       // Этап 13: взаимные долги + локальные черновики форм долга/сплита.
       await m.createTable(debts);
