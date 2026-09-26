@@ -49,6 +49,7 @@ abstract class Debt with _$Debt {
     DateTime? resolvedAt,
     @Default(DebtResolutionStatus.active) String resolutionStatus,
     @Default(false) bool isExMemberDebt,
+    @Default(true) bool autoResolve,
     /// Создатель (только он может редактировать/удалять).
     required String createdBy,
     required DateTime createdAt,

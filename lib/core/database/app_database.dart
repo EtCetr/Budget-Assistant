@@ -368,6 +368,9 @@ class Debts extends Table {
   BoolColumn get isExMemberDebt =>
       boolean().withDefault(const Constant(false))();
   /// Создатель (только он может редактировать/удалять).
+  /// Авто-закрытие долга при связанной транзакции (6.3.14).
+  BoolColumn get autoResolve =>
+      boolean().withDefault(const Constant(true))();
   TextColumn get createdBy => text().references(Users, #id)();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
@@ -457,7 +460,7 @@ class AppDatabase extends _$AppDatabase {
   /// v4: Р­С‚Р°Рї 8+ вЂ” РїРѕР»Рµ is_large_expense
   /// v5: Р­С‚Р°Рї 9 вЂ” С‚Р°Р±Р»РёС†Р° budget_limits + РёРЅРґРµРєСЃС‹
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   Future<void> _createSavingsIndexes() async {
     // ТОМ 2 §22: фильтрация целей по владельцу/пространству/статусу/дедлайну
@@ -664,6 +667,12 @@ class AppDatabase extends _$AppDatabase {
       }
       // РРЎРўРћР РР§Р•РЎРљРђРЇ РњРРќРђ РЈР”РђР›Р•РќРђ: РІРµС‚РєР° from < 2 СЃ DROP TABLE
       // Р±РѕР»СЊС€Рµ РЅРµ РЅСѓР¶РЅР°, С‚.Рє. СЃС…РµРјР° СЃС‚Р°Р±РёР»РёР·РёСЂРѕРІР°РЅР° РЅР° v4+
+                                                if (from < 12) {
+                        // Этап 13.3: флаг авто-закрытия долга при связанной транзакции.
+                        await customStatement(
+                        'ALTER TABLE debts ADD COLUMN auto_resolve INTEGER NOT NULL DEFAULT 1',
+                        );
+                        }
                         if (from < 11) {
             // Этап 13, D13-2: creditor_id стал nullable (внешний контрагент с обеих
             // сторон). Таблица debts новая и пустая (dev) — пересоздаём без переноса.

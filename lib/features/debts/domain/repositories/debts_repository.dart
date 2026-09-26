@@ -20,6 +20,9 @@ abstract interface class DebtsRepository {
   /// Пометка активных долгов вышедшего члена семьи (ТЗ 6.3.13.8).
   /// Долги НЕ удаляются — финансовые обязательства остаются.
   Future<int> markExMember({required String memberUserId});
+  /// Авто-закрытие активных долгов с auto_resolve, связанных
+  /// с транзакцией (6.3.14.13 п.4.b). Без компенсирующих транзакций.
+  Future<int> resolveAutoLinked({required String transactionId});
   Future<DebtFormDraft?> getFreshDraft(String userId);
   Future<void> saveDraft(String userId, DebtFormDraft draft);
   Future<void> deleteDraftByUser(String userId);

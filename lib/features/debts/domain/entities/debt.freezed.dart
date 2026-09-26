@@ -25,7 +25,7 @@ mixin _$Debt {
  String? get originalTransactionId;/// Связь с частью сплит-чека (transaction_splits.id).
  String? get splitId;/// Срок погашения (UTC).
  DateTime? get dueDate;/// Дата закрытия.
- DateTime? get resolvedAt; String get resolutionStatus; bool get isExMemberDebt;/// Создатель (только он может редактировать/удалять).
+ DateTime? get resolvedAt; String get resolutionStatus; bool get isExMemberDebt; bool get autoResolve;/// Создатель (только он может редактировать/удалять).
  String get createdBy; DateTime get createdAt; DateTime get updatedAt; SyncStatus get syncStatus;
 /// Create a copy of Debt
 /// with the given fields replaced by the non-null parameter values.
@@ -37,16 +37,16 @@ $DebtCopyWith<Debt> get copyWith => _$DebtCopyWithImpl<Debt>(this as Debt, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Debt&&(identical(other.id, id) || other.id == id)&&(identical(other.creditorId, creditorId) || other.creditorId == creditorId)&&(identical(other.debtorId, debtorId) || other.debtorId == debtorId)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.description, description) || other.description == description)&&(identical(other.counterpartyNameDative, counterpartyNameDative) || other.counterpartyNameDative == counterpartyNameDative)&&(identical(other.originalTransactionId, originalTransactionId) || other.originalTransactionId == originalTransactionId)&&(identical(other.splitId, splitId) || other.splitId == splitId)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.resolvedAt, resolvedAt) || other.resolvedAt == resolvedAt)&&(identical(other.resolutionStatus, resolutionStatus) || other.resolutionStatus == resolutionStatus)&&(identical(other.isExMemberDebt, isExMemberDebt) || other.isExMemberDebt == isExMemberDebt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Debt&&(identical(other.id, id) || other.id == id)&&(identical(other.creditorId, creditorId) || other.creditorId == creditorId)&&(identical(other.debtorId, debtorId) || other.debtorId == debtorId)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.description, description) || other.description == description)&&(identical(other.counterpartyNameDative, counterpartyNameDative) || other.counterpartyNameDative == counterpartyNameDative)&&(identical(other.originalTransactionId, originalTransactionId) || other.originalTransactionId == originalTransactionId)&&(identical(other.splitId, splitId) || other.splitId == splitId)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.resolvedAt, resolvedAt) || other.resolvedAt == resolvedAt)&&(identical(other.resolutionStatus, resolutionStatus) || other.resolutionStatus == resolutionStatus)&&(identical(other.isExMemberDebt, isExMemberDebt) || other.isExMemberDebt == isExMemberDebt)&&(identical(other.autoResolve, autoResolve) || other.autoResolve == autoResolve)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,id,creditorId,debtorId,spaceId,categoryId,amount,currency,description,counterpartyNameDative,originalTransactionId,splitId,dueDate,resolvedAt,resolutionStatus,isExMemberDebt,createdBy,createdAt,updatedAt,syncStatus]);
+int get hashCode => Object.hashAll([runtimeType,id,creditorId,debtorId,spaceId,categoryId,amount,currency,description,counterpartyNameDative,originalTransactionId,splitId,dueDate,resolvedAt,resolutionStatus,isExMemberDebt,autoResolve,createdBy,createdAt,updatedAt,syncStatus]);
 
 @override
 String toString() {
-  return 'Debt(id: $id, creditorId: $creditorId, debtorId: $debtorId, spaceId: $spaceId, categoryId: $categoryId, amount: $amount, currency: $currency, description: $description, counterpartyNameDative: $counterpartyNameDative, originalTransactionId: $originalTransactionId, splitId: $splitId, dueDate: $dueDate, resolvedAt: $resolvedAt, resolutionStatus: $resolutionStatus, isExMemberDebt: $isExMemberDebt, createdBy: $createdBy, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus)';
+  return 'Debt(id: $id, creditorId: $creditorId, debtorId: $debtorId, spaceId: $spaceId, categoryId: $categoryId, amount: $amount, currency: $currency, description: $description, counterpartyNameDative: $counterpartyNameDative, originalTransactionId: $originalTransactionId, splitId: $splitId, dueDate: $dueDate, resolvedAt: $resolvedAt, resolutionStatus: $resolutionStatus, isExMemberDebt: $isExMemberDebt, autoResolve: $autoResolve, createdBy: $createdBy, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus)';
 }
 
 
@@ -57,7 +57,7 @@ abstract mixin class $DebtCopyWith<$Res>  {
   factory $DebtCopyWith(Debt value, $Res Function(Debt) _then) = _$DebtCopyWithImpl;
 @useResult
 $Res call({
- String id, String? creditorId, String? debtorId, String? spaceId, String? categoryId, int amount, String currency, String? description, String? counterpartyNameDative, String? originalTransactionId, String? splitId, DateTime? dueDate, DateTime? resolvedAt, String resolutionStatus, bool isExMemberDebt, String createdBy, DateTime createdAt, DateTime updatedAt, SyncStatus syncStatus
+ String id, String? creditorId, String? debtorId, String? spaceId, String? categoryId, int amount, String currency, String? description, String? counterpartyNameDative, String? originalTransactionId, String? splitId, DateTime? dueDate, DateTime? resolvedAt, String resolutionStatus, bool isExMemberDebt, bool autoResolve, String createdBy, DateTime createdAt, DateTime updatedAt, SyncStatus syncStatus
 });
 
 
@@ -74,7 +74,7 @@ class _$DebtCopyWithImpl<$Res>
 
 /// Create a copy of Debt
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? creditorId = freezed,Object? debtorId = freezed,Object? spaceId = freezed,Object? categoryId = freezed,Object? amount = null,Object? currency = null,Object? description = freezed,Object? counterpartyNameDative = freezed,Object? originalTransactionId = freezed,Object? splitId = freezed,Object? dueDate = freezed,Object? resolvedAt = freezed,Object? resolutionStatus = null,Object? isExMemberDebt = null,Object? createdBy = null,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? creditorId = freezed,Object? debtorId = freezed,Object? spaceId = freezed,Object? categoryId = freezed,Object? amount = null,Object? currency = null,Object? description = freezed,Object? counterpartyNameDative = freezed,Object? originalTransactionId = freezed,Object? splitId = freezed,Object? dueDate = freezed,Object? resolvedAt = freezed,Object? resolutionStatus = null,Object? isExMemberDebt = null,Object? autoResolve = null,Object? createdBy = null,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,creditorId: freezed == creditorId ? _self.creditorId : creditorId // ignore: cast_nullable_to_non_nullable
@@ -91,6 +91,7 @@ as String?,dueDate: freezed == dueDate ? _self.dueDate : dueDate // ignore: cast
 as DateTime?,resolvedAt: freezed == resolvedAt ? _self.resolvedAt : resolvedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,resolutionStatus: null == resolutionStatus ? _self.resolutionStatus : resolutionStatus // ignore: cast_nullable_to_non_nullable
 as String,isExMemberDebt: null == isExMemberDebt ? _self.isExMemberDebt : isExMemberDebt // ignore: cast_nullable_to_non_nullable
+as bool,autoResolve: null == autoResolve ? _self.autoResolve : autoResolve // ignore: cast_nullable_to_non_nullable
 as bool,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
@@ -175,7 +176,7 @@ return $default(_that);case _:
 
 
 class _Debt implements Debt {
-  const _Debt({required this.id, this.creditorId, this.debtorId, this.spaceId, this.categoryId, required this.amount, this.currency = 'RUB', this.description, this.counterpartyNameDative, this.originalTransactionId, this.splitId, this.dueDate, this.resolvedAt, this.resolutionStatus = DebtResolutionStatus.active, this.isExMemberDebt = false, required this.createdBy, required this.createdAt, required this.updatedAt, this.syncStatus = SyncStatus.pending});
+  const _Debt({required this.id, this.creditorId, this.debtorId, this.spaceId, this.categoryId, required this.amount, this.currency = 'RUB', this.description, this.counterpartyNameDative, this.originalTransactionId, this.splitId, this.dueDate, this.resolvedAt, this.resolutionStatus = DebtResolutionStatus.active, this.isExMemberDebt = false, this.autoResolve = true, required this.createdBy, required this.createdAt, required this.updatedAt, this.syncStatus = SyncStatus.pending});
   
 
 @override final  String id;
@@ -204,6 +205,7 @@ class _Debt implements Debt {
 @override final  DateTime? resolvedAt;
 @override@JsonKey() final  String resolutionStatus;
 @override@JsonKey() final  bool isExMemberDebt;
+@override@JsonKey() final  bool autoResolve;
 /// Создатель (только он может редактировать/удалять).
 @override final  String createdBy;
 @override final  DateTime createdAt;
@@ -220,16 +222,16 @@ _$DebtCopyWith<_Debt> get copyWith => __$DebtCopyWithImpl<_Debt>(this, _$identit
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Debt&&(identical(other.id, id) || other.id == id)&&(identical(other.creditorId, creditorId) || other.creditorId == creditorId)&&(identical(other.debtorId, debtorId) || other.debtorId == debtorId)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.description, description) || other.description == description)&&(identical(other.counterpartyNameDative, counterpartyNameDative) || other.counterpartyNameDative == counterpartyNameDative)&&(identical(other.originalTransactionId, originalTransactionId) || other.originalTransactionId == originalTransactionId)&&(identical(other.splitId, splitId) || other.splitId == splitId)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.resolvedAt, resolvedAt) || other.resolvedAt == resolvedAt)&&(identical(other.resolutionStatus, resolutionStatus) || other.resolutionStatus == resolutionStatus)&&(identical(other.isExMemberDebt, isExMemberDebt) || other.isExMemberDebt == isExMemberDebt)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Debt&&(identical(other.id, id) || other.id == id)&&(identical(other.creditorId, creditorId) || other.creditorId == creditorId)&&(identical(other.debtorId, debtorId) || other.debtorId == debtorId)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.description, description) || other.description == description)&&(identical(other.counterpartyNameDative, counterpartyNameDative) || other.counterpartyNameDative == counterpartyNameDative)&&(identical(other.originalTransactionId, originalTransactionId) || other.originalTransactionId == originalTransactionId)&&(identical(other.splitId, splitId) || other.splitId == splitId)&&(identical(other.dueDate, dueDate) || other.dueDate == dueDate)&&(identical(other.resolvedAt, resolvedAt) || other.resolvedAt == resolvedAt)&&(identical(other.resolutionStatus, resolutionStatus) || other.resolutionStatus == resolutionStatus)&&(identical(other.isExMemberDebt, isExMemberDebt) || other.isExMemberDebt == isExMemberDebt)&&(identical(other.autoResolve, autoResolve) || other.autoResolve == autoResolve)&&(identical(other.createdBy, createdBy) || other.createdBy == createdBy)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,id,creditorId,debtorId,spaceId,categoryId,amount,currency,description,counterpartyNameDative,originalTransactionId,splitId,dueDate,resolvedAt,resolutionStatus,isExMemberDebt,createdBy,createdAt,updatedAt,syncStatus]);
+int get hashCode => Object.hashAll([runtimeType,id,creditorId,debtorId,spaceId,categoryId,amount,currency,description,counterpartyNameDative,originalTransactionId,splitId,dueDate,resolvedAt,resolutionStatus,isExMemberDebt,autoResolve,createdBy,createdAt,updatedAt,syncStatus]);
 
 @override
 String toString() {
-  return 'Debt(id: $id, creditorId: $creditorId, debtorId: $debtorId, spaceId: $spaceId, categoryId: $categoryId, amount: $amount, currency: $currency, description: $description, counterpartyNameDative: $counterpartyNameDative, originalTransactionId: $originalTransactionId, splitId: $splitId, dueDate: $dueDate, resolvedAt: $resolvedAt, resolutionStatus: $resolutionStatus, isExMemberDebt: $isExMemberDebt, createdBy: $createdBy, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus)';
+  return 'Debt(id: $id, creditorId: $creditorId, debtorId: $debtorId, spaceId: $spaceId, categoryId: $categoryId, amount: $amount, currency: $currency, description: $description, counterpartyNameDative: $counterpartyNameDative, originalTransactionId: $originalTransactionId, splitId: $splitId, dueDate: $dueDate, resolvedAt: $resolvedAt, resolutionStatus: $resolutionStatus, isExMemberDebt: $isExMemberDebt, autoResolve: $autoResolve, createdBy: $createdBy, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus)';
 }
 
 
@@ -240,7 +242,7 @@ abstract mixin class _$DebtCopyWith<$Res> implements $DebtCopyWith<$Res> {
   factory _$DebtCopyWith(_Debt value, $Res Function(_Debt) _then) = __$DebtCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String? creditorId, String? debtorId, String? spaceId, String? categoryId, int amount, String currency, String? description, String? counterpartyNameDative, String? originalTransactionId, String? splitId, DateTime? dueDate, DateTime? resolvedAt, String resolutionStatus, bool isExMemberDebt, String createdBy, DateTime createdAt, DateTime updatedAt, SyncStatus syncStatus
+ String id, String? creditorId, String? debtorId, String? spaceId, String? categoryId, int amount, String currency, String? description, String? counterpartyNameDative, String? originalTransactionId, String? splitId, DateTime? dueDate, DateTime? resolvedAt, String resolutionStatus, bool isExMemberDebt, bool autoResolve, String createdBy, DateTime createdAt, DateTime updatedAt, SyncStatus syncStatus
 });
 
 
@@ -257,7 +259,7 @@ class __$DebtCopyWithImpl<$Res>
 
 /// Create a copy of Debt
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? creditorId = freezed,Object? debtorId = freezed,Object? spaceId = freezed,Object? categoryId = freezed,Object? amount = null,Object? currency = null,Object? description = freezed,Object? counterpartyNameDative = freezed,Object? originalTransactionId = freezed,Object? splitId = freezed,Object? dueDate = freezed,Object? resolvedAt = freezed,Object? resolutionStatus = null,Object? isExMemberDebt = null,Object? createdBy = null,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? creditorId = freezed,Object? debtorId = freezed,Object? spaceId = freezed,Object? categoryId = freezed,Object? amount = null,Object? currency = null,Object? description = freezed,Object? counterpartyNameDative = freezed,Object? originalTransactionId = freezed,Object? splitId = freezed,Object? dueDate = freezed,Object? resolvedAt = freezed,Object? resolutionStatus = null,Object? isExMemberDebt = null,Object? autoResolve = null,Object? createdBy = null,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
   return _then(_Debt(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,creditorId: freezed == creditorId ? _self.creditorId : creditorId // ignore: cast_nullable_to_non_nullable
@@ -274,6 +276,7 @@ as String?,dueDate: freezed == dueDate ? _self.dueDate : dueDate // ignore: cast
 as DateTime?,resolvedAt: freezed == resolvedAt ? _self.resolvedAt : resolvedAt // ignore: cast_nullable_to_non_nullable
 as DateTime?,resolutionStatus: null == resolutionStatus ? _self.resolutionStatus : resolutionStatus // ignore: cast_nullable_to_non_nullable
 as String,isExMemberDebt: null == isExMemberDebt ? _self.isExMemberDebt : isExMemberDebt // ignore: cast_nullable_to_non_nullable
+as bool,autoResolve: null == autoResolve ? _self.autoResolve : autoResolve // ignore: cast_nullable_to_non_nullable
 as bool,createdBy: null == createdBy ? _self.createdBy : createdBy // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable

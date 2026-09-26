@@ -15893,6 +15893,21 @@ class $DebtsTable extends Debts with TableInfo<$DebtsTable, DebtDb> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _autoResolveMeta = const VerificationMeta(
+    'autoResolve',
+  );
+  @override
+  late final GeneratedColumn<bool> autoResolve = GeneratedColumn<bool>(
+    'auto_resolve',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("auto_resolve" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   static const VerificationMeta _createdByMeta = const VerificationMeta(
     'createdBy',
   );
@@ -15958,6 +15973,7 @@ class $DebtsTable extends Debts with TableInfo<$DebtsTable, DebtDb> {
     resolvedAt,
     resolutionStatus,
     isExMemberDebt,
+    autoResolve,
     createdBy,
     createdAt,
     updatedAt,
@@ -16081,6 +16097,15 @@ class $DebtsTable extends Debts with TableInfo<$DebtsTable, DebtDb> {
         ),
       );
     }
+    if (data.containsKey('auto_resolve')) {
+      context.handle(
+        _autoResolveMeta,
+        autoResolve.isAcceptableOrUnknown(
+          data['auto_resolve']!,
+          _autoResolveMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_by')) {
       context.handle(
         _createdByMeta,
@@ -16170,6 +16195,10 @@ class $DebtsTable extends Debts with TableInfo<$DebtsTable, DebtDb> {
         DriftSqlType.bool,
         data['${effectivePrefix}is_ex_member_debt'],
       )!,
+      autoResolve: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}auto_resolve'],
+      )!,
       createdBy: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}created_by'],
@@ -16246,6 +16275,8 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
   final bool isExMemberDebt;
 
   /// Создатель (только он может редактировать/удалять).
+  /// Авто-закрытие долга при связанной транзакции (6.3.14).
+  final bool autoResolve;
   final String createdBy;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -16266,6 +16297,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
     this.resolvedAt,
     required this.resolutionStatus,
     required this.isExMemberDebt,
+    required this.autoResolve,
     required this.createdBy,
     required this.createdAt,
     required this.updatedAt,
@@ -16311,6 +16343,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
     }
     map['resolution_status'] = Variable<String>(resolutionStatus);
     map['is_ex_member_debt'] = Variable<bool>(isExMemberDebt);
+    map['auto_resolve'] = Variable<bool>(autoResolve);
     map['created_by'] = Variable<String>(createdBy);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -16359,6 +16392,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
           : Value(resolvedAt),
       resolutionStatus: Value(resolutionStatus),
       isExMemberDebt: Value(isExMemberDebt),
+      autoResolve: Value(autoResolve),
       createdBy: Value(createdBy),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -16391,6 +16425,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
       resolvedAt: serializer.fromJson<DateTime?>(json['resolvedAt']),
       resolutionStatus: serializer.fromJson<String>(json['resolutionStatus']),
       isExMemberDebt: serializer.fromJson<bool>(json['isExMemberDebt']),
+      autoResolve: serializer.fromJson<bool>(json['autoResolve']),
       createdBy: serializer.fromJson<String>(json['createdBy']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -16422,6 +16457,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
       'resolvedAt': serializer.toJson<DateTime?>(resolvedAt),
       'resolutionStatus': serializer.toJson<String>(resolutionStatus),
       'isExMemberDebt': serializer.toJson<bool>(isExMemberDebt),
+      'autoResolve': serializer.toJson<bool>(autoResolve),
       'createdBy': serializer.toJson<String>(createdBy),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -16447,6 +16483,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
     Value<DateTime?> resolvedAt = const Value.absent(),
     String? resolutionStatus,
     bool? isExMemberDebt,
+    bool? autoResolve,
     String? createdBy,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -16471,6 +16508,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
     resolvedAt: resolvedAt.present ? resolvedAt.value : this.resolvedAt,
     resolutionStatus: resolutionStatus ?? this.resolutionStatus,
     isExMemberDebt: isExMemberDebt ?? this.isExMemberDebt,
+    autoResolve: autoResolve ?? this.autoResolve,
     createdBy: createdBy ?? this.createdBy,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -16509,6 +16547,9 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
       isExMemberDebt: data.isExMemberDebt.present
           ? data.isExMemberDebt.value
           : this.isExMemberDebt,
+      autoResolve: data.autoResolve.present
+          ? data.autoResolve.value
+          : this.autoResolve,
       createdBy: data.createdBy.present ? data.createdBy.value : this.createdBy,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -16536,6 +16577,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
           ..write('resolvedAt: $resolvedAt, ')
           ..write('resolutionStatus: $resolutionStatus, ')
           ..write('isExMemberDebt: $isExMemberDebt, ')
+          ..write('autoResolve: $autoResolve, ')
           ..write('createdBy: $createdBy, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -16561,6 +16603,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
     resolvedAt,
     resolutionStatus,
     isExMemberDebt,
+    autoResolve,
     createdBy,
     createdAt,
     updatedAt,
@@ -16585,6 +16628,7 @@ class DebtDb extends DataClass implements Insertable<DebtDb> {
           other.resolvedAt == this.resolvedAt &&
           other.resolutionStatus == this.resolutionStatus &&
           other.isExMemberDebt == this.isExMemberDebt &&
+          other.autoResolve == this.autoResolve &&
           other.createdBy == this.createdBy &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -16607,6 +16651,7 @@ class DebtsCompanion extends UpdateCompanion<DebtDb> {
   final Value<DateTime?> resolvedAt;
   final Value<String> resolutionStatus;
   final Value<bool> isExMemberDebt;
+  final Value<bool> autoResolve;
   final Value<String> createdBy;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -16628,6 +16673,7 @@ class DebtsCompanion extends UpdateCompanion<DebtDb> {
     this.resolvedAt = const Value.absent(),
     this.resolutionStatus = const Value.absent(),
     this.isExMemberDebt = const Value.absent(),
+    this.autoResolve = const Value.absent(),
     this.createdBy = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -16650,6 +16696,7 @@ class DebtsCompanion extends UpdateCompanion<DebtDb> {
     this.resolvedAt = const Value.absent(),
     this.resolutionStatus = const Value.absent(),
     this.isExMemberDebt = const Value.absent(),
+    this.autoResolve = const Value.absent(),
     required String createdBy,
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -16674,6 +16721,7 @@ class DebtsCompanion extends UpdateCompanion<DebtDb> {
     Expression<DateTime>? resolvedAt,
     Expression<String>? resolutionStatus,
     Expression<bool>? isExMemberDebt,
+    Expression<bool>? autoResolve,
     Expression<String>? createdBy,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -16698,6 +16746,7 @@ class DebtsCompanion extends UpdateCompanion<DebtDb> {
       if (resolvedAt != null) 'resolved_at': resolvedAt,
       if (resolutionStatus != null) 'resolution_status': resolutionStatus,
       if (isExMemberDebt != null) 'is_ex_member_debt': isExMemberDebt,
+      if (autoResolve != null) 'auto_resolve': autoResolve,
       if (createdBy != null) 'created_by': createdBy,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -16722,6 +16771,7 @@ class DebtsCompanion extends UpdateCompanion<DebtDb> {
     Value<DateTime?>? resolvedAt,
     Value<String>? resolutionStatus,
     Value<bool>? isExMemberDebt,
+    Value<bool>? autoResolve,
     Value<String>? createdBy,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -16746,6 +16796,7 @@ class DebtsCompanion extends UpdateCompanion<DebtDb> {
       resolvedAt: resolvedAt ?? this.resolvedAt,
       resolutionStatus: resolutionStatus ?? this.resolutionStatus,
       isExMemberDebt: isExMemberDebt ?? this.isExMemberDebt,
+      autoResolve: autoResolve ?? this.autoResolve,
       createdBy: createdBy ?? this.createdBy,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -16806,6 +16857,9 @@ class DebtsCompanion extends UpdateCompanion<DebtDb> {
     if (isExMemberDebt.present) {
       map['is_ex_member_debt'] = Variable<bool>(isExMemberDebt.value);
     }
+    if (autoResolve.present) {
+      map['auto_resolve'] = Variable<bool>(autoResolve.value);
+    }
     if (createdBy.present) {
       map['created_by'] = Variable<String>(createdBy.value);
     }
@@ -16844,6 +16898,7 @@ class DebtsCompanion extends UpdateCompanion<DebtDb> {
           ..write('resolvedAt: $resolvedAt, ')
           ..write('resolutionStatus: $resolutionStatus, ')
           ..write('isExMemberDebt: $isExMemberDebt, ')
+          ..write('autoResolve: $autoResolve, ')
           ..write('createdBy: $createdBy, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -31536,6 +31591,7 @@ typedef $$DebtsTableCreateCompanionBuilder =
       Value<DateTime?> resolvedAt,
       Value<String> resolutionStatus,
       Value<bool> isExMemberDebt,
+      Value<bool> autoResolve,
       required String createdBy,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -31559,6 +31615,7 @@ typedef $$DebtsTableUpdateCompanionBuilder =
       Value<DateTime?> resolvedAt,
       Value<String> resolutionStatus,
       Value<bool> isExMemberDebt,
+      Value<bool> autoResolve,
       Value<String> createdBy,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -31744,6 +31801,11 @@ class $$DebtsTableFilterComposer extends Composer<_$AppDatabase, $DebtsTable> {
 
   ColumnFilters<bool> get isExMemberDebt => $composableBuilder(
     column: $table.isExMemberDebt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get autoResolve => $composableBuilder(
+    column: $table.autoResolve,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -31979,6 +32041,11 @@ class $$DebtsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get autoResolve => $composableBuilder(
+    column: $table.autoResolve,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -32199,6 +32266,11 @@ class $$DebtsTableAnnotationComposer
 
   GeneratedColumn<bool> get isExMemberDebt => $composableBuilder(
     column: $table.isExMemberDebt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get autoResolve => $composableBuilder(
+    column: $table.autoResolve,
     builder: (column) => column,
   );
 
@@ -32428,6 +32500,7 @@ class $$DebtsTableTableManager
                 Value<DateTime?> resolvedAt = const Value.absent(),
                 Value<String> resolutionStatus = const Value.absent(),
                 Value<bool> isExMemberDebt = const Value.absent(),
+                Value<bool> autoResolve = const Value.absent(),
                 Value<String> createdBy = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -32449,6 +32522,7 @@ class $$DebtsTableTableManager
                 resolvedAt: resolvedAt,
                 resolutionStatus: resolutionStatus,
                 isExMemberDebt: isExMemberDebt,
+                autoResolve: autoResolve,
                 createdBy: createdBy,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -32472,6 +32546,7 @@ class $$DebtsTableTableManager
                 Value<DateTime?> resolvedAt = const Value.absent(),
                 Value<String> resolutionStatus = const Value.absent(),
                 Value<bool> isExMemberDebt = const Value.absent(),
+                Value<bool> autoResolve = const Value.absent(),
                 required String createdBy,
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -32493,6 +32568,7 @@ class $$DebtsTableTableManager
                 resolvedAt: resolvedAt,
                 resolutionStatus: resolutionStatus,
                 isExMemberDebt: isExMemberDebt,
+                autoResolve: autoResolve,
                 createdBy: createdBy,
                 createdAt: createdAt,
                 updatedAt: updatedAt,

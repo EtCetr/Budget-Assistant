@@ -147,6 +147,15 @@ class DebtsRepositoryImpl implements DebtsRepository {
     }
   }
 
+  @override
+  Future<int> resolveAutoLinked({required String transactionId}) async {
+    try {
+      return await _dao.resolveAutoLinked(transactionId);
+    } catch (e, st) {
+      _logger.e('debts resolveAutoLinked failed', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
   Debt _map(DebtDb db) => Debt(
         id: db.id,
         creditorId: db.creditorId,
@@ -163,6 +172,7 @@ class DebtsRepositoryImpl implements DebtsRepository {
         resolvedAt: db.resolvedAt,
         resolutionStatus: db.resolutionStatus,
         isExMemberDebt: db.isExMemberDebt,
+        autoResolve: db.autoResolve,
         createdBy: db.createdBy,
         createdAt: db.createdAt,
         updatedAt: db.updatedAt,
@@ -185,6 +195,7 @@ class DebtsRepositoryImpl implements DebtsRepository {
         resolvedAt: d.resolvedAt,
         resolutionStatus: d.resolutionStatus,
         isExMemberDebt: d.isExMemberDebt,
+        autoResolve: d.autoResolve,
         createdBy: d.createdBy,
         createdAt: d.createdAt,
         updatedAt: d.updatedAt,

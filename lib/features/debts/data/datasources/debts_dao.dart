@@ -96,6 +96,24 @@ class DebtsDao extends DatabaseAccessor<AppDatabase> with _$DebtsDaoMixin {
   }
 
   // ─── Локальные черновики формы (без sync) ───
+  /// Авто-закрытие активных долгов с auto_resolve = TRUE, связанных
+  /// с транзакцией (6.3.14.13 п.4.b). Компенсации НЕ создаются.
+  Future<int> resolveAutoLinked(String transactionId) {
+    final now = DateTime.now().toUtc();
+    return (update(debts)
+          ..where((d) =>
+              d.originalTransactionId.equals(transactionId) &
+              d.resolutionStatus.equals('active') &
+              d.autoResolve.equals(true)))
+        .write(
+          DebtsCompanion(
+            resolutionStatus: const Value('resolved'),
+            resolvedAt: Value(now),
+            updatedAt: Value(now),
+            syncStatus: const Value(SyncStatus.pending),
+          ),
+        );
+  }
   Future<DebtDraftDb?> getFreshDraft(String draftId, DateTime sinceUtc) {
     return (select(debtDrafts)
           ..where((d) =>

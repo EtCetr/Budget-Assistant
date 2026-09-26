@@ -37,7 +37,7 @@ class DeclineNameUseCase {
     } else if ((s.endsWith('ина') || s.endsWith('ына')) && s.length >= 5) {
       r = '${s.substring(0, s.length - 1)}ой';
     } else if (s.endsWith('вич') || s.endsWith('ич')) {
-      r = '${s}у';
+      r = '$sу';
     } else if (s.endsWith('ия') || s.endsWith('ея')) {
       r = '${s.substring(0, s.length - 2)}ии';
     } else if (s.endsWith('ья')) {
@@ -60,7 +60,7 @@ class DeclineNameUseCase {
         s.endsWith('у') || s.endsWith('и')) {
       r = s; // несклоняемые заимствованные
     } else if (RegExp(r'[бвгджзклмнпрстфхцчшщ]$').hasMatch(s)) {
-      r = '${s}у'; // мужские на согласный
+      r = '$sу'; // мужские на согласный
     } else {
       return null;
     }
