@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -33,8 +33,8 @@ Future<void> showTransactionLongPressMenu({
     context: context,
     builder: (sheetContext) {
       return SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: ListView(
+          shrinkWrap: true,
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
@@ -146,7 +146,29 @@ Future<void> showTransactionLongPressMenu({
               },
             ),
 
-            // 📸 / 🧾 Чек (контекстно). TODO(Этап 16): роуты /receipts/scan и /receipts/:id
+                        // ✂️ Разделить по категориям (только расходы)
+            if (transaction.type == TransactionType.expense)
+            ListTile(
+                leading: const Icon(Icons.content_cut),
+                title: const Text(TransactionsLogLabels.splitReceipt),
+                onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    HapticFeedback.lightImpact();
+                    context.push('/transactions/split/${transaction.id}');
+                },
+            ),
+            // 🤝 Создать долг из транзакции
+            if (transaction.type != TransactionType.transfer)
+            ListTile(
+                leading: const Icon(Icons.handshake_outlined),
+                title: const Text(TransactionsLogLabels.createDebt),
+                onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    HapticFeedback.lightImpact();
+                    context.push('/debts/create?transaction_id=${transaction.id}');
+                },
+            ),
+// 📸 / 🧾 Чек (контекстно). TODO(Этап 16): роуты /receipts/scan и /receipts/:id
             if (transaction.receiptId == null)
               ListTile(
                 leading: const Icon(Icons.photo_camera_outlined),

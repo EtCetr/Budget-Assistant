@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budget_assistant/core/formatting/money_input_parser.dart';
 import 'package:budget_assistant/core/providers/security_providers.dart';
+import 'package:budget_assistant/core/router/routes.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/core/widgets/skeleton_shimmer.dart';
@@ -60,15 +61,19 @@ class _CreateDebtScreenState extends ConsumerState<CreateDebtScreen> {
     super.dispose();
   }
 
+  /// Пустая строка из query-параметров GoRouter = параметр отсутствует.
+  String? _nullIfEmpty(String? v) => (v == null || v.isEmpty) ? null : v;
+
   Future<void> _init() async {
     await ref.read(createDebtFormProvider.notifier).init(
-          debtId: widget.debtId,
-          transactionId: widget.transactionId,
-          splitId: widget.splitId,
+          debtId: _nullIfEmpty(widget.debtId),
+          transactionId: _nullIfEmpty(widget.transactionId),
+          splitId: _nullIfEmpty(widget.splitId),
         );
     if (!mounted) return;
-    final isCreatePlain =
-        widget.debtId == null && widget.transactionId == null && widget.splitId == null;
+    final isCreatePlain = _nullIfEmpty(widget.debtId) == null &&
+        _nullIfEmpty(widget.transactionId) == null &&
+        _nullIfEmpty(widget.splitId) == null;
     if (isCreatePlain) {
       final userId = ref.read(currentUserIdProvider);
       final draft =
@@ -118,8 +123,11 @@ class _CreateDebtScreenState extends ConsumerState<CreateDebtScreen> {
   }
 
   String _title() {
-    if (widget.debtId != null) return DebtsStrings.formTitleEdit;
-    if (widget.transactionId != null || widget.splitId != null) {
+    if (_nullIfEmpty(widget.debtId) != null) {
+      return DebtsStrings.formTitleEdit;
+    }
+    if (_nullIfEmpty(widget.transactionId) != null ||
+        _nullIfEmpty(widget.splitId) != null) {
       return DebtsStrings.formTitleFromTransaction;
     }
     return DebtsStrings.formTitleNew;
@@ -163,8 +171,9 @@ class _CreateDebtScreenState extends ConsumerState<CreateDebtScreen> {
           amount: amount,
           currency: form.currency,
           categoryId: form.categoryId,
-          description:
-              form.description.trim().isEmpty ? null : form.description.trim(),
+          description: form.description.trim().isEmpty
+              ? null
+              : form.description.trim(),
           dueDate: form.dueDate,
           autoResolve: form.autoResolve,
           updatedAt: DateTime.now().toUtc(),
@@ -194,8 +203,9 @@ class _CreateDebtScreenState extends ConsumerState<CreateDebtScreen> {
           amountKopecks: amount,
           currency: form.currency,
           categoryId: form.categoryId,
-          description:
-              form.description.trim().isEmpty ? null : form.description.trim(),
+          description: form.description.trim().isEmpty
+              ? null
+              : form.description.trim(),
           dueDateUtc: form.dueDate,
           originalTransactionId: form.linkedTransactionId,
           splitId: form.linkedSplitId,
@@ -214,7 +224,12 @@ class _CreateDebtScreenState extends ConsumerState<CreateDebtScreen> {
       ref.read(createDebtFormProvider.notifier).markSaved();
       await ref.read(debtsRepositoryProvider).deleteDraftByUser(me);
       if (!mounted) return;
-      context.go('/debts');
+      // Возврат на список долгов без слома стека навигации.
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go(AppRoutes.home);
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);

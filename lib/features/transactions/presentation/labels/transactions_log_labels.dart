@@ -1,4 +1,4 @@
-﻿abstract final class TransactionsLogLabels {
+abstract final class TransactionsLogLabels {
   static const title = 'Транзакции';
 
   static const scopeAll = 'Все';
@@ -76,6 +76,7 @@
   static const viewReceipt = 'Посмотреть чек';
   static const splitReceipt = 'Разделить по категориям';
   static const manageDebt = 'Управление долгом';
+  static const createDebt = 'Создать долг';
 
   static const createExpense = 'Расход';
   static const createIncome = 'Доход';
