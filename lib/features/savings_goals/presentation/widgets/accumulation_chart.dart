@@ -2,7 +2,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:lottie/lottie.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/core/widgets/offline_error_card.dart';
@@ -66,8 +65,7 @@ class AccumulationChart extends ConsumerWidget {
                 if (data.points.isEmpty) {
                   return Column(
                     children: [
-                      Lottie.asset('assets/animations/pause_savings.json',
-                          height: 140, repeat: false),
+                      const Icon(Icons.pause_circle_outline, size: 96),
                       const SizedBox(height: AppSpacing.spacing8),
                       Text(SavingsGoalsStrings.chartEmptyTitle,
                           style: theme.textTheme.titleMedium),

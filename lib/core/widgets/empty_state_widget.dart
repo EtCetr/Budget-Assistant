@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
+
+import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
+/// Пустое состояние для списков (ТЗ 6.8).
+/// Анимации Lottie удалены по решению владельца — статичная иконка.
 class EmptyStateAction {
   const EmptyStateAction({
     required this.label,
@@ -17,14 +20,14 @@ class EmptyStateAction {
 class EmptyStateWidget extends StatelessWidget {
   const EmptyStateWidget({
     super.key,
-    required this.animationAsset,
+    required this.icon,
     required this.title,
     this.subtitle,
     this.primaryAction,
     this.secondaryAction,
   });
 
-  final String animationAsset;
+  final IconData icon;
   final String title;
   final String? subtitle;
   final EmptyStateAction? primaryAction;
@@ -38,12 +41,7 @@ class EmptyStateWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Lottie.asset(
-              animationAsset,
-              width: 200,
-              height: 200,
-              repeat: false,
-            ),
+            Icon(icon, size: 96, color: AppColors.textSecondary),
             const SizedBox(height: AppSpacing.spacing24),
             Text(
               title,

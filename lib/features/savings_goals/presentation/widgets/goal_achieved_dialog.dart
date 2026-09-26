@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lottie/lottie.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
 import '../../domain/entities/savings_goal.dart';
@@ -25,11 +24,7 @@ class GoalAchievedDialog extends ConsumerWidget {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Lottie.asset(
-            'assets/animations/confetti.json',
-            height: 140,
-            repeat: false,
-          ),
+          const Icon(Icons.emoji_events_outlined, size: 96),
           const SizedBox(height: AppSpacing.spacing12),
           Text(
             SavingsGoalsStrings.achievedTitle,

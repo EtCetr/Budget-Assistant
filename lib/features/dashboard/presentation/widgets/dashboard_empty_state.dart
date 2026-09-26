@@ -10,7 +10,7 @@ class DashboardEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return EmptyStateWidget(
-      animationAsset: 'assets/animations/clean_sheet.json',
+      icon: Icons.dashboard_outlined,
       title: DashboardStrings.emptyTitle,
       subtitle: DashboardStrings.emptySubtitle,
       primaryAction: EmptyStateAction(

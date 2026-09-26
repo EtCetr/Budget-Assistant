@@ -41,7 +41,7 @@ class LimitCardsWidget extends ConsumerWidget {
       data: (limits) {
         if (limits.isEmpty) {
           return EmptyStateWidget(
-            animationAsset: 'assets/animations/empty_chart.json',
+            icon: Icons.insert_chart_outlined,
             title: DashboardStrings.limitEmptyTitle,
             subtitle: DashboardStrings.limitEmptySubtitle,
             primaryAction: EmptyStateAction(

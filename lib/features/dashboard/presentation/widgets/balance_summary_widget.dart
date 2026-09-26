@@ -45,7 +45,7 @@ class _BalanceSummaryWidgetState extends ConsumerState<BalanceSummaryWidget> {
       data: (accounts) {
         if (accounts.isEmpty) {
           return EmptyStateWidget(
-            animationAsset: 'assets/animations/empty_wallet.json',
+            icon: Icons.account_balance_wallet_outlined,
             title: 'Пока нет счетов',
             subtitle: 'Добавьте первый счёт, чтобы увидеть баланс',
             primaryAction: EmptyStateAction(

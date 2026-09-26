@@ -11,7 +11,7 @@ import 'package:budget_assistant/features/transactions/domain/models/transaction
 import '../entities/savings_goal.dart';
 
 /// Форматы экспорта аналитики (ТЗ 6.3.18.13). PDF исключён: пакет pdf
-/// конфликтует с lottie по archive, кириллице нужен TTF-ассет (отклонение 12.10).
+/// требует TTF-ассет для кириллицы (отклонение согласовано с владельцем).
 enum SavingsExportFormat { xlsx, csv, png }
 
 /// Экспорт аналитики копилок: XLSX (2 листа, ручной OOXML через archive),

@@ -38,7 +38,7 @@ class ExpenseFlowChartWidget extends ConsumerWidget {
 
         if (total == 0) {
           return const EmptyStateWidget(
-            animationAsset: 'assets/animations/empty_chart.json',
+            icon: Icons.insert_chart_outlined,
             title: DashboardStrings.expenseEmptyTitle,
             subtitle: DashboardStrings.expenseEmptySubtitle,
           );

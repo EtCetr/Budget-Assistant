@@ -67,7 +67,7 @@ class _SavingsAnalyticsScreenState extends ConsumerState<SavingsAnalyticsScreen>
         data: (goals) {
           if (goals.isEmpty) {
             return EmptyStateWidget(
-              animationAsset: 'assets/animations/empty_piggy.json',
+              icon: Icons.savings_outlined,
               title: SavingsGoalsStrings.emptyAllTitle,
               subtitle: SavingsGoalsStrings.analyticsEmptySubtitle,
               primaryAction: EmptyStateAction(

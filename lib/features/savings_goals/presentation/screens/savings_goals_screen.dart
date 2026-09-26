@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/core/widgets/empty_state_widget.dart';
@@ -191,7 +190,7 @@ class _ActiveTabBody extends ConsumerWidget {
       data: (goals) {
         if (allActive.isEmpty && allArchived.isEmpty) {
           return EmptyStateWidget(
-            animationAsset: 'assets/animations/empty_piggy.json',
+            icon: Icons.savings_outlined,
             title: SavingsGoalsStrings.emptyAllTitle,
             subtitle: SavingsGoalsStrings.emptyAllSubtitle,
             primaryAction: EmptyStateAction(
@@ -202,7 +201,7 @@ class _ActiveTabBody extends ConsumerWidget {
         }
         if (goals.isEmpty && allActive.isEmpty) {
           return EmptyStateWidget(
-            animationAsset: 'assets/animations/empty_box.json',
+            icon: Icons.inventory_2_outlined,
             title: SavingsGoalsStrings.emptyActiveTitle,
             subtitle: SavingsGoalsStrings.emptyActiveSubtitle,
             primaryAction: EmptyStateAction(
@@ -281,7 +280,7 @@ class _ArchiveTabBody extends ConsumerWidget {
       data: (goals) {
         if (allArchived.isEmpty) {
           return EmptyStateWidget(
-            animationAsset: 'assets/animations/empty_box.json',
+            icon: Icons.inventory_2_outlined,
             title: SavingsGoalsStrings.emptyArchiveTitle,
             subtitle: SavingsGoalsStrings.emptyArchiveSubtitle,
             primaryAction: EmptyStateAction(
@@ -344,12 +343,7 @@ class _CompactFilterEmpty extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Lottie.asset(
-              'assets/animations/search.json',
-              width: 120,
-              height: 120,
-              repeat: false,
-            ),
+            const Icon(Icons.search_off, size: 96),
             const SizedBox(height: AppSpacing.spacing12),
             Text(
               SavingsGoalsStrings.emptyFilterTitle,

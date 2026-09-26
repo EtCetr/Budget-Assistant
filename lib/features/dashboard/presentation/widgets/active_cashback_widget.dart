@@ -33,7 +33,7 @@ class ActiveCashbackWidget extends ConsumerWidget {
 
         if (items.isEmpty) {
           return EmptyStateWidget(
-            animationAsset: 'assets/animations/empty_cards.json',
+            icon: Icons.credit_card_off,
             title: 'Выберите категории на $monthName',
             subtitle: DashboardStrings.cashbackEmptySubtitle,
             primaryAction: EmptyStateAction(
