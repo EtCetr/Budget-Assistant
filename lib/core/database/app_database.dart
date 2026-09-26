@@ -323,6 +323,84 @@ class SavingsGoalDrafts extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
+// ═══════════════════════════════════════════════════════════
+// ЭТАП 13: Долги + локальные черновики (долги, сплиты)
+// ═══════════════════════════════════════════════════════════
+/// Взаимные долги (ТОМ 2 §13.3, ТЗ 6.3.13/6.3.14).
+/// E2E-поля (amount, description, counterparty_name_dative) хранятся
+/// локально открыто и шифруются AES-256-GCM перед sync-пейлоадом
+/// (Этап 25) — та же стратегия, что у счетов и целей накопления.
+@DataClassName('DebtDb')
+class Debts extends Table {
+  TextColumn get id => text()();
+  /// Кому должны (кредитор). Индекс.
+  TextColumn get creditorId => text().references(Users, #id)();
+  /// Кто должен (должник). NULL = внешний контрагент
+  /// (используется counterparty_name_dative).
+  TextColumn get debtorId => text().nullable().references(Users, #id)();
+  /// Семейный долг — пространство; NULL = личный/внешний.
+  TextColumn get spaceId => text().nullable().references(Spaces, #id)();
+  /// Категория исходной траты (компенсирующие транзакции, ТОМ 4 §6).
+  TextColumn get categoryId =>
+      text().nullable().references(Categories, #id)();
+  /// Сумма долга, копейки, всегда > 0.
+  IntColumn get amount => integer()();
+  TextColumn get currency => text().withDefault(const Constant('RUB'))();
+  /// «За что» [E2E].
+  TextColumn get description => text().nullable()();
+  /// Имя внешнего контрагента в дательном падеже [E2E].
+  TextColumn get counterpartyNameDative => text().nullable()();
+  /// Транзакция, породившая долг.
+  TextColumn get originalTransactionId =>
+      text().nullable().references(Transactions, #id)();
+  /// Связь с частью сплит-чека (transaction_splits.id): долг только
+  /// за конкретную позицию общего чека.
+  TextColumn get splitId =>
+      text().nullable().references(TransactionSplits, #id)();
+  /// Срок погашения (UTC, nullable).
+  DateTimeColumn get dueDate => dateTime().nullable()();
+  /// Дата закрытия.
+  DateTimeColumn get resolvedAt => dateTime().nullable()();
+  /// 'active' | 'forgiven' | 'paid_offline' | 'resolved'. Индекс.
+  TextColumn get resolutionStatus =>
+      text().withDefault(const Constant('active'))();
+  /// Долг ex-члена семьи: НЕ удаляется, остаётся действительным.
+  BoolColumn get isExMemberDebt =>
+      boolean().withDefault(const Constant(false))();
+  /// Создатель (только он может редактировать/удалять).
+  TextColumn get createdBy => text().references(Users, #id)();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get syncStatus =>
+      textEnum<SyncStatus>().withDefault(const Constant('pending'))();
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Локальный черновик формы долга (без sync, ТОМ 2 §23).
+@DataClassName('DebtDraftDb')
+class DebtDrafts extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text().references(Users, #id)();
+  TextColumn get debtId => text().nullable()();
+  TextColumn get formDataJson => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Локальный черновик экрана разделения (без sync, ТОМ 2 §23.2).
+@DataClassName('SplitDraftDb')
+class SplitDrafts extends Table {
+  TextColumn get id => text()();
+  TextColumn get transactionId => text().references(Transactions, #id)();
+  TextColumn get positionsJson => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  @override
+  Set<Column> get primaryKey => {id};
+}
 @DriftDatabase(
   tables: [
     // Р­С‚Р°Рї 3: Р¤СѓРЅРґР°РјРµРЅС‚Р°Р»СЊРЅС‹Рµ СЃСѓС‰РЅРѕСЃС‚Рё
@@ -349,6 +427,9 @@ class SavingsGoalDrafts extends Table {
     DashboardWidgets,
     SavingsGoals,
     SavingsGoalDrafts,
+Debts,
+    DebtDrafts,
+    SplitDrafts,
   ],
   daos: [
     UsersDao,
@@ -376,7 +457,7 @@ class AppDatabase extends _$AppDatabase {
   /// v4: Р­С‚Р°Рї 8+ вЂ” РїРѕР»Рµ is_large_expense
   /// v5: Р­С‚Р°Рї 9 вЂ” С‚Р°Р±Р»РёС†Р° budget_limits + РёРЅРґРµРєСЃС‹
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   Future<void> _createSavingsIndexes() async {
     // ТОМ 2 §22: фильтрация целей по владельцу/пространству/статусу/дедлайну
@@ -394,6 +475,37 @@ class AppDatabase extends _$AppDatabase {
     ''');
   }
 
+    Future<void> _createDebtsIndexes() async {
+  // ТОМ 2 §22: фильтрация долгов по участникам, статусам, сроку, sync.
+  await customStatement('''
+  CREATE INDEX IF NOT EXISTS idx_debts_creditor
+  ON debts(creditor_id, resolution_status)
+  ''');
+  await customStatement('''
+  CREATE INDEX IF NOT EXISTS idx_debts_debtor
+  ON debts(debtor_id, resolution_status)
+  ''');
+  await customStatement('''
+  CREATE INDEX IF NOT EXISTS idx_debts_space_status
+  ON debts(space_id, resolution_status)
+  ''');
+  await customStatement('''
+  CREATE INDEX IF NOT EXISTS idx_debts_due_date
+  ON debts(due_date)
+  ''');
+  await customStatement('''
+  CREATE INDEX IF NOT EXISTS idx_debts_sync_status
+  ON debts(sync_status)
+  ''');
+  await customStatement('''
+  CREATE INDEX IF NOT EXISTS idx_debt_drafts_user
+  ON debt_drafts(user_id, updated_at)
+  ''');
+  await customStatement('''
+  CREATE INDEX IF NOT EXISTS idx_split_drafts_transaction
+  ON split_drafts(transaction_id)
+  ''');
+  }
   Future<void> _createAllIndexes() async {
     // РРќР”Р•РљРЎР« Р”Р›РЇ Р­РўРђРџРђ 3
     await customStatement('''
@@ -552,6 +664,13 @@ class AppDatabase extends _$AppDatabase {
       }
       // РРЎРўРћР РР§Р•РЎРљРђРЇ РњРРќРђ РЈР”РђР›Р•РќРђ: РІРµС‚РєР° from < 2 СЃ DROP TABLE
       // Р±РѕР»СЊС€Рµ РЅРµ РЅСѓР¶РЅР°, С‚.Рє. СЃС…РµРјР° СЃС‚Р°Р±РёР»РёР·РёСЂРѕРІР°РЅР° РЅР° v4+
+            if (from < 10) {
+      // Этап 13: взаимные долги + локальные черновики форм долга/сплита.
+      await m.createTable(debts);
+      await m.createTable(debtDrafts);
+      await m.createTable(splitDrafts);
+      await _createDebtsIndexes();
+      }
       if (from < 3) {
         await m.createTable(transactions);
         await m.createTable(transactionSplits);

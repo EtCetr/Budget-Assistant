@@ -1,4 +1,4 @@
-﻿import 'dart:math';
+import 'dart:math';
 
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
@@ -79,11 +79,22 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
         expressions.add(t.isSplit.equals(true));
       }
 
-      if (filter.onlyDebts) {
-        // Таблицы debts ещё нет (Этап 13): долгов не существует,
-        // поэтому под фильтр не попадает ни одна транзакция.
-        // TODO(Этап 13): заменить на EXISTS-подзапрос по таблице debts.
-        expressions.add(const Constant(false));
+            if (filter.onlyDebts) {
+        // Этап 13: транзакция считается связанной с долгами, если на неё
+        // ссылается debts.original_transaction_id ИЛИ если на её сплиты
+        // (transaction_splits) ссылается debts.split_id. Учитываются долги
+        // любых статусов (включая закрытую историю).
+        // Drift не имеет встроенного API для EXISTS-подзапросов в WHERE —
+        // используем CustomExpression с raw SQL (имена таблиц литералами).
+        expressions.add(
+          const CustomExpression<bool>(
+            '(EXISTS (SELECT 1 FROM debts '
+            'WHERE debts.original_transaction_id = transactions.id) '
+            'OR EXISTS (SELECT 1 FROM transaction_splits AS ts '
+            'INNER JOIN debts ON debts.split_id = ts.id '
+            'WHERE ts.transaction_id = transactions.id))',
+          ),
+        );
       }
       // «Без моих»: исключить собственные транзакции пользователя.
       // Комбинируется с любым сегментом (Все / Семейные).
