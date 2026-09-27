@@ -50,4 +50,41 @@ abstract final class CalendarStrings {
   static const String recalculating = 'Обновляем прогноз…';
   static const String breakdownTitle = 'Прогноз по категориям';
   static const String updatedAtPrefix = 'Обновлено:';
+  static const String legendTitle = 'Топ категории месяца';
+  static const String chartTitle = 'Доходы и расходы по дням';
+  static const String incomeLegend = 'Доходы';
+  static const String expenseLegend = 'Расходы';
+  static const String upcomingTitle = 'Ближайшие 14 дней';
+  static const String noEventsUpcoming = 'Нет предстоящих событий';
+  static const String forecastEmptyPlanned =
+      'Нет запланированных расходов на этот месяц';
+  static const String pastDayTitle = 'Этот день уже прошёл';
+  static const String pastDaySubtitle =
+      'Фактические траты и доходы смотрите в статистике дня';
+  static const String deficitTitle = 'Баланс уйдёт в минус';
+  static const String deficitSubtitlePrefix = 'Ожидаемый баланс на ';
+  static const String howToAvoid = 'Как избежать?';
+  static const String avoidTopCategories = 'Крупнейшие прогнозные расходы:';
+  static const String avoidAddIncome = 'Пополнить счёт';
+  static const String freeDayTitle = 'УРА, БЕСПЛАТНЫЙ ДЕНЬ!';
+  static const String freeDaySubtitle =
+      'В этот день вы не потратили ни рубля';
+  static const String streakPrefix = '🔥 ';
+  static const String operationsTitle = 'Операций:';
+  static const String spentTitle = 'Потрачено';
+  static const String incomeCardTitle = 'Доход';
+  static const String operationsCardTitle = 'Операций';
+  static const String categoryBreakdownTitle = 'Категории дня';
+  static const String hiddenOperation = 'Скрытая операция (Праздник)';
+  static const String secretOpensPrefix = 'Откроется ';
+  static const String addTransaction = 'Добавить транзакцию';
+  static const String remindersDayTitle = 'Задачи на этот день';
+  static const String currentBalanceTitle = 'Текущий баланс';
+  static const String eventsSectionTitle = 'Что произойдёт до даты';
+  static const String recurringSection = 'Регулярные платежи';
+  static const String remindersWithAmountSection = 'Напоминания с суммой';
+  static const String remindersNoAmountSection = 'Напоминания без суммы';
+  static const String holidaysSection = 'Праздники';
+  static const String planExpense = 'Запланировать расход';
+  static const String createReminder = 'Создать напоминание';
 }

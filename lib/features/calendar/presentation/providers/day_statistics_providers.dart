@@ -25,7 +25,7 @@ final freeDayStreakProvider = FutureProvider<int>((ref) {
   );
 });
 
-/// Транзакции выбранного дня (ключ — ISO-дата локального дня).
+/// Транзакции выбранного дня (включая секретные — рендер-заглушка).
 final dayTransactionsProvider =
     StreamProvider.family<List<TransactionDb>, String>((ref, dateIso) {
   final day = DateTime.tryParse(dateIso);
@@ -40,18 +40,56 @@ final dayTransactionsProvider =
       );
 });
 
-/// Итоги дня: доход/расход в копейках (ABS по типу).
-final dayTotalsProvider =
-    Provider.family<({int income, int expense}), String>((ref, dateIso) {
-  final rows = ref.watch(dayTransactionsProvider(dateIso)).value ?? const [];
-  int income = 0;
-  int expense = 0;
-  for (final t in rows) {
-    if (t.type == TransactionType.income) {
-      income += t.amount.abs();
-    } else if (t.type == TransactionType.expense) {
-      expense += t.amount.abs();
-    }
-  }
-  return (income: income, expense: expense);
+/// P&L-сводка дня (ТОМ 4 §1: без переводов, копилок, изъятий, ignored).
+final daySummaryProvider =
+    FutureProvider.family<({int income, int expense}), String>((
+  ref,
+  dateIso,
+) async {
+  final day = DateTime.tryParse(dateIso);
+  if (day == null) return (income: 0, expense: 0);
+  final start = DateTime(day.year, day.month, day.day);
+  final end = start.add(const Duration(days: 1));
+  final row = await ref.watch(calendarDaoProvider).getDayFlow(
+        userId: ref.watch(currentUserIdProvider),
+        spaceId: ref.watch(currentSpaceIdProvider),
+        startUtc: start.toUtc(),
+        endUtc: end.toUtc(),
+      );
+  return (income: row?.income ?? 0, expense: row?.expense ?? 0);
 });
+
+/// Разбивка расходов дня по категориям (stacked-bar, ТЗ 6.3.6.6).
+final dayCategoryBreakdownProvider =
+    StreamProvider.family<List<({String? categoryId, int total})>, String>((
+  ref,
+  dateIso,
+) {
+  final day = DateTime.tryParse(dateIso);
+  if (day == null) return Stream.value(const []);
+  final start = DateTime(day.year, day.month, day.day);
+  final end = start.add(const Duration(days: 1));
+  return ref
+      .watch(calendarDaoProvider)
+      .watchDayCategoryTotals(
+        userId: ref.watch(currentUserIdProvider),
+        spaceId: ref.watch(currentSpaceIdProvider),
+        startUtc: start.toUtc(),
+        endUtc: end.toUtc(),
+      )
+      .map((rows) => [
+            for (final r in rows) (categoryId: r.categoryId, total: r.total),
+          ]);
+});
+
+/// Фильтр P&L для списка операций дня (summary считает SQL, список —
+/// Dart-фильтр тех же правил, чтобы не дублировать запрос).
+List<TransactionDb> applyPnlFilter(List<TransactionDb> rows) {
+  return rows
+      .where((t) =>
+          t.type != TransactionType.transfer &&
+          t.savingsGoalId == null &&
+          !t.isWithdrawal &&
+          t.auditStatus != AuditStatus.ignored)
+      .toList();
+}

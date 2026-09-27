@@ -33,26 +33,41 @@ class _RecalcInput {
 }
 
 /// Тяжёлая часть пересчёта кэша прогноза (ТОМ 2 §20.1): суммы расходов
-/// месяца по категориям. Выполняется в compute-изоляте.
+/// месяца по категориям + total-строка (category_id = NULL), чтобы
+/// updated_at существовал даже при нулевом прогнозе (fix «Пересчитать
+/// не считает», 14.4e).
 List<ForecastCacheEntry> _computeCategoryForecast(_RecalcInput input) {
   final totals = <String?, int>{};
+  int grand = 0;
   for (final e in input.events) {
     if (!e.isExpense) continue;
     totals[e.categoryId] = (totals[e.categoryId] ?? 0) + e.amountKopecks;
+    grand += e.amountKopecks;
   }
   final now = DateTime.now().toUtc();
-  return [
+  final entries = <ForecastCacheEntry>[
+    ForecastCacheEntry(
+      id: '${input.userId}_${input.monthKey}_total',
+      userId: input.userId,
+      spaceId: input.spaceId,
+      monthYear: input.monthKey,
+      categoryId: null,
+      forecastedAmount: grand,
+      updatedAt: now,
+    ),
     for (final entry in totals.entries)
-      ForecastCacheEntry(
-        id: '${input.userId}_${input.monthKey}_${entry.key ?? 'total'}',
-        userId: input.userId,
-        spaceId: input.spaceId,
-        monthYear: input.monthKey,
-        categoryId: entry.key,
-        forecastedAmount: entry.value,
-        updatedAt: now,
-      ),
+      if (entry.key != null)
+        ForecastCacheEntry(
+          id: '${input.userId}_${input.monthKey}_${entry.key}',
+          userId: input.userId,
+          spaceId: input.spaceId,
+          monthYear: input.monthKey,
+          categoryId: entry.key,
+          forecastedAmount: entry.value,
+          updatedAt: now,
+        ),
   ];
+  return entries;
 }
 
 /// Пересчёт кэша прогноза месяца (ТЗ 6.3.7):

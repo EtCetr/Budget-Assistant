@@ -5,13 +5,11 @@ import 'package:budget_assistant/core/router/app_router.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/features/categories/domain/entities/category.dart';
 import 'package:budget_assistant/features/categories/presentation/providers/category_providers.dart';
-import '../../../reminders/domain/entities/reminder.dart';
 import '../../../reminders/presentation/providers/reminders_repository_providers.dart';
 import '../../data/datasources/calendar_dao.dart';
 import '../../domain/entities/holiday.dart';
+import 'date_forecast_providers.dart';
 import 'holidays_repository_providers.dart';
-
-DateTime _startOfDay(DateTime d) => DateTime(d.year, d.month, d.day);
 
 final calendarDaoProvider = Provider<CalendarDao>((ref) {
   return CalendarDao(ref.watch(appDatabaseProvider));
@@ -29,8 +27,8 @@ final calendarBaseCurrencyProvider = FutureProvider<String>((ref) async {
 
 class SelectedDayNotifier extends Notifier<DateTime> {
   @override
-  DateTime build() => _startOfDay(DateTime.now());
-  void set(DateTime day) => state = _startOfDay(day);
+  DateTime build() => DateTime.now();
+  void set(DateTime day) => state = DateTime(day.year, day.month, day.day);
 }
 
 final selectedDayProvider = NotifierProvider<SelectedDayNotifier, DateTime>(
@@ -83,6 +81,21 @@ final monthExpenseTotalsProvider =
       );
 });
 
+/// P&L-поток по дням месяца (bar-chart + заливка дней).
+final monthFlowProvider =
+    StreamProvider.family<Map<String, DayFlowRow>, String>((ref, key) {
+  final range = calendarMonthUtcRange(key);
+  return ref
+      .watch(calendarDaoProvider)
+      .watchMonthFlowTotals(
+        userId: ref.watch(currentUserIdProvider),
+        spaceId: ref.watch(currentSpaceIdProvider),
+        startUtc: range.$1,
+        endUtc: range.$2,
+      )
+      .map((rows) => {for (final r in rows) r.day: r});
+});
+
 final monthReminderCountsProvider =
     StreamProvider.family<Map<String, int>, String>((ref, key) {
   final range = calendarMonthUtcRange(key);
@@ -104,7 +117,7 @@ final enabledHolidaysProvider = StreamProvider<List<Holiday>>((ref) {
       );
 });
 
-/// Агрегат дня: суммы по категориям, напоминания, праздники.
+/// Агрегат дня: категории расходов, напоминания, праздники.
 class DayAggregate {
   const DayAggregate({
     this.categoryTotals = const {},
@@ -116,8 +129,7 @@ class DayAggregate {
   final int reminderCount;
   final List<Holiday> holidays;
 
-  int get expenseTotal =>
-      categoryTotals.values.fold(0, (a, b) => a + b);
+  int get expenseTotal => categoryTotals.values.fold(0, (a, b) => a + b);
 
   String? get dominantCategoryId {
     String? best;
@@ -186,17 +198,111 @@ final monthAggregatesProvider =
   return map;
 });
 
-final selectedDayRemindersProvider = StreamProvider<List<Reminder>>((ref) {
-  final day = ref.watch(selectedDayProvider);
-  final start = DateTime.utc(day.year, day.month, day.day);
-  final end = start.add(const Duration(days: 1));
-  return ref.watch(remindersRepositoryProvider).watchByDay(
+/// Легенда: топ-5 категорий месяца с суммами (ТЗ 6.3.5.5).
+final monthLegendProvider =
+    Provider.family<List<MapEntry<String, int>>, String>((ref, monthKey) {
+  final totals =
+      ref.watch(monthExpenseTotalsProvider(monthKey)).value ?? const [];
+  final byCategory = <String, int>{};
+  for (final t in totals) {
+    final id = t.categoryId;
+    if (id == null) continue;
+    byCategory[id] = (byCategory[id] ?? 0) + t.total;
+  }
+  final list = byCategory.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value));
+  return list.take(5).toList();
+});
+
+/// Элемент превью «Ближайшие 14 дней» (ТЗ 6.3.5.6).
+class UpcomingPreviewItem {
+  const UpcomingPreviewItem({
+    required this.kind,
+    required this.date,
+    required this.title,
+    this.amountKopecks,
+    this.emoji,
+    this.reminderId,
+  });
+
+  /// 'reminder' | 'holiday' | 'recurring'
+  final String kind;
+  final DateTime date;
+  final String title;
+  final int? amountKopecks;
+  final String? emoji;
+  final String? reminderId;
+}
+
+final upcomingEventsPreviewProvider =
+    StreamProvider<List<UpcomingPreviewItem>>((ref) {
+  final now = DateTime.now();
+  final start = DateTime(now.year, now.month, now.day);
+  final end = start.add(const Duration(days: 14));
+  return ref
+      .watch(calendarDaoProvider)
+      .watchMonthReminders(
         userId: ref.watch(currentUserIdProvider),
         spaceId: ref.watch(currentSpaceIdProvider),
-        startUtc: start,
-        endUtc: end,
-      );
+        startUtc: start.toUtc(),
+        endUtc: end.add(const Duration(days: 1)).toUtc(),
+      )
+      .map((rows) {
+        final holidays = ref.read(enabledHolidaysProvider).value ?? const [];
+        final recurring =
+            ref.read(activeRecurringCalendarProvider).value ?? const [];
+        final items = <UpcomingPreviewItem>[
+          for (final r in rows)
+            UpcomingPreviewItem(
+              kind: 'reminder',
+              date: r.remindAt,
+              title: r.title,
+              amountKopecks: r.expectedAmount,
+              reminderId: r.id,
+            ),
+          for (final h in holidays)
+            if (_holidayInWindow(h, start, end))
+              UpcomingPreviewItem(
+                kind: 'holiday',
+                date: _holidayDayInWindow(h, start, end)!,
+                title: h.name,
+                emoji: h.iconEmoji,
+              ),
+          for (final r in recurring)
+            if (_recurringDayInWindow(r.averageDayOfMonth, start, end) !=
+                null)
+              UpcomingPreviewItem(
+                kind: 'recurring',
+                date: _recurringDayInWindow(r.averageDayOfMonth, start, end)!,
+                title: r.merchantName,
+                amountKopecks: r.averageAmount,
+              ),
+        ];
+        items.sort((a, b) => a.date.compareTo(b.date));
+        return items.take(10).toList();
+      });
 });
+
+bool _holidayInWindow(Holiday h, DateTime start, DateTime end) =>
+    _holidayDayInWindow(h, start, end) != null;
+
+DateTime? _holidayDayInWindow(Holiday h, DateTime start, DateTime end) {
+  for (DateTime d = start;
+      d.isBefore(end) || d.isAtSameMomentAs(end);
+      d = d.add(const Duration(days: 1))) {
+    if (h.matchesDay(d)) return d;
+  }
+  return null;
+}
+
+DateTime? _recurringDayInWindow(int dayOfMonth, DateTime start, DateTime end) {
+  for (DateTime d = start;
+      d.isBefore(end) || d.isAtSameMomentAs(end);
+      d = d.add(const Duration(days: 1))) {
+    if (d.day == dayOfMonth.clamp(1, 28)) return d;
+  }
+  return null;
+}
 
 final categoriesMapCalendarProvider = Provider<Map<String, Category>>((ref) {
   final list =
@@ -204,4 +310,59 @@ final categoriesMapCalendarProvider = Provider<Map<String, Category>>((ref) {
           .value ??
       const [];
   return {for (final c in list) c.id: c};
+});
+
+/// Напоминания месяца (для превью и прогноза) — провайдер-alias.
+final monthRemindersDbProvider = upcomingEventsPreviewProvider;
+
+/// Реестр напоминаний для деталей дня (используется DayStatistics).
+final dayRemindersListProvider =
+    StreamProvider.family<List<ReminderEntityLite>, String>((ref, dateIso) {
+  final day = DateTime.tryParse(dateIso);
+  if (day == null) return Stream.value(const <ReminderEntityLite>[]);
+  final start = DateTime.utc(day.year, day.month, day.day);
+  final end = start.add(const Duration(days: 1));
+  return ref
+      .watch(calendarDaoProvider)
+      .watchMonthReminders(
+        userId: ref.watch(currentUserIdProvider),
+        spaceId: ref.watch(currentSpaceIdProvider),
+        startUtc: start,
+        endUtc: end,
+      )
+      .map((rows) => [
+            for (final r in rows)
+              ReminderEntityLite(
+                id: r.id,
+                title: r.title,
+                remindAt: r.remindAt,
+                expectedAmount: r.expectedAmount,
+                priority: r.priority,
+              ),
+          ]);
+});
+
+/// Лёгкое DTO напоминания для UI (без Drift-типов в виджетах).
+class ReminderEntityLite {
+  const ReminderEntityLite({
+    required this.id,
+    required this.title,
+    required this.remindAt,
+    this.expectedAmount,
+    required this.priority,
+  });
+  final String id;
+  final String title;
+  final DateTime remindAt;
+  final int? expectedAmount;
+  final String priority;
+}
+
+/// Завершение напоминания из списка дня (чекбокс, ТЗ 6.3.6.7).
+final completeDayReminderProvider = Provider<Future<void> Function(String)>((
+  ref,
+) {
+  return (id) => ref
+      .watch(remindersRepositoryProvider)
+      .markCompleted(id, DateTime.now().toUtc());
 });
