@@ -3,8 +3,7 @@ import 'package:budget_assistant/core/database/app_database.dart';
 
 part 'calendar_dao.g.dart';
 
-/// Строка агрегата расходов за день по категории (SQL UNION
-/// transactions + transaction_splits, ABS — знак-независимо).
+/// Строка агрегата расходов за день по категории.
 class DayCategoryTotalRow {
   const DayCategoryTotalRow({
     required this.day,
@@ -23,8 +22,7 @@ class DayReminderCountRow {
   final int count;
 }
 
-/// P&L-поток за день: доход и расход в копейках (ABS), с фильтрами
-/// ТОМ 4 §1 (без переводов, копилок, изъятий, ignored).
+/// P&L-поток за день: доход и расход в копейках (ABS).
 class DayFlowRow {
   const DayFlowRow({
     required this.day,
@@ -37,6 +35,10 @@ class DayFlowRow {
 }
 
 /// Агрегаты календаря (ТЗ 6.3.5/6.3.6/6.3.7).
+///
+/// ВАЖНО (фикс 14.4e-2): Drift хранит DateTime как unix-epoch (int),
+/// поэтому strftime ОБЯЗАН содержать модификатор 'unixepoch', иначе
+/// SQLite читает число как юлианский день и возвращает NULL.
 @DriftAccessor(tables: [Transactions, TransactionSplits, Reminders])
 class CalendarDao extends DatabaseAccessor<AppDatabase>
     with _$CalendarDaoMixin {
@@ -46,7 +48,7 @@ class CalendarDao extends DatabaseAccessor<AppDatabase>
       "t.audit_status != 'ignored' AND t.savings_goal_id IS NULL "
       'AND t.is_withdrawal = 0';
 
-  /// Расходы по дням и категориям (маркеры, stacked-bar дня).
+  /// Расходы по дням и категориям (маркеры, stacked-bar, легенда).
   Stream<List<DayCategoryTotalRow>> watchMonthExpenseTotals({
     required String userId,
     String? spaceId,
@@ -65,7 +67,7 @@ class CalendarDao extends DatabaseAccessor<AppDatabase>
             ]);
   }
 
-  /// Категории за один день (stacked-bar в DayStatistics).
+  /// Категории за один день (stacked-bar в статистике/панели).
   Stream<List<DayCategoryTotalRow>> watchDayCategoryTotals({
     required String userId,
     String? spaceId,
@@ -123,17 +125,17 @@ class CalendarDao extends DatabaseAccessor<AppDatabase>
         : 'day, SUM(total) AS total';
     final sql = '''
 SELECT $selectCols FROM (
-  SELECT strftime('%Y-%m-%d', t.date, 'localtime') AS day,
+  SELECT strftime('%Y-%m-%d', t.date, 'unixepoch', 'localtime') AS day,
          t.custom_category_id AS cat_id,
          ABS(t.amount) AS total
   FROM transactions t
   WHERE t.type = 'expense'
     AND t.is_hidden_by_calendar = 0
-    AND ${_pnlFilter.replaceAll('t.', 't.')}
+    AND $_pnlFilter
     AND t.date >= ? AND t.date < ?
     AND $scopeSql
   UNION ALL
-  SELECT strftime('%Y-%m-%d', t.date, 'localtime') AS day,
+  SELECT strftime('%Y-%m-%d', t.date, 'unixepoch', 'localtime') AS day,
          s.category_id AS cat_id,
          ABS(s.amount) AS total
   FROM transaction_splits s
@@ -178,7 +180,7 @@ SELECT $selectCols FROM (
             ]);
   }
 
-  /// P&L-поток за один день (Summary Card в DayStatistics).
+  /// P&L-поток за один день (Summary Card).
   Future<DayFlowRow?> getDayFlow({
     required String userId,
     String? spaceId,
@@ -214,7 +216,7 @@ SELECT day,
        SUM(CASE WHEN type = 'income' THEN total ELSE 0 END) AS income,
        SUM(CASE WHEN type = 'expense' THEN total ELSE 0 END) AS expense
 FROM (
-  SELECT strftime('%Y-%m-%d', t.date, 'localtime') AS day,
+  SELECT strftime('%Y-%m-%d', t.date, 'unixepoch', 'localtime') AS day,
          t.type AS type,
          ABS(t.amount) AS total
   FROM transactions t
@@ -224,7 +226,7 @@ FROM (
     AND t.date >= ? AND t.date < ?
     AND $scopeSql
   UNION ALL
-  SELECT strftime('%Y-%m-%d', t.date, 'localtime') AS day,
+  SELECT strftime('%Y-%m-%d', t.date, 'unixepoch', 'localtime') AS day,
          t.type AS type,
          ABS(s.amount) AS total
   FROM transaction_splits s
@@ -266,7 +268,7 @@ FROM (
             Variable.withString(spaceId),
           ];
     final sql = '''
-SELECT strftime('%Y-%m-%d', remind_at, 'localtime') AS day,
+SELECT strftime('%Y-%m-%d', remind_at, 'unixepoch', 'localtime') AS day,
        COUNT(*) AS c
 FROM reminders
 WHERE is_completed = 0
@@ -291,7 +293,7 @@ GROUP BY day
         ]);
   }
 
-  /// Незавершённые напоминания диапазона (события прогноза/превью).
+  /// Незавершённые напоминания диапазона (события прогноза/превью/панель).
   Stream<List<ReminderDb>> watchMonthReminders({
     required String userId,
     String? spaceId,
@@ -308,7 +310,7 @@ GROUP BY day
         .watch();
   }
 
-  /// Транзакции дня (список в DayStatistics, включая секретные).
+  /// Транзакции дня (список, включая секретные).
   Stream<List<TransactionDb>> watchDayTransactions({
     required String userId,
     String? spaceId,

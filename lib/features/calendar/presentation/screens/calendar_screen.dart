@@ -11,15 +11,17 @@ import 'package:budget_assistant/features/privacy/presentation/providers/privacy
 import '../calendar_strings.dart';
 import '../providers/calendar_screen_providers.dart';
 import '../providers/date_forecast_providers.dart';
+import '../widgets/calendar_day_panel.dart';
 
-/// Экран календаря (ТЗ 6.3.5): сетка с заливкой дней по балансу и
-/// маркерами (категория/праздник/напоминание/прогноз), легенда топ-5,
-/// bar-chart доходов/расходов месяца, превью событий на 14 дней.
-/// Тап по дню: прошедший/сегодня -> DayStatistics, будущий -> DateForecast.
+/// Экран календаря (ТЗ 6.3.5 + пожелание владельца 14.4e-2):
+/// сетка с заливкой дней и маркерами, сводка выбранного дня СНИЗУ
+/// (тап по дню НЕ открывает другой экран), bar-chart доходов/расходов,
+/// легенда топ-5, превью событий на 14 дней, рабочий переключатель
+/// формата (месяц / 2 недели / неделя).
 class CalendarScreen extends ConsumerWidget {
   const CalendarScreen({super.key});
 
-  Color? _parseColor(String? hex) {
+  Color? _parseCategoryColor(String? hex) {
     if (hex == null || hex.isEmpty) return null;
     final value = hex.startsWith('#') ? hex.substring(1) : hex;
     if (value.length != 6 && value.length != 8) return null;
@@ -31,9 +33,11 @@ class CalendarScreen extends ConsumerWidget {
   Widget _dayCell(
     BuildContext context,
     DateTime day,
+    DateTime focusedDay,
     Map<String, DayAggregate> aggregates,
     Map<String, dynamic> flow,
     Set<String> forecastDays,
+    DateTime selectedDay,
     WidgetRef ref,
   ) {
     final key = calendarDayKey(day);
@@ -47,22 +51,24 @@ class CalendarScreen extends ConsumerWidget {
     final isToday = day.year == today.year &&
         day.month == today.month &&
         day.day == today.day;
-    final isFuture = day.year == today.year &&
-            day.month == today.month &&
-            day.day == today.day
-        ? false
-        : day.isAfter(today);
+    final isOtherMonth = day.month != focusedDay.month;
+    final isFuture = !isToday && day.isAfter(today);
     final expense = (dayFlow as dynamic)?.expense as int? ?? 0;
     final income = (dayFlow as dynamic)?.income as int? ?? 0;
-    final freeDay = !isFuture && expense == 0 && (income > 0 || agg != null);
+    final freeDay =
+        !isFuture && !isOtherMonth && expense == 0 && (income > 0 || agg != null);
     final holiday = agg?.holidays.isNotEmpty ?? false;
+    final isSelected = isSameDay(day, selectedDay);
     Color background = Colors.transparent;
     Border? border;
+    if (isSelected) {
+      border = Border.all(color: AppColors.colorTransfer, width: 1.5);
+    }
     if (isToday) {
       background = AppColors.colorIncome.withValues(alpha: 0.2);
-    } else if (holiday) {
+    } else if (!isOtherMonth && holiday) {
       background = AppColors.surfaceElevated;
-    } else if (!isFuture && expense > 0) {
+    } else if (!isOtherMonth && !isFuture && expense > 0) {
       background = AppColors.surfaceCard;
     } else if (freeDay) {
       background = AppColors.surfaceCard;
@@ -71,7 +77,7 @@ class CalendarScreen extends ConsumerWidget {
       );
     }
     final dominant = agg?.dominantCategoryId;
-    final catColor = _parseColor(
+    final catColor = _parseCategoryColor(
       dominant == null ? null : categories[dominant]?.colorHex,
     );
     final hasForecast = forecastDays.contains(key);
@@ -88,12 +94,16 @@ class CalendarScreen extends ConsumerWidget {
             child: Text(
               '${day.day}',
               style: TextStyle(
-                color: isToday ? AppColors.colorIncome : AppColors.textPrimary,
+                color: isOtherMonth
+                    ? AppColors.textSecondary.withValues(alpha: 0.5)
+                    : isToday
+                        ? AppColors.colorIncome
+                        : AppColors.textPrimary,
                 fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ),
-          if (holiday)
+          if (!isOtherMonth && holiday)
             Positioned(
               top: 2,
               left: 3,
@@ -102,7 +112,11 @@ class CalendarScreen extends ConsumerWidget {
                 style: const TextStyle(fontSize: 10),
               ),
             ),
-          if (!isFuture && expense > 0 && showColors && catColor != null)
+          if (!isOtherMonth &&
+              !isFuture &&
+              expense > 0 &&
+              showColors &&
+              catColor != null)
             Positioned(
               top: 3,
               right: 3,
@@ -113,7 +127,10 @@ class CalendarScreen extends ConsumerWidget {
                     BoxDecoration(color: catColor, shape: BoxShape.circle),
               ),
             ),
-          if (!isFuture && expense > 0 && (!showColors || catColor == null))
+          if (!isOtherMonth &&
+              !isFuture &&
+              expense > 0 &&
+              (!showColors || catColor == null))
             Positioned(
               top: 3,
               right: 3,
@@ -132,45 +149,33 @@ class CalendarScreen extends ConsumerWidget {
               right: 2,
               child: Text('🎉', style: TextStyle(fontSize: 9)),
             ),
-          if ((agg?.reminderCount ?? 0) > 0)
+          if (!isOtherMonth && (agg?.reminderCount ?? 0) > 0)
             const Positioned(
               bottom: 1,
               left: 3,
               child: Icon(Icons.notifications_active,
                   size: 9, color: AppColors.colorWarning),
             ),
-          if (isFuture && hasForecast)
-            Positioned(
+          if (!isOtherMonth && isFuture && hasForecast)
+            const Positioned(
               bottom: 2,
               right: 3,
-              child: Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  color: AppColors.colorTransfer,
-                  shape: BoxShape.circle,
-                ),
-              ),
+              child:
+                  Icon(Icons.circle, size: 6, color: AppColors.colorTransfer),
             ),
         ],
       ),
     );
   }
 
-  Widget _monthChart(
-    BuildContext context,
-    Map<String, dynamic> flow,
-    String monthKey,
-    WidgetRef ref,
-  ) {
+  Widget _monthChart(Map<String, dynamic> flow, String monthKey) {
     final y = int.parse(monthKey.substring(0, 4));
     final m = int.parse(monthKey.substring(5, 7));
     final daysInMonth = DateTime(y, m + 1, 0).day;
     double maxRub = 1;
     final groups = <BarChartGroupData>[];
     for (int i = 0; i < daysInMonth; i++) {
-      final key =
-          '$monthKey-${(i + 1).toString().padLeft(2, '0')}';
+      final key = '$monthKey-${(i + 1).toString().padLeft(2, '0')}';
       final row = flow[key];
       final income = (row as dynamic)?.income as int? ?? 0;
       final expense = (row as dynamic)?.expense as int? ?? 0;
@@ -241,23 +246,20 @@ class CalendarScreen extends ConsumerWidget {
     final currency = ref.watch(calendarBaseCurrencyProvider).value ?? 'RUB';
     final focusedMonth = ref.watch(focusedMonthProvider);
     final selectedDay = ref.watch(selectedDayProvider);
+    final calendarFormat = ref.watch(calendarFormatProvider);
     final monthKey = ref.watch(calendarMonthKeyProvider);
     final aggregates = ref.watch(monthAggregatesProvider(monthKey));
-    final flowAsync = ref.watch(monthFlowProvider(monthKey));
-    final flow = flowAsync.value ?? const {};
+    final flow = ref.watch(monthFlowProvider(monthKey)).value ?? const {};
     final legend = ref.watch(monthLegendProvider(monthKey));
     final categories = ref.watch(categoriesMapCalendarProvider);
     final upcomingAsync = ref.watch(upcomingEventsPreviewProvider);
     final events = ref.watch(forecastEventsProvider(monthKey));
     final forecastDays = {
-      for (final e in events)
-        calendarDayKey(e.dateUtc.toLocal()),
+      for (final e in events) calendarDayKey(e.dateUtc.toLocal()),
     };
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          DateFormat('MMMM yyyy', 'ru').format(focusedMonth),
-        ),
+        title: Text(DateFormat('MMMM yyyy', 'ru').format(focusedMonth)),
         actions: [
           IconButton(
             tooltip: CalendarStrings.openHolidaysTooltip,
@@ -276,6 +278,7 @@ class CalendarScreen extends ConsumerWidget {
             firstDay: DateTime(2020, 1, 1),
             lastDay: DateTime(2100, 12, 31),
             focusedDay: focusedMonth,
+            calendarFormat: calendarFormat,
             locale: 'ru',
             startingDayOfWeek: StartingDayOfWeek.monday,
             selectedDayPredicate: (day) => isSameDay(day, selectedDay),
@@ -283,16 +286,10 @@ class CalendarScreen extends ConsumerWidget {
               MotionTokens.selection();
               ref.read(selectedDayProvider.notifier).set(selected);
               ref.read(focusedMonthProvider.notifier).set(focused);
-              final today = DateTime.now();
-              final dayStart =
-                  DateTime(selected.year, selected.month, selected.day);
-              final todayStart = DateTime(today.year, today.month, today.day);
-              final iso = selected.toIso8601String();
-              if (dayStart.isAfter(todayStart)) {
-                context.push('/calendar/forecast?date=$iso');
-              } else {
-                context.push('/calendar/day?date=$iso');
-              }
+            },
+            onFormatChanged: (format) {
+              MotionTokens.selection();
+              ref.read(calendarFormatProvider.notifier).set(format);
             },
             onPageChanged: (focused) {
               MotionTokens.light();
@@ -302,17 +299,19 @@ class CalendarScreen extends ConsumerWidget {
               defaultBuilder: (context, day, focused) => _dayCell(
                 context,
                 day,
+                focused,
                 aggregates,
                 flow,
                 forecastDays,
+                selectedDay,
                 ref,
               ),
             ),
           ),
-          const SizedBox(height: AppSpacing.spacing16),
+          const CalendarDayPanel(),
           Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.spacing8),
+            padding:
+                const EdgeInsets.symmetric(horizontal: AppSpacing.spacing8),
             child: Row(
               children: [
                 Container(
@@ -339,14 +338,14 @@ class CalendarScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.spacing8),
           Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.spacing8),
+            padding:
+                const EdgeInsets.symmetric(horizontal: AppSpacing.spacing8),
             child: Text(CalendarStrings.chartTitle,
                 style: Theme.of(context).textTheme.titleMedium),
           ),
           Padding(
             padding: const EdgeInsets.all(AppSpacing.spacing8),
-            child: _monthChart(context, flow, monthKey, ref),
+            child: _monthChart(flow, monthKey),
           ),
           if (legend.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.spacing8),
@@ -363,7 +362,7 @@ class CalendarScreen extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final entry = legend[index];
                   final cat = categories[entry.key];
-                  final color = _parseColor(cat?.colorHex) ??
+                  final color = _parseCategoryColor(cat?.colorHex) ??
                       AppColors.textSecondary;
                   return ActionChip(
                     backgroundColor: color.withValues(alpha: 0.2),
@@ -384,8 +383,7 @@ class CalendarScreen extends ConsumerWidget {
                     ),
                     onPressed: () {
                       MotionTokens.light();
-                      context.push(
-                          '/transactions?category_id=${entry.key}');
+                      context.push('/transactions?category_id=${entry.key}');
                     },
                   );
                 },

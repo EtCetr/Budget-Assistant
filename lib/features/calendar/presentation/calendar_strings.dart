@@ -87,4 +87,5 @@ abstract final class CalendarStrings {
   static const String holidaysSection = 'Праздники';
   static const String planExpense = 'Запланировать расход';
   static const String createReminder = 'Создать напоминание';
+  static const String plannedTitle = 'Запланировано на день:';
 }

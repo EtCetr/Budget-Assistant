@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:table_calendar/table_calendar.dart';
 import 'package:budget_assistant/core/database/daos/app_settings_dao.dart';
 import 'package:budget_assistant/core/database/database_provider.dart';
 import 'package:budget_assistant/core/router/app_router.dart';
@@ -44,6 +45,19 @@ class FocusedMonthNotifier extends Notifier<DateTime> {
 final focusedMonthProvider =
     NotifierProvider<FocusedMonthNotifier, DateTime>(
   FocusedMonthNotifier.new,
+);
+
+/// Формат сетки (месяц / 2 недели / неделя) — кнопка table_calendar
+/// работает только при явном onFormatChanged (фикс 14.4e-2).
+class CalendarFormatNotifier extends Notifier<CalendarFormat> {
+  @override
+  CalendarFormat build() => CalendarFormat.month;
+  void set(CalendarFormat format) => state = format;
+}
+
+final calendarFormatProvider =
+    NotifierProvider<CalendarFormatNotifier, CalendarFormat>(
+  CalendarFormatNotifier.new,
 );
 
 final calendarMonthKeyProvider = Provider<String>((ref) {
@@ -261,7 +275,7 @@ final upcomingEventsPreviewProvider =
               reminderId: r.id,
             ),
           for (final h in holidays)
-            if (_holidayInWindow(h, start, end))
+            if (_holidayDayInWindow(h, start, end) != null)
               UpcomingPreviewItem(
                 kind: 'holiday',
                 date: _holidayDayInWindow(h, start, end)!,
@@ -273,7 +287,8 @@ final upcomingEventsPreviewProvider =
                 null)
               UpcomingPreviewItem(
                 kind: 'recurring',
-                date: _recurringDayInWindow(r.averageDayOfMonth, start, end)!,
+                date:
+                    _recurringDayInWindow(r.averageDayOfMonth, start, end)!,
                 title: r.merchantName,
                 amountKopecks: r.averageAmount,
               ),
@@ -282,9 +297,6 @@ final upcomingEventsPreviewProvider =
         return items.take(10).toList();
       });
 });
-
-bool _holidayInWindow(Holiday h, DateTime start, DateTime end) =>
-    _holidayDayInWindow(h, start, end) != null;
 
 DateTime? _holidayDayInWindow(Holiday h, DateTime start, DateTime end) {
   for (DateTime d = start;
@@ -312,10 +324,7 @@ final categoriesMapCalendarProvider = Provider<Map<String, Category>>((ref) {
   return {for (final c in list) c.id: c};
 });
 
-/// Напоминания месяца (для превью и прогноза) — провайдер-alias.
-final monthRemindersDbProvider = upcomingEventsPreviewProvider;
-
-/// Реестр напоминаний для деталей дня (используется DayStatistics).
+/// Напоминания выбранного дня (панель сводки, ТЗ 6.3.5/6.3.6).
 final dayRemindersListProvider =
     StreamProvider.family<List<ReminderEntityLite>, String>((ref, dateIso) {
   final day = DateTime.tryParse(dateIso);
@@ -358,10 +367,9 @@ class ReminderEntityLite {
   final String priority;
 }
 
-/// Завершение напоминания из списка дня (чекбокс, ТЗ 6.3.6.7).
-final completeDayReminderProvider = Provider<Future<void> Function(String)>((
-  ref,
-) {
+/// Завершение напоминания чекбоксом из панели/статистики дня.
+final completeDayReminderProvider =
+    Provider<Future<void> Function(String)>((ref) {
   return (id) => ref
       .watch(remindersRepositoryProvider)
       .markCompleted(id, DateTime.now().toUtc());
