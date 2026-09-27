@@ -3,10 +3,7 @@ import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'dart:io';
-
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
-// РўР°Р±Р»РёС†С‹ РёР· Р­С‚Р°РїР° 3 (С„СѓРЅРґР°РјРµРЅС‚Р°Р»СЊРЅС‹Рµ СЃСѓС‰РЅРѕСЃС‚Рё)
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// Таблицы из Этапа 3 (центральные сущности)
 import 'tables/users.dart';
 import 'tables/spaces.dart';
 import 'tables/memberships.dart';
@@ -14,15 +11,9 @@ import 'tables/app_settings.dart';
 import 'tables/notifications.dart';
 import 'tables/sync_conflicts.dart';
 import 'tables/sync_logs.dart';
-
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
-// Enum'С‹ Р­С‚Р°РїР° 6 (type, audit_status, sync_status)
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// Enum'ы из Этапа 6 (type, audit_status, sync_status)
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
-
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
-// DAO (Data Access Objects) вЂ” С‚РёРїРѕР±РµР·РѕРїР°СЃРЅС‹Рµ Р·Р°РїСЂРѕСЃС‹
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// DAO — типобезопасный доступ к таблицам
 import 'daos/users_dao.dart';
 import 'daos/spaces_dao.dart';
 import 'daos/memberships_dao.dart';
@@ -31,14 +22,11 @@ import 'daos/notifications_dao.dart';
 import 'daos/sync_conflicts_dao.dart';
 import 'daos/sync_logs_dao.dart';
 import 'daos/budget_limits_dao.dart';
-
 import 'package:budget_assistant/core/logger.dart';
-
+import 'seeds/default_holidays_seed.dart';
 part 'app_database.g.dart';
 
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
-// РўР°Р±Р»РёС†С‹ РёР· Р­С‚Р°РїР° 5 (СѓР¶Рµ СЂРµР°Р»РёР·РѕРІР°РЅС‹, РѕСЃС‚Р°СЋС‚СЃСЏ Р·РґРµСЃСЊ)
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// Этап 5: Счета, Ипотеки, Категории
 class Accounts extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text().references(Users, #id)();
@@ -72,7 +60,6 @@ class Accounts extends Table {
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   TextColumn get syncStatus => text().withDefault(const Constant('pending'))();
-
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -89,7 +76,6 @@ class Mortgages extends Table {
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   TextColumn get syncStatus => text().withDefault(const Constant('pending'))();
-
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -110,7 +96,6 @@ class Categories extends Table {
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   TextColumn get syncStatus => text().withDefault(const Constant('pending'))();
-
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -125,14 +110,11 @@ class CategoryRules extends Table {
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   TextColumn get syncStatus => text().withDefault(const Constant('pending'))();
-
   @override
   Set<Column> get primaryKey => {id};
 }
 
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
-// Р­РўРђРџ 6: РўР°Р±Р»РёС†Р° С‚СЂР°РЅР·Р°РєС†РёР№
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// Этап 6: Транзакции и Сплиты
 @DataClassName('TransactionDb')
 class Transactions extends Table {
   TextColumn get id => text()();
@@ -175,14 +157,10 @@ class Transactions extends Table {
   DateTimeColumn get updatedAt => dateTime()();
   TextColumn get syncStatus =>
       textEnum<SyncStatus>().withDefault(const Constant('pending'))();
-
   @override
   Set<Column> get primaryKey => {id};
 }
 
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
-// Р­РўРђРџ 6: РЎРїР»РёС‚С‹ С‡РµРєР°/РґРѕР»РіР°
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
 @DataClassName('TransactionSplitDb')
 class TransactionSplits extends Table {
   TextColumn get id => text()();
@@ -194,17 +172,11 @@ class TransactionSplits extends Table {
   DateTimeColumn get updatedAt => dateTime()();
   TextColumn get syncStatus =>
       textEnum<SyncStatus>().withDefault(const Constant('pending'))();
-
   @override
   Set<Column> get primaryKey => {id};
 }
 
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
-// Р­РўРђРџ 9: Р‘СЋРґР¶РµС‚РЅС‹Рµ Р»РёРјРёС‚С‹ РїРѕ РєР°С‚РµРіРѕСЂРёСЏРј
-//
-// РЈРЅРёРєР°Р»СЊРЅС‹Р№ РєРѕРЅСЃС‚СЂРµР№РЅС‚: (space_id, user_id, category_id, year, month)
-// Р”РµРЅСЊРіРё: IntColumn (РєРѕРїРµР№РєРё), E2E-С€РёС„СЂРѕРІР°РЅРёРµ limit_amount Рё alert_amount
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// Этап 9: Месячные лимиты
 @DataClassName('BudgetLimitDb')
 class BudgetLimits extends Table {
   TextColumn get id => text()();
@@ -220,42 +192,30 @@ class BudgetLimits extends Table {
   DateTimeColumn get updatedAt => dateTime()();
   TextColumn get syncStatus =>
       text().withDefault(const Constant('pending'))();
-
   @override
   Set<Column> get primaryKey => {id};
 }
 
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
-// РћСЃРЅРѕРІРЅР°СЏ РєРѕРЅС„РёРіСѓСЂР°С†РёСЏ Р‘Р”
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
-// Р­РўРђРџ 10: РљСѓСЂСЃС‹ РІР°Р»СЋС‚ (РјСѓР»СЊС‚РёРІР°Р»СЋС‚РЅРѕСЃС‚СЊ, РўРћРњ 2 В§18.2)
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// Этап 10: Курсы валют
 @DataClassName('ExchangeRateDb')
 class ExchangeRates extends Table {
   TextColumn get id => text()();
   TextColumn get fromCurrency => text()();
   TextColumn get toCurrency => text()();
   DateTimeColumn get date => dateTime()();
-  // РњСѓР»СЊС‚РёРїР»РёРєР°С‚РѕСЂ (РЅРµ РґРµРЅСЊРіРё).
   RealColumn get rate => real()();
   TextColumn get source => text().withDefault(const Constant('manual'))();
   DateTimeColumn get createdAt => dateTime()();
-
   @override
   Set<Column> get primaryKey => {id};
 }
 
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
-// Р­РўРђРџ 10: РњР°С‚СЂРёС†Р° РєСЌС€Р±СЌРєР° РїРѕ РєР°СЂС‚Р°Рј (РўРћРњ 2 В§14.3)
-// в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ
+// Этап 10: Матрица кэшбэка
 @DataClassName('CashbackMatrixDb')
 class CashbackMatrix extends Table {
   TextColumn get id => text()();
   TextColumn get accountId => text().references(Accounts, #id)();
-  // РџСЂРёРІСЏР·РєР° Рє Р»РѕРєР°Р»СЊРЅРѕР№ РєР°С‚РµРіРѕСЂРёРё РґР»СЏ СЂР°СЃС‡С‘С‚Р° NET-СЃСѓРјРјС‹ (РўРћРњ 4 РџСЂР°РІРёР»Рѕ 1).
   TextColumn get categoryId => text().nullable().references(Categories, #id)();
-  // РќР°Р·РІР°РЅРёРµ РєР°С‚РµРіРѕСЂРёРё Р±Р°РЅРєР° (РІ Supabase С€РёС„СЂСѓРµС‚СЃСЏ [E2E]).
   TextColumn get categoryName => text()();
   IntColumn get percentBps => integer()();
   TextColumn get status => text().withDefault(const Constant('potential'))();
@@ -265,10 +225,10 @@ class CashbackMatrix extends Table {
   DateTimeColumn get updatedAt => dateTime()();
   TextColumn get syncStatus =>
       textEnum<SyncStatus>().withDefault(const Constant('pending'))();
-
   @override
   Set<Column> get primaryKey => {id};
 }
+
 class DashboardWidgets extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text().references(Users, #id)();
@@ -278,13 +238,11 @@ class DashboardWidgets extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   TextColumn get syncStatus => text().withDefault(const Constant('pending'))();
-
   @override
   Set<Column> get primaryKey => {id};
 }
-// ═══════════════════════════════════════════════════════════
+
 // Этап 12: Цели накопления + локальные черновики форм
-// ═══════════════════════════════════════════════════════════
 @DataClassName('SavingsGoalDb')
 class SavingsGoals extends Table {
   TextColumn get id => text()();
@@ -323,52 +281,30 @@ class SavingsGoalDrafts extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
-// ═══════════════════════════════════════════════════════════
+
 // ЭТАП 13: Долги + локальные черновики (долги, сплиты)
-// ═══════════════════════════════════════════════════════════
-/// Взаимные долги (ТОМ 2 §13.3, ТЗ 6.3.13/6.3.14).
-/// E2E-поля (amount, description, counterparty_name_dative) хранятся
-/// локально открыто и шифруются AES-256-GCM перед sync-пейлоадом
-/// (Этап 25) — та же стратегия, что у счетов и целей накопления.
 @DataClassName('DebtDb')
 class Debts extends Table {
   TextColumn get id => text()();
-  /// Кому должны (кредитор). Индекс.
   TextColumn get creditorId => text().nullable().references(Users, #id)();
-  /// Кто должен (должник). NULL = внешний контрагент
-  /// (используется counterparty_name_dative).
   TextColumn get debtorId => text().nullable().references(Users, #id)();
-  /// Семейный долг — пространство; NULL = личный/внешний.
   TextColumn get spaceId => text().nullable().references(Spaces, #id)();
-  /// Категория исходной траты (компенсирующие транзакции, ТОМ 4 §6).
   TextColumn get categoryId =>
       text().nullable().references(Categories, #id)();
-  /// Сумма долга, копейки, всегда > 0.
   IntColumn get amount => integer()();
   TextColumn get currency => text().withDefault(const Constant('RUB'))();
-  /// «За что» [E2E].
   TextColumn get description => text().nullable()();
-  /// Имя внешнего контрагента в дательном падеже [E2E].
   TextColumn get counterpartyNameDative => text().nullable()();
-  /// Транзакция, породившая долг.
   TextColumn get originalTransactionId =>
       text().nullable().references(Transactions, #id)();
-  /// Связь с частью сплит-чека (transaction_splits.id): долг только
-  /// за конкретную позицию общего чека.
   TextColumn get splitId =>
       text().nullable().references(TransactionSplits, #id)();
-  /// Срок погашения (UTC, nullable).
   DateTimeColumn get dueDate => dateTime().nullable()();
-  /// Дата закрытия.
   DateTimeColumn get resolvedAt => dateTime().nullable()();
-  /// 'active' | 'forgiven' | 'paid_offline' | 'resolved'. Индекс.
   TextColumn get resolutionStatus =>
       text().withDefault(const Constant('active'))();
-  /// Долг ex-члена семьи: НЕ удаляется, остаётся действительным.
   BoolColumn get isExMemberDebt =>
       boolean().withDefault(const Constant(false))();
-  /// Создатель (только он может редактировать/удалять).
-  /// Авто-закрытие долга при связанной транзакции (6.3.14).
   BoolColumn get autoResolve =>
       boolean().withDefault(const Constant(true))();
   TextColumn get createdBy => text().references(Users, #id)();
@@ -380,7 +316,6 @@ class Debts extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-/// Локальный черновик формы долга (без sync, ТОМ 2 §23).
 @DataClassName('DebtDraftDb')
 class DebtDrafts extends Table {
   TextColumn get id => text()();
@@ -393,7 +328,6 @@ class DebtDrafts extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-/// Локальный черновик экрана разделения (без sync, ТОМ 2 §23.2).
 @DataClassName('SplitDraftDb')
 class SplitDrafts extends Table {
   TextColumn get id => text()();
@@ -404,9 +338,141 @@ class SplitDrafts extends Table {
   @override
   Set<Column> get primaryKey => {id};
 }
+
+// ─────────────────────────────────────────────────────────────
+// ЭТАП 14: Напоминания (RRULE) + Календарь
+// (ТОМ 2 §15, §16.1, §20.1, §23.3; расширения ТОМ 6 §6.3.9/6.3.11)
+// ─────────────────────────────────────────────────────────────
+
+/// Регулярные платежи (подписки и регулярки).
+/// E2E-поля (merchant_name, average_amount) хранятся локально открыто и
+/// шифруются AES-256-GCM перед sync-пейлоадом (Этап 25) — как цели/долги.
+/// merchant_name_normalized и average_amount_bucket — ОТКРЫТЫ: это ключ
+/// идемпотентного upsert (ТЗ 6.3.9.9).
+@DataClassName('RecurringTransactionDb')
+class RecurringTransactions extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text().references(Users, #id)();
+  /// Личная сущность: фактически всегда NULL (ТЗ 6.3.9.15).
+  TextColumn get spaceId => text().nullable().references(Spaces, #id)();
+  TextColumn get merchantName => text()(); // [E2E]
+  TextColumn get merchantNameNormalized => text()(); // [OPEN] ключ upsert
+  IntColumn get averageAmount => integer()(); // [E2E] копейки
+  /// Копейки, округлённые до 100 рублей (ключ upsert).
+  IntColumn get averageAmountBucket => integer()();
+  IntColumn get averageDayOfMonth => integer()();
+  IntColumn get occurrenceCount => integer().withDefault(const Constant(0))();
+  /// 'high' | 'medium' | 'low'.
+  TextColumn get confidence => text().withDefault(const Constant('medium'))();
+  /// 'pending_confirmation' | 'active'.
+  TextColumn get status =>
+      text().withDefault(const Constant('pending_confirmation'))();
+  DateTimeColumn get firstSeenDate => dateTime().nullable()();
+  DateTimeColumn get lastSeenDate => dateTime().nullable()();
+  /// Связь с напоминанием. Plain text: циклический FK с reminders
+  /// ломает сортировку таблиц Drift (отклонение зафиксировано).
+  TextColumn get linkedReminderId => text().nullable()();
+  TextColumn get categoryId =>
+      text().nullable().references(Categories, #id)();
+  DateTimeColumn get detectedAt => dateTime().nullable()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get syncStatus =>
+      textEnum<SyncStatus>().withDefault(const Constant('pending'))();
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Умные напоминания (Фича 10). assignee_id -> memberships.id, НЕ users.id.
+@DataClassName('ReminderDb')
+class Reminders extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text().references(Users, #id)();
+  TextColumn get spaceId => text().nullable().references(Spaces, #id)();
+  TextColumn get title => text()(); // [E2E]
+  TextColumn get description => text().nullable()(); // [E2E]
+  DateTimeColumn get remindAt => dateTime()(); // UTC
+  /// iCal RRULE строка (nullable = однократно).
+  TextColumn get recurrenceRule => text().nullable()();
+  BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
+  TextColumn get assigneeId =>
+      text().nullable().references(Memberships, #id)();
+  /// Plain text: циклический FK с recurring_transactions (отклонение).
+  TextColumn get linkedRecurringId => text().nullable()();
+  TextColumn get linkedCategoryId =>
+      text().nullable().references(Categories, #id)();
+  TextColumn get linkedAccountId =>
+      text().nullable().references(Accounts, #id)();
+  IntColumn get expectedAmount => integer().nullable()(); // [E2E] копейки
+  /// 'low' | 'normal' | 'high'.
+  TextColumn get priority => text().withDefault(const Constant('normal'))();
+  IntColumn get snoozeCount => integer().withDefault(const Constant(0))();
+  /// [LOCAL] JSON-массив истории откладываний, не синхронизируется.
+  TextColumn get snoozeHistory => text().nullable()();
+  DateTimeColumn get completedAt => dateTime().nullable()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get syncStatus =>
+      textEnum<SyncStatus>().withDefault(const Constant('pending'))();
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Праздники для режима секретности и календаря.
+/// Пресеты РФ (is_preset = TRUE) — локальные сиды, не синхронизируются.
+@DataClassName('HolidayDb')
+class Holidays extends Table {
+  TextColumn get id => text()();
+  TextColumn get spaceId => text().nullable().references(Spaces, #id)();
+  TextColumn get userId => text().nullable().references(Users, #id)();
+  TextColumn get name => text()(); // [E2E]
+  DateTimeColumn get date => dateTime()(); // UTC
+  BoolColumn get isAnnuallyRecurring =>
+      boolean().withDefault(const Constant(true))();
+  TextColumn get iconEmoji => text().nullable()(); // [E2E]
+  TextColumn get colorHex => text().nullable()();
+  BoolColumn get isPreset => boolean().withDefault(const Constant(false))();
+  BoolColumn get isEnabled => boolean().withDefault(const Constant(true))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get syncStatus =>
+      textEnum<SyncStatus>().withDefault(const Constant('pending'))();
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Кэш прогноза баланса. Локальный кэш: без sync_status и created_at
+/// (ТОМ 2 §20.1) — UI читает готовые агрегаты.
+@DataClassName('ForecastCacheDb')
+class ForecastCache extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text().references(Users, #id)();
+  TextColumn get spaceId => text().nullable().references(Spaces, #id)();
+  /// Формат 'YYYY-MM'.
+  TextColumn get monthYear => text()();
+  TextColumn get categoryId =>
+      text().nullable().references(Categories, #id)();
+  IntColumn get forecastedAmount => integer().withDefault(const Constant(0))();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Локальный черновик формы напоминания (без sync, ТОМ 2 §23.3).
+@DataClassName('ReminderDraftDb')
+class ReminderDrafts extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text().references(Users, #id)();
+  TextColumn get reminderId => text().nullable()();
+  TextColumn get formDataJson => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 @DriftDatabase(
   tables: [
-    // Р­С‚Р°Рї 3: Р¤СѓРЅРґР°РјРµРЅС‚Р°Р»СЊРЅС‹Рµ СЃСѓС‰РЅРѕСЃС‚Рё
     Users,
     Spaces,
     Memberships,
@@ -414,25 +480,27 @@ class SplitDrafts extends Table {
     Notifications,
     SyncConflicts,
     SyncLogs,
-    // Р­С‚Р°Рї 5: РЎС‡РµС‚Р°, РёРїРѕС‚РµРєРё, РєР°С‚РµРіРѕСЂРёРё
     Accounts,
     Mortgages,
     Categories,
     CategoryRules,
-    // Р­С‚Р°Рї 6: РўСЂР°РЅР·Р°РєС†РёРё Рё СЃРїР»РёС‚С‹
     Transactions,
     TransactionSplits,
-    // Р­С‚Р°Рї 9: Р‘СЋРґР¶РµС‚РЅС‹Рµ Р»РёРјРёС‚С‹
     BudgetLimits,
-    // Р­С‚Р°Рї 10: РљСЌС€Р±СЌРє Рё РєСѓСЂСЃС‹ РІР°Р»СЋС‚
     ExchangeRates,
     CashbackMatrix,
     DashboardWidgets,
     SavingsGoals,
     SavingsGoalDrafts,
-Debts,
+    Debts,
     DebtDrafts,
     SplitDrafts,
+    // Этап 14: напоминания, праздники, регулярки, кэш прогноза, черновики
+    RecurringTransactions,
+    Reminders,
+    Holidays,
+    ForecastCache,
+    ReminderDrafts,
   ],
   daos: [
     UsersDao,
@@ -447,353 +515,382 @@ Debts,
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase._internal() : super(_openConnection());
-
   static final AppDatabase _instance = AppDatabase._internal();
   factory AppDatabase() => _instance;
-
   AppDatabase.forTesting(super.e);
   AppDatabase.forBackground(super.e);
 
-  /// v1: СЃС‚Р°СЂС‚ (Р­С‚Р°Рї 3)
-  /// v2: РјРёРіСЂР°С†РёСЏ SyncableTable (Р­С‚Р°Рї 3/5) вЂ” РРЎРўРћР РР§Р•РЎРљРђРЇ РњРРќРђ, СѓРґР°Р»РµРЅР° РІ v5
-  /// v3: Р­С‚Р°Рї 6 вЂ” С‚Р°Р±Р»РёС†С‹ transactions Рё transaction_splits
-  /// v4: Р­С‚Р°Рї 8+ вЂ” РїРѕР»Рµ is_large_expense
-  /// v5: Р­С‚Р°Рї 9 вЂ” С‚Р°Р±Р»РёС†Р° budget_limits + РёРЅРґРµРєСЃС‹
+  /// v13: Этап 14 — reminders, holidays, recurring_transactions,
+  /// forecast_cache, reminder_drafts + 5 колонок app_settings + сиды РФ.
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   Future<void> _createSavingsIndexes() async {
-    // ТОМ 2 §22: фильтрация целей по владельцу/пространству/статусу/дедлайну
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_savings_goals_user_status
-      ON savings_goals(user_id, space_id, status, deadline, sync_status)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_savings_goals_user_status
+ON savings_goals(user_id, space_id, status, deadline, sync_status)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_savings_goals_sync_status
-      ON savings_goals(sync_status)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_savings_goals_sync_status
+ON savings_goals(sync_status)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_savings_goal_drafts_user
-      ON savings_goal_drafts(user_id, updated_at)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_savings_goal_drafts_user
+ON savings_goal_drafts(user_id, updated_at)
+''');
   }
 
-    Future<void> _createDebtsIndexes() async {
-  // ТОМ 2 §22: фильтрация долгов по участникам, статусам, сроку, sync.
-  await customStatement('''
-  CREATE INDEX IF NOT EXISTS idx_debts_creditor
-  ON debts(creditor_id, resolution_status)
-  ''');
-  await customStatement('''
-  CREATE INDEX IF NOT EXISTS idx_debts_debtor
-  ON debts(debtor_id, resolution_status)
-  ''');
-  await customStatement('''
-  CREATE INDEX IF NOT EXISTS idx_debts_space_status
-  ON debts(space_id, resolution_status)
-  ''');
-  await customStatement('''
-  CREATE INDEX IF NOT EXISTS idx_debts_due_date
-  ON debts(due_date)
-  ''');
-  await customStatement('''
-  CREATE INDEX IF NOT EXISTS idx_debts_sync_status
-  ON debts(sync_status)
-  ''');
-  await customStatement('''
-  CREATE INDEX IF NOT EXISTS idx_debt_drafts_user
-  ON debt_drafts(user_id, updated_at)
-  ''');
-  await customStatement('''
-  CREATE INDEX IF NOT EXISTS idx_split_drafts_transaction
-  ON split_drafts(transaction_id)
-  ''');
+  Future<void> _createDebtsIndexes() async {
+    await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_debts_creditor
+ON debts(creditor_id, resolution_status)
+''');
+    await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_debts_debtor
+ON debts(debtor_id, resolution_status)
+''');
+    await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_debts_space_status
+ON debts(space_id, resolution_status)
+''');
+    await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_debts_due_date
+ON debts(due_date)
+''');
+    await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_debts_sync_status
+ON debts(sync_status)
+''');
+    await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_debt_drafts_user
+ON debt_drafts(user_id, updated_at)
+''');
+    await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_split_drafts_transaction
+ON split_drafts(transaction_id)
+''');
   }
+
+  Future<void> _createRemindersIndexes() async {
+    // ТОМ 2 §22: планировщик уведомлений и фильтры напоминаний.
+    await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_reminders_schedule
+ON reminders(remind_at, assignee_id, space_id, is_completed, sync_status)
+''');
+    await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_reminders_linked_recurring
+ON reminders(linked_recurring_id)
+''');
+    await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_holidays_space_date
+ON holidays(space_id, date, is_annually_recurring)
+''');
+    // ТОМ 2 §22 + ТЗ 6.3.9.9: уникальность ключа upsert
+    // (нормализованный мерчант + бакет суммы).
+    await customStatement('''
+CREATE UNIQUE INDEX IF NOT EXISTS idx_recurring_upsert
+ON recurring_transactions(user_id, merchant_name_normalized, average_amount_bucket)
+''');
+    await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_recurring_last_seen
+ON recurring_transactions(last_seen_date)
+''');
+    await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_forecast_cache_month
+ON forecast_cache(user_id, space_id, month_year)
+''');
+    await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_reminder_drafts_user
+ON reminder_drafts(user_id, updated_at)
+''');
+  }
+
   Future<void> _createAllIndexes() async {
-    // РРќР”Р•РљРЎР« Р”Р›РЇ Р­РўРђРџРђ 3
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_memberships_user
-      ON memberships(user_id, status)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_memberships_user
+ON memberships(user_id, status)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_memberships_space
-      ON memberships(space_id, status)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_memberships_space
+ON memberships(space_id, status)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_app_settings_user
-      ON app_settings(user_id)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_app_settings_user
+ON app_settings(user_id)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_notifications_user_read
-      ON notifications(user_id, is_read, created_at DESC)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_notifications_user_read
+ON notifications(user_id, is_read, created_at DESC)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_notifications_space
-      ON notifications(space_id)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_notifications_space
+ON notifications(space_id)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_sync_conflicts_unresolved
-      ON sync_conflicts(entity_type, entity_id)
-      WHERE resolved_at IS NULL
-    ''');
+CREATE INDEX IF NOT EXISTS idx_sync_conflicts_unresolved
+ON sync_conflicts(entity_type, entity_id)
+WHERE resolved_at IS NULL
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_sync_logs_user_timestamp
-      ON sync_logs(user_id, timestamp DESC)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_sync_logs_user_timestamp
+ON sync_logs(user_id, timestamp DESC)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_sync_logs_status
-      ON sync_logs(status)
-    ''');
-
-    // РРќР”Р•РљРЎР« Р”Р›РЇ Р­РўРђРџРђ 5
+CREATE INDEX IF NOT EXISTS idx_sync_logs_status
+ON sync_logs(status)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_accounts_user_space
-      ON accounts(user_id, space_id, sync_status)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_accounts_user_space
+ON accounts(user_id, space_id, sync_status)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_accounts_type
-      ON accounts(account_type)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_accounts_type
+ON accounts(account_type)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_mortgages_account
-      ON mortgages(account_id)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_mortgages_account
+ON mortgages(account_id)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_categories_space_user
-      ON categories(space_id, user_id, type)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_categories_space_user
+ON categories(space_id, user_id, type)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_categories_parent
-      ON categories(parent_id)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_categories_parent
+ON categories(parent_id)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_category_rules_space_bank
-      ON category_rules(space_id, bank_name)
-    ''');
-
-    // РРќР”Р•РљРЎР« Р”Р›РЇ Р­РўРђРџРђ 6
+CREATE INDEX IF NOT EXISTS idx_category_rules_space_bank
+ON category_rules(space_id, bank_name)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_transactions_user_space_date
-      ON transactions(user_id, space_id, date)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_transactions_user_space_date
+ON transactions(user_id, space_id, date)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_transactions_date
-      ON transactions(date)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_transactions_date
+ON transactions(date)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_transactions_account_category
-      ON transactions(account_id, custom_category_id)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_transactions_account_category
+ON transactions(account_id, custom_category_id)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_transactions_sync_status
-      ON transactions(sync_status)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_transactions_sync_status
+ON transactions(sync_status)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_transactions_audit_status
-      ON transactions(audit_status)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_transactions_audit_status
+ON transactions(audit_status)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_transactions_savings_goal
-      ON transactions(savings_goal_id)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_transactions_savings_goal
+ON transactions(savings_goal_id)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_transactions_large_expense
-      ON transactions(is_large_expense)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_transactions_large_expense
+ON transactions(is_large_expense)
+''');
     await customStatement('''
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_bank_tx_id
-      ON transactions(bank_transaction_id)
-      WHERE bank_transaction_id IS NOT NULL
-    ''');
+CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_bank_tx_id
+ON transactions(bank_transaction_id)
+WHERE bank_transaction_id IS NOT NULL
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_transaction_splits_transaction
-      ON transaction_splits(transaction_id)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_transaction_splits_transaction
+ON transaction_splits(transaction_id)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_transaction_splits_sync_status
-      ON transaction_splits(sync_status)
-    ''');
-
-    // РРќР”Р•РљРЎР« Р”Р›РЇ Р­РўРђРџРђ 9 (budget_limits)
-    // РЈРЅРёРєР°Р»СЊРЅС‹Р№ РєРѕРЅСЃС‚СЂРµР№РЅС‚: РѕРґРёРЅ Р»РёРјРёС‚ РЅР° РєР°С‚РµРіРѕСЂРёСЋ РІ РјРµСЃСЏС†
+CREATE INDEX IF NOT EXISTS idx_transaction_splits_sync_status
+ON transaction_splits(sync_status)
+''');
     await customStatement('''
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_budget_limits_unique
-      ON budget_limits(space_id, user_id, category_id, year, month)
-    ''');
-    // РџРѕРёСЃРє Р»РёРјРёС‚РѕРІ РїРѕ РєР°С‚РµРіРѕСЂРёРё
+CREATE UNIQUE INDEX IF NOT EXISTS idx_budget_limits_unique
+ON budget_limits(space_id, user_id, category_id, year, month)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_budget_limits_category
-      ON budget_limits(category_id)
-    ''');
-    // Pending-Р»РёРјРёС‚С‹ РґР»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё
+CREATE INDEX IF NOT EXISTS idx_budget_limits_category
+ON budget_limits(category_id)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_budget_limits_sync_status
-      ON budget_limits(sync_status)
-    ''');
-    // Р¤РёР»СЊС‚СЂР°С†РёСЏ РїРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ Рё РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІСѓ
+CREATE INDEX IF NOT EXISTS idx_budget_limits_sync_status
+ON budget_limits(sync_status)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_budget_limits_user_space
-      ON budget_limits(user_id, space_id)
-    ''');
-    // РРќР”Р•РљРЎР« Р”Р›РЇ Р­РўРђРџРђ 10 (РєСЌС€Р±СЌРє + РєСѓСЂСЃС‹ РІР°Р»СЋС‚)
+CREATE INDEX IF NOT EXISTS idx_budget_limits_user_space
+ON budget_limits(user_id, space_id)
+''');
     await customStatement('''
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_exchange_rates_unique
-      ON exchange_rates(from_currency, to_currency, date)
-    ''');
+CREATE UNIQUE INDEX IF NOT EXISTS idx_exchange_rates_unique
+ON exchange_rates(from_currency, to_currency, date)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_cashback_matrix_account
-      ON cashback_matrix(account_id, expires_at)
-    ''');
+CREATE INDEX IF NOT EXISTS idx_cashback_matrix_account
+ON cashback_matrix(account_id, expires_at)
+''');
     await customStatement('''
-      CREATE INDEX IF NOT EXISTS idx_cashback_matrix_sync_status
-      ON cashback_matrix(sync_status)
-    ''');
-
-      await _createSavingsIndexes();
+CREATE INDEX IF NOT EXISTS idx_cashback_matrix_sync_status
+ON cashback_matrix(sync_status)
+''');
+    await _createSavingsIndexes();
+    // Фикс Этапа 14: на чистой установке индексы долгов ранее не создавались.
+    await _createDebtsIndexes();
+    await _createRemindersIndexes();
   }
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-    onCreate: (Migrator m) async {
-      await m.createAll();
-      await _createAllIndexes();
-    },
-    onUpgrade: (Migrator m, int from, int to) async {
-      if (from < 9) {
-        // Этап 12: цели накопления + локальные черновики форм
-        await m.createTable(savingsGoals);
-        await m.createTable(savingsGoalDrafts);
-        await _createSavingsIndexes();
-      }
-      // РРЎРўРћР РР§Р•РЎРљРђРЇ РњРРќРђ РЈР”РђР›Р•РќРђ: РІРµС‚РєР° from < 2 СЃ DROP TABLE
-      // Р±РѕР»СЊС€Рµ РЅРµ РЅСѓР¶РЅР°, С‚.Рє. СЃС…РµРјР° СЃС‚Р°Р±РёР»РёР·РёСЂРѕРІР°РЅР° РЅР° v4+
-                                                                                                if (from < 12) {
-                                                // Этап 13: консолидированная миграция v10–v12 (порядок не важен, идемпотентна).
-                                                // debts + локальные черновики; debts пересоздаётся с нуля (таблица новая,
-                                                // данные dev); auto_resolve приходит из определения таблицы — ALTER не нужен.
-                                                final debtsExists = await customSelect(
-                                                "SELECT COUNT(*) AS c FROM sqlite_master WHERE type='table' AND name='debts'",
-                                                ).getSingle();
-                                                if (debtsExists.read<int>('c') != 0) {
-                                                await customStatement('DROP TABLE debts');
-                                                }
-                                                await m.createTable(debts);
-                                                final debtDraftsExists = await customSelect(
-                                                "SELECT COUNT(*) AS c FROM sqlite_master WHERE type='table' AND name='debt_drafts'",
-                                                ).getSingle();
-                                                if (debtDraftsExists.read<int>('c') == 0) {
-                                                await m.createTable(debtDrafts);
-                                                }
-                                                final splitDraftsExists = await customSelect(
-                                                "SELECT COUNT(*) AS c FROM sqlite_master WHERE type='table' AND name='split_drafts'",
-                                                ).getSingle();
-                                                if (splitDraftsExists.read<int>('c') == 0) {
-                                                await m.createTable(splitDrafts);
-                                                }
-                                                await _createDebtsIndexes();
-                                                }if (from < 3) {
-        await m.createTable(transactions);
-        await m.createTable(transactionSplits);
-        await _createAllIndexes();
-      }
-      if (from < 4) {
-        await customStatement(
-          'ALTER TABLE transactions '
-          'ADD COLUMN is_large_expense INTEGER NOT NULL DEFAULT 0',
-        );
-        await customStatement(
-          'CREATE INDEX IF NOT EXISTS idx_transactions_large_expense '
-          'ON transactions(is_large_expense)',
-        );
-      }
-      if (from < 5) {
-        // Р­РўРђРџ 9: СЃРѕР·РґР°С‘Рј С‚Р°Р±Р»РёС†Сѓ budget_limits
-        await m.createTable(budgetLimits);
-        // РЎРѕР·РґР°С‘Рј РёРЅРґРµРєСЃС‹ РґР»СЏ budget_limits
-        await customStatement('''
-              CREATE UNIQUE INDEX IF NOT EXISTS idx_budget_limits_unique
-              ON budget_limits(space_id, user_id, category_id, year, month)
-            ''');
-        await customStatement('''
-              CREATE INDEX IF NOT EXISTS idx_budget_limits_category
-              ON budget_limits(category_id)
-            ''');
-        await customStatement('''
-              CREATE INDEX IF NOT EXISTS idx_budget_limits_sync_status
-              ON budget_limits(sync_status)
-            ''');
-        await customStatement('''
-              CREATE INDEX IF NOT EXISTS idx_budget_limits_user_space
-              ON budget_limits(user_id, space_id)
-            ''');
-      }
-    
-        if (from < 6) {
-          // Р­РўРђРџ 10: РєСЌС€Р±СЌРє + РјСѓР»СЊС‚РёРІР°Р»СЋС‚РЅРѕСЃС‚СЊ
-          await m.createTable(exchangeRates);
-          await m.createTable(cashbackMatrix);
-          await customStatement('''
-            CREATE UNIQUE INDEX IF NOT EXISTS idx_exchange_rates_unique
-            ON exchange_rates(from_currency, to_currency, date)
-          ''');
-          await customStatement('''
-            CREATE INDEX IF NOT EXISTS idx_cashback_matrix_account
-            ON cashback_matrix(account_id, expires_at)
-          ''');
-          await customStatement('''
-            CREATE INDEX IF NOT EXISTS idx_cashback_matrix_sync_status
-            ON cashback_matrix(sync_status)
-          ''');
-        }
-        if (from < 8) {
-          // Stage 11 fix: v7 migration was nested incorrectly and
-          // dashboard_widgets may be missing on upgraded devices.
-          final dashboardTableExists = await customSelect(
-            "SELECT COUNT(*) AS c FROM sqlite_master "
-            "WHERE type='table' AND name='dashboard_widgets'",
-          ).getSingle();
-          if (dashboardTableExists.read<int>('c') == 0) {
-            await m.createTable(dashboardWidgets);
+        onCreate: (Migrator m) async {
+          await m.createAll();
+          await _createAllIndexes();
+          await DefaultHolidaysSeed.seedIfEmpty(this);
+        },
+        onUpgrade: (Migrator m, int from, int to) async {
+          if (from < 9) {
+            await m.createTable(savingsGoals);
+            await m.createTable(savingsGoalDrafts);
+            await _createSavingsIndexes();
           }
-          await customStatement('''
+          if (from < 12) {
+            // Этап 13: консолидированная миграция v10–v12 (идемпотентна).
+            final debtsExists = await customSelect(
+              "SELECT COUNT(*) AS c FROM sqlite_master WHERE type='table' AND name='debts'",
+            ).getSingle();
+            if (debtsExists.read<int>('c') != 0) {
+              await customStatement('DROP TABLE debts');
+            }
+            await m.createTable(debts);
+            final debtDraftsExists = await customSelect(
+              "SELECT COUNT(*) AS c FROM sqlite_master WHERE type='table' AND name='debt_drafts'",
+            ).getSingle();
+            if (debtDraftsExists.read<int>('c') == 0) {
+              await m.createTable(debtDrafts);
+            }
+            final splitDraftsExists = await customSelect(
+              "SELECT COUNT(*) AS c FROM sqlite_master WHERE type='table' AND name='split_drafts'",
+            ).getSingle();
+            if (splitDraftsExists.read<int>('c') == 0) {
+              await m.createTable(splitDrafts);
+            }
+            await _createDebtsIndexes();
+          }
+          if (from < 3) {
+            await m.createTable(transactions);
+            await m.createTable(transactionSplits);
+            await _createAllIndexes();
+          }
+          if (from < 4) {
+            await customStatement(
+              'ALTER TABLE transactions '
+              'ADD COLUMN is_large_expense INTEGER NOT NULL DEFAULT 0',
+            );
+            await customStatement(
+              'CREATE INDEX IF NOT EXISTS idx_transactions_large_expense '
+              'ON transactions(is_large_expense)',
+            );
+          }
+          if (from < 5) {
+            await m.createTable(budgetLimits);
+            await customStatement('''
+CREATE UNIQUE INDEX IF NOT EXISTS idx_budget_limits_unique
+ON budget_limits(space_id, user_id, category_id, year, month)
+''');
+            await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_budget_limits_category
+ON budget_limits(category_id)
+''');
+            await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_budget_limits_sync_status
+ON budget_limits(sync_status)
+''');
+            await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_budget_limits_user_space
+ON budget_limits(user_id, space_id)
+''');
+          }
+          if (from < 6) {
+            await m.createTable(exchangeRates);
+            await m.createTable(cashbackMatrix);
+            await customStatement('''
+CREATE UNIQUE INDEX IF NOT EXISTS idx_exchange_rates_unique
+ON exchange_rates(from_currency, to_currency, date)
+''');
+            await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_cashback_matrix_account
+ON cashback_matrix(account_id, expires_at)
+''');
+            await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_cashback_matrix_sync_status
+ON cashback_matrix(sync_status)
+''');
+          }
+          if (from < 8) {
+            final dashboardTableExists = await customSelect(
+              "SELECT COUNT(*) AS c FROM sqlite_master "
+              "WHERE type='table' AND name='dashboard_widgets'",
+            ).getSingle();
+            if (dashboardTableExists.read<int>('c') == 0) {
+              await m.createTable(dashboardWidgets);
+            }
+            await customStatement('''
 CREATE UNIQUE INDEX IF NOT EXISTS idx_dashboard_widgets_user_type
 ON dashboard_widgets(user_id, widget_type)
-        ''');
-          await customStatement('''
+''');
+            await customStatement('''
 CREATE INDEX IF NOT EXISTS idx_dashboard_widgets_sync_status
 ON dashboard_widgets(sync_status)
-        ''');
-        }
-},
-    beforeOpen: (details) async {
-      AppLogger.i(
-        'рџ”§ Migration details: wasCreated=${details.wasCreated}, hadUpgrade=${details.hadUpgrade}, versionNow=${details.versionNow}, versionBefore=${details.versionBefore}',
+''');
+          }
+          if (from < 13) {
+            // Этап 14: Reminders (RRULE) + Calendar.
+            await m.createTable(recurringTransactions);
+            await m.createTable(reminders);
+            await m.createTable(holidays);
+            await m.createTable(forecastCache);
+            await m.createTable(reminderDrafts);
+            await m.addColumn(appSettings, appSettings.holidaysInfoDismissed);
+            await m.addColumn(
+                appSettings, appSettings.recurringDetectionInfoDismissed);
+            await m.addColumn(
+                appSettings, appSettings.recurringDetectionDismissCount);
+            await m.addColumn(appSettings, appSettings.autoDetectRecurring);
+            await m.addColumn(
+                appSettings, appSettings.enableFamilyHolidayAlerts);
+            await _createRemindersIndexes();
+            await DefaultHolidaysSeed.seedIfEmpty(this);
+          }
+        },
+        beforeOpen: (details) async {
+          AppLogger.i(
+            '📦 Migration details: wasCreated=${details.wasCreated}, hadUpgrade=${details.hadUpgrade}, versionNow=${details.versionNow}, versionBefore=${details.versionBefore}',
+          );
+          await customStatement('PRAGMA foreign_keys = ON');
+          await customStatement(
+              'CREATE UNIQUE INDEX IF NOT EXISTS idx_dashboard_widgets_user_type ON dashboard_widgets(user_id, widget_type)');
+          await customStatement(
+              'CREATE INDEX IF NOT EXISTS idx_dashboard_widgets_sync_status ON dashboard_widgets(sync_status)');
+          await customStatement('PRAGMA journal_mode = WAL');
+          await customStatement('PRAGMA synchronous = NORMAL');
+          final tables = await customSelect(
+            "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",
+          ).get();
+          AppLogger.i(
+            '📋 Tables in DB: ${tables.map((r) => r.read<String>('name')).join(', ')}',
+          );
+        },
       );
-      await customStatement('PRAGMA foreign_keys = ON');
-          await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS idx_dashboard_widgets_user_type ON dashboard_widgets(user_id, widget_type)');
-          await customStatement('CREATE INDEX IF NOT EXISTS idx_dashboard_widgets_sync_status ON dashboard_widgets(sync_status)');
-      await customStatement('PRAGMA journal_mode = WAL');
-      await customStatement('PRAGMA synchronous = NORMAL');
-      final tables = await customSelect(
-        "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",
-      ).get();
-      AppLogger.i(
-        'рџ“‹ Tables in DB: ${tables.map((r) => r.read<String>('name')).join(', ')}',
-      );
-    },
-  );
 }
 
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final dbPath = p.join(dbFolder.path, 'budget_assistant.sqlite');
-    AppLogger.i('рџ“Ѓ DB Path: $dbPath');
+    AppLogger.i('📁 DB Path: $dbPath');
     AppLogger.i(
-      'рџ“‚ Directory exists: ${await Directory(dbFolder.path).exists()}',
+      '📂 Directory exists: ${await Directory(dbFolder.path).exists()}',
     );
     final fileExists = await File(dbPath).exists();
-    AppLogger.i('рџ’ѕ DB file exists before open: $fileExists');
+    AppLogger.i('📄 DB file exists before open: $fileExists');
     return NativeDatabase(File(dbPath));
   });
 }

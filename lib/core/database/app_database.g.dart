@@ -2288,6 +2288,77 @@ class $AppSettingsTable extends AppSettings
     requiredDuringInsert: false,
     defaultValue: const Constant('{}'),
   );
+  static const VerificationMeta _holidaysInfoDismissedMeta =
+      const VerificationMeta('holidaysInfoDismissed');
+  @override
+  late final GeneratedColumn<bool> holidaysInfoDismissed =
+      GeneratedColumn<bool>(
+        'holidays_info_dismissed',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("holidays_info_dismissed" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _recurringDetectionInfoDismissedMeta =
+      const VerificationMeta('recurringDetectionInfoDismissed');
+  @override
+  late final GeneratedColumn<bool> recurringDetectionInfoDismissed =
+      GeneratedColumn<bool>(
+        'recurring_detection_info_dismissed',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("recurring_detection_info_dismissed" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _recurringDetectionDismissCountMeta =
+      const VerificationMeta('recurringDetectionDismissCount');
+  @override
+  late final GeneratedColumn<int> recurringDetectionDismissCount =
+      GeneratedColumn<int>(
+        'recurring_detection_dismiss_count',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(0),
+      );
+  static const VerificationMeta _autoDetectRecurringMeta =
+      const VerificationMeta('autoDetectRecurring');
+  @override
+  late final GeneratedColumn<bool> autoDetectRecurring = GeneratedColumn<bool>(
+    'auto_detect_recurring',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("auto_detect_recurring" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _enableFamilyHolidayAlertsMeta =
+      const VerificationMeta('enableFamilyHolidayAlerts');
+  @override
+  late final GeneratedColumn<bool> enableFamilyHolidayAlerts =
+      GeneratedColumn<bool>(
+        'enable_family_holiday_alerts',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("enable_family_holiday_alerts" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
   @override
   List<GeneratedColumn> get $columns => [
     createdAt,
@@ -2334,6 +2405,11 @@ class $AppSettingsTable extends AppSettings
     reminderTimeOfDay,
     autoCreateRemindersForRecurring,
     digestConfig,
+    holidaysInfoDismissed,
+    recurringDetectionInfoDismissed,
+    recurringDetectionDismissCount,
+    autoDetectRecurring,
+    enableFamilyHolidayAlerts,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2729,6 +2805,51 @@ class $AppSettingsTable extends AppSettings
         ),
       );
     }
+    if (data.containsKey('holidays_info_dismissed')) {
+      context.handle(
+        _holidaysInfoDismissedMeta,
+        holidaysInfoDismissed.isAcceptableOrUnknown(
+          data['holidays_info_dismissed']!,
+          _holidaysInfoDismissedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recurring_detection_info_dismissed')) {
+      context.handle(
+        _recurringDetectionInfoDismissedMeta,
+        recurringDetectionInfoDismissed.isAcceptableOrUnknown(
+          data['recurring_detection_info_dismissed']!,
+          _recurringDetectionInfoDismissedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recurring_detection_dismiss_count')) {
+      context.handle(
+        _recurringDetectionDismissCountMeta,
+        recurringDetectionDismissCount.isAcceptableOrUnknown(
+          data['recurring_detection_dismiss_count']!,
+          _recurringDetectionDismissCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('auto_detect_recurring')) {
+      context.handle(
+        _autoDetectRecurringMeta,
+        autoDetectRecurring.isAcceptableOrUnknown(
+          data['auto_detect_recurring']!,
+          _autoDetectRecurringMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enable_family_holiday_alerts')) {
+      context.handle(
+        _enableFamilyHolidayAlertsMeta,
+        enableFamilyHolidayAlerts.isAcceptableOrUnknown(
+          data['enable_family_holiday_alerts']!,
+          _enableFamilyHolidayAlertsMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2914,6 +3035,26 @@ class $AppSettingsTable extends AppSettings
         DriftSqlType.string,
         data['${effectivePrefix}digest_config'],
       )!,
+      holidaysInfoDismissed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}holidays_info_dismissed'],
+      )!,
+      recurringDetectionInfoDismissed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}recurring_detection_info_dismissed'],
+      )!,
+      recurringDetectionDismissCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}recurring_detection_dismiss_count'],
+      )!,
+      autoDetectRecurring: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}auto_detect_recurring'],
+      )!,
+      enableFamilyHolidayAlerts: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}enable_family_holiday_alerts'],
+      )!,
     );
   }
 
@@ -2968,6 +3109,11 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
   final String reminderTimeOfDay;
   final bool autoCreateRemindersForRecurring;
   final String digestConfig;
+  final bool holidaysInfoDismissed;
+  final bool recurringDetectionInfoDismissed;
+  final int recurringDetectionDismissCount;
+  final bool autoDetectRecurring;
+  final bool enableFamilyHolidayAlerts;
   const AppSetting({
     required this.createdAt,
     required this.updatedAt,
@@ -3013,6 +3159,11 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     required this.reminderTimeOfDay,
     required this.autoCreateRemindersForRecurring,
     required this.digestConfig,
+    required this.holidaysInfoDismissed,
+    required this.recurringDetectionInfoDismissed,
+    required this.recurringDetectionDismissCount,
+    required this.autoDetectRecurring,
+    required this.enableFamilyHolidayAlerts,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3093,6 +3244,17 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       autoCreateRemindersForRecurring,
     );
     map['digest_config'] = Variable<String>(digestConfig);
+    map['holidays_info_dismissed'] = Variable<bool>(holidaysInfoDismissed);
+    map['recurring_detection_info_dismissed'] = Variable<bool>(
+      recurringDetectionInfoDismissed,
+    );
+    map['recurring_detection_dismiss_count'] = Variable<int>(
+      recurringDetectionDismissCount,
+    );
+    map['auto_detect_recurring'] = Variable<bool>(autoDetectRecurring);
+    map['enable_family_holiday_alerts'] = Variable<bool>(
+      enableFamilyHolidayAlerts,
+    );
     return map;
   }
 
@@ -3142,6 +3304,11 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       reminderTimeOfDay: Value(reminderTimeOfDay),
       autoCreateRemindersForRecurring: Value(autoCreateRemindersForRecurring),
       digestConfig: Value(digestConfig),
+      holidaysInfoDismissed: Value(holidaysInfoDismissed),
+      recurringDetectionInfoDismissed: Value(recurringDetectionInfoDismissed),
+      recurringDetectionDismissCount: Value(recurringDetectionDismissCount),
+      autoDetectRecurring: Value(autoDetectRecurring),
+      enableFamilyHolidayAlerts: Value(enableFamilyHolidayAlerts),
     );
   }
 
@@ -3247,6 +3414,21 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
         json['autoCreateRemindersForRecurring'],
       ),
       digestConfig: serializer.fromJson<String>(json['digestConfig']),
+      holidaysInfoDismissed: serializer.fromJson<bool>(
+        json['holidaysInfoDismissed'],
+      ),
+      recurringDetectionInfoDismissed: serializer.fromJson<bool>(
+        json['recurringDetectionInfoDismissed'],
+      ),
+      recurringDetectionDismissCount: serializer.fromJson<int>(
+        json['recurringDetectionDismissCount'],
+      ),
+      autoDetectRecurring: serializer.fromJson<bool>(
+        json['autoDetectRecurring'],
+      ),
+      enableFamilyHolidayAlerts: serializer.fromJson<bool>(
+        json['enableFamilyHolidayAlerts'],
+      ),
     );
   }
   @override
@@ -3331,6 +3513,17 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
         autoCreateRemindersForRecurring,
       ),
       'digestConfig': serializer.toJson<String>(digestConfig),
+      'holidaysInfoDismissed': serializer.toJson<bool>(holidaysInfoDismissed),
+      'recurringDetectionInfoDismissed': serializer.toJson<bool>(
+        recurringDetectionInfoDismissed,
+      ),
+      'recurringDetectionDismissCount': serializer.toJson<int>(
+        recurringDetectionDismissCount,
+      ),
+      'autoDetectRecurring': serializer.toJson<bool>(autoDetectRecurring),
+      'enableFamilyHolidayAlerts': serializer.toJson<bool>(
+        enableFamilyHolidayAlerts,
+      ),
     };
   }
 
@@ -3379,6 +3572,11 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     String? reminderTimeOfDay,
     bool? autoCreateRemindersForRecurring,
     String? digestConfig,
+    bool? holidaysInfoDismissed,
+    bool? recurringDetectionInfoDismissed,
+    int? recurringDetectionDismissCount,
+    bool? autoDetectRecurring,
+    bool? enableFamilyHolidayAlerts,
   }) => AppSetting(
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -3443,6 +3641,14 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     autoCreateRemindersForRecurring:
         autoCreateRemindersForRecurring ?? this.autoCreateRemindersForRecurring,
     digestConfig: digestConfig ?? this.digestConfig,
+    holidaysInfoDismissed: holidaysInfoDismissed ?? this.holidaysInfoDismissed,
+    recurringDetectionInfoDismissed:
+        recurringDetectionInfoDismissed ?? this.recurringDetectionInfoDismissed,
+    recurringDetectionDismissCount:
+        recurringDetectionDismissCount ?? this.recurringDetectionDismissCount,
+    autoDetectRecurring: autoDetectRecurring ?? this.autoDetectRecurring,
+    enableFamilyHolidayAlerts:
+        enableFamilyHolidayAlerts ?? this.enableFamilyHolidayAlerts,
   );
   AppSetting copyWithCompanion(AppSettingsCompanion data) {
     return AppSetting(
@@ -3571,6 +3777,23 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       digestConfig: data.digestConfig.present
           ? data.digestConfig.value
           : this.digestConfig,
+      holidaysInfoDismissed: data.holidaysInfoDismissed.present
+          ? data.holidaysInfoDismissed.value
+          : this.holidaysInfoDismissed,
+      recurringDetectionInfoDismissed:
+          data.recurringDetectionInfoDismissed.present
+          ? data.recurringDetectionInfoDismissed.value
+          : this.recurringDetectionInfoDismissed,
+      recurringDetectionDismissCount:
+          data.recurringDetectionDismissCount.present
+          ? data.recurringDetectionDismissCount.value
+          : this.recurringDetectionDismissCount,
+      autoDetectRecurring: data.autoDetectRecurring.present
+          ? data.autoDetectRecurring.value
+          : this.autoDetectRecurring,
+      enableFamilyHolidayAlerts: data.enableFamilyHolidayAlerts.present
+          ? data.enableFamilyHolidayAlerts.value
+          : this.enableFamilyHolidayAlerts,
     );
   }
 
@@ -3628,7 +3851,16 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
           ..write(
             'autoCreateRemindersForRecurring: $autoCreateRemindersForRecurring, ',
           )
-          ..write('digestConfig: $digestConfig')
+          ..write('digestConfig: $digestConfig, ')
+          ..write('holidaysInfoDismissed: $holidaysInfoDismissed, ')
+          ..write(
+            'recurringDetectionInfoDismissed: $recurringDetectionInfoDismissed, ',
+          )
+          ..write(
+            'recurringDetectionDismissCount: $recurringDetectionDismissCount, ',
+          )
+          ..write('autoDetectRecurring: $autoDetectRecurring, ')
+          ..write('enableFamilyHolidayAlerts: $enableFamilyHolidayAlerts')
           ..write(')'))
         .toString();
   }
@@ -3679,6 +3911,11 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     reminderTimeOfDay,
     autoCreateRemindersForRecurring,
     digestConfig,
+    holidaysInfoDismissed,
+    recurringDetectionInfoDismissed,
+    recurringDetectionDismissCount,
+    autoDetectRecurring,
+    enableFamilyHolidayAlerts,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -3734,7 +3971,14 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
           other.reminderTimeOfDay == this.reminderTimeOfDay &&
           other.autoCreateRemindersForRecurring ==
               this.autoCreateRemindersForRecurring &&
-          other.digestConfig == this.digestConfig);
+          other.digestConfig == this.digestConfig &&
+          other.holidaysInfoDismissed == this.holidaysInfoDismissed &&
+          other.recurringDetectionInfoDismissed ==
+              this.recurringDetectionInfoDismissed &&
+          other.recurringDetectionDismissCount ==
+              this.recurringDetectionDismissCount &&
+          other.autoDetectRecurring == this.autoDetectRecurring &&
+          other.enableFamilyHolidayAlerts == this.enableFamilyHolidayAlerts);
 }
 
 class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
@@ -3782,6 +4026,11 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   final Value<String> reminderTimeOfDay;
   final Value<bool> autoCreateRemindersForRecurring;
   final Value<String> digestConfig;
+  final Value<bool> holidaysInfoDismissed;
+  final Value<bool> recurringDetectionInfoDismissed;
+  final Value<int> recurringDetectionDismissCount;
+  final Value<bool> autoDetectRecurring;
+  final Value<bool> enableFamilyHolidayAlerts;
   final Value<int> rowid;
   const AppSettingsCompanion({
     this.createdAt = const Value.absent(),
@@ -3828,6 +4077,11 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     this.reminderTimeOfDay = const Value.absent(),
     this.autoCreateRemindersForRecurring = const Value.absent(),
     this.digestConfig = const Value.absent(),
+    this.holidaysInfoDismissed = const Value.absent(),
+    this.recurringDetectionInfoDismissed = const Value.absent(),
+    this.recurringDetectionDismissCount = const Value.absent(),
+    this.autoDetectRecurring = const Value.absent(),
+    this.enableFamilyHolidayAlerts = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   AppSettingsCompanion.insert({
@@ -3875,6 +4129,11 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     this.reminderTimeOfDay = const Value.absent(),
     this.autoCreateRemindersForRecurring = const Value.absent(),
     this.digestConfig = const Value.absent(),
+    this.holidaysInfoDismissed = const Value.absent(),
+    this.recurringDetectionInfoDismissed = const Value.absent(),
+    this.recurringDetectionDismissCount = const Value.absent(),
+    this.autoDetectRecurring = const Value.absent(),
+    this.enableFamilyHolidayAlerts = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        userId = Value(userId);
@@ -3923,6 +4182,11 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     Expression<String>? reminderTimeOfDay,
     Expression<bool>? autoCreateRemindersForRecurring,
     Expression<String>? digestConfig,
+    Expression<bool>? holidaysInfoDismissed,
+    Expression<bool>? recurringDetectionInfoDismissed,
+    Expression<int>? recurringDetectionDismissCount,
+    Expression<bool>? autoDetectRecurring,
+    Expression<bool>? enableFamilyHolidayAlerts,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3998,6 +4262,16 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
       if (autoCreateRemindersForRecurring != null)
         'auto_create_reminders_for_recurring': autoCreateRemindersForRecurring,
       if (digestConfig != null) 'digest_config': digestConfig,
+      if (holidaysInfoDismissed != null)
+        'holidays_info_dismissed': holidaysInfoDismissed,
+      if (recurringDetectionInfoDismissed != null)
+        'recurring_detection_info_dismissed': recurringDetectionInfoDismissed,
+      if (recurringDetectionDismissCount != null)
+        'recurring_detection_dismiss_count': recurringDetectionDismissCount,
+      if (autoDetectRecurring != null)
+        'auto_detect_recurring': autoDetectRecurring,
+      if (enableFamilyHolidayAlerts != null)
+        'enable_family_holiday_alerts': enableFamilyHolidayAlerts,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4047,6 +4321,11 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     Value<String>? reminderTimeOfDay,
     Value<bool>? autoCreateRemindersForRecurring,
     Value<String>? digestConfig,
+    Value<bool>? holidaysInfoDismissed,
+    Value<bool>? recurringDetectionInfoDismissed,
+    Value<int>? recurringDetectionDismissCount,
+    Value<bool>? autoDetectRecurring,
+    Value<bool>? enableFamilyHolidayAlerts,
     Value<int>? rowid,
   }) {
     return AppSettingsCompanion(
@@ -4118,6 +4397,16 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
           autoCreateRemindersForRecurring ??
           this.autoCreateRemindersForRecurring,
       digestConfig: digestConfig ?? this.digestConfig,
+      holidaysInfoDismissed:
+          holidaysInfoDismissed ?? this.holidaysInfoDismissed,
+      recurringDetectionInfoDismissed:
+          recurringDetectionInfoDismissed ??
+          this.recurringDetectionInfoDismissed,
+      recurringDetectionDismissCount:
+          recurringDetectionDismissCount ?? this.recurringDetectionDismissCount,
+      autoDetectRecurring: autoDetectRecurring ?? this.autoDetectRecurring,
+      enableFamilyHolidayAlerts:
+          enableFamilyHolidayAlerts ?? this.enableFamilyHolidayAlerts,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4307,6 +4596,29 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     if (digestConfig.present) {
       map['digest_config'] = Variable<String>(digestConfig.value);
     }
+    if (holidaysInfoDismissed.present) {
+      map['holidays_info_dismissed'] = Variable<bool>(
+        holidaysInfoDismissed.value,
+      );
+    }
+    if (recurringDetectionInfoDismissed.present) {
+      map['recurring_detection_info_dismissed'] = Variable<bool>(
+        recurringDetectionInfoDismissed.value,
+      );
+    }
+    if (recurringDetectionDismissCount.present) {
+      map['recurring_detection_dismiss_count'] = Variable<int>(
+        recurringDetectionDismissCount.value,
+      );
+    }
+    if (autoDetectRecurring.present) {
+      map['auto_detect_recurring'] = Variable<bool>(autoDetectRecurring.value);
+    }
+    if (enableFamilyHolidayAlerts.present) {
+      map['enable_family_holiday_alerts'] = Variable<bool>(
+        enableFamilyHolidayAlerts.value,
+      );
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4368,6 +4680,15 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
             'autoCreateRemindersForRecurring: $autoCreateRemindersForRecurring, ',
           )
           ..write('digestConfig: $digestConfig, ')
+          ..write('holidaysInfoDismissed: $holidaysInfoDismissed, ')
+          ..write(
+            'recurringDetectionInfoDismissed: $recurringDetectionInfoDismissed, ',
+          )
+          ..write(
+            'recurringDetectionDismissCount: $recurringDetectionDismissCount, ',
+          )
+          ..write('autoDetectRecurring: $autoDetectRecurring, ')
+          ..write('enableFamilyHolidayAlerts: $enableFamilyHolidayAlerts, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -16231,51 +16552,20 @@ class $DebtsTable extends Debts with TableInfo<$DebtsTable, DebtDb> {
 
 class DebtDb extends DataClass implements Insertable<DebtDb> {
   final String id;
-
-  /// Кому должны (кредитор). Индекс.
   final String? creditorId;
-
-  /// Кто должен (должник). NULL = внешний контрагент
-  /// (используется counterparty_name_dative).
   final String? debtorId;
-
-  /// Семейный долг — пространство; NULL = личный/внешний.
   final String? spaceId;
-
-  /// Категория исходной траты (компенсирующие транзакции, ТОМ 4 §6).
   final String? categoryId;
-
-  /// Сумма долга, копейки, всегда > 0.
   final int amount;
   final String currency;
-
-  /// «За что» [E2E].
   final String? description;
-
-  /// Имя внешнего контрагента в дательном падеже [E2E].
   final String? counterpartyNameDative;
-
-  /// Транзакция, породившая долг.
   final String? originalTransactionId;
-
-  /// Связь с частью сплит-чека (transaction_splits.id): долг только
-  /// за конкретную позицию общего чека.
   final String? splitId;
-
-  /// Срок погашения (UTC, nullable).
   final DateTime? dueDate;
-
-  /// Дата закрытия.
   final DateTime? resolvedAt;
-
-  /// 'active' | 'forgiven' | 'paid_offline' | 'resolved'. Индекс.
   final String resolutionStatus;
-
-  /// Долг ex-члена семьи: НЕ удаляется, остаётся действительным.
   final bool isExMemberDebt;
-
-  /// Создатель (только он может редактировать/удалять).
-  /// Авто-закрытие долга при связанной транзакции (6.3.14).
   final bool autoResolve;
   final String createdBy;
   final DateTime createdAt;
@@ -17692,6 +17982,3986 @@ class SplitDraftsCompanion extends UpdateCompanion<SplitDraftDb> {
   }
 }
 
+class $RecurringTransactionsTable extends RecurringTransactions
+    with TableInfo<$RecurringTransactionsTable, RecurringTransactionDb> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RecurringTransactionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _spaceIdMeta = const VerificationMeta(
+    'spaceId',
+  );
+  @override
+  late final GeneratedColumn<String> spaceId = GeneratedColumn<String>(
+    'space_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES spaces (id)',
+    ),
+  );
+  static const VerificationMeta _merchantNameMeta = const VerificationMeta(
+    'merchantName',
+  );
+  @override
+  late final GeneratedColumn<String> merchantName = GeneratedColumn<String>(
+    'merchant_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _merchantNameNormalizedMeta =
+      const VerificationMeta('merchantNameNormalized');
+  @override
+  late final GeneratedColumn<String> merchantNameNormalized =
+      GeneratedColumn<String>(
+        'merchant_name_normalized',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _averageAmountMeta = const VerificationMeta(
+    'averageAmount',
+  );
+  @override
+  late final GeneratedColumn<int> averageAmount = GeneratedColumn<int>(
+    'average_amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _averageAmountBucketMeta =
+      const VerificationMeta('averageAmountBucket');
+  @override
+  late final GeneratedColumn<int> averageAmountBucket = GeneratedColumn<int>(
+    'average_amount_bucket',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _averageDayOfMonthMeta = const VerificationMeta(
+    'averageDayOfMonth',
+  );
+  @override
+  late final GeneratedColumn<int> averageDayOfMonth = GeneratedColumn<int>(
+    'average_day_of_month',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _occurrenceCountMeta = const VerificationMeta(
+    'occurrenceCount',
+  );
+  @override
+  late final GeneratedColumn<int> occurrenceCount = GeneratedColumn<int>(
+    'occurrence_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _confidenceMeta = const VerificationMeta(
+    'confidence',
+  );
+  @override
+  late final GeneratedColumn<String> confidence = GeneratedColumn<String>(
+    'confidence',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('medium'),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending_confirmation'),
+  );
+  static const VerificationMeta _firstSeenDateMeta = const VerificationMeta(
+    'firstSeenDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> firstSeenDate =
+      GeneratedColumn<DateTime>(
+        'first_seen_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _lastSeenDateMeta = const VerificationMeta(
+    'lastSeenDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastSeenDate = GeneratedColumn<DateTime>(
+    'last_seen_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _linkedReminderIdMeta = const VerificationMeta(
+    'linkedReminderId',
+  );
+  @override
+  late final GeneratedColumn<String> linkedReminderId = GeneratedColumn<String>(
+    'linked_reminder_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+    'category_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES categories (id)',
+    ),
+  );
+  static const VerificationMeta _detectedAtMeta = const VerificationMeta(
+    'detectedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> detectedAt = GeneratedColumn<DateTime>(
+    'detected_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
+      GeneratedColumn<String>(
+        'sync_status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('pending'),
+      ).withConverter<SyncStatus>(
+        $RecurringTransactionsTable.$convertersyncStatus,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    spaceId,
+    merchantName,
+    merchantNameNormalized,
+    averageAmount,
+    averageAmountBucket,
+    averageDayOfMonth,
+    occurrenceCount,
+    confidence,
+    status,
+    firstSeenDate,
+    lastSeenDate,
+    linkedReminderId,
+    categoryId,
+    detectedAt,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'recurring_transactions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RecurringTransactionDb> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('space_id')) {
+      context.handle(
+        _spaceIdMeta,
+        spaceId.isAcceptableOrUnknown(data['space_id']!, _spaceIdMeta),
+      );
+    }
+    if (data.containsKey('merchant_name')) {
+      context.handle(
+        _merchantNameMeta,
+        merchantName.isAcceptableOrUnknown(
+          data['merchant_name']!,
+          _merchantNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_merchantNameMeta);
+    }
+    if (data.containsKey('merchant_name_normalized')) {
+      context.handle(
+        _merchantNameNormalizedMeta,
+        merchantNameNormalized.isAcceptableOrUnknown(
+          data['merchant_name_normalized']!,
+          _merchantNameNormalizedMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_merchantNameNormalizedMeta);
+    }
+    if (data.containsKey('average_amount')) {
+      context.handle(
+        _averageAmountMeta,
+        averageAmount.isAcceptableOrUnknown(
+          data['average_amount']!,
+          _averageAmountMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_averageAmountMeta);
+    }
+    if (data.containsKey('average_amount_bucket')) {
+      context.handle(
+        _averageAmountBucketMeta,
+        averageAmountBucket.isAcceptableOrUnknown(
+          data['average_amount_bucket']!,
+          _averageAmountBucketMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_averageAmountBucketMeta);
+    }
+    if (data.containsKey('average_day_of_month')) {
+      context.handle(
+        _averageDayOfMonthMeta,
+        averageDayOfMonth.isAcceptableOrUnknown(
+          data['average_day_of_month']!,
+          _averageDayOfMonthMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_averageDayOfMonthMeta);
+    }
+    if (data.containsKey('occurrence_count')) {
+      context.handle(
+        _occurrenceCountMeta,
+        occurrenceCount.isAcceptableOrUnknown(
+          data['occurrence_count']!,
+          _occurrenceCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('confidence')) {
+      context.handle(
+        _confidenceMeta,
+        confidence.isAcceptableOrUnknown(data['confidence']!, _confidenceMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('first_seen_date')) {
+      context.handle(
+        _firstSeenDateMeta,
+        firstSeenDate.isAcceptableOrUnknown(
+          data['first_seen_date']!,
+          _firstSeenDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_seen_date')) {
+      context.handle(
+        _lastSeenDateMeta,
+        lastSeenDate.isAcceptableOrUnknown(
+          data['last_seen_date']!,
+          _lastSeenDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('linked_reminder_id')) {
+      context.handle(
+        _linkedReminderIdMeta,
+        linkedReminderId.isAcceptableOrUnknown(
+          data['linked_reminder_id']!,
+          _linkedReminderIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    }
+    if (data.containsKey('detected_at')) {
+      context.handle(
+        _detectedAtMeta,
+        detectedAt.isAcceptableOrUnknown(data['detected_at']!, _detectedAtMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RecurringTransactionDb map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RecurringTransactionDb(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      spaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}space_id'],
+      ),
+      merchantName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}merchant_name'],
+      )!,
+      merchantNameNormalized: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}merchant_name_normalized'],
+      )!,
+      averageAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}average_amount'],
+      )!,
+      averageAmountBucket: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}average_amount_bucket'],
+      )!,
+      averageDayOfMonth: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}average_day_of_month'],
+      )!,
+      occurrenceCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}occurrence_count'],
+      )!,
+      confidence: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}confidence'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      firstSeenDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}first_seen_date'],
+      ),
+      lastSeenDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_seen_date'],
+      ),
+      linkedReminderId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}linked_reminder_id'],
+      ),
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_id'],
+      ),
+      detectedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}detected_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncStatus: $RecurringTransactionsTable.$convertersyncStatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}sync_status'],
+        )!,
+      ),
+    );
+  }
+
+  @override
+  $RecurringTransactionsTable createAlias(String alias) {
+    return $RecurringTransactionsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<SyncStatus, String, String> $convertersyncStatus =
+      const EnumNameConverter<SyncStatus>(SyncStatus.values);
+}
+
+class RecurringTransactionDb extends DataClass
+    implements Insertable<RecurringTransactionDb> {
+  final String id;
+  final String userId;
+
+  /// Личная сущность: фактически всегда NULL (ТЗ 6.3.9.15).
+  final String? spaceId;
+  final String merchantName;
+  final String merchantNameNormalized;
+  final int averageAmount;
+
+  /// Копейки, округлённые до 100 рублей (ключ upsert).
+  final int averageAmountBucket;
+  final int averageDayOfMonth;
+  final int occurrenceCount;
+
+  /// 'high' | 'medium' | 'low'.
+  final String confidence;
+
+  /// 'pending_confirmation' | 'active'.
+  final String status;
+  final DateTime? firstSeenDate;
+  final DateTime? lastSeenDate;
+
+  /// Связь с напоминанием. Plain text: циклический FK с reminders
+  /// ломает сортировку таблиц Drift (отклонение зафиксировано).
+  final String? linkedReminderId;
+  final String? categoryId;
+  final DateTime? detectedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final SyncStatus syncStatus;
+  const RecurringTransactionDb({
+    required this.id,
+    required this.userId,
+    this.spaceId,
+    required this.merchantName,
+    required this.merchantNameNormalized,
+    required this.averageAmount,
+    required this.averageAmountBucket,
+    required this.averageDayOfMonth,
+    required this.occurrenceCount,
+    required this.confidence,
+    required this.status,
+    this.firstSeenDate,
+    this.lastSeenDate,
+    this.linkedReminderId,
+    this.categoryId,
+    this.detectedAt,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.syncStatus,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || spaceId != null) {
+      map['space_id'] = Variable<String>(spaceId);
+    }
+    map['merchant_name'] = Variable<String>(merchantName);
+    map['merchant_name_normalized'] = Variable<String>(merchantNameNormalized);
+    map['average_amount'] = Variable<int>(averageAmount);
+    map['average_amount_bucket'] = Variable<int>(averageAmountBucket);
+    map['average_day_of_month'] = Variable<int>(averageDayOfMonth);
+    map['occurrence_count'] = Variable<int>(occurrenceCount);
+    map['confidence'] = Variable<String>(confidence);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || firstSeenDate != null) {
+      map['first_seen_date'] = Variable<DateTime>(firstSeenDate);
+    }
+    if (!nullToAbsent || lastSeenDate != null) {
+      map['last_seen_date'] = Variable<DateTime>(lastSeenDate);
+    }
+    if (!nullToAbsent || linkedReminderId != null) {
+      map['linked_reminder_id'] = Variable<String>(linkedReminderId);
+    }
+    if (!nullToAbsent || categoryId != null) {
+      map['category_id'] = Variable<String>(categoryId);
+    }
+    if (!nullToAbsent || detectedAt != null) {
+      map['detected_at'] = Variable<DateTime>(detectedAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    {
+      map['sync_status'] = Variable<String>(
+        $RecurringTransactionsTable.$convertersyncStatus.toSql(syncStatus),
+      );
+    }
+    return map;
+  }
+
+  RecurringTransactionsCompanion toCompanion(bool nullToAbsent) {
+    return RecurringTransactionsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      spaceId: spaceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(spaceId),
+      merchantName: Value(merchantName),
+      merchantNameNormalized: Value(merchantNameNormalized),
+      averageAmount: Value(averageAmount),
+      averageAmountBucket: Value(averageAmountBucket),
+      averageDayOfMonth: Value(averageDayOfMonth),
+      occurrenceCount: Value(occurrenceCount),
+      confidence: Value(confidence),
+      status: Value(status),
+      firstSeenDate: firstSeenDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(firstSeenDate),
+      lastSeenDate: lastSeenDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSeenDate),
+      linkedReminderId: linkedReminderId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(linkedReminderId),
+      categoryId: categoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryId),
+      detectedAt: detectedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(detectedAt),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncStatus: Value(syncStatus),
+    );
+  }
+
+  factory RecurringTransactionDb.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RecurringTransactionDb(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      spaceId: serializer.fromJson<String?>(json['spaceId']),
+      merchantName: serializer.fromJson<String>(json['merchantName']),
+      merchantNameNormalized: serializer.fromJson<String>(
+        json['merchantNameNormalized'],
+      ),
+      averageAmount: serializer.fromJson<int>(json['averageAmount']),
+      averageAmountBucket: serializer.fromJson<int>(
+        json['averageAmountBucket'],
+      ),
+      averageDayOfMonth: serializer.fromJson<int>(json['averageDayOfMonth']),
+      occurrenceCount: serializer.fromJson<int>(json['occurrenceCount']),
+      confidence: serializer.fromJson<String>(json['confidence']),
+      status: serializer.fromJson<String>(json['status']),
+      firstSeenDate: serializer.fromJson<DateTime?>(json['firstSeenDate']),
+      lastSeenDate: serializer.fromJson<DateTime?>(json['lastSeenDate']),
+      linkedReminderId: serializer.fromJson<String?>(json['linkedReminderId']),
+      categoryId: serializer.fromJson<String?>(json['categoryId']),
+      detectedAt: serializer.fromJson<DateTime?>(json['detectedAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncStatus: $RecurringTransactionsTable.$convertersyncStatus.fromJson(
+        serializer.fromJson<String>(json['syncStatus']),
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'spaceId': serializer.toJson<String?>(spaceId),
+      'merchantName': serializer.toJson<String>(merchantName),
+      'merchantNameNormalized': serializer.toJson<String>(
+        merchantNameNormalized,
+      ),
+      'averageAmount': serializer.toJson<int>(averageAmount),
+      'averageAmountBucket': serializer.toJson<int>(averageAmountBucket),
+      'averageDayOfMonth': serializer.toJson<int>(averageDayOfMonth),
+      'occurrenceCount': serializer.toJson<int>(occurrenceCount),
+      'confidence': serializer.toJson<String>(confidence),
+      'status': serializer.toJson<String>(status),
+      'firstSeenDate': serializer.toJson<DateTime?>(firstSeenDate),
+      'lastSeenDate': serializer.toJson<DateTime?>(lastSeenDate),
+      'linkedReminderId': serializer.toJson<String?>(linkedReminderId),
+      'categoryId': serializer.toJson<String?>(categoryId),
+      'detectedAt': serializer.toJson<DateTime?>(detectedAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncStatus': serializer.toJson<String>(
+        $RecurringTransactionsTable.$convertersyncStatus.toJson(syncStatus),
+      ),
+    };
+  }
+
+  RecurringTransactionDb copyWith({
+    String? id,
+    String? userId,
+    Value<String?> spaceId = const Value.absent(),
+    String? merchantName,
+    String? merchantNameNormalized,
+    int? averageAmount,
+    int? averageAmountBucket,
+    int? averageDayOfMonth,
+    int? occurrenceCount,
+    String? confidence,
+    String? status,
+    Value<DateTime?> firstSeenDate = const Value.absent(),
+    Value<DateTime?> lastSeenDate = const Value.absent(),
+    Value<String?> linkedReminderId = const Value.absent(),
+    Value<String?> categoryId = const Value.absent(),
+    Value<DateTime?> detectedAt = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    SyncStatus? syncStatus,
+  }) => RecurringTransactionDb(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    spaceId: spaceId.present ? spaceId.value : this.spaceId,
+    merchantName: merchantName ?? this.merchantName,
+    merchantNameNormalized:
+        merchantNameNormalized ?? this.merchantNameNormalized,
+    averageAmount: averageAmount ?? this.averageAmount,
+    averageAmountBucket: averageAmountBucket ?? this.averageAmountBucket,
+    averageDayOfMonth: averageDayOfMonth ?? this.averageDayOfMonth,
+    occurrenceCount: occurrenceCount ?? this.occurrenceCount,
+    confidence: confidence ?? this.confidence,
+    status: status ?? this.status,
+    firstSeenDate: firstSeenDate.present
+        ? firstSeenDate.value
+        : this.firstSeenDate,
+    lastSeenDate: lastSeenDate.present ? lastSeenDate.value : this.lastSeenDate,
+    linkedReminderId: linkedReminderId.present
+        ? linkedReminderId.value
+        : this.linkedReminderId,
+    categoryId: categoryId.present ? categoryId.value : this.categoryId,
+    detectedAt: detectedAt.present ? detectedAt.value : this.detectedAt,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+  );
+  RecurringTransactionDb copyWithCompanion(
+    RecurringTransactionsCompanion data,
+  ) {
+    return RecurringTransactionDb(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
+      merchantName: data.merchantName.present
+          ? data.merchantName.value
+          : this.merchantName,
+      merchantNameNormalized: data.merchantNameNormalized.present
+          ? data.merchantNameNormalized.value
+          : this.merchantNameNormalized,
+      averageAmount: data.averageAmount.present
+          ? data.averageAmount.value
+          : this.averageAmount,
+      averageAmountBucket: data.averageAmountBucket.present
+          ? data.averageAmountBucket.value
+          : this.averageAmountBucket,
+      averageDayOfMonth: data.averageDayOfMonth.present
+          ? data.averageDayOfMonth.value
+          : this.averageDayOfMonth,
+      occurrenceCount: data.occurrenceCount.present
+          ? data.occurrenceCount.value
+          : this.occurrenceCount,
+      confidence: data.confidence.present
+          ? data.confidence.value
+          : this.confidence,
+      status: data.status.present ? data.status.value : this.status,
+      firstSeenDate: data.firstSeenDate.present
+          ? data.firstSeenDate.value
+          : this.firstSeenDate,
+      lastSeenDate: data.lastSeenDate.present
+          ? data.lastSeenDate.value
+          : this.lastSeenDate,
+      linkedReminderId: data.linkedReminderId.present
+          ? data.linkedReminderId.value
+          : this.linkedReminderId,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      detectedAt: data.detectedAt.present
+          ? data.detectedAt.value
+          : this.detectedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecurringTransactionDb(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('merchantName: $merchantName, ')
+          ..write('merchantNameNormalized: $merchantNameNormalized, ')
+          ..write('averageAmount: $averageAmount, ')
+          ..write('averageAmountBucket: $averageAmountBucket, ')
+          ..write('averageDayOfMonth: $averageDayOfMonth, ')
+          ..write('occurrenceCount: $occurrenceCount, ')
+          ..write('confidence: $confidence, ')
+          ..write('status: $status, ')
+          ..write('firstSeenDate: $firstSeenDate, ')
+          ..write('lastSeenDate: $lastSeenDate, ')
+          ..write('linkedReminderId: $linkedReminderId, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('detectedAt: $detectedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    spaceId,
+    merchantName,
+    merchantNameNormalized,
+    averageAmount,
+    averageAmountBucket,
+    averageDayOfMonth,
+    occurrenceCount,
+    confidence,
+    status,
+    firstSeenDate,
+    lastSeenDate,
+    linkedReminderId,
+    categoryId,
+    detectedAt,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RecurringTransactionDb &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.spaceId == this.spaceId &&
+          other.merchantName == this.merchantName &&
+          other.merchantNameNormalized == this.merchantNameNormalized &&
+          other.averageAmount == this.averageAmount &&
+          other.averageAmountBucket == this.averageAmountBucket &&
+          other.averageDayOfMonth == this.averageDayOfMonth &&
+          other.occurrenceCount == this.occurrenceCount &&
+          other.confidence == this.confidence &&
+          other.status == this.status &&
+          other.firstSeenDate == this.firstSeenDate &&
+          other.lastSeenDate == this.lastSeenDate &&
+          other.linkedReminderId == this.linkedReminderId &&
+          other.categoryId == this.categoryId &&
+          other.detectedAt == this.detectedAt &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncStatus == this.syncStatus);
+}
+
+class RecurringTransactionsCompanion
+    extends UpdateCompanion<RecurringTransactionDb> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String?> spaceId;
+  final Value<String> merchantName;
+  final Value<String> merchantNameNormalized;
+  final Value<int> averageAmount;
+  final Value<int> averageAmountBucket;
+  final Value<int> averageDayOfMonth;
+  final Value<int> occurrenceCount;
+  final Value<String> confidence;
+  final Value<String> status;
+  final Value<DateTime?> firstSeenDate;
+  final Value<DateTime?> lastSeenDate;
+  final Value<String?> linkedReminderId;
+  final Value<String?> categoryId;
+  final Value<DateTime?> detectedAt;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<SyncStatus> syncStatus;
+  final Value<int> rowid;
+  const RecurringTransactionsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.spaceId = const Value.absent(),
+    this.merchantName = const Value.absent(),
+    this.merchantNameNormalized = const Value.absent(),
+    this.averageAmount = const Value.absent(),
+    this.averageAmountBucket = const Value.absent(),
+    this.averageDayOfMonth = const Value.absent(),
+    this.occurrenceCount = const Value.absent(),
+    this.confidence = const Value.absent(),
+    this.status = const Value.absent(),
+    this.firstSeenDate = const Value.absent(),
+    this.lastSeenDate = const Value.absent(),
+    this.linkedReminderId = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.detectedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RecurringTransactionsCompanion.insert({
+    required String id,
+    required String userId,
+    this.spaceId = const Value.absent(),
+    required String merchantName,
+    required String merchantNameNormalized,
+    required int averageAmount,
+    required int averageAmountBucket,
+    required int averageDayOfMonth,
+    this.occurrenceCount = const Value.absent(),
+    this.confidence = const Value.absent(),
+    this.status = const Value.absent(),
+    this.firstSeenDate = const Value.absent(),
+    this.lastSeenDate = const Value.absent(),
+    this.linkedReminderId = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.detectedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       merchantName = Value(merchantName),
+       merchantNameNormalized = Value(merchantNameNormalized),
+       averageAmount = Value(averageAmount),
+       averageAmountBucket = Value(averageAmountBucket),
+       averageDayOfMonth = Value(averageDayOfMonth);
+  static Insertable<RecurringTransactionDb> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? spaceId,
+    Expression<String>? merchantName,
+    Expression<String>? merchantNameNormalized,
+    Expression<int>? averageAmount,
+    Expression<int>? averageAmountBucket,
+    Expression<int>? averageDayOfMonth,
+    Expression<int>? occurrenceCount,
+    Expression<String>? confidence,
+    Expression<String>? status,
+    Expression<DateTime>? firstSeenDate,
+    Expression<DateTime>? lastSeenDate,
+    Expression<String>? linkedReminderId,
+    Expression<String>? categoryId,
+    Expression<DateTime>? detectedAt,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? syncStatus,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (spaceId != null) 'space_id': spaceId,
+      if (merchantName != null) 'merchant_name': merchantName,
+      if (merchantNameNormalized != null)
+        'merchant_name_normalized': merchantNameNormalized,
+      if (averageAmount != null) 'average_amount': averageAmount,
+      if (averageAmountBucket != null)
+        'average_amount_bucket': averageAmountBucket,
+      if (averageDayOfMonth != null) 'average_day_of_month': averageDayOfMonth,
+      if (occurrenceCount != null) 'occurrence_count': occurrenceCount,
+      if (confidence != null) 'confidence': confidence,
+      if (status != null) 'status': status,
+      if (firstSeenDate != null) 'first_seen_date': firstSeenDate,
+      if (lastSeenDate != null) 'last_seen_date': lastSeenDate,
+      if (linkedReminderId != null) 'linked_reminder_id': linkedReminderId,
+      if (categoryId != null) 'category_id': categoryId,
+      if (detectedAt != null) 'detected_at': detectedAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RecurringTransactionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String?>? spaceId,
+    Value<String>? merchantName,
+    Value<String>? merchantNameNormalized,
+    Value<int>? averageAmount,
+    Value<int>? averageAmountBucket,
+    Value<int>? averageDayOfMonth,
+    Value<int>? occurrenceCount,
+    Value<String>? confidence,
+    Value<String>? status,
+    Value<DateTime?>? firstSeenDate,
+    Value<DateTime?>? lastSeenDate,
+    Value<String?>? linkedReminderId,
+    Value<String?>? categoryId,
+    Value<DateTime?>? detectedAt,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<SyncStatus>? syncStatus,
+    Value<int>? rowid,
+  }) {
+    return RecurringTransactionsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      spaceId: spaceId ?? this.spaceId,
+      merchantName: merchantName ?? this.merchantName,
+      merchantNameNormalized:
+          merchantNameNormalized ?? this.merchantNameNormalized,
+      averageAmount: averageAmount ?? this.averageAmount,
+      averageAmountBucket: averageAmountBucket ?? this.averageAmountBucket,
+      averageDayOfMonth: averageDayOfMonth ?? this.averageDayOfMonth,
+      occurrenceCount: occurrenceCount ?? this.occurrenceCount,
+      confidence: confidence ?? this.confidence,
+      status: status ?? this.status,
+      firstSeenDate: firstSeenDate ?? this.firstSeenDate,
+      lastSeenDate: lastSeenDate ?? this.lastSeenDate,
+      linkedReminderId: linkedReminderId ?? this.linkedReminderId,
+      categoryId: categoryId ?? this.categoryId,
+      detectedAt: detectedAt ?? this.detectedAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (spaceId.present) {
+      map['space_id'] = Variable<String>(spaceId.value);
+    }
+    if (merchantName.present) {
+      map['merchant_name'] = Variable<String>(merchantName.value);
+    }
+    if (merchantNameNormalized.present) {
+      map['merchant_name_normalized'] = Variable<String>(
+        merchantNameNormalized.value,
+      );
+    }
+    if (averageAmount.present) {
+      map['average_amount'] = Variable<int>(averageAmount.value);
+    }
+    if (averageAmountBucket.present) {
+      map['average_amount_bucket'] = Variable<int>(averageAmountBucket.value);
+    }
+    if (averageDayOfMonth.present) {
+      map['average_day_of_month'] = Variable<int>(averageDayOfMonth.value);
+    }
+    if (occurrenceCount.present) {
+      map['occurrence_count'] = Variable<int>(occurrenceCount.value);
+    }
+    if (confidence.present) {
+      map['confidence'] = Variable<String>(confidence.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (firstSeenDate.present) {
+      map['first_seen_date'] = Variable<DateTime>(firstSeenDate.value);
+    }
+    if (lastSeenDate.present) {
+      map['last_seen_date'] = Variable<DateTime>(lastSeenDate.value);
+    }
+    if (linkedReminderId.present) {
+      map['linked_reminder_id'] = Variable<String>(linkedReminderId.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (detectedAt.present) {
+      map['detected_at'] = Variable<DateTime>(detectedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(
+        $RecurringTransactionsTable.$convertersyncStatus.toSql(
+          syncStatus.value,
+        ),
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecurringTransactionsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('merchantName: $merchantName, ')
+          ..write('merchantNameNormalized: $merchantNameNormalized, ')
+          ..write('averageAmount: $averageAmount, ')
+          ..write('averageAmountBucket: $averageAmountBucket, ')
+          ..write('averageDayOfMonth: $averageDayOfMonth, ')
+          ..write('occurrenceCount: $occurrenceCount, ')
+          ..write('confidence: $confidence, ')
+          ..write('status: $status, ')
+          ..write('firstSeenDate: $firstSeenDate, ')
+          ..write('lastSeenDate: $lastSeenDate, ')
+          ..write('linkedReminderId: $linkedReminderId, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('detectedAt: $detectedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RemindersTable extends Reminders
+    with TableInfo<$RemindersTable, ReminderDb> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RemindersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _spaceIdMeta = const VerificationMeta(
+    'spaceId',
+  );
+  @override
+  late final GeneratedColumn<String> spaceId = GeneratedColumn<String>(
+    'space_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES spaces (id)',
+    ),
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _remindAtMeta = const VerificationMeta(
+    'remindAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> remindAt = GeneratedColumn<DateTime>(
+    'remind_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recurrenceRuleMeta = const VerificationMeta(
+    'recurrenceRule',
+  );
+  @override
+  late final GeneratedColumn<String> recurrenceRule = GeneratedColumn<String>(
+    'recurrence_rule',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isCompletedMeta = const VerificationMeta(
+    'isCompleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isCompleted = GeneratedColumn<bool>(
+    'is_completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_completed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _assigneeIdMeta = const VerificationMeta(
+    'assigneeId',
+  );
+  @override
+  late final GeneratedColumn<String> assigneeId = GeneratedColumn<String>(
+    'assignee_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES memberships (id)',
+    ),
+  );
+  static const VerificationMeta _linkedRecurringIdMeta = const VerificationMeta(
+    'linkedRecurringId',
+  );
+  @override
+  late final GeneratedColumn<String> linkedRecurringId =
+      GeneratedColumn<String>(
+        'linked_recurring_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _linkedCategoryIdMeta = const VerificationMeta(
+    'linkedCategoryId',
+  );
+  @override
+  late final GeneratedColumn<String> linkedCategoryId = GeneratedColumn<String>(
+    'linked_category_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES categories (id)',
+    ),
+  );
+  static const VerificationMeta _linkedAccountIdMeta = const VerificationMeta(
+    'linkedAccountId',
+  );
+  @override
+  late final GeneratedColumn<String> linkedAccountId = GeneratedColumn<String>(
+    'linked_account_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES accounts (id)',
+    ),
+  );
+  static const VerificationMeta _expectedAmountMeta = const VerificationMeta(
+    'expectedAmount',
+  );
+  @override
+  late final GeneratedColumn<int> expectedAmount = GeneratedColumn<int>(
+    'expected_amount',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _priorityMeta = const VerificationMeta(
+    'priority',
+  );
+  @override
+  late final GeneratedColumn<String> priority = GeneratedColumn<String>(
+    'priority',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('normal'),
+  );
+  static const VerificationMeta _snoozeCountMeta = const VerificationMeta(
+    'snoozeCount',
+  );
+  @override
+  late final GeneratedColumn<int> snoozeCount = GeneratedColumn<int>(
+    'snooze_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _snoozeHistoryMeta = const VerificationMeta(
+    'snoozeHistory',
+  );
+  @override
+  late final GeneratedColumn<String> snoozeHistory = GeneratedColumn<String>(
+    'snooze_history',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+    'completed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
+      GeneratedColumn<String>(
+        'sync_status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('pending'),
+      ).withConverter<SyncStatus>($RemindersTable.$convertersyncStatus);
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    spaceId,
+    title,
+    description,
+    remindAt,
+    recurrenceRule,
+    isCompleted,
+    assigneeId,
+    linkedRecurringId,
+    linkedCategoryId,
+    linkedAccountId,
+    expectedAmount,
+    priority,
+    snoozeCount,
+    snoozeHistory,
+    completedAt,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'reminders';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ReminderDb> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('space_id')) {
+      context.handle(
+        _spaceIdMeta,
+        spaceId.isAcceptableOrUnknown(data['space_id']!, _spaceIdMeta),
+      );
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('remind_at')) {
+      context.handle(
+        _remindAtMeta,
+        remindAt.isAcceptableOrUnknown(data['remind_at']!, _remindAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_remindAtMeta);
+    }
+    if (data.containsKey('recurrence_rule')) {
+      context.handle(
+        _recurrenceRuleMeta,
+        recurrenceRule.isAcceptableOrUnknown(
+          data['recurrence_rule']!,
+          _recurrenceRuleMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_completed')) {
+      context.handle(
+        _isCompletedMeta,
+        isCompleted.isAcceptableOrUnknown(
+          data['is_completed']!,
+          _isCompletedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('assignee_id')) {
+      context.handle(
+        _assigneeIdMeta,
+        assigneeId.isAcceptableOrUnknown(data['assignee_id']!, _assigneeIdMeta),
+      );
+    }
+    if (data.containsKey('linked_recurring_id')) {
+      context.handle(
+        _linkedRecurringIdMeta,
+        linkedRecurringId.isAcceptableOrUnknown(
+          data['linked_recurring_id']!,
+          _linkedRecurringIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('linked_category_id')) {
+      context.handle(
+        _linkedCategoryIdMeta,
+        linkedCategoryId.isAcceptableOrUnknown(
+          data['linked_category_id']!,
+          _linkedCategoryIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('linked_account_id')) {
+      context.handle(
+        _linkedAccountIdMeta,
+        linkedAccountId.isAcceptableOrUnknown(
+          data['linked_account_id']!,
+          _linkedAccountIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('expected_amount')) {
+      context.handle(
+        _expectedAmountMeta,
+        expectedAmount.isAcceptableOrUnknown(
+          data['expected_amount']!,
+          _expectedAmountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('priority')) {
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    }
+    if (data.containsKey('snooze_count')) {
+      context.handle(
+        _snoozeCountMeta,
+        snoozeCount.isAcceptableOrUnknown(
+          data['snooze_count']!,
+          _snoozeCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('snooze_history')) {
+      context.handle(
+        _snoozeHistoryMeta,
+        snoozeHistory.isAcceptableOrUnknown(
+          data['snooze_history']!,
+          _snoozeHistoryMeta,
+        ),
+      );
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+        _completedAtMeta,
+        completedAt.isAcceptableOrUnknown(
+          data['completed_at']!,
+          _completedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ReminderDb map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ReminderDb(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      spaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}space_id'],
+      ),
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      remindAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}remind_at'],
+      )!,
+      recurrenceRule: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence_rule'],
+      ),
+      isCompleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_completed'],
+      )!,
+      assigneeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}assignee_id'],
+      ),
+      linkedRecurringId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}linked_recurring_id'],
+      ),
+      linkedCategoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}linked_category_id'],
+      ),
+      linkedAccountId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}linked_account_id'],
+      ),
+      expectedAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}expected_amount'],
+      ),
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}priority'],
+      )!,
+      snoozeCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}snooze_count'],
+      )!,
+      snoozeHistory: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}snooze_history'],
+      ),
+      completedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}completed_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncStatus: $RemindersTable.$convertersyncStatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}sync_status'],
+        )!,
+      ),
+    );
+  }
+
+  @override
+  $RemindersTable createAlias(String alias) {
+    return $RemindersTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<SyncStatus, String, String> $convertersyncStatus =
+      const EnumNameConverter<SyncStatus>(SyncStatus.values);
+}
+
+class ReminderDb extends DataClass implements Insertable<ReminderDb> {
+  final String id;
+  final String userId;
+  final String? spaceId;
+  final String title;
+  final String? description;
+  final DateTime remindAt;
+
+  /// iCal RRULE строка (nullable = однократно).
+  final String? recurrenceRule;
+  final bool isCompleted;
+  final String? assigneeId;
+
+  /// Plain text: циклический FK с recurring_transactions (отклонение).
+  final String? linkedRecurringId;
+  final String? linkedCategoryId;
+  final String? linkedAccountId;
+  final int? expectedAmount;
+
+  /// 'low' | 'normal' | 'high'.
+  final String priority;
+  final int snoozeCount;
+
+  /// [LOCAL] JSON-массив истории откладываний, не синхронизируется.
+  final String? snoozeHistory;
+  final DateTime? completedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final SyncStatus syncStatus;
+  const ReminderDb({
+    required this.id,
+    required this.userId,
+    this.spaceId,
+    required this.title,
+    this.description,
+    required this.remindAt,
+    this.recurrenceRule,
+    required this.isCompleted,
+    this.assigneeId,
+    this.linkedRecurringId,
+    this.linkedCategoryId,
+    this.linkedAccountId,
+    this.expectedAmount,
+    required this.priority,
+    required this.snoozeCount,
+    this.snoozeHistory,
+    this.completedAt,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.syncStatus,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || spaceId != null) {
+      map['space_id'] = Variable<String>(spaceId);
+    }
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    map['remind_at'] = Variable<DateTime>(remindAt);
+    if (!nullToAbsent || recurrenceRule != null) {
+      map['recurrence_rule'] = Variable<String>(recurrenceRule);
+    }
+    map['is_completed'] = Variable<bool>(isCompleted);
+    if (!nullToAbsent || assigneeId != null) {
+      map['assignee_id'] = Variable<String>(assigneeId);
+    }
+    if (!nullToAbsent || linkedRecurringId != null) {
+      map['linked_recurring_id'] = Variable<String>(linkedRecurringId);
+    }
+    if (!nullToAbsent || linkedCategoryId != null) {
+      map['linked_category_id'] = Variable<String>(linkedCategoryId);
+    }
+    if (!nullToAbsent || linkedAccountId != null) {
+      map['linked_account_id'] = Variable<String>(linkedAccountId);
+    }
+    if (!nullToAbsent || expectedAmount != null) {
+      map['expected_amount'] = Variable<int>(expectedAmount);
+    }
+    map['priority'] = Variable<String>(priority);
+    map['snooze_count'] = Variable<int>(snoozeCount);
+    if (!nullToAbsent || snoozeHistory != null) {
+      map['snooze_history'] = Variable<String>(snoozeHistory);
+    }
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    {
+      map['sync_status'] = Variable<String>(
+        $RemindersTable.$convertersyncStatus.toSql(syncStatus),
+      );
+    }
+    return map;
+  }
+
+  RemindersCompanion toCompanion(bool nullToAbsent) {
+    return RemindersCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      spaceId: spaceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(spaceId),
+      title: Value(title),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      remindAt: Value(remindAt),
+      recurrenceRule: recurrenceRule == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recurrenceRule),
+      isCompleted: Value(isCompleted),
+      assigneeId: assigneeId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(assigneeId),
+      linkedRecurringId: linkedRecurringId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(linkedRecurringId),
+      linkedCategoryId: linkedCategoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(linkedCategoryId),
+      linkedAccountId: linkedAccountId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(linkedAccountId),
+      expectedAmount: expectedAmount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expectedAmount),
+      priority: Value(priority),
+      snoozeCount: Value(snoozeCount),
+      snoozeHistory: snoozeHistory == null && nullToAbsent
+          ? const Value.absent()
+          : Value(snoozeHistory),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncStatus: Value(syncStatus),
+    );
+  }
+
+  factory ReminderDb.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ReminderDb(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      spaceId: serializer.fromJson<String?>(json['spaceId']),
+      title: serializer.fromJson<String>(json['title']),
+      description: serializer.fromJson<String?>(json['description']),
+      remindAt: serializer.fromJson<DateTime>(json['remindAt']),
+      recurrenceRule: serializer.fromJson<String?>(json['recurrenceRule']),
+      isCompleted: serializer.fromJson<bool>(json['isCompleted']),
+      assigneeId: serializer.fromJson<String?>(json['assigneeId']),
+      linkedRecurringId: serializer.fromJson<String?>(
+        json['linkedRecurringId'],
+      ),
+      linkedCategoryId: serializer.fromJson<String?>(json['linkedCategoryId']),
+      linkedAccountId: serializer.fromJson<String?>(json['linkedAccountId']),
+      expectedAmount: serializer.fromJson<int?>(json['expectedAmount']),
+      priority: serializer.fromJson<String>(json['priority']),
+      snoozeCount: serializer.fromJson<int>(json['snoozeCount']),
+      snoozeHistory: serializer.fromJson<String?>(json['snoozeHistory']),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncStatus: $RemindersTable.$convertersyncStatus.fromJson(
+        serializer.fromJson<String>(json['syncStatus']),
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'spaceId': serializer.toJson<String?>(spaceId),
+      'title': serializer.toJson<String>(title),
+      'description': serializer.toJson<String?>(description),
+      'remindAt': serializer.toJson<DateTime>(remindAt),
+      'recurrenceRule': serializer.toJson<String?>(recurrenceRule),
+      'isCompleted': serializer.toJson<bool>(isCompleted),
+      'assigneeId': serializer.toJson<String?>(assigneeId),
+      'linkedRecurringId': serializer.toJson<String?>(linkedRecurringId),
+      'linkedCategoryId': serializer.toJson<String?>(linkedCategoryId),
+      'linkedAccountId': serializer.toJson<String?>(linkedAccountId),
+      'expectedAmount': serializer.toJson<int?>(expectedAmount),
+      'priority': serializer.toJson<String>(priority),
+      'snoozeCount': serializer.toJson<int>(snoozeCount),
+      'snoozeHistory': serializer.toJson<String?>(snoozeHistory),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncStatus': serializer.toJson<String>(
+        $RemindersTable.$convertersyncStatus.toJson(syncStatus),
+      ),
+    };
+  }
+
+  ReminderDb copyWith({
+    String? id,
+    String? userId,
+    Value<String?> spaceId = const Value.absent(),
+    String? title,
+    Value<String?> description = const Value.absent(),
+    DateTime? remindAt,
+    Value<String?> recurrenceRule = const Value.absent(),
+    bool? isCompleted,
+    Value<String?> assigneeId = const Value.absent(),
+    Value<String?> linkedRecurringId = const Value.absent(),
+    Value<String?> linkedCategoryId = const Value.absent(),
+    Value<String?> linkedAccountId = const Value.absent(),
+    Value<int?> expectedAmount = const Value.absent(),
+    String? priority,
+    int? snoozeCount,
+    Value<String?> snoozeHistory = const Value.absent(),
+    Value<DateTime?> completedAt = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    SyncStatus? syncStatus,
+  }) => ReminderDb(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    spaceId: spaceId.present ? spaceId.value : this.spaceId,
+    title: title ?? this.title,
+    description: description.present ? description.value : this.description,
+    remindAt: remindAt ?? this.remindAt,
+    recurrenceRule: recurrenceRule.present
+        ? recurrenceRule.value
+        : this.recurrenceRule,
+    isCompleted: isCompleted ?? this.isCompleted,
+    assigneeId: assigneeId.present ? assigneeId.value : this.assigneeId,
+    linkedRecurringId: linkedRecurringId.present
+        ? linkedRecurringId.value
+        : this.linkedRecurringId,
+    linkedCategoryId: linkedCategoryId.present
+        ? linkedCategoryId.value
+        : this.linkedCategoryId,
+    linkedAccountId: linkedAccountId.present
+        ? linkedAccountId.value
+        : this.linkedAccountId,
+    expectedAmount: expectedAmount.present
+        ? expectedAmount.value
+        : this.expectedAmount,
+    priority: priority ?? this.priority,
+    snoozeCount: snoozeCount ?? this.snoozeCount,
+    snoozeHistory: snoozeHistory.present
+        ? snoozeHistory.value
+        : this.snoozeHistory,
+    completedAt: completedAt.present ? completedAt.value : this.completedAt,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+  );
+  ReminderDb copyWithCompanion(RemindersCompanion data) {
+    return ReminderDb(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
+      title: data.title.present ? data.title.value : this.title,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      remindAt: data.remindAt.present ? data.remindAt.value : this.remindAt,
+      recurrenceRule: data.recurrenceRule.present
+          ? data.recurrenceRule.value
+          : this.recurrenceRule,
+      isCompleted: data.isCompleted.present
+          ? data.isCompleted.value
+          : this.isCompleted,
+      assigneeId: data.assigneeId.present
+          ? data.assigneeId.value
+          : this.assigneeId,
+      linkedRecurringId: data.linkedRecurringId.present
+          ? data.linkedRecurringId.value
+          : this.linkedRecurringId,
+      linkedCategoryId: data.linkedCategoryId.present
+          ? data.linkedCategoryId.value
+          : this.linkedCategoryId,
+      linkedAccountId: data.linkedAccountId.present
+          ? data.linkedAccountId.value
+          : this.linkedAccountId,
+      expectedAmount: data.expectedAmount.present
+          ? data.expectedAmount.value
+          : this.expectedAmount,
+      priority: data.priority.present ? data.priority.value : this.priority,
+      snoozeCount: data.snoozeCount.present
+          ? data.snoozeCount.value
+          : this.snoozeCount,
+      snoozeHistory: data.snoozeHistory.present
+          ? data.snoozeHistory.value
+          : this.snoozeHistory,
+      completedAt: data.completedAt.present
+          ? data.completedAt.value
+          : this.completedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReminderDb(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('remindAt: $remindAt, ')
+          ..write('recurrenceRule: $recurrenceRule, ')
+          ..write('isCompleted: $isCompleted, ')
+          ..write('assigneeId: $assigneeId, ')
+          ..write('linkedRecurringId: $linkedRecurringId, ')
+          ..write('linkedCategoryId: $linkedCategoryId, ')
+          ..write('linkedAccountId: $linkedAccountId, ')
+          ..write('expectedAmount: $expectedAmount, ')
+          ..write('priority: $priority, ')
+          ..write('snoozeCount: $snoozeCount, ')
+          ..write('snoozeHistory: $snoozeHistory, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    spaceId,
+    title,
+    description,
+    remindAt,
+    recurrenceRule,
+    isCompleted,
+    assigneeId,
+    linkedRecurringId,
+    linkedCategoryId,
+    linkedAccountId,
+    expectedAmount,
+    priority,
+    snoozeCount,
+    snoozeHistory,
+    completedAt,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ReminderDb &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.spaceId == this.spaceId &&
+          other.title == this.title &&
+          other.description == this.description &&
+          other.remindAt == this.remindAt &&
+          other.recurrenceRule == this.recurrenceRule &&
+          other.isCompleted == this.isCompleted &&
+          other.assigneeId == this.assigneeId &&
+          other.linkedRecurringId == this.linkedRecurringId &&
+          other.linkedCategoryId == this.linkedCategoryId &&
+          other.linkedAccountId == this.linkedAccountId &&
+          other.expectedAmount == this.expectedAmount &&
+          other.priority == this.priority &&
+          other.snoozeCount == this.snoozeCount &&
+          other.snoozeHistory == this.snoozeHistory &&
+          other.completedAt == this.completedAt &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncStatus == this.syncStatus);
+}
+
+class RemindersCompanion extends UpdateCompanion<ReminderDb> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String?> spaceId;
+  final Value<String> title;
+  final Value<String?> description;
+  final Value<DateTime> remindAt;
+  final Value<String?> recurrenceRule;
+  final Value<bool> isCompleted;
+  final Value<String?> assigneeId;
+  final Value<String?> linkedRecurringId;
+  final Value<String?> linkedCategoryId;
+  final Value<String?> linkedAccountId;
+  final Value<int?> expectedAmount;
+  final Value<String> priority;
+  final Value<int> snoozeCount;
+  final Value<String?> snoozeHistory;
+  final Value<DateTime?> completedAt;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<SyncStatus> syncStatus;
+  final Value<int> rowid;
+  const RemindersCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.spaceId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.description = const Value.absent(),
+    this.remindAt = const Value.absent(),
+    this.recurrenceRule = const Value.absent(),
+    this.isCompleted = const Value.absent(),
+    this.assigneeId = const Value.absent(),
+    this.linkedRecurringId = const Value.absent(),
+    this.linkedCategoryId = const Value.absent(),
+    this.linkedAccountId = const Value.absent(),
+    this.expectedAmount = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.snoozeCount = const Value.absent(),
+    this.snoozeHistory = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RemindersCompanion.insert({
+    required String id,
+    required String userId,
+    this.spaceId = const Value.absent(),
+    required String title,
+    this.description = const Value.absent(),
+    required DateTime remindAt,
+    this.recurrenceRule = const Value.absent(),
+    this.isCompleted = const Value.absent(),
+    this.assigneeId = const Value.absent(),
+    this.linkedRecurringId = const Value.absent(),
+    this.linkedCategoryId = const Value.absent(),
+    this.linkedAccountId = const Value.absent(),
+    this.expectedAmount = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.snoozeCount = const Value.absent(),
+    this.snoozeHistory = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       title = Value(title),
+       remindAt = Value(remindAt);
+  static Insertable<ReminderDb> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? spaceId,
+    Expression<String>? title,
+    Expression<String>? description,
+    Expression<DateTime>? remindAt,
+    Expression<String>? recurrenceRule,
+    Expression<bool>? isCompleted,
+    Expression<String>? assigneeId,
+    Expression<String>? linkedRecurringId,
+    Expression<String>? linkedCategoryId,
+    Expression<String>? linkedAccountId,
+    Expression<int>? expectedAmount,
+    Expression<String>? priority,
+    Expression<int>? snoozeCount,
+    Expression<String>? snoozeHistory,
+    Expression<DateTime>? completedAt,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? syncStatus,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (spaceId != null) 'space_id': spaceId,
+      if (title != null) 'title': title,
+      if (description != null) 'description': description,
+      if (remindAt != null) 'remind_at': remindAt,
+      if (recurrenceRule != null) 'recurrence_rule': recurrenceRule,
+      if (isCompleted != null) 'is_completed': isCompleted,
+      if (assigneeId != null) 'assignee_id': assigneeId,
+      if (linkedRecurringId != null) 'linked_recurring_id': linkedRecurringId,
+      if (linkedCategoryId != null) 'linked_category_id': linkedCategoryId,
+      if (linkedAccountId != null) 'linked_account_id': linkedAccountId,
+      if (expectedAmount != null) 'expected_amount': expectedAmount,
+      if (priority != null) 'priority': priority,
+      if (snoozeCount != null) 'snooze_count': snoozeCount,
+      if (snoozeHistory != null) 'snooze_history': snoozeHistory,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RemindersCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String?>? spaceId,
+    Value<String>? title,
+    Value<String?>? description,
+    Value<DateTime>? remindAt,
+    Value<String?>? recurrenceRule,
+    Value<bool>? isCompleted,
+    Value<String?>? assigneeId,
+    Value<String?>? linkedRecurringId,
+    Value<String?>? linkedCategoryId,
+    Value<String?>? linkedAccountId,
+    Value<int?>? expectedAmount,
+    Value<String>? priority,
+    Value<int>? snoozeCount,
+    Value<String?>? snoozeHistory,
+    Value<DateTime?>? completedAt,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<SyncStatus>? syncStatus,
+    Value<int>? rowid,
+  }) {
+    return RemindersCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      spaceId: spaceId ?? this.spaceId,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      remindAt: remindAt ?? this.remindAt,
+      recurrenceRule: recurrenceRule ?? this.recurrenceRule,
+      isCompleted: isCompleted ?? this.isCompleted,
+      assigneeId: assigneeId ?? this.assigneeId,
+      linkedRecurringId: linkedRecurringId ?? this.linkedRecurringId,
+      linkedCategoryId: linkedCategoryId ?? this.linkedCategoryId,
+      linkedAccountId: linkedAccountId ?? this.linkedAccountId,
+      expectedAmount: expectedAmount ?? this.expectedAmount,
+      priority: priority ?? this.priority,
+      snoozeCount: snoozeCount ?? this.snoozeCount,
+      snoozeHistory: snoozeHistory ?? this.snoozeHistory,
+      completedAt: completedAt ?? this.completedAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (spaceId.present) {
+      map['space_id'] = Variable<String>(spaceId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (remindAt.present) {
+      map['remind_at'] = Variable<DateTime>(remindAt.value);
+    }
+    if (recurrenceRule.present) {
+      map['recurrence_rule'] = Variable<String>(recurrenceRule.value);
+    }
+    if (isCompleted.present) {
+      map['is_completed'] = Variable<bool>(isCompleted.value);
+    }
+    if (assigneeId.present) {
+      map['assignee_id'] = Variable<String>(assigneeId.value);
+    }
+    if (linkedRecurringId.present) {
+      map['linked_recurring_id'] = Variable<String>(linkedRecurringId.value);
+    }
+    if (linkedCategoryId.present) {
+      map['linked_category_id'] = Variable<String>(linkedCategoryId.value);
+    }
+    if (linkedAccountId.present) {
+      map['linked_account_id'] = Variable<String>(linkedAccountId.value);
+    }
+    if (expectedAmount.present) {
+      map['expected_amount'] = Variable<int>(expectedAmount.value);
+    }
+    if (priority.present) {
+      map['priority'] = Variable<String>(priority.value);
+    }
+    if (snoozeCount.present) {
+      map['snooze_count'] = Variable<int>(snoozeCount.value);
+    }
+    if (snoozeHistory.present) {
+      map['snooze_history'] = Variable<String>(snoozeHistory.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(
+        $RemindersTable.$convertersyncStatus.toSql(syncStatus.value),
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RemindersCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('remindAt: $remindAt, ')
+          ..write('recurrenceRule: $recurrenceRule, ')
+          ..write('isCompleted: $isCompleted, ')
+          ..write('assigneeId: $assigneeId, ')
+          ..write('linkedRecurringId: $linkedRecurringId, ')
+          ..write('linkedCategoryId: $linkedCategoryId, ')
+          ..write('linkedAccountId: $linkedAccountId, ')
+          ..write('expectedAmount: $expectedAmount, ')
+          ..write('priority: $priority, ')
+          ..write('snoozeCount: $snoozeCount, ')
+          ..write('snoozeHistory: $snoozeHistory, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HolidaysTable extends Holidays
+    with TableInfo<$HolidaysTable, HolidayDb> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HolidaysTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _spaceIdMeta = const VerificationMeta(
+    'spaceId',
+  );
+  @override
+  late final GeneratedColumn<String> spaceId = GeneratedColumn<String>(
+    'space_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES spaces (id)',
+    ),
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isAnnuallyRecurringMeta =
+      const VerificationMeta('isAnnuallyRecurring');
+  @override
+  late final GeneratedColumn<bool> isAnnuallyRecurring = GeneratedColumn<bool>(
+    'is_annually_recurring',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_annually_recurring" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _iconEmojiMeta = const VerificationMeta(
+    'iconEmoji',
+  );
+  @override
+  late final GeneratedColumn<String> iconEmoji = GeneratedColumn<String>(
+    'icon_emoji',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _colorHexMeta = const VerificationMeta(
+    'colorHex',
+  );
+  @override
+  late final GeneratedColumn<String> colorHex = GeneratedColumn<String>(
+    'color_hex',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isPresetMeta = const VerificationMeta(
+    'isPreset',
+  );
+  @override
+  late final GeneratedColumn<bool> isPreset = GeneratedColumn<bool>(
+    'is_preset',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_preset" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isEnabledMeta = const VerificationMeta(
+    'isEnabled',
+  );
+  @override
+  late final GeneratedColumn<bool> isEnabled = GeneratedColumn<bool>(
+    'is_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<SyncStatus, String> syncStatus =
+      GeneratedColumn<String>(
+        'sync_status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('pending'),
+      ).withConverter<SyncStatus>($HolidaysTable.$convertersyncStatus);
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    spaceId,
+    userId,
+    name,
+    date,
+    isAnnuallyRecurring,
+    iconEmoji,
+    colorHex,
+    isPreset,
+    isEnabled,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'holidays';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HolidayDb> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('space_id')) {
+      context.handle(
+        _spaceIdMeta,
+        spaceId.isAcceptableOrUnknown(data['space_id']!, _spaceIdMeta),
+      );
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('is_annually_recurring')) {
+      context.handle(
+        _isAnnuallyRecurringMeta,
+        isAnnuallyRecurring.isAcceptableOrUnknown(
+          data['is_annually_recurring']!,
+          _isAnnuallyRecurringMeta,
+        ),
+      );
+    }
+    if (data.containsKey('icon_emoji')) {
+      context.handle(
+        _iconEmojiMeta,
+        iconEmoji.isAcceptableOrUnknown(data['icon_emoji']!, _iconEmojiMeta),
+      );
+    }
+    if (data.containsKey('color_hex')) {
+      context.handle(
+        _colorHexMeta,
+        colorHex.isAcceptableOrUnknown(data['color_hex']!, _colorHexMeta),
+      );
+    }
+    if (data.containsKey('is_preset')) {
+      context.handle(
+        _isPresetMeta,
+        isPreset.isAcceptableOrUnknown(data['is_preset']!, _isPresetMeta),
+      );
+    }
+    if (data.containsKey('is_enabled')) {
+      context.handle(
+        _isEnabledMeta,
+        isEnabled.isAcceptableOrUnknown(data['is_enabled']!, _isEnabledMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HolidayDb map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HolidayDb(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      spaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}space_id'],
+      ),
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      ),
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      )!,
+      isAnnuallyRecurring: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_annually_recurring'],
+      )!,
+      iconEmoji: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon_emoji'],
+      ),
+      colorHex: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}color_hex'],
+      ),
+      isPreset: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_preset'],
+      )!,
+      isEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_enabled'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncStatus: $HolidaysTable.$convertersyncStatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}sync_status'],
+        )!,
+      ),
+    );
+  }
+
+  @override
+  $HolidaysTable createAlias(String alias) {
+    return $HolidaysTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<SyncStatus, String, String> $convertersyncStatus =
+      const EnumNameConverter<SyncStatus>(SyncStatus.values);
+}
+
+class HolidayDb extends DataClass implements Insertable<HolidayDb> {
+  final String id;
+  final String? spaceId;
+  final String? userId;
+  final String name;
+  final DateTime date;
+  final bool isAnnuallyRecurring;
+  final String? iconEmoji;
+  final String? colorHex;
+  final bool isPreset;
+  final bool isEnabled;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final SyncStatus syncStatus;
+  const HolidayDb({
+    required this.id,
+    this.spaceId,
+    this.userId,
+    required this.name,
+    required this.date,
+    required this.isAnnuallyRecurring,
+    this.iconEmoji,
+    this.colorHex,
+    required this.isPreset,
+    required this.isEnabled,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.syncStatus,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    if (!nullToAbsent || spaceId != null) {
+      map['space_id'] = Variable<String>(spaceId);
+    }
+    if (!nullToAbsent || userId != null) {
+      map['user_id'] = Variable<String>(userId);
+    }
+    map['name'] = Variable<String>(name);
+    map['date'] = Variable<DateTime>(date);
+    map['is_annually_recurring'] = Variable<bool>(isAnnuallyRecurring);
+    if (!nullToAbsent || iconEmoji != null) {
+      map['icon_emoji'] = Variable<String>(iconEmoji);
+    }
+    if (!nullToAbsent || colorHex != null) {
+      map['color_hex'] = Variable<String>(colorHex);
+    }
+    map['is_preset'] = Variable<bool>(isPreset);
+    map['is_enabled'] = Variable<bool>(isEnabled);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    {
+      map['sync_status'] = Variable<String>(
+        $HolidaysTable.$convertersyncStatus.toSql(syncStatus),
+      );
+    }
+    return map;
+  }
+
+  HolidaysCompanion toCompanion(bool nullToAbsent) {
+    return HolidaysCompanion(
+      id: Value(id),
+      spaceId: spaceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(spaceId),
+      userId: userId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userId),
+      name: Value(name),
+      date: Value(date),
+      isAnnuallyRecurring: Value(isAnnuallyRecurring),
+      iconEmoji: iconEmoji == null && nullToAbsent
+          ? const Value.absent()
+          : Value(iconEmoji),
+      colorHex: colorHex == null && nullToAbsent
+          ? const Value.absent()
+          : Value(colorHex),
+      isPreset: Value(isPreset),
+      isEnabled: Value(isEnabled),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncStatus: Value(syncStatus),
+    );
+  }
+
+  factory HolidayDb.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HolidayDb(
+      id: serializer.fromJson<String>(json['id']),
+      spaceId: serializer.fromJson<String?>(json['spaceId']),
+      userId: serializer.fromJson<String?>(json['userId']),
+      name: serializer.fromJson<String>(json['name']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      isAnnuallyRecurring: serializer.fromJson<bool>(
+        json['isAnnuallyRecurring'],
+      ),
+      iconEmoji: serializer.fromJson<String?>(json['iconEmoji']),
+      colorHex: serializer.fromJson<String?>(json['colorHex']),
+      isPreset: serializer.fromJson<bool>(json['isPreset']),
+      isEnabled: serializer.fromJson<bool>(json['isEnabled']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncStatus: $HolidaysTable.$convertersyncStatus.fromJson(
+        serializer.fromJson<String>(json['syncStatus']),
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'spaceId': serializer.toJson<String?>(spaceId),
+      'userId': serializer.toJson<String?>(userId),
+      'name': serializer.toJson<String>(name),
+      'date': serializer.toJson<DateTime>(date),
+      'isAnnuallyRecurring': serializer.toJson<bool>(isAnnuallyRecurring),
+      'iconEmoji': serializer.toJson<String?>(iconEmoji),
+      'colorHex': serializer.toJson<String?>(colorHex),
+      'isPreset': serializer.toJson<bool>(isPreset),
+      'isEnabled': serializer.toJson<bool>(isEnabled),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncStatus': serializer.toJson<String>(
+        $HolidaysTable.$convertersyncStatus.toJson(syncStatus),
+      ),
+    };
+  }
+
+  HolidayDb copyWith({
+    String? id,
+    Value<String?> spaceId = const Value.absent(),
+    Value<String?> userId = const Value.absent(),
+    String? name,
+    DateTime? date,
+    bool? isAnnuallyRecurring,
+    Value<String?> iconEmoji = const Value.absent(),
+    Value<String?> colorHex = const Value.absent(),
+    bool? isPreset,
+    bool? isEnabled,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    SyncStatus? syncStatus,
+  }) => HolidayDb(
+    id: id ?? this.id,
+    spaceId: spaceId.present ? spaceId.value : this.spaceId,
+    userId: userId.present ? userId.value : this.userId,
+    name: name ?? this.name,
+    date: date ?? this.date,
+    isAnnuallyRecurring: isAnnuallyRecurring ?? this.isAnnuallyRecurring,
+    iconEmoji: iconEmoji.present ? iconEmoji.value : this.iconEmoji,
+    colorHex: colorHex.present ? colorHex.value : this.colorHex,
+    isPreset: isPreset ?? this.isPreset,
+    isEnabled: isEnabled ?? this.isEnabled,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+  );
+  HolidayDb copyWithCompanion(HolidaysCompanion data) {
+    return HolidayDb(
+      id: data.id.present ? data.id.value : this.id,
+      spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      name: data.name.present ? data.name.value : this.name,
+      date: data.date.present ? data.date.value : this.date,
+      isAnnuallyRecurring: data.isAnnuallyRecurring.present
+          ? data.isAnnuallyRecurring.value
+          : this.isAnnuallyRecurring,
+      iconEmoji: data.iconEmoji.present ? data.iconEmoji.value : this.iconEmoji,
+      colorHex: data.colorHex.present ? data.colorHex.value : this.colorHex,
+      isPreset: data.isPreset.present ? data.isPreset.value : this.isPreset,
+      isEnabled: data.isEnabled.present ? data.isEnabled.value : this.isEnabled,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HolidayDb(')
+          ..write('id: $id, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('userId: $userId, ')
+          ..write('name: $name, ')
+          ..write('date: $date, ')
+          ..write('isAnnuallyRecurring: $isAnnuallyRecurring, ')
+          ..write('iconEmoji: $iconEmoji, ')
+          ..write('colorHex: $colorHex, ')
+          ..write('isPreset: $isPreset, ')
+          ..write('isEnabled: $isEnabled, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    spaceId,
+    userId,
+    name,
+    date,
+    isAnnuallyRecurring,
+    iconEmoji,
+    colorHex,
+    isPreset,
+    isEnabled,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HolidayDb &&
+          other.id == this.id &&
+          other.spaceId == this.spaceId &&
+          other.userId == this.userId &&
+          other.name == this.name &&
+          other.date == this.date &&
+          other.isAnnuallyRecurring == this.isAnnuallyRecurring &&
+          other.iconEmoji == this.iconEmoji &&
+          other.colorHex == this.colorHex &&
+          other.isPreset == this.isPreset &&
+          other.isEnabled == this.isEnabled &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncStatus == this.syncStatus);
+}
+
+class HolidaysCompanion extends UpdateCompanion<HolidayDb> {
+  final Value<String> id;
+  final Value<String?> spaceId;
+  final Value<String?> userId;
+  final Value<String> name;
+  final Value<DateTime> date;
+  final Value<bool> isAnnuallyRecurring;
+  final Value<String?> iconEmoji;
+  final Value<String?> colorHex;
+  final Value<bool> isPreset;
+  final Value<bool> isEnabled;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<SyncStatus> syncStatus;
+  final Value<int> rowid;
+  const HolidaysCompanion({
+    this.id = const Value.absent(),
+    this.spaceId = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.date = const Value.absent(),
+    this.isAnnuallyRecurring = const Value.absent(),
+    this.iconEmoji = const Value.absent(),
+    this.colorHex = const Value.absent(),
+    this.isPreset = const Value.absent(),
+    this.isEnabled = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  HolidaysCompanion.insert({
+    required String id,
+    this.spaceId = const Value.absent(),
+    this.userId = const Value.absent(),
+    required String name,
+    required DateTime date,
+    this.isAnnuallyRecurring = const Value.absent(),
+    this.iconEmoji = const Value.absent(),
+    this.colorHex = const Value.absent(),
+    this.isPreset = const Value.absent(),
+    this.isEnabled = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       date = Value(date);
+  static Insertable<HolidayDb> custom({
+    Expression<String>? id,
+    Expression<String>? spaceId,
+    Expression<String>? userId,
+    Expression<String>? name,
+    Expression<DateTime>? date,
+    Expression<bool>? isAnnuallyRecurring,
+    Expression<String>? iconEmoji,
+    Expression<String>? colorHex,
+    Expression<bool>? isPreset,
+    Expression<bool>? isEnabled,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? syncStatus,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (spaceId != null) 'space_id': spaceId,
+      if (userId != null) 'user_id': userId,
+      if (name != null) 'name': name,
+      if (date != null) 'date': date,
+      if (isAnnuallyRecurring != null)
+        'is_annually_recurring': isAnnuallyRecurring,
+      if (iconEmoji != null) 'icon_emoji': iconEmoji,
+      if (colorHex != null) 'color_hex': colorHex,
+      if (isPreset != null) 'is_preset': isPreset,
+      if (isEnabled != null) 'is_enabled': isEnabled,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  HolidaysCompanion copyWith({
+    Value<String>? id,
+    Value<String?>? spaceId,
+    Value<String?>? userId,
+    Value<String>? name,
+    Value<DateTime>? date,
+    Value<bool>? isAnnuallyRecurring,
+    Value<String?>? iconEmoji,
+    Value<String?>? colorHex,
+    Value<bool>? isPreset,
+    Value<bool>? isEnabled,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<SyncStatus>? syncStatus,
+    Value<int>? rowid,
+  }) {
+    return HolidaysCompanion(
+      id: id ?? this.id,
+      spaceId: spaceId ?? this.spaceId,
+      userId: userId ?? this.userId,
+      name: name ?? this.name,
+      date: date ?? this.date,
+      isAnnuallyRecurring: isAnnuallyRecurring ?? this.isAnnuallyRecurring,
+      iconEmoji: iconEmoji ?? this.iconEmoji,
+      colorHex: colorHex ?? this.colorHex,
+      isPreset: isPreset ?? this.isPreset,
+      isEnabled: isEnabled ?? this.isEnabled,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (spaceId.present) {
+      map['space_id'] = Variable<String>(spaceId.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
+    if (isAnnuallyRecurring.present) {
+      map['is_annually_recurring'] = Variable<bool>(isAnnuallyRecurring.value);
+    }
+    if (iconEmoji.present) {
+      map['icon_emoji'] = Variable<String>(iconEmoji.value);
+    }
+    if (colorHex.present) {
+      map['color_hex'] = Variable<String>(colorHex.value);
+    }
+    if (isPreset.present) {
+      map['is_preset'] = Variable<bool>(isPreset.value);
+    }
+    if (isEnabled.present) {
+      map['is_enabled'] = Variable<bool>(isEnabled.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(
+        $HolidaysTable.$convertersyncStatus.toSql(syncStatus.value),
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HolidaysCompanion(')
+          ..write('id: $id, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('userId: $userId, ')
+          ..write('name: $name, ')
+          ..write('date: $date, ')
+          ..write('isAnnuallyRecurring: $isAnnuallyRecurring, ')
+          ..write('iconEmoji: $iconEmoji, ')
+          ..write('colorHex: $colorHex, ')
+          ..write('isPreset: $isPreset, ')
+          ..write('isEnabled: $isEnabled, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ForecastCacheTable extends ForecastCache
+    with TableInfo<$ForecastCacheTable, ForecastCacheDb> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ForecastCacheTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _spaceIdMeta = const VerificationMeta(
+    'spaceId',
+  );
+  @override
+  late final GeneratedColumn<String> spaceId = GeneratedColumn<String>(
+    'space_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES spaces (id)',
+    ),
+  );
+  static const VerificationMeta _monthYearMeta = const VerificationMeta(
+    'monthYear',
+  );
+  @override
+  late final GeneratedColumn<String> monthYear = GeneratedColumn<String>(
+    'month_year',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+    'category_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES categories (id)',
+    ),
+  );
+  static const VerificationMeta _forecastedAmountMeta = const VerificationMeta(
+    'forecastedAmount',
+  );
+  @override
+  late final GeneratedColumn<int> forecastedAmount = GeneratedColumn<int>(
+    'forecasted_amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    spaceId,
+    monthYear,
+    categoryId,
+    forecastedAmount,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'forecast_cache';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ForecastCacheDb> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('space_id')) {
+      context.handle(
+        _spaceIdMeta,
+        spaceId.isAcceptableOrUnknown(data['space_id']!, _spaceIdMeta),
+      );
+    }
+    if (data.containsKey('month_year')) {
+      context.handle(
+        _monthYearMeta,
+        monthYear.isAcceptableOrUnknown(data['month_year']!, _monthYearMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_monthYearMeta);
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    }
+    if (data.containsKey('forecasted_amount')) {
+      context.handle(
+        _forecastedAmountMeta,
+        forecastedAmount.isAcceptableOrUnknown(
+          data['forecasted_amount']!,
+          _forecastedAmountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ForecastCacheDb map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ForecastCacheDb(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      spaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}space_id'],
+      ),
+      monthYear: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}month_year'],
+      )!,
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_id'],
+      ),
+      forecastedAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}forecasted_amount'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ForecastCacheTable createAlias(String alias) {
+    return $ForecastCacheTable(attachedDatabase, alias);
+  }
+}
+
+class ForecastCacheDb extends DataClass implements Insertable<ForecastCacheDb> {
+  final String id;
+  final String userId;
+  final String? spaceId;
+
+  /// Формат 'YYYY-MM'.
+  final String monthYear;
+  final String? categoryId;
+  final int forecastedAmount;
+  final DateTime updatedAt;
+  const ForecastCacheDb({
+    required this.id,
+    required this.userId,
+    this.spaceId,
+    required this.monthYear,
+    this.categoryId,
+    required this.forecastedAmount,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || spaceId != null) {
+      map['space_id'] = Variable<String>(spaceId);
+    }
+    map['month_year'] = Variable<String>(monthYear);
+    if (!nullToAbsent || categoryId != null) {
+      map['category_id'] = Variable<String>(categoryId);
+    }
+    map['forecasted_amount'] = Variable<int>(forecastedAmount);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ForecastCacheCompanion toCompanion(bool nullToAbsent) {
+    return ForecastCacheCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      spaceId: spaceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(spaceId),
+      monthYear: Value(monthYear),
+      categoryId: categoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryId),
+      forecastedAmount: Value(forecastedAmount),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ForecastCacheDb.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ForecastCacheDb(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      spaceId: serializer.fromJson<String?>(json['spaceId']),
+      monthYear: serializer.fromJson<String>(json['monthYear']),
+      categoryId: serializer.fromJson<String?>(json['categoryId']),
+      forecastedAmount: serializer.fromJson<int>(json['forecastedAmount']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'spaceId': serializer.toJson<String?>(spaceId),
+      'monthYear': serializer.toJson<String>(monthYear),
+      'categoryId': serializer.toJson<String?>(categoryId),
+      'forecastedAmount': serializer.toJson<int>(forecastedAmount),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ForecastCacheDb copyWith({
+    String? id,
+    String? userId,
+    Value<String?> spaceId = const Value.absent(),
+    String? monthYear,
+    Value<String?> categoryId = const Value.absent(),
+    int? forecastedAmount,
+    DateTime? updatedAt,
+  }) => ForecastCacheDb(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    spaceId: spaceId.present ? spaceId.value : this.spaceId,
+    monthYear: monthYear ?? this.monthYear,
+    categoryId: categoryId.present ? categoryId.value : this.categoryId,
+    forecastedAmount: forecastedAmount ?? this.forecastedAmount,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ForecastCacheDb copyWithCompanion(ForecastCacheCompanion data) {
+    return ForecastCacheDb(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
+      monthYear: data.monthYear.present ? data.monthYear.value : this.monthYear,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      forecastedAmount: data.forecastedAmount.present
+          ? data.forecastedAmount.value
+          : this.forecastedAmount,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ForecastCacheDb(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('monthYear: $monthYear, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('forecastedAmount: $forecastedAmount, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    spaceId,
+    monthYear,
+    categoryId,
+    forecastedAmount,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ForecastCacheDb &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.spaceId == this.spaceId &&
+          other.monthYear == this.monthYear &&
+          other.categoryId == this.categoryId &&
+          other.forecastedAmount == this.forecastedAmount &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ForecastCacheCompanion extends UpdateCompanion<ForecastCacheDb> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String?> spaceId;
+  final Value<String> monthYear;
+  final Value<String?> categoryId;
+  final Value<int> forecastedAmount;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ForecastCacheCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.spaceId = const Value.absent(),
+    this.monthYear = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.forecastedAmount = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ForecastCacheCompanion.insert({
+    required String id,
+    required String userId,
+    this.spaceId = const Value.absent(),
+    required String monthYear,
+    this.categoryId = const Value.absent(),
+    this.forecastedAmount = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       monthYear = Value(monthYear);
+  static Insertable<ForecastCacheDb> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? spaceId,
+    Expression<String>? monthYear,
+    Expression<String>? categoryId,
+    Expression<int>? forecastedAmount,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (spaceId != null) 'space_id': spaceId,
+      if (monthYear != null) 'month_year': monthYear,
+      if (categoryId != null) 'category_id': categoryId,
+      if (forecastedAmount != null) 'forecasted_amount': forecastedAmount,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ForecastCacheCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String?>? spaceId,
+    Value<String>? monthYear,
+    Value<String?>? categoryId,
+    Value<int>? forecastedAmount,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ForecastCacheCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      spaceId: spaceId ?? this.spaceId,
+      monthYear: monthYear ?? this.monthYear,
+      categoryId: categoryId ?? this.categoryId,
+      forecastedAmount: forecastedAmount ?? this.forecastedAmount,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (spaceId.present) {
+      map['space_id'] = Variable<String>(spaceId.value);
+    }
+    if (monthYear.present) {
+      map['month_year'] = Variable<String>(monthYear.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (forecastedAmount.present) {
+      map['forecasted_amount'] = Variable<int>(forecastedAmount.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ForecastCacheCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('monthYear: $monthYear, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('forecastedAmount: $forecastedAmount, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ReminderDraftsTable extends ReminderDrafts
+    with TableInfo<$ReminderDraftsTable, ReminderDraftDb> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ReminderDraftsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _reminderIdMeta = const VerificationMeta(
+    'reminderId',
+  );
+  @override
+  late final GeneratedColumn<String> reminderId = GeneratedColumn<String>(
+    'reminder_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _formDataJsonMeta = const VerificationMeta(
+    'formDataJson',
+  );
+  @override
+  late final GeneratedColumn<String> formDataJson = GeneratedColumn<String>(
+    'form_data_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    reminderId,
+    formDataJson,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'reminder_drafts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ReminderDraftDb> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('reminder_id')) {
+      context.handle(
+        _reminderIdMeta,
+        reminderId.isAcceptableOrUnknown(data['reminder_id']!, _reminderIdMeta),
+      );
+    }
+    if (data.containsKey('form_data_json')) {
+      context.handle(
+        _formDataJsonMeta,
+        formDataJson.isAcceptableOrUnknown(
+          data['form_data_json']!,
+          _formDataJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_formDataJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ReminderDraftDb map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ReminderDraftDb(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      reminderId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reminder_id'],
+      ),
+      formDataJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}form_data_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ReminderDraftsTable createAlias(String alias) {
+    return $ReminderDraftsTable(attachedDatabase, alias);
+  }
+}
+
+class ReminderDraftDb extends DataClass implements Insertable<ReminderDraftDb> {
+  final String id;
+  final String userId;
+  final String? reminderId;
+  final String formDataJson;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ReminderDraftDb({
+    required this.id,
+    required this.userId,
+    this.reminderId,
+    required this.formDataJson,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || reminderId != null) {
+      map['reminder_id'] = Variable<String>(reminderId);
+    }
+    map['form_data_json'] = Variable<String>(formDataJson);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ReminderDraftsCompanion toCompanion(bool nullToAbsent) {
+    return ReminderDraftsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      reminderId: reminderId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reminderId),
+      formDataJson: Value(formDataJson),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ReminderDraftDb.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ReminderDraftDb(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      reminderId: serializer.fromJson<String?>(json['reminderId']),
+      formDataJson: serializer.fromJson<String>(json['formDataJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'reminderId': serializer.toJson<String?>(reminderId),
+      'formDataJson': serializer.toJson<String>(formDataJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ReminderDraftDb copyWith({
+    String? id,
+    String? userId,
+    Value<String?> reminderId = const Value.absent(),
+    String? formDataJson,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => ReminderDraftDb(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    reminderId: reminderId.present ? reminderId.value : this.reminderId,
+    formDataJson: formDataJson ?? this.formDataJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ReminderDraftDb copyWithCompanion(ReminderDraftsCompanion data) {
+    return ReminderDraftDb(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      reminderId: data.reminderId.present
+          ? data.reminderId.value
+          : this.reminderId,
+      formDataJson: data.formDataJson.present
+          ? data.formDataJson.value
+          : this.formDataJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReminderDraftDb(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('reminderId: $reminderId, ')
+          ..write('formDataJson: $formDataJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, userId, reminderId, formDataJson, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ReminderDraftDb &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.reminderId == this.reminderId &&
+          other.formDataJson == this.formDataJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ReminderDraftsCompanion extends UpdateCompanion<ReminderDraftDb> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String?> reminderId;
+  final Value<String> formDataJson;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ReminderDraftsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.reminderId = const Value.absent(),
+    this.formDataJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ReminderDraftsCompanion.insert({
+    required String id,
+    required String userId,
+    this.reminderId = const Value.absent(),
+    required String formDataJson,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       formDataJson = Value(formDataJson);
+  static Insertable<ReminderDraftDb> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? reminderId,
+    Expression<String>? formDataJson,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (reminderId != null) 'reminder_id': reminderId,
+      if (formDataJson != null) 'form_data_json': formDataJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ReminderDraftsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String?>? reminderId,
+    Value<String>? formDataJson,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ReminderDraftsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      reminderId: reminderId ?? this.reminderId,
+      formDataJson: formDataJson ?? this.formDataJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (reminderId.present) {
+      map['reminder_id'] = Variable<String>(reminderId.value);
+    }
+    if (formDataJson.present) {
+      map['form_data_json'] = Variable<String>(formDataJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReminderDraftsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('reminderId: $reminderId, ')
+          ..write('formDataJson: $formDataJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -17721,6 +21991,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $DebtsTable debts = $DebtsTable(this);
   late final $DebtDraftsTable debtDrafts = $DebtDraftsTable(this);
   late final $SplitDraftsTable splitDrafts = $SplitDraftsTable(this);
+  late final $RecurringTransactionsTable recurringTransactions =
+      $RecurringTransactionsTable(this);
+  late final $RemindersTable reminders = $RemindersTable(this);
+  late final $HolidaysTable holidays = $HolidaysTable(this);
+  late final $ForecastCacheTable forecastCache = $ForecastCacheTable(this);
+  late final $ReminderDraftsTable reminderDrafts = $ReminderDraftsTable(this);
   late final UsersDao usersDao = UsersDao(this as AppDatabase);
   late final SpacesDao spacesDao = SpacesDao(this as AppDatabase);
   late final MembershipsDao membershipsDao = MembershipsDao(
@@ -17766,6 +22042,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     debts,
     debtDrafts,
     splitDrafts,
+    recurringTransactions,
+    reminders,
+    holidays,
+    forecastCache,
+    reminderDrafts,
   ];
 }
 
@@ -18034,6 +22315,103 @@ final class $$UsersTableReferences
     ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_debtDraftsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $RecurringTransactionsTable,
+    List<RecurringTransactionDb>
+  >
+  _recurringTransactionsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.recurringTransactions,
+        aliasName: 'users__id__recurring_transactions__user_id',
+      );
+
+  $$RecurringTransactionsTableProcessedTableManager
+  get recurringTransactionsRefs {
+    final manager = $$RecurringTransactionsTableTableManager(
+      $_db,
+      $_db.recurringTransactions,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _recurringTransactionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$RemindersTable, List<ReminderDb>>
+  _remindersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.reminders,
+    aliasName: 'users__id__reminders__user_id',
+  );
+
+  $$RemindersTableProcessedTableManager get remindersRefs {
+    final manager = $$RemindersTableTableManager(
+      $_db,
+      $_db.reminders,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_remindersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$HolidaysTable, List<HolidayDb>>
+  _holidaysRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.holidays,
+    aliasName: 'users__id__holidays__user_id',
+  );
+
+  $$HolidaysTableProcessedTableManager get holidaysRefs {
+    final manager = $$HolidaysTableTableManager(
+      $_db,
+      $_db.holidays,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_holidaysRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ForecastCacheTable, List<ForecastCacheDb>>
+  _forecastCacheRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.forecastCache,
+    aliasName: 'users__id__forecast_cache__user_id',
+  );
+
+  $$ForecastCacheTableProcessedTableManager get forecastCacheRefs {
+    final manager = $$ForecastCacheTableTableManager(
+      $_db,
+      $_db.forecastCache,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_forecastCacheRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ReminderDraftsTable, List<ReminderDraftDb>>
+  _reminderDraftsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.reminderDrafts,
+    aliasName: 'users__id__reminder_drafts__user_id',
+  );
+
+  $$ReminderDraftsTableProcessedTableManager get reminderDraftsRefs {
+    final manager = $$ReminderDraftsTableTableManager(
+      $_db,
+      $_db.reminderDrafts,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_reminderDraftsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -18404,6 +22782,132 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
           }) => $$DebtDraftsTableFilterComposer(
             $db: $db,
             $table: $db.debtDrafts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> recurringTransactionsRefs(
+    Expression<bool> Function($$RecurringTransactionsTableFilterComposer f) f,
+  ) {
+    final $$RecurringTransactionsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recurringTransactions,
+          getReferencedColumn: (t) => t.userId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecurringTransactionsTableFilterComposer(
+                $db: $db,
+                $table: $db.recurringTransactions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> remindersRefs(
+    Expression<bool> Function($$RemindersTableFilterComposer f) f,
+  ) {
+    final $$RemindersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reminders,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RemindersTableFilterComposer(
+            $db: $db,
+            $table: $db.reminders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> holidaysRefs(
+    Expression<bool> Function($$HolidaysTableFilterComposer f) f,
+  ) {
+    final $$HolidaysTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.holidays,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HolidaysTableFilterComposer(
+            $db: $db,
+            $table: $db.holidays,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> forecastCacheRefs(
+    Expression<bool> Function($$ForecastCacheTableFilterComposer f) f,
+  ) {
+    final $$ForecastCacheTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.forecastCache,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ForecastCacheTableFilterComposer(
+            $db: $db,
+            $table: $db.forecastCache,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> reminderDraftsRefs(
+    Expression<bool> Function($$ReminderDraftsTableFilterComposer f) f,
+  ) {
+    final $$ReminderDraftsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reminderDrafts,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReminderDraftsTableFilterComposer(
+            $db: $db,
+            $table: $db.reminderDrafts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -18828,6 +23332,132 @@ class $$UsersTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> recurringTransactionsRefs<T extends Object>(
+    Expression<T> Function($$RecurringTransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$RecurringTransactionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recurringTransactions,
+          getReferencedColumn: (t) => t.userId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecurringTransactionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.recurringTransactions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> remindersRefs<T extends Object>(
+    Expression<T> Function($$RemindersTableAnnotationComposer a) f,
+  ) {
+    final $$RemindersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reminders,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RemindersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.reminders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> holidaysRefs<T extends Object>(
+    Expression<T> Function($$HolidaysTableAnnotationComposer a) f,
+  ) {
+    final $$HolidaysTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.holidays,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HolidaysTableAnnotationComposer(
+            $db: $db,
+            $table: $db.holidays,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> forecastCacheRefs<T extends Object>(
+    Expression<T> Function($$ForecastCacheTableAnnotationComposer a) f,
+  ) {
+    final $$ForecastCacheTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.forecastCache,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ForecastCacheTableAnnotationComposer(
+            $db: $db,
+            $table: $db.forecastCache,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> reminderDraftsRefs<T extends Object>(
+    Expression<T> Function($$ReminderDraftsTableAnnotationComposer a) f,
+  ) {
+    final $$ReminderDraftsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reminderDrafts,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReminderDraftsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.reminderDrafts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$UsersTableTableManager
@@ -18857,6 +23487,11 @@ class $$UsersTableTableManager
             bool savingsGoalsRefs,
             bool savingsGoalDraftsRefs,
             bool debtDraftsRefs,
+            bool recurringTransactionsRefs,
+            bool remindersRefs,
+            bool holidaysRefs,
+            bool forecastCacheRefs,
+            bool reminderDraftsRefs,
           })
         > {
   $$UsersTableTableManager(_$AppDatabase db, $UsersTable table)
@@ -18935,6 +23570,11 @@ class $$UsersTableTableManager
                 savingsGoalsRefs = false,
                 savingsGoalDraftsRefs = false,
                 debtDraftsRefs = false,
+                recurringTransactionsRefs = false,
+                remindersRefs = false,
+                holidaysRefs = false,
+                forecastCacheRefs = false,
+                reminderDraftsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -18952,6 +23592,11 @@ class $$UsersTableTableManager
                     if (savingsGoalsRefs) db.savingsGoals,
                     if (savingsGoalDraftsRefs) db.savingsGoalDrafts,
                     if (debtDraftsRefs) db.debtDrafts,
+                    if (recurringTransactionsRefs) db.recurringTransactions,
+                    if (remindersRefs) db.reminders,
+                    if (holidaysRefs) db.holidays,
+                    if (forecastCacheRefs) db.forecastCache,
+                    if (reminderDraftsRefs) db.reminderDrafts,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -19217,6 +23862,107 @@ class $$UsersTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (recurringTransactionsRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          RecurringTransactionDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._recurringTransactionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).recurringTransactionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (remindersRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          ReminderDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._remindersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).remindersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (holidaysRefs)
+                        await $_getPrefetchedData<User, $UsersTable, HolidayDb>(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._holidaysRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).holidaysRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (forecastCacheRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          ForecastCacheDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._forecastCacheRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).forecastCacheRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (reminderDraftsRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          ReminderDraftDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._reminderDraftsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).reminderDraftsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -19251,6 +23997,11 @@ typedef $$UsersTableProcessedTableManager =
         bool savingsGoalsRefs,
         bool savingsGoalDraftsRefs,
         bool debtDraftsRefs,
+        bool recurringTransactionsRefs,
+        bool remindersRefs,
+        bool holidaysRefs,
+        bool forecastCacheRefs,
+        bool reminderDraftsRefs,
       })
     >;
 typedef $$SpacesTableCreateCompanionBuilder =
@@ -19423,6 +24174,85 @@ final class $$SpacesTableReferences
     ).filter((f) => f.spaceId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_debtsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $RecurringTransactionsTable,
+    List<RecurringTransactionDb>
+  >
+  _recurringTransactionsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.recurringTransactions,
+        aliasName: 'spaces__id__recurring_transactions__space_id',
+      );
+
+  $$RecurringTransactionsTableProcessedTableManager
+  get recurringTransactionsRefs {
+    final manager = $$RecurringTransactionsTableTableManager(
+      $_db,
+      $_db.recurringTransactions,
+    ).filter((f) => f.spaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _recurringTransactionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$RemindersTable, List<ReminderDb>>
+  _remindersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.reminders,
+    aliasName: 'spaces__id__reminders__space_id',
+  );
+
+  $$RemindersTableProcessedTableManager get remindersRefs {
+    final manager = $$RemindersTableTableManager(
+      $_db,
+      $_db.reminders,
+    ).filter((f) => f.spaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_remindersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$HolidaysTable, List<HolidayDb>>
+  _holidaysRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.holidays,
+    aliasName: 'spaces__id__holidays__space_id',
+  );
+
+  $$HolidaysTableProcessedTableManager get holidaysRefs {
+    final manager = $$HolidaysTableTableManager(
+      $_db,
+      $_db.holidays,
+    ).filter((f) => f.spaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_holidaysRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ForecastCacheTable, List<ForecastCacheDb>>
+  _forecastCacheRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.forecastCache,
+    aliasName: 'spaces__id__forecast_cache__space_id',
+  );
+
+  $$ForecastCacheTableProcessedTableManager get forecastCacheRefs {
+    final manager = $$ForecastCacheTableTableManager(
+      $_db,
+      $_db.forecastCache,
+    ).filter((f) => f.spaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_forecastCacheRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -19669,6 +24499,107 @@ class $$SpacesTableFilterComposer
           }) => $$DebtsTableFilterComposer(
             $db: $db,
             $table: $db.debts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> recurringTransactionsRefs(
+    Expression<bool> Function($$RecurringTransactionsTableFilterComposer f) f,
+  ) {
+    final $$RecurringTransactionsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recurringTransactions,
+          getReferencedColumn: (t) => t.spaceId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecurringTransactionsTableFilterComposer(
+                $db: $db,
+                $table: $db.recurringTransactions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> remindersRefs(
+    Expression<bool> Function($$RemindersTableFilterComposer f) f,
+  ) {
+    final $$RemindersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reminders,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RemindersTableFilterComposer(
+            $db: $db,
+            $table: $db.reminders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> holidaysRefs(
+    Expression<bool> Function($$HolidaysTableFilterComposer f) f,
+  ) {
+    final $$HolidaysTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.holidays,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HolidaysTableFilterComposer(
+            $db: $db,
+            $table: $db.holidays,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> forecastCacheRefs(
+    Expression<bool> Function($$ForecastCacheTableFilterComposer f) f,
+  ) {
+    final $$ForecastCacheTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.forecastCache,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ForecastCacheTableFilterComposer(
+            $db: $db,
+            $table: $db.forecastCache,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -19967,6 +24898,107 @@ class $$SpacesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> recurringTransactionsRefs<T extends Object>(
+    Expression<T> Function($$RecurringTransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$RecurringTransactionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recurringTransactions,
+          getReferencedColumn: (t) => t.spaceId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecurringTransactionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.recurringTransactions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> remindersRefs<T extends Object>(
+    Expression<T> Function($$RemindersTableAnnotationComposer a) f,
+  ) {
+    final $$RemindersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reminders,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RemindersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.reminders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> holidaysRefs<T extends Object>(
+    Expression<T> Function($$HolidaysTableAnnotationComposer a) f,
+  ) {
+    final $$HolidaysTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.holidays,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$HolidaysTableAnnotationComposer(
+            $db: $db,
+            $table: $db.holidays,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> forecastCacheRefs<T extends Object>(
+    Expression<T> Function($$ForecastCacheTableAnnotationComposer a) f,
+  ) {
+    final $$ForecastCacheTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.forecastCache,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ForecastCacheTableAnnotationComposer(
+            $db: $db,
+            $table: $db.forecastCache,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$SpacesTableTableManager
@@ -19991,6 +25023,10 @@ class $$SpacesTableTableManager
             bool budgetLimitsRefs,
             bool savingsGoalsRefs,
             bool debtsRefs,
+            bool recurringTransactionsRefs,
+            bool remindersRefs,
+            bool holidaysRefs,
+            bool forecastCacheRefs,
           })
         > {
   $$SpacesTableTableManager(_$AppDatabase db, $SpacesTable table)
@@ -20064,6 +25100,10 @@ class $$SpacesTableTableManager
                 budgetLimitsRefs = false,
                 savingsGoalsRefs = false,
                 debtsRefs = false,
+                recurringTransactionsRefs = false,
+                remindersRefs = false,
+                holidaysRefs = false,
+                forecastCacheRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -20076,6 +25116,10 @@ class $$SpacesTableTableManager
                     if (budgetLimitsRefs) db.budgetLimits,
                     if (savingsGoalsRefs) db.savingsGoals,
                     if (debtsRefs) db.debts,
+                    if (recurringTransactionsRefs) db.recurringTransactions,
+                    if (remindersRefs) db.reminders,
+                    if (holidaysRefs) db.holidays,
+                    if (forecastCacheRefs) db.forecastCache,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -20236,6 +25280,90 @@ class $$SpacesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (recurringTransactionsRefs)
+                        await $_getPrefetchedData<
+                          Space,
+                          $SpacesTable,
+                          RecurringTransactionDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SpacesTableReferences
+                              ._recurringTransactionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SpacesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).recurringTransactionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.spaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (remindersRefs)
+                        await $_getPrefetchedData<
+                          Space,
+                          $SpacesTable,
+                          ReminderDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SpacesTableReferences
+                              ._remindersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SpacesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).remindersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.spaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (holidaysRefs)
+                        await $_getPrefetchedData<
+                          Space,
+                          $SpacesTable,
+                          HolidayDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SpacesTableReferences
+                              ._holidaysRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SpacesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).holidaysRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.spaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (forecastCacheRefs)
+                        await $_getPrefetchedData<
+                          Space,
+                          $SpacesTable,
+                          ForecastCacheDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SpacesTableReferences
+                              ._forecastCacheRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SpacesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).forecastCacheRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.spaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -20265,6 +25393,10 @@ typedef $$SpacesTableProcessedTableManager =
         bool budgetLimitsRefs,
         bool savingsGoalsRefs,
         bool debtsRefs,
+        bool recurringTransactionsRefs,
+        bool remindersRefs,
+        bool holidaysRefs,
+        bool forecastCacheRefs,
       })
     >;
 typedef $$MembershipsTableCreateCompanionBuilder =
@@ -20333,6 +25465,24 @@ final class $$MembershipsTableReferences
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$RemindersTable, List<ReminderDb>>
+  _remindersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.reminders,
+    aliasName: 'memberships__id__reminders__assignee_id',
+  );
+
+  $$RemindersTableProcessedTableManager get remindersRefs {
+    final manager = $$RemindersTableTableManager(
+      $_db,
+      $_db.reminders,
+    ).filter((f) => f.assigneeId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_remindersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 }
@@ -20435,6 +25585,31 @@ class $$MembershipsTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  Expression<bool> remindersRefs(
+    Expression<bool> Function($$RemindersTableFilterComposer f) f,
+  ) {
+    final $$RemindersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reminders,
+      getReferencedColumn: (t) => t.assigneeId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RemindersTableFilterComposer(
+            $db: $db,
+            $table: $db.reminders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 }
 
@@ -20624,6 +25799,31 @@ class $$MembershipsTableAnnotationComposer
     );
     return composer;
   }
+
+  Expression<T> remindersRefs<T extends Object>(
+    Expression<T> Function($$RemindersTableAnnotationComposer a) f,
+  ) {
+    final $$RemindersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reminders,
+      getReferencedColumn: (t) => t.assigneeId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RemindersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.reminders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$MembershipsTableTableManager
@@ -20639,7 +25839,11 @@ class $$MembershipsTableTableManager
           $$MembershipsTableUpdateCompanionBuilder,
           (Membership, $$MembershipsTableReferences),
           Membership,
-          PrefetchHooks Function({bool userId, bool spaceId})
+          PrefetchHooks Function({
+            bool userId,
+            bool spaceId,
+            bool remindersRefs,
+          })
         > {
   $$MembershipsTableTableManager(_$AppDatabase db, $MembershipsTable table)
     : super(
@@ -20716,60 +25920,87 @@ class $$MembershipsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({userId = false, spaceId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (userId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.userId,
-                                referencedTable: $$MembershipsTableReferences
-                                    ._userIdTable(db),
-                                referencedColumn: $$MembershipsTableReferences
-                                    ._userIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
-                    if (spaceId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.spaceId,
-                                referencedTable: $$MembershipsTableReferences
-                                    ._spaceIdTable(db),
-                                referencedColumn: $$MembershipsTableReferences
-                                    ._spaceIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
+          prefetchHooksCallback:
+              ({userId = false, spaceId = false, remindersRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [if (remindersRefs) db.reminders],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (userId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.userId,
+                                    referencedTable:
+                                        $$MembershipsTableReferences
+                                            ._userIdTable(db),
+                                    referencedColumn:
+                                        $$MembershipsTableReferences
+                                            ._userIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (spaceId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.spaceId,
+                                    referencedTable:
+                                        $$MembershipsTableReferences
+                                            ._spaceIdTable(db),
+                                    referencedColumn:
+                                        $$MembershipsTableReferences
+                                            ._spaceIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
 
-                    return state;
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (remindersRefs)
+                        await $_getPrefetchedData<
+                          Membership,
+                          $MembershipsTable,
+                          ReminderDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$MembershipsTableReferences
+                              ._remindersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$MembershipsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).remindersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.assigneeId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
                   },
-              getPrefetchedDataCallback: (items) async {
-                return [];
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -20786,7 +26017,7 @@ typedef $$MembershipsTableProcessedTableManager =
       $$MembershipsTableUpdateCompanionBuilder,
       (Membership, $$MembershipsTableReferences),
       Membership,
-      PrefetchHooks Function({bool userId, bool spaceId})
+      PrefetchHooks Function({bool userId, bool spaceId, bool remindersRefs})
     >;
 typedef $$AppSettingsTableCreateCompanionBuilder =
     AppSettingsCompanion Function({
@@ -20834,6 +26065,11 @@ typedef $$AppSettingsTableCreateCompanionBuilder =
       Value<String> reminderTimeOfDay,
       Value<bool> autoCreateRemindersForRecurring,
       Value<String> digestConfig,
+      Value<bool> holidaysInfoDismissed,
+      Value<bool> recurringDetectionInfoDismissed,
+      Value<int> recurringDetectionDismissCount,
+      Value<bool> autoDetectRecurring,
+      Value<bool> enableFamilyHolidayAlerts,
       Value<int> rowid,
     });
 typedef $$AppSettingsTableUpdateCompanionBuilder =
@@ -20882,6 +26118,11 @@ typedef $$AppSettingsTableUpdateCompanionBuilder =
       Value<String> reminderTimeOfDay,
       Value<bool> autoCreateRemindersForRecurring,
       Value<String> digestConfig,
+      Value<bool> holidaysInfoDismissed,
+      Value<bool> recurringDetectionInfoDismissed,
+      Value<int> recurringDetectionDismissCount,
+      Value<bool> autoDetectRecurring,
+      Value<bool> enableFamilyHolidayAlerts,
       Value<int> rowid,
     });
 
@@ -21128,6 +26369,31 @@ class $$AppSettingsTableFilterComposer
 
   ColumnFilters<String> get digestConfig => $composableBuilder(
     column: $table.digestConfig,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get holidaysInfoDismissed => $composableBuilder(
+    column: $table.holidaysInfoDismissed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get recurringDetectionInfoDismissed => $composableBuilder(
+    column: $table.recurringDetectionInfoDismissed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get recurringDetectionDismissCount => $composableBuilder(
+    column: $table.recurringDetectionDismissCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get autoDetectRecurring => $composableBuilder(
+    column: $table.autoDetectRecurring,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get enableFamilyHolidayAlerts => $composableBuilder(
+    column: $table.enableFamilyHolidayAlerts,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -21380,6 +26646,32 @@ class $$AppSettingsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get holidaysInfoDismissed => $composableBuilder(
+    column: $table.holidaysInfoDismissed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get recurringDetectionInfoDismissed =>
+      $composableBuilder(
+        column: $table.recurringDetectionInfoDismissed,
+        builder: (column) => ColumnOrderings(column),
+      );
+
+  ColumnOrderings<int> get recurringDetectionDismissCount => $composableBuilder(
+    column: $table.recurringDetectionDismissCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get autoDetectRecurring => $composableBuilder(
+    column: $table.autoDetectRecurring,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get enableFamilyHolidayAlerts => $composableBuilder(
+    column: $table.enableFamilyHolidayAlerts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$UsersTableOrderingComposer get userId {
     final $$UsersTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -21623,6 +26915,32 @@ class $$AppSettingsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get holidaysInfoDismissed => $composableBuilder(
+    column: $table.holidaysInfoDismissed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get recurringDetectionInfoDismissed =>
+      $composableBuilder(
+        column: $table.recurringDetectionInfoDismissed,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<int> get recurringDetectionDismissCount => $composableBuilder(
+    column: $table.recurringDetectionDismissCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get autoDetectRecurring => $composableBuilder(
+    column: $table.autoDetectRecurring,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get enableFamilyHolidayAlerts => $composableBuilder(
+    column: $table.enableFamilyHolidayAlerts,
+    builder: (column) => column,
+  );
+
   $$UsersTableAnnotationComposer get userId {
     final $$UsersTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -21722,6 +27040,13 @@ class $$AppSettingsTableTableManager
                 Value<bool> autoCreateRemindersForRecurring =
                     const Value.absent(),
                 Value<String> digestConfig = const Value.absent(),
+                Value<bool> holidaysInfoDismissed = const Value.absent(),
+                Value<bool> recurringDetectionInfoDismissed =
+                    const Value.absent(),
+                Value<int> recurringDetectionDismissCount =
+                    const Value.absent(),
+                Value<bool> autoDetectRecurring = const Value.absent(),
+                Value<bool> enableFamilyHolidayAlerts = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AppSettingsCompanion(
                 createdAt: createdAt,
@@ -21769,6 +27094,12 @@ class $$AppSettingsTableTableManager
                 autoCreateRemindersForRecurring:
                     autoCreateRemindersForRecurring,
                 digestConfig: digestConfig,
+                holidaysInfoDismissed: holidaysInfoDismissed,
+                recurringDetectionInfoDismissed:
+                    recurringDetectionInfoDismissed,
+                recurringDetectionDismissCount: recurringDetectionDismissCount,
+                autoDetectRecurring: autoDetectRecurring,
+                enableFamilyHolidayAlerts: enableFamilyHolidayAlerts,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -21820,6 +27151,13 @@ class $$AppSettingsTableTableManager
                 Value<bool> autoCreateRemindersForRecurring =
                     const Value.absent(),
                 Value<String> digestConfig = const Value.absent(),
+                Value<bool> holidaysInfoDismissed = const Value.absent(),
+                Value<bool> recurringDetectionInfoDismissed =
+                    const Value.absent(),
+                Value<int> recurringDetectionDismissCount =
+                    const Value.absent(),
+                Value<bool> autoDetectRecurring = const Value.absent(),
+                Value<bool> enableFamilyHolidayAlerts = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AppSettingsCompanion.insert(
                 createdAt: createdAt,
@@ -21867,6 +27205,12 @@ class $$AppSettingsTableTableManager
                 autoCreateRemindersForRecurring:
                     autoCreateRemindersForRecurring,
                 digestConfig: digestConfig,
+                holidaysInfoDismissed: holidaysInfoDismissed,
+                recurringDetectionInfoDismissed:
+                    recurringDetectionInfoDismissed,
+                recurringDetectionDismissCount: recurringDetectionDismissCount,
+                autoDetectRecurring: autoDetectRecurring,
+                enableFamilyHolidayAlerts: enableFamilyHolidayAlerts,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -23239,6 +28583,23 @@ final class $$AccountsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$RemindersTable, List<ReminderDb>>
+  _remindersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.reminders,
+    aliasName: 'accounts__id__reminders__linked_account_id',
+  );
+
+  $$RemindersTableProcessedTableManager get remindersRefs {
+    final manager = $$RemindersTableTableManager($_db, $_db.reminders).filter(
+      (f) => f.linkedAccountId.id.sqlEquals($_itemColumn<String>('id')!),
+    );
+
+    final cache = $_typedResult.readTableOrNull(_remindersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$AccountsTableFilterComposer
@@ -23477,6 +28838,31 @@ class $$AccountsTableFilterComposer
           }) => $$SavingsGoalsTableFilterComposer(
             $db: $db,
             $table: $db.savingsGoals,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> remindersRefs(
+    Expression<bool> Function($$RemindersTableFilterComposer f) f,
+  ) {
+    final $$RemindersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reminders,
+      getReferencedColumn: (t) => t.linkedAccountId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RemindersTableFilterComposer(
+            $db: $db,
+            $table: $db.reminders,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -23888,6 +29274,31 @@ class $$AccountsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> remindersRefs<T extends Object>(
+    Expression<T> Function($$RemindersTableAnnotationComposer a) f,
+  ) {
+    final $$RemindersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reminders,
+      getReferencedColumn: (t) => t.linkedAccountId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RemindersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.reminders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$AccountsTableTableManager
@@ -23909,6 +29320,7 @@ class $$AccountsTableTableManager
             bool mortgagesRefs,
             bool cashbackMatrixRefs,
             bool savingsGoalsRefs,
+            bool remindersRefs,
           })
         > {
   $$AccountsTableTableManager(_$AppDatabase db, $AccountsTable table)
@@ -24049,6 +29461,7 @@ class $$AccountsTableTableManager
                 mortgagesRefs = false,
                 cashbackMatrixRefs = false,
                 savingsGoalsRefs = false,
+                remindersRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -24056,6 +29469,7 @@ class $$AccountsTableTableManager
                     if (mortgagesRefs) db.mortgages,
                     if (cashbackMatrixRefs) db.cashbackMatrix,
                     if (savingsGoalsRefs) db.savingsGoals,
+                    if (remindersRefs) db.reminders,
                   ],
                   addJoins:
                       <
@@ -24167,6 +29581,27 @@ class $$AccountsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (remindersRefs)
+                        await $_getPrefetchedData<
+                          Account,
+                          $AccountsTable,
+                          ReminderDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$AccountsTableReferences
+                              ._remindersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$AccountsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).remindersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.linkedAccountId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -24193,6 +29628,7 @@ typedef $$AccountsTableProcessedTableManager =
         bool mortgagesRefs,
         bool cashbackMatrixRefs,
         bool savingsGoalsRefs,
+        bool remindersRefs,
       })
     >;
 typedef $$MortgagesTableCreateCompanionBuilder =
@@ -24843,6 +30279,66 @@ final class $$CategoriesTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<
+    $RecurringTransactionsTable,
+    List<RecurringTransactionDb>
+  >
+  _recurringTransactionsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.recurringTransactions,
+        aliasName: 'categories__id__recurring_transactions__category_id',
+      );
+
+  $$RecurringTransactionsTableProcessedTableManager
+  get recurringTransactionsRefs {
+    final manager = $$RecurringTransactionsTableTableManager(
+      $_db,
+      $_db.recurringTransactions,
+    ).filter((f) => f.categoryId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _recurringTransactionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$RemindersTable, List<ReminderDb>>
+  _remindersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.reminders,
+    aliasName: 'categories__id__reminders__linked_category_id',
+  );
+
+  $$RemindersTableProcessedTableManager get remindersRefs {
+    final manager = $$RemindersTableTableManager($_db, $_db.reminders).filter(
+      (f) => f.linkedCategoryId.id.sqlEquals($_itemColumn<String>('id')!),
+    );
+
+    final cache = $_typedResult.readTableOrNull(_remindersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ForecastCacheTable, List<ForecastCacheDb>>
+  _forecastCacheRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.forecastCache,
+    aliasName: 'categories__id__forecast_cache__category_id',
+  );
+
+  $$ForecastCacheTableProcessedTableManager get forecastCacheRefs {
+    final manager = $$ForecastCacheTableTableManager(
+      $_db,
+      $_db.forecastCache,
+    ).filter((f) => f.categoryId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_forecastCacheRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$CategoriesTableFilterComposer
@@ -25119,6 +30615,82 @@ class $$CategoriesTableFilterComposer
           }) => $$DebtsTableFilterComposer(
             $db: $db,
             $table: $db.debts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> recurringTransactionsRefs(
+    Expression<bool> Function($$RecurringTransactionsTableFilterComposer f) f,
+  ) {
+    final $$RecurringTransactionsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recurringTransactions,
+          getReferencedColumn: (t) => t.categoryId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecurringTransactionsTableFilterComposer(
+                $db: $db,
+                $table: $db.recurringTransactions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> remindersRefs(
+    Expression<bool> Function($$RemindersTableFilterComposer f) f,
+  ) {
+    final $$RemindersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reminders,
+      getReferencedColumn: (t) => t.linkedCategoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RemindersTableFilterComposer(
+            $db: $db,
+            $table: $db.reminders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> forecastCacheRefs(
+    Expression<bool> Function($$ForecastCacheTableFilterComposer f) f,
+  ) {
+    final $$ForecastCacheTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.forecastCache,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ForecastCacheTableFilterComposer(
+            $db: $db,
+            $table: $db.forecastCache,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -25528,6 +31100,82 @@ class $$CategoriesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> recurringTransactionsRefs<T extends Object>(
+    Expression<T> Function($$RecurringTransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$RecurringTransactionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recurringTransactions,
+          getReferencedColumn: (t) => t.categoryId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecurringTransactionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.recurringTransactions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> remindersRefs<T extends Object>(
+    Expression<T> Function($$RemindersTableAnnotationComposer a) f,
+  ) {
+    final $$RemindersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.reminders,
+      getReferencedColumn: (t) => t.linkedCategoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RemindersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.reminders,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> forecastCacheRefs<T extends Object>(
+    Expression<T> Function($$ForecastCacheTableAnnotationComposer a) f,
+  ) {
+    final $$ForecastCacheTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.forecastCache,
+      getReferencedColumn: (t) => t.categoryId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ForecastCacheTableAnnotationComposer(
+            $db: $db,
+            $table: $db.forecastCache,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$CategoriesTableTableManager
@@ -25553,6 +31201,9 @@ class $$CategoriesTableTableManager
             bool budgetLimitsRefs,
             bool cashbackMatrixRefs,
             bool debtsRefs,
+            bool recurringTransactionsRefs,
+            bool remindersRefs,
+            bool forecastCacheRefs,
           })
         > {
   $$CategoriesTableTableManager(_$AppDatabase db, $CategoriesTable table)
@@ -25653,6 +31304,9 @@ class $$CategoriesTableTableManager
                 budgetLimitsRefs = false,
                 cashbackMatrixRefs = false,
                 debtsRefs = false,
+                recurringTransactionsRefs = false,
+                remindersRefs = false,
+                forecastCacheRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -25663,6 +31317,9 @@ class $$CategoriesTableTableManager
                     if (budgetLimitsRefs) db.budgetLimits,
                     if (cashbackMatrixRefs) db.cashbackMatrix,
                     if (debtsRefs) db.debts,
+                    if (recurringTransactionsRefs) db.recurringTransactions,
+                    if (remindersRefs) db.reminders,
+                    if (forecastCacheRefs) db.forecastCache,
                   ],
                   addJoins:
                       <
@@ -25853,6 +31510,69 @@ class $$CategoriesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (recurringTransactionsRefs)
+                        await $_getPrefetchedData<
+                          Category,
+                          $CategoriesTable,
+                          RecurringTransactionDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CategoriesTableReferences
+                              ._recurringTransactionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CategoriesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).recurringTransactionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.categoryId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (remindersRefs)
+                        await $_getPrefetchedData<
+                          Category,
+                          $CategoriesTable,
+                          ReminderDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CategoriesTableReferences
+                              ._remindersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CategoriesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).remindersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.linkedCategoryId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (forecastCacheRefs)
+                        await $_getPrefetchedData<
+                          Category,
+                          $CategoriesTable,
+                          ForecastCacheDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CategoriesTableReferences
+                              ._forecastCacheRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CategoriesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).forecastCacheRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.categoryId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -25883,6 +31603,9 @@ typedef $$CategoriesTableProcessedTableManager =
         bool budgetLimitsRefs,
         bool cashbackMatrixRefs,
         bool debtsRefs,
+        bool recurringTransactionsRefs,
+        bool remindersRefs,
+        bool forecastCacheRefs,
       })
     >;
 typedef $$CategoryRulesTableCreateCompanionBuilder =
@@ -33393,6 +39116,3250 @@ typedef $$SplitDraftsTableProcessedTableManager =
       SplitDraftDb,
       PrefetchHooks Function({bool transactionId})
     >;
+typedef $$RecurringTransactionsTableCreateCompanionBuilder =
+    RecurringTransactionsCompanion Function({
+      required String id,
+      required String userId,
+      Value<String?> spaceId,
+      required String merchantName,
+      required String merchantNameNormalized,
+      required int averageAmount,
+      required int averageAmountBucket,
+      required int averageDayOfMonth,
+      Value<int> occurrenceCount,
+      Value<String> confidence,
+      Value<String> status,
+      Value<DateTime?> firstSeenDate,
+      Value<DateTime?> lastSeenDate,
+      Value<String?> linkedReminderId,
+      Value<String?> categoryId,
+      Value<DateTime?> detectedAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<SyncStatus> syncStatus,
+      Value<int> rowid,
+    });
+typedef $$RecurringTransactionsTableUpdateCompanionBuilder =
+    RecurringTransactionsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String?> spaceId,
+      Value<String> merchantName,
+      Value<String> merchantNameNormalized,
+      Value<int> averageAmount,
+      Value<int> averageAmountBucket,
+      Value<int> averageDayOfMonth,
+      Value<int> occurrenceCount,
+      Value<String> confidence,
+      Value<String> status,
+      Value<DateTime?> firstSeenDate,
+      Value<DateTime?> lastSeenDate,
+      Value<String?> linkedReminderId,
+      Value<String?> categoryId,
+      Value<DateTime?> detectedAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<SyncStatus> syncStatus,
+      Value<int> rowid,
+    });
+
+final class $$RecurringTransactionsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $RecurringTransactionsTable,
+          RecurringTransactionDb
+        > {
+  $$RecurringTransactionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('recurring_transactions__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SpacesTable _spaceIdTable(_$AppDatabase db) =>
+      db.spaces.createAlias('recurring_transactions__space_id__spaces__id');
+
+  $$SpacesTableProcessedTableManager? get spaceId {
+    final $_column = $_itemColumn<String>('space_id');
+    if ($_column == null) return null;
+    final manager = $$SpacesTableTableManager(
+      $_db,
+      $_db.spaces,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_spaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $CategoriesTable _categoryIdTable(_$AppDatabase db) => db.categories
+      .createAlias('recurring_transactions__category_id__categories__id');
+
+  $$CategoriesTableProcessedTableManager? get categoryId {
+    final $_column = $_itemColumn<String>('category_id');
+    if ($_column == null) return null;
+    final manager = $$CategoriesTableTableManager(
+      $_db,
+      $_db.categories,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$RecurringTransactionsTableFilterComposer
+    extends Composer<_$AppDatabase, $RecurringTransactionsTable> {
+  $$RecurringTransactionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get merchantName => $composableBuilder(
+    column: $table.merchantName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get merchantNameNormalized => $composableBuilder(
+    column: $table.merchantNameNormalized,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get averageAmount => $composableBuilder(
+    column: $table.averageAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get averageAmountBucket => $composableBuilder(
+    column: $table.averageAmountBucket,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get averageDayOfMonth => $composableBuilder(
+    column: $table.averageDayOfMonth,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get occurrenceCount => $composableBuilder(
+    column: $table.occurrenceCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get confidence => $composableBuilder(
+    column: $table.confidence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get firstSeenDate => $composableBuilder(
+    column: $table.firstSeenDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastSeenDate => $composableBuilder(
+    column: $table.lastSeenDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get linkedReminderId => $composableBuilder(
+    column: $table.linkedReminderId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get detectedAt => $composableBuilder(
+    column: $table.detectedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, String>
+  get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableFilterComposer get spaceId {
+    final $$SpacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableFilterComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableFilterComposer get categoryId {
+    final $$CategoriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableFilterComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RecurringTransactionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RecurringTransactionsTable> {
+  $$RecurringTransactionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get merchantName => $composableBuilder(
+    column: $table.merchantName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get merchantNameNormalized => $composableBuilder(
+    column: $table.merchantNameNormalized,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get averageAmount => $composableBuilder(
+    column: $table.averageAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get averageAmountBucket => $composableBuilder(
+    column: $table.averageAmountBucket,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get averageDayOfMonth => $composableBuilder(
+    column: $table.averageDayOfMonth,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get occurrenceCount => $composableBuilder(
+    column: $table.occurrenceCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get confidence => $composableBuilder(
+    column: $table.confidence,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get firstSeenDate => $composableBuilder(
+    column: $table.firstSeenDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastSeenDate => $composableBuilder(
+    column: $table.lastSeenDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get linkedReminderId => $composableBuilder(
+    column: $table.linkedReminderId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get detectedAt => $composableBuilder(
+    column: $table.detectedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableOrderingComposer get spaceId {
+    final $$SpacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableOrderingComposer get categoryId {
+    final $$CategoriesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableOrderingComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RecurringTransactionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RecurringTransactionsTable> {
+  $$RecurringTransactionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get merchantName => $composableBuilder(
+    column: $table.merchantName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get merchantNameNormalized => $composableBuilder(
+    column: $table.merchantNameNormalized,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get averageAmount => $composableBuilder(
+    column: $table.averageAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get averageAmountBucket => $composableBuilder(
+    column: $table.averageAmountBucket,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get averageDayOfMonth => $composableBuilder(
+    column: $table.averageDayOfMonth,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get occurrenceCount => $composableBuilder(
+    column: $table.occurrenceCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get confidence => $composableBuilder(
+    column: $table.confidence,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get firstSeenDate => $composableBuilder(
+    column: $table.firstSeenDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastSeenDate => $composableBuilder(
+    column: $table.lastSeenDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get linkedReminderId => $composableBuilder(
+    column: $table.linkedReminderId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get detectedAt => $composableBuilder(
+    column: $table.detectedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
+      $composableBuilder(
+        column: $table.syncStatus,
+        builder: (column) => column,
+      );
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableAnnotationComposer get spaceId {
+    final $$SpacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableAnnotationComposer get categoryId {
+    final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RecurringTransactionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RecurringTransactionsTable,
+          RecurringTransactionDb,
+          $$RecurringTransactionsTableFilterComposer,
+          $$RecurringTransactionsTableOrderingComposer,
+          $$RecurringTransactionsTableAnnotationComposer,
+          $$RecurringTransactionsTableCreateCompanionBuilder,
+          $$RecurringTransactionsTableUpdateCompanionBuilder,
+          (RecurringTransactionDb, $$RecurringTransactionsTableReferences),
+          RecurringTransactionDb,
+          PrefetchHooks Function({bool userId, bool spaceId, bool categoryId})
+        > {
+  $$RecurringTransactionsTableTableManager(
+    _$AppDatabase db,
+    $RecurringTransactionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RecurringTransactionsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$RecurringTransactionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$RecurringTransactionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String?> spaceId = const Value.absent(),
+                Value<String> merchantName = const Value.absent(),
+                Value<String> merchantNameNormalized = const Value.absent(),
+                Value<int> averageAmount = const Value.absent(),
+                Value<int> averageAmountBucket = const Value.absent(),
+                Value<int> averageDayOfMonth = const Value.absent(),
+                Value<int> occurrenceCount = const Value.absent(),
+                Value<String> confidence = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime?> firstSeenDate = const Value.absent(),
+                Value<DateTime?> lastSeenDate = const Value.absent(),
+                Value<String?> linkedReminderId = const Value.absent(),
+                Value<String?> categoryId = const Value.absent(),
+                Value<DateTime?> detectedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RecurringTransactionsCompanion(
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                merchantName: merchantName,
+                merchantNameNormalized: merchantNameNormalized,
+                averageAmount: averageAmount,
+                averageAmountBucket: averageAmountBucket,
+                averageDayOfMonth: averageDayOfMonth,
+                occurrenceCount: occurrenceCount,
+                confidence: confidence,
+                status: status,
+                firstSeenDate: firstSeenDate,
+                lastSeenDate: lastSeenDate,
+                linkedReminderId: linkedReminderId,
+                categoryId: categoryId,
+                detectedAt: detectedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                Value<String?> spaceId = const Value.absent(),
+                required String merchantName,
+                required String merchantNameNormalized,
+                required int averageAmount,
+                required int averageAmountBucket,
+                required int averageDayOfMonth,
+                Value<int> occurrenceCount = const Value.absent(),
+                Value<String> confidence = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime?> firstSeenDate = const Value.absent(),
+                Value<DateTime?> lastSeenDate = const Value.absent(),
+                Value<String?> linkedReminderId = const Value.absent(),
+                Value<String?> categoryId = const Value.absent(),
+                Value<DateTime?> detectedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RecurringTransactionsCompanion.insert(
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                merchantName: merchantName,
+                merchantNameNormalized: merchantNameNormalized,
+                averageAmount: averageAmount,
+                averageAmountBucket: averageAmountBucket,
+                averageDayOfMonth: averageDayOfMonth,
+                occurrenceCount: occurrenceCount,
+                confidence: confidence,
+                status: status,
+                firstSeenDate: firstSeenDate,
+                lastSeenDate: lastSeenDate,
+                linkedReminderId: linkedReminderId,
+                categoryId: categoryId,
+                detectedAt: detectedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$RecurringTransactionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({userId = false, spaceId = false, categoryId = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (userId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.userId,
+                                    referencedTable:
+                                        $$RecurringTransactionsTableReferences
+                                            ._userIdTable(db),
+                                    referencedColumn:
+                                        $$RecurringTransactionsTableReferences
+                                            ._userIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (spaceId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.spaceId,
+                                    referencedTable:
+                                        $$RecurringTransactionsTableReferences
+                                            ._spaceIdTable(db),
+                                    referencedColumn:
+                                        $$RecurringTransactionsTableReferences
+                                            ._spaceIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (categoryId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.categoryId,
+                                    referencedTable:
+                                        $$RecurringTransactionsTableReferences
+                                            ._categoryIdTable(db),
+                                    referencedColumn:
+                                        $$RecurringTransactionsTableReferences
+                                            ._categoryIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$RecurringTransactionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RecurringTransactionsTable,
+      RecurringTransactionDb,
+      $$RecurringTransactionsTableFilterComposer,
+      $$RecurringTransactionsTableOrderingComposer,
+      $$RecurringTransactionsTableAnnotationComposer,
+      $$RecurringTransactionsTableCreateCompanionBuilder,
+      $$RecurringTransactionsTableUpdateCompanionBuilder,
+      (RecurringTransactionDb, $$RecurringTransactionsTableReferences),
+      RecurringTransactionDb,
+      PrefetchHooks Function({bool userId, bool spaceId, bool categoryId})
+    >;
+typedef $$RemindersTableCreateCompanionBuilder =
+    RemindersCompanion Function({
+      required String id,
+      required String userId,
+      Value<String?> spaceId,
+      required String title,
+      Value<String?> description,
+      required DateTime remindAt,
+      Value<String?> recurrenceRule,
+      Value<bool> isCompleted,
+      Value<String?> assigneeId,
+      Value<String?> linkedRecurringId,
+      Value<String?> linkedCategoryId,
+      Value<String?> linkedAccountId,
+      Value<int?> expectedAmount,
+      Value<String> priority,
+      Value<int> snoozeCount,
+      Value<String?> snoozeHistory,
+      Value<DateTime?> completedAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<SyncStatus> syncStatus,
+      Value<int> rowid,
+    });
+typedef $$RemindersTableUpdateCompanionBuilder =
+    RemindersCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String?> spaceId,
+      Value<String> title,
+      Value<String?> description,
+      Value<DateTime> remindAt,
+      Value<String?> recurrenceRule,
+      Value<bool> isCompleted,
+      Value<String?> assigneeId,
+      Value<String?> linkedRecurringId,
+      Value<String?> linkedCategoryId,
+      Value<String?> linkedAccountId,
+      Value<int?> expectedAmount,
+      Value<String> priority,
+      Value<int> snoozeCount,
+      Value<String?> snoozeHistory,
+      Value<DateTime?> completedAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<SyncStatus> syncStatus,
+      Value<int> rowid,
+    });
+
+final class $$RemindersTableReferences
+    extends BaseReferences<_$AppDatabase, $RemindersTable, ReminderDb> {
+  $$RemindersTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('reminders__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SpacesTable _spaceIdTable(_$AppDatabase db) =>
+      db.spaces.createAlias('reminders__space_id__spaces__id');
+
+  $$SpacesTableProcessedTableManager? get spaceId {
+    final $_column = $_itemColumn<String>('space_id');
+    if ($_column == null) return null;
+    final manager = $$SpacesTableTableManager(
+      $_db,
+      $_db.spaces,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_spaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $MembershipsTable _assigneeIdTable(_$AppDatabase db) =>
+      db.memberships.createAlias('reminders__assignee_id__memberships__id');
+
+  $$MembershipsTableProcessedTableManager? get assigneeId {
+    final $_column = $_itemColumn<String>('assignee_id');
+    if ($_column == null) return null;
+    final manager = $$MembershipsTableTableManager(
+      $_db,
+      $_db.memberships,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_assigneeIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $CategoriesTable _linkedCategoryIdTable(_$AppDatabase db) => db
+      .categories
+      .createAlias('reminders__linked_category_id__categories__id');
+
+  $$CategoriesTableProcessedTableManager? get linkedCategoryId {
+    final $_column = $_itemColumn<String>('linked_category_id');
+    if ($_column == null) return null;
+    final manager = $$CategoriesTableTableManager(
+      $_db,
+      $_db.categories,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_linkedCategoryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $AccountsTable _linkedAccountIdTable(_$AppDatabase db) =>
+      db.accounts.createAlias('reminders__linked_account_id__accounts__id');
+
+  $$AccountsTableProcessedTableManager? get linkedAccountId {
+    final $_column = $_itemColumn<String>('linked_account_id');
+    if ($_column == null) return null;
+    final manager = $$AccountsTableTableManager(
+      $_db,
+      $_db.accounts,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_linkedAccountIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$RemindersTableFilterComposer
+    extends Composer<_$AppDatabase, $RemindersTable> {
+  $$RemindersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get remindAt => $composableBuilder(
+    column: $table.remindAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recurrenceRule => $composableBuilder(
+    column: $table.recurrenceRule,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get linkedRecurringId => $composableBuilder(
+    column: $table.linkedRecurringId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get expectedAmount => $composableBuilder(
+    column: $table.expectedAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get snoozeCount => $composableBuilder(
+    column: $table.snoozeCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get snoozeHistory => $composableBuilder(
+    column: $table.snoozeHistory,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, String>
+  get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableFilterComposer get spaceId {
+    final $$SpacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableFilterComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$MembershipsTableFilterComposer get assigneeId {
+    final $$MembershipsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.assigneeId,
+      referencedTable: $db.memberships,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MembershipsTableFilterComposer(
+            $db: $db,
+            $table: $db.memberships,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableFilterComposer get linkedCategoryId {
+    final $$CategoriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.linkedCategoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableFilterComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$AccountsTableFilterComposer get linkedAccountId {
+    final $$AccountsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.linkedAccountId,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableFilterComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RemindersTableOrderingComposer
+    extends Composer<_$AppDatabase, $RemindersTable> {
+  $$RemindersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get remindAt => $composableBuilder(
+    column: $table.remindAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recurrenceRule => $composableBuilder(
+    column: $table.recurrenceRule,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get linkedRecurringId => $composableBuilder(
+    column: $table.linkedRecurringId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get expectedAmount => $composableBuilder(
+    column: $table.expectedAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get snoozeCount => $composableBuilder(
+    column: $table.snoozeCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get snoozeHistory => $composableBuilder(
+    column: $table.snoozeHistory,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableOrderingComposer get spaceId {
+    final $$SpacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$MembershipsTableOrderingComposer get assigneeId {
+    final $$MembershipsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.assigneeId,
+      referencedTable: $db.memberships,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MembershipsTableOrderingComposer(
+            $db: $db,
+            $table: $db.memberships,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableOrderingComposer get linkedCategoryId {
+    final $$CategoriesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.linkedCategoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableOrderingComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$AccountsTableOrderingComposer get linkedAccountId {
+    final $$AccountsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.linkedAccountId,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableOrderingComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RemindersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RemindersTable> {
+  $$RemindersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get remindAt =>
+      $composableBuilder(column: $table.remindAt, builder: (column) => column);
+
+  GeneratedColumn<String> get recurrenceRule => $composableBuilder(
+    column: $table.recurrenceRule,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get linkedRecurringId => $composableBuilder(
+    column: $table.linkedRecurringId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get expectedAmount => $composableBuilder(
+    column: $table.expectedAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
+
+  GeneratedColumn<int> get snoozeCount => $composableBuilder(
+    column: $table.snoozeCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get snoozeHistory => $composableBuilder(
+    column: $table.snoozeHistory,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+    column: $table.completedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
+      $composableBuilder(
+        column: $table.syncStatus,
+        builder: (column) => column,
+      );
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableAnnotationComposer get spaceId {
+    final $$SpacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$MembershipsTableAnnotationComposer get assigneeId {
+    final $$MembershipsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.assigneeId,
+      referencedTable: $db.memberships,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MembershipsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.memberships,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableAnnotationComposer get linkedCategoryId {
+    final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.linkedCategoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$AccountsTableAnnotationComposer get linkedAccountId {
+    final $$AccountsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.linkedAccountId,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RemindersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RemindersTable,
+          ReminderDb,
+          $$RemindersTableFilterComposer,
+          $$RemindersTableOrderingComposer,
+          $$RemindersTableAnnotationComposer,
+          $$RemindersTableCreateCompanionBuilder,
+          $$RemindersTableUpdateCompanionBuilder,
+          (ReminderDb, $$RemindersTableReferences),
+          ReminderDb,
+          PrefetchHooks Function({
+            bool userId,
+            bool spaceId,
+            bool assigneeId,
+            bool linkedCategoryId,
+            bool linkedAccountId,
+          })
+        > {
+  $$RemindersTableTableManager(_$AppDatabase db, $RemindersTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RemindersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RemindersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RemindersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String?> spaceId = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<DateTime> remindAt = const Value.absent(),
+                Value<String?> recurrenceRule = const Value.absent(),
+                Value<bool> isCompleted = const Value.absent(),
+                Value<String?> assigneeId = const Value.absent(),
+                Value<String?> linkedRecurringId = const Value.absent(),
+                Value<String?> linkedCategoryId = const Value.absent(),
+                Value<String?> linkedAccountId = const Value.absent(),
+                Value<int?> expectedAmount = const Value.absent(),
+                Value<String> priority = const Value.absent(),
+                Value<int> snoozeCount = const Value.absent(),
+                Value<String?> snoozeHistory = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RemindersCompanion(
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                title: title,
+                description: description,
+                remindAt: remindAt,
+                recurrenceRule: recurrenceRule,
+                isCompleted: isCompleted,
+                assigneeId: assigneeId,
+                linkedRecurringId: linkedRecurringId,
+                linkedCategoryId: linkedCategoryId,
+                linkedAccountId: linkedAccountId,
+                expectedAmount: expectedAmount,
+                priority: priority,
+                snoozeCount: snoozeCount,
+                snoozeHistory: snoozeHistory,
+                completedAt: completedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                Value<String?> spaceId = const Value.absent(),
+                required String title,
+                Value<String?> description = const Value.absent(),
+                required DateTime remindAt,
+                Value<String?> recurrenceRule = const Value.absent(),
+                Value<bool> isCompleted = const Value.absent(),
+                Value<String?> assigneeId = const Value.absent(),
+                Value<String?> linkedRecurringId = const Value.absent(),
+                Value<String?> linkedCategoryId = const Value.absent(),
+                Value<String?> linkedAccountId = const Value.absent(),
+                Value<int?> expectedAmount = const Value.absent(),
+                Value<String> priority = const Value.absent(),
+                Value<int> snoozeCount = const Value.absent(),
+                Value<String?> snoozeHistory = const Value.absent(),
+                Value<DateTime?> completedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RemindersCompanion.insert(
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                title: title,
+                description: description,
+                remindAt: remindAt,
+                recurrenceRule: recurrenceRule,
+                isCompleted: isCompleted,
+                assigneeId: assigneeId,
+                linkedRecurringId: linkedRecurringId,
+                linkedCategoryId: linkedCategoryId,
+                linkedAccountId: linkedAccountId,
+                expectedAmount: expectedAmount,
+                priority: priority,
+                snoozeCount: snoozeCount,
+                snoozeHistory: snoozeHistory,
+                completedAt: completedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$RemindersTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                userId = false,
+                spaceId = false,
+                assigneeId = false,
+                linkedCategoryId = false,
+                linkedAccountId = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (userId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.userId,
+                                    referencedTable: $$RemindersTableReferences
+                                        ._userIdTable(db),
+                                    referencedColumn: $$RemindersTableReferences
+                                        ._userIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+                        if (spaceId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.spaceId,
+                                    referencedTable: $$RemindersTableReferences
+                                        ._spaceIdTable(db),
+                                    referencedColumn: $$RemindersTableReferences
+                                        ._spaceIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+                        if (assigneeId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.assigneeId,
+                                    referencedTable: $$RemindersTableReferences
+                                        ._assigneeIdTable(db),
+                                    referencedColumn: $$RemindersTableReferences
+                                        ._assigneeIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+                        if (linkedCategoryId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.linkedCategoryId,
+                                    referencedTable: $$RemindersTableReferences
+                                        ._linkedCategoryIdTable(db),
+                                    referencedColumn: $$RemindersTableReferences
+                                        ._linkedCategoryIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+                        if (linkedAccountId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.linkedAccountId,
+                                    referencedTable: $$RemindersTableReferences
+                                        ._linkedAccountIdTable(db),
+                                    referencedColumn: $$RemindersTableReferences
+                                        ._linkedAccountIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$RemindersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RemindersTable,
+      ReminderDb,
+      $$RemindersTableFilterComposer,
+      $$RemindersTableOrderingComposer,
+      $$RemindersTableAnnotationComposer,
+      $$RemindersTableCreateCompanionBuilder,
+      $$RemindersTableUpdateCompanionBuilder,
+      (ReminderDb, $$RemindersTableReferences),
+      ReminderDb,
+      PrefetchHooks Function({
+        bool userId,
+        bool spaceId,
+        bool assigneeId,
+        bool linkedCategoryId,
+        bool linkedAccountId,
+      })
+    >;
+typedef $$HolidaysTableCreateCompanionBuilder =
+    HolidaysCompanion Function({
+      required String id,
+      Value<String?> spaceId,
+      Value<String?> userId,
+      required String name,
+      required DateTime date,
+      Value<bool> isAnnuallyRecurring,
+      Value<String?> iconEmoji,
+      Value<String?> colorHex,
+      Value<bool> isPreset,
+      Value<bool> isEnabled,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<SyncStatus> syncStatus,
+      Value<int> rowid,
+    });
+typedef $$HolidaysTableUpdateCompanionBuilder =
+    HolidaysCompanion Function({
+      Value<String> id,
+      Value<String?> spaceId,
+      Value<String?> userId,
+      Value<String> name,
+      Value<DateTime> date,
+      Value<bool> isAnnuallyRecurring,
+      Value<String?> iconEmoji,
+      Value<String?> colorHex,
+      Value<bool> isPreset,
+      Value<bool> isEnabled,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<SyncStatus> syncStatus,
+      Value<int> rowid,
+    });
+
+final class $$HolidaysTableReferences
+    extends BaseReferences<_$AppDatabase, $HolidaysTable, HolidayDb> {
+  $$HolidaysTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $SpacesTable _spaceIdTable(_$AppDatabase db) =>
+      db.spaces.createAlias('holidays__space_id__spaces__id');
+
+  $$SpacesTableProcessedTableManager? get spaceId {
+    final $_column = $_itemColumn<String>('space_id');
+    if ($_column == null) return null;
+    final manager = $$SpacesTableTableManager(
+      $_db,
+      $_db.spaces,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_spaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('holidays__user_id__users__id');
+
+  $$UsersTableProcessedTableManager? get userId {
+    final $_column = $_itemColumn<String>('user_id');
+    if ($_column == null) return null;
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$HolidaysTableFilterComposer
+    extends Composer<_$AppDatabase, $HolidaysTable> {
+  $$HolidaysTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isAnnuallyRecurring => $composableBuilder(
+    column: $table.isAnnuallyRecurring,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get iconEmoji => $composableBuilder(
+    column: $table.iconEmoji,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get colorHex => $composableBuilder(
+    column: $table.colorHex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isPreset => $composableBuilder(
+    column: $table.isPreset,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isEnabled => $composableBuilder(
+    column: $table.isEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<SyncStatus, SyncStatus, String>
+  get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  $$SpacesTableFilterComposer get spaceId {
+    final $$SpacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableFilterComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HolidaysTableOrderingComposer
+    extends Composer<_$AppDatabase, $HolidaysTable> {
+  $$HolidaysTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isAnnuallyRecurring => $composableBuilder(
+    column: $table.isAnnuallyRecurring,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get iconEmoji => $composableBuilder(
+    column: $table.iconEmoji,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get colorHex => $composableBuilder(
+    column: $table.colorHex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isPreset => $composableBuilder(
+    column: $table.isPreset,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isEnabled => $composableBuilder(
+    column: $table.isEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$SpacesTableOrderingComposer get spaceId {
+    final $$SpacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HolidaysTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HolidaysTable> {
+  $$HolidaysTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<bool> get isAnnuallyRecurring => $composableBuilder(
+    column: $table.isAnnuallyRecurring,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get iconEmoji =>
+      $composableBuilder(column: $table.iconEmoji, builder: (column) => column);
+
+  GeneratedColumn<String> get colorHex =>
+      $composableBuilder(column: $table.colorHex, builder: (column) => column);
+
+  GeneratedColumn<bool> get isPreset =>
+      $composableBuilder(column: $table.isPreset, builder: (column) => column);
+
+  GeneratedColumn<bool> get isEnabled =>
+      $composableBuilder(column: $table.isEnabled, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SyncStatus, String> get syncStatus =>
+      $composableBuilder(
+        column: $table.syncStatus,
+        builder: (column) => column,
+      );
+
+  $$SpacesTableAnnotationComposer get spaceId {
+    final $$SpacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$HolidaysTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HolidaysTable,
+          HolidayDb,
+          $$HolidaysTableFilterComposer,
+          $$HolidaysTableOrderingComposer,
+          $$HolidaysTableAnnotationComposer,
+          $$HolidaysTableCreateCompanionBuilder,
+          $$HolidaysTableUpdateCompanionBuilder,
+          (HolidayDb, $$HolidaysTableReferences),
+          HolidayDb,
+          PrefetchHooks Function({bool spaceId, bool userId})
+        > {
+  $$HolidaysTableTableManager(_$AppDatabase db, $HolidaysTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HolidaysTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HolidaysTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HolidaysTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String?> spaceId = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<DateTime> date = const Value.absent(),
+                Value<bool> isAnnuallyRecurring = const Value.absent(),
+                Value<String?> iconEmoji = const Value.absent(),
+                Value<String?> colorHex = const Value.absent(),
+                Value<bool> isPreset = const Value.absent(),
+                Value<bool> isEnabled = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HolidaysCompanion(
+                id: id,
+                spaceId: spaceId,
+                userId: userId,
+                name: name,
+                date: date,
+                isAnnuallyRecurring: isAnnuallyRecurring,
+                iconEmoji: iconEmoji,
+                colorHex: colorHex,
+                isPreset: isPreset,
+                isEnabled: isEnabled,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                Value<String?> spaceId = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                required String name,
+                required DateTime date,
+                Value<bool> isAnnuallyRecurring = const Value.absent(),
+                Value<String?> iconEmoji = const Value.absent(),
+                Value<String?> colorHex = const Value.absent(),
+                Value<bool> isPreset = const Value.absent(),
+                Value<bool> isEnabled = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<SyncStatus> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HolidaysCompanion.insert(
+                id: id,
+                spaceId: spaceId,
+                userId: userId,
+                name: name,
+                date: date,
+                isAnnuallyRecurring: isAnnuallyRecurring,
+                iconEmoji: iconEmoji,
+                colorHex: colorHex,
+                isPreset: isPreset,
+                isEnabled: isEnabled,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$HolidaysTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({spaceId = false, userId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (spaceId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.spaceId,
+                                referencedTable: $$HolidaysTableReferences
+                                    ._spaceIdTable(db),
+                                referencedColumn: $$HolidaysTableReferences
+                                    ._spaceIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+                    if (userId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.userId,
+                                referencedTable: $$HolidaysTableReferences
+                                    ._userIdTable(db),
+                                referencedColumn: $$HolidaysTableReferences
+                                    ._userIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$HolidaysTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HolidaysTable,
+      HolidayDb,
+      $$HolidaysTableFilterComposer,
+      $$HolidaysTableOrderingComposer,
+      $$HolidaysTableAnnotationComposer,
+      $$HolidaysTableCreateCompanionBuilder,
+      $$HolidaysTableUpdateCompanionBuilder,
+      (HolidayDb, $$HolidaysTableReferences),
+      HolidayDb,
+      PrefetchHooks Function({bool spaceId, bool userId})
+    >;
+typedef $$ForecastCacheTableCreateCompanionBuilder =
+    ForecastCacheCompanion Function({
+      required String id,
+      required String userId,
+      Value<String?> spaceId,
+      required String monthYear,
+      Value<String?> categoryId,
+      Value<int> forecastedAmount,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ForecastCacheTableUpdateCompanionBuilder =
+    ForecastCacheCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String?> spaceId,
+      Value<String> monthYear,
+      Value<String?> categoryId,
+      Value<int> forecastedAmount,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ForecastCacheTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $ForecastCacheTable, ForecastCacheDb> {
+  $$ForecastCacheTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('forecast_cache__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SpacesTable _spaceIdTable(_$AppDatabase db) =>
+      db.spaces.createAlias('forecast_cache__space_id__spaces__id');
+
+  $$SpacesTableProcessedTableManager? get spaceId {
+    final $_column = $_itemColumn<String>('space_id');
+    if ($_column == null) return null;
+    final manager = $$SpacesTableTableManager(
+      $_db,
+      $_db.spaces,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_spaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $CategoriesTable _categoryIdTable(_$AppDatabase db) =>
+      db.categories.createAlias('forecast_cache__category_id__categories__id');
+
+  $$CategoriesTableProcessedTableManager? get categoryId {
+    final $_column = $_itemColumn<String>('category_id');
+    if ($_column == null) return null;
+    final manager = $$CategoriesTableTableManager(
+      $_db,
+      $_db.categories,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ForecastCacheTableFilterComposer
+    extends Composer<_$AppDatabase, $ForecastCacheTable> {
+  $$ForecastCacheTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get monthYear => $composableBuilder(
+    column: $table.monthYear,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get forecastedAmount => $composableBuilder(
+    column: $table.forecastedAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableFilterComposer get spaceId {
+    final $$SpacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableFilterComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableFilterComposer get categoryId {
+    final $$CategoriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableFilterComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ForecastCacheTableOrderingComposer
+    extends Composer<_$AppDatabase, $ForecastCacheTable> {
+  $$ForecastCacheTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get monthYear => $composableBuilder(
+    column: $table.monthYear,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get forecastedAmount => $composableBuilder(
+    column: $table.forecastedAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableOrderingComposer get spaceId {
+    final $$SpacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableOrderingComposer get categoryId {
+    final $$CategoriesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableOrderingComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ForecastCacheTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ForecastCacheTable> {
+  $$ForecastCacheTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get monthYear =>
+      $composableBuilder(column: $table.monthYear, builder: (column) => column);
+
+  GeneratedColumn<int> get forecastedAmount => $composableBuilder(
+    column: $table.forecastedAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableAnnotationComposer get spaceId {
+    final $$SpacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableAnnotationComposer get categoryId {
+    final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryId,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ForecastCacheTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ForecastCacheTable,
+          ForecastCacheDb,
+          $$ForecastCacheTableFilterComposer,
+          $$ForecastCacheTableOrderingComposer,
+          $$ForecastCacheTableAnnotationComposer,
+          $$ForecastCacheTableCreateCompanionBuilder,
+          $$ForecastCacheTableUpdateCompanionBuilder,
+          (ForecastCacheDb, $$ForecastCacheTableReferences),
+          ForecastCacheDb,
+          PrefetchHooks Function({bool userId, bool spaceId, bool categoryId})
+        > {
+  $$ForecastCacheTableTableManager(_$AppDatabase db, $ForecastCacheTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ForecastCacheTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ForecastCacheTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ForecastCacheTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String?> spaceId = const Value.absent(),
+                Value<String> monthYear = const Value.absent(),
+                Value<String?> categoryId = const Value.absent(),
+                Value<int> forecastedAmount = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ForecastCacheCompanion(
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                monthYear: monthYear,
+                categoryId: categoryId,
+                forecastedAmount: forecastedAmount,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                Value<String?> spaceId = const Value.absent(),
+                required String monthYear,
+                Value<String?> categoryId = const Value.absent(),
+                Value<int> forecastedAmount = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ForecastCacheCompanion.insert(
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                monthYear: monthYear,
+                categoryId: categoryId,
+                forecastedAmount: forecastedAmount,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ForecastCacheTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({userId = false, spaceId = false, categoryId = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (userId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.userId,
+                                    referencedTable:
+                                        $$ForecastCacheTableReferences
+                                            ._userIdTable(db),
+                                    referencedColumn:
+                                        $$ForecastCacheTableReferences
+                                            ._userIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (spaceId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.spaceId,
+                                    referencedTable:
+                                        $$ForecastCacheTableReferences
+                                            ._spaceIdTable(db),
+                                    referencedColumn:
+                                        $$ForecastCacheTableReferences
+                                            ._spaceIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (categoryId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.categoryId,
+                                    referencedTable:
+                                        $$ForecastCacheTableReferences
+                                            ._categoryIdTable(db),
+                                    referencedColumn:
+                                        $$ForecastCacheTableReferences
+                                            ._categoryIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$ForecastCacheTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ForecastCacheTable,
+      ForecastCacheDb,
+      $$ForecastCacheTableFilterComposer,
+      $$ForecastCacheTableOrderingComposer,
+      $$ForecastCacheTableAnnotationComposer,
+      $$ForecastCacheTableCreateCompanionBuilder,
+      $$ForecastCacheTableUpdateCompanionBuilder,
+      (ForecastCacheDb, $$ForecastCacheTableReferences),
+      ForecastCacheDb,
+      PrefetchHooks Function({bool userId, bool spaceId, bool categoryId})
+    >;
+typedef $$ReminderDraftsTableCreateCompanionBuilder =
+    ReminderDraftsCompanion Function({
+      required String id,
+      required String userId,
+      Value<String?> reminderId,
+      required String formDataJson,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ReminderDraftsTableUpdateCompanionBuilder =
+    ReminderDraftsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String?> reminderId,
+      Value<String> formDataJson,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ReminderDraftsTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $ReminderDraftsTable, ReminderDraftDb> {
+  $$ReminderDraftsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('reminder_drafts__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ReminderDraftsTableFilterComposer
+    extends Composer<_$AppDatabase, $ReminderDraftsTable> {
+  $$ReminderDraftsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reminderId => $composableBuilder(
+    column: $table.reminderId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get formDataJson => $composableBuilder(
+    column: $table.formDataJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReminderDraftsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ReminderDraftsTable> {
+  $$ReminderDraftsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reminderId => $composableBuilder(
+    column: $table.reminderId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get formDataJson => $composableBuilder(
+    column: $table.formDataJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReminderDraftsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ReminderDraftsTable> {
+  $$ReminderDraftsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get reminderId => $composableBuilder(
+    column: $table.reminderId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get formDataJson => $composableBuilder(
+    column: $table.formDataJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReminderDraftsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ReminderDraftsTable,
+          ReminderDraftDb,
+          $$ReminderDraftsTableFilterComposer,
+          $$ReminderDraftsTableOrderingComposer,
+          $$ReminderDraftsTableAnnotationComposer,
+          $$ReminderDraftsTableCreateCompanionBuilder,
+          $$ReminderDraftsTableUpdateCompanionBuilder,
+          (ReminderDraftDb, $$ReminderDraftsTableReferences),
+          ReminderDraftDb,
+          PrefetchHooks Function({bool userId})
+        > {
+  $$ReminderDraftsTableTableManager(
+    _$AppDatabase db,
+    $ReminderDraftsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ReminderDraftsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ReminderDraftsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ReminderDraftsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String?> reminderId = const Value.absent(),
+                Value<String> formDataJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ReminderDraftsCompanion(
+                id: id,
+                userId: userId,
+                reminderId: reminderId,
+                formDataJson: formDataJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                Value<String?> reminderId = const Value.absent(),
+                required String formDataJson,
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ReminderDraftsCompanion.insert(
+                id: id,
+                userId: userId,
+                reminderId: reminderId,
+                formDataJson: formDataJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ReminderDraftsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.userId,
+                                referencedTable: $$ReminderDraftsTableReferences
+                                    ._userIdTable(db),
+                                referencedColumn:
+                                    $$ReminderDraftsTableReferences
+                                        ._userIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ReminderDraftsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ReminderDraftsTable,
+      ReminderDraftDb,
+      $$ReminderDraftsTableFilterComposer,
+      $$ReminderDraftsTableOrderingComposer,
+      $$ReminderDraftsTableAnnotationComposer,
+      $$ReminderDraftsTableCreateCompanionBuilder,
+      $$ReminderDraftsTableUpdateCompanionBuilder,
+      (ReminderDraftDb, $$ReminderDraftsTableReferences),
+      ReminderDraftDb,
+      PrefetchHooks Function({bool userId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -33441,4 +42408,14 @@ class $AppDatabaseManager {
       $$DebtDraftsTableTableManager(_db, _db.debtDrafts);
   $$SplitDraftsTableTableManager get splitDrafts =>
       $$SplitDraftsTableTableManager(_db, _db.splitDrafts);
+  $$RecurringTransactionsTableTableManager get recurringTransactions =>
+      $$RecurringTransactionsTableTableManager(_db, _db.recurringTransactions);
+  $$RemindersTableTableManager get reminders =>
+      $$RemindersTableTableManager(_db, _db.reminders);
+  $$HolidaysTableTableManager get holidays =>
+      $$HolidaysTableTableManager(_db, _db.holidays);
+  $$ForecastCacheTableTableManager get forecastCache =>
+      $$ForecastCacheTableTableManager(_db, _db.forecastCache);
+  $$ReminderDraftsTableTableManager get reminderDrafts =>
+      $$ReminderDraftsTableTableManager(_db, _db.reminderDrafts);
 }

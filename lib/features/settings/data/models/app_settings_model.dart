@@ -1,4 +1,4 @@
-﻿import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'app_settings_model.freezed.dart';
 part 'app_settings_model.g.dart';
@@ -8,25 +8,21 @@ abstract class AppSettingsModel with _$AppSettingsModel {
   const factory AppSettingsModel({
     required String id,
     required String userId,
-
     // Финансы
     @Default('RUB') String baseCurrency,
     @Default(true) bool useHistoricalExchangeRate,
-
     // Лимиты
     @Default(false) bool inheritLimitFromPreviousMonth,
     @Default(false) bool carryOverUnusedLimit,
     @Default('global_percent') String limitAlertMode,
     @Default(80) int globalAlertPercent,
     @Default(0) int globalAlertAmount,
-
     // Режим секретности
     @Default(true) bool enableSecrecyMode,
     @Default(14) int secrecyDaysBefore,
     @Default(120) int secrecyTimeoutSeconds,
     @Default(10000000) int largeTransactionThreshold,
     @Default(true) bool autoHideGiftsOnImport,
-
     // Безопасность
     @Default('visible') String defaultBalanceVisibility,
     @Default(true) bool enableShakeToHide,
@@ -36,7 +32,6 @@ abstract class AppSettingsModel with _$AppSettingsModel {
     @Default(false) bool requireBiometricsToUnhide,
     @Default(false) bool enablePinCode,
     @Default(false) bool enableBiometricLogin,
-
     // Импорт
     @Default(true) bool enableAutoDetectDuplicates,
     @Default(true) bool enableAutoDetectTransfers,
@@ -48,7 +43,6 @@ abstract class AppSettingsModel with _$AppSettingsModel {
     @Default(0) int offerProductNamingCount,
     @Default(false) bool syncImagesToCloud,
     @Default(true) bool enableBankStatementReminder,
-
     // Уведомления
     @Default(true) bool enableGroupActivityAlerts,
     @Default(true) bool enableDeficitForecastAlerts,
@@ -59,7 +53,12 @@ abstract class AppSettingsModel with _$AppSettingsModel {
     @Default('17:00') String reminderTimeOfDay,
     @Default(true) bool autoCreateRemindersForRecurring,
     @Default('{}') String digestConfig,
-
+    // Этап 14: календарная группа
+    @Default(false) bool holidaysInfoDismissed,
+    @Default(false) bool recurringDetectionInfoDismissed,
+    @Default(0) int recurringDetectionDismissCount,
+    @Default(true) bool autoDetectRecurring,
+    @Default(true) bool enableFamilyHolidayAlerts,
     required DateTime createdAt,
     required DateTime updatedAt,
     @Default('pending') String syncStatus,

@@ -159,6 +159,26 @@ _AppSettingsModel _$AppSettingsModelFromJson(
       (v) => v as bool? ?? true,
     ),
     digestConfig: $checkedConvert('digestConfig', (v) => v as String? ?? '{}'),
+    holidaysInfoDismissed: $checkedConvert(
+      'holidaysInfoDismissed',
+      (v) => v as bool? ?? false,
+    ),
+    recurringDetectionInfoDismissed: $checkedConvert(
+      'recurringDetectionInfoDismissed',
+      (v) => v as bool? ?? false,
+    ),
+    recurringDetectionDismissCount: $checkedConvert(
+      'recurringDetectionDismissCount',
+      (v) => (v as num?)?.toInt() ?? 0,
+    ),
+    autoDetectRecurring: $checkedConvert(
+      'autoDetectRecurring',
+      (v) => v as bool? ?? true,
+    ),
+    enableFamilyHolidayAlerts: $checkedConvert(
+      'enableFamilyHolidayAlerts',
+      (v) => v as bool? ?? true,
+    ),
     createdAt: $checkedConvert('createdAt', (v) => DateTime.parse(v as String)),
     updatedAt: $checkedConvert('updatedAt', (v) => DateTime.parse(v as String)),
     syncStatus: $checkedConvert('syncStatus', (v) => v as String? ?? 'pending'),
@@ -210,6 +230,11 @@ Map<String, dynamic> _$AppSettingsModelToJson(
   'reminderTimeOfDay': instance.reminderTimeOfDay,
   'autoCreateRemindersForRecurring': instance.autoCreateRemindersForRecurring,
   'digestConfig': instance.digestConfig,
+  'holidaysInfoDismissed': instance.holidaysInfoDismissed,
+  'recurringDetectionInfoDismissed': instance.recurringDetectionInfoDismissed,
+  'recurringDetectionDismissCount': instance.recurringDetectionDismissCount,
+  'autoDetectRecurring': instance.autoDetectRecurring,
+  'enableFamilyHolidayAlerts': instance.enableFamilyHolidayAlerts,
   'createdAt': instance.createdAt.toIso8601String(),
   'updatedAt': instance.updatedAt.toIso8601String(),
   'syncStatus': instance.syncStatus,

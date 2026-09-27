@@ -1,4 +1,4 @@
-﻿// lib/core/database/tables/app_settings.dart
+// lib/core/database/tables/app_settings.dart
 import 'package:drift/drift.dart';
 import 'syncable_mixin.dart';
 import 'users.dart';
@@ -6,14 +6,12 @@ import 'users.dart';
 class AppSettings extends Table with SyncableTable {
   TextColumn get id => text().named('id')();
   TextColumn get userId => text().named('user_id').references(Users, #id)();
-
   // Финансы и Валюты [SYNC]
   TextColumn get baseCurrency =>
       text().named('base_currency').withDefault(const Constant('RUB'))();
   BoolColumn get useHistoricalExchangeRate => boolean()
       .named('use_historical_exchange_rate')
       .withDefault(const Constant(true))();
-
   // Лимиты и Бюджеты [SYNC]
   BoolColumn get inheritLimitFromPreviousMonth => boolean()
       .named('inherit_limit_from_previous_month')
@@ -28,7 +26,6 @@ class AppSettings extends Table with SyncableTable {
       integer().named('global_alert_percent').withDefault(const Constant(80))();
   IntColumn get globalAlertAmount =>
       integer().named('global_alert_amount').withDefault(const Constant(0))();
-
   // Режим Секретности [SYNC]
   BoolColumn get enableSecrecyMode => boolean()
       .named('enable_secrecy_mode')
@@ -44,7 +41,6 @@ class AppSettings extends Table with SyncableTable {
   BoolColumn get autoHideGiftsOnImport => boolean()
       .named('auto_hide_gifts_on_import')
       .withDefault(const Constant(true))();
-
   // Безопасность и Приватность [LOCAL]
   TextColumn get defaultBalanceVisibility => text()
       .named('default_balance_visibility')
@@ -69,7 +65,6 @@ class AppSettings extends Table with SyncableTable {
   BoolColumn get enableBiometricLogin => boolean()
       .named('enable_biometric_login')
       .withDefault(const Constant(false))();
-
   // Импорт и Чеки [LOCAL]
   BoolColumn get enableAutoDetectDuplicates => boolean()
       .named('enable_auto_detect_duplicates')
@@ -101,7 +96,6 @@ class AppSettings extends Table with SyncableTable {
   BoolColumn get enableBankStatementReminder => boolean()
       .named('enable_bank_statement_reminder')
       .withDefault(const Constant(true))();
-
   // Уведомления и Пуши [LOCAL]
   BoolColumn get enableGroupActivityAlerts => boolean()
       .named('enable_group_activity_alerts')
@@ -127,7 +121,22 @@ class AppSettings extends Table with SyncableTable {
       .withDefault(const Constant(true))();
   TextColumn get digestConfig =>
       text().named('digest_config').withDefault(const Constant('{}'))();
-
+  // Этап 14: календарная группа [LOCAL]
+  BoolColumn get holidaysInfoDismissed => boolean()
+      .named('holidays_info_dismissed')
+      .withDefault(const Constant(false))();
+  BoolColumn get recurringDetectionInfoDismissed => boolean()
+      .named('recurring_detection_info_dismissed')
+      .withDefault(const Constant(false))();
+  IntColumn get recurringDetectionDismissCount => integer()
+      .named('recurring_detection_dismiss_count')
+      .withDefault(const Constant(0))();
+  BoolColumn get autoDetectRecurring => boolean()
+      .named('auto_detect_recurring')
+      .withDefault(const Constant(true))();
+  BoolColumn get enableFamilyHolidayAlerts => boolean()
+      .named('enable_family_holiday_alerts')
+      .withDefault(const Constant(true))();
   @override
   Set<Column> get primaryKey => {id};
 }
