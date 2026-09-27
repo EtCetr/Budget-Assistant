@@ -41,6 +41,7 @@ import 'package:budget_assistant/features/calendar/presentation/screens/calendar
 import 'package:budget_assistant/features/calendar/presentation/screens/day_statistics_screen.dart';
 import 'package:budget_assistant/features/calendar/presentation/screens/date_forecast_screen.dart';
 import 'package:budget_assistant/features/calendar/presentation/screens/holidays_management_screen.dart';
+import 'package:budget_assistant/features/recurring_payments/presentation/screens/recurring_payments_detection_screen.dart';
 part 'app_router.g.dart';
 
 @riverpod
@@ -347,6 +348,13 @@ GoRouter appRouter(Ref ref) {
         path: '/calendar/holidays',
         name: 'calendar-holidays',
         builder: (context, state) => const HolidaysManagementScreen(),
+      ),
+      // Этап 14: детекция регулярных платежей
+      GoRoute(
+        path: '/recurring-payments-detection',
+        name: 'recurring-detection',
+        builder: (context, state) =>
+            const RecurringPaymentsDetectionScreen(),
       ),
     ],
     redirect: (context, state) {

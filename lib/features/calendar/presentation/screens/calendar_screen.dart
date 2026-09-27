@@ -12,6 +12,7 @@ import '../calendar_strings.dart';
 import '../providers/calendar_screen_providers.dart';
 import '../providers/date_forecast_providers.dart';
 import '../widgets/calendar_day_panel.dart';
+import '../../../recurring_payments/presentation/widgets/recurring_detection_indicator.dart';
 
 /// Экран календаря (ТЗ 6.3.5 + пожелание владельца 14.4e-2):
 /// сетка с заливкой дней и маркерами, сводка выбранного дня СНИЗУ
@@ -274,6 +275,7 @@ class CalendarScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.spacing8),
         children: [
+          const RecurringDetectionIndicator(),
           TableCalendar(
             firstDay: DateTime(2020, 1, 1),
             lastDay: DateTime(2100, 12, 31),
