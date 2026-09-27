@@ -33,7 +33,7 @@ class AcceptInviteScreen extends ConsumerWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () async {
-                    // TODO: Вызвать AcceptInvitationUseCase
+                    // TODO(Этап 17/21): Вызвать AcceptInvitationUseCase
                     // 1. HKDF деривация ключа из token
                     // 2. Расшифровка encrypted_salt
                     // 3. Сохранение SpaceMasterKey в SecureStorage

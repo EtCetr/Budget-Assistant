@@ -21962,6 +21962,1472 @@ class ReminderDraftsCompanion extends UpdateCompanion<ReminderDraftDb> {
   }
 }
 
+class $ParserConfigsTable extends ParserConfigs
+    with TableInfo<$ParserConfigsTable, ParserConfigDb> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ParserConfigsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bankNameMeta = const VerificationMeta(
+    'bankName',
+  );
+  @override
+  late final GeneratedColumn<String> bankName = GeneratedColumn<String>(
+    'bank_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bankCodeMeta = const VerificationMeta(
+    'bankCode',
+  );
+  @override
+  late final GeneratedColumn<String> bankCode = GeneratedColumn<String>(
+    'bank_code',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _isPopularMeta = const VerificationMeta(
+    'isPopular',
+  );
+  @override
+  late final GeneratedColumn<bool> isPopular = GeneratedColumn<bool>(
+    'is_popular',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_popular" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _usageCountMeta = const VerificationMeta(
+    'usageCount',
+  );
+  @override
+  late final GeneratedColumn<int> usageCount = GeneratedColumn<int>(
+    'usage_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _supportedFormatsMeta = const VerificationMeta(
+    'supportedFormats',
+  );
+  @override
+  late final GeneratedColumn<String> supportedFormats = GeneratedColumn<String>(
+    'supported_formats',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _configJsonMeta = const VerificationMeta(
+    'configJson',
+  );
+  @override
+  late final GeneratedColumn<String> configJson = GeneratedColumn<String>(
+    'config_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _instructionTextMeta = const VerificationMeta(
+    'instructionText',
+  );
+  @override
+  late final GeneratedColumn<String> instructionText = GeneratedColumn<String>(
+    'instruction_text',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _webExportUrlMeta = const VerificationMeta(
+    'webExportUrl',
+  );
+  @override
+  late final GeneratedColumn<String> webExportUrl = GeneratedColumn<String>(
+    'web_export_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _brandColorMeta = const VerificationMeta(
+    'brandColor',
+  );
+  @override
+  late final GeneratedColumn<String> brandColor = GeneratedColumn<String>(
+    'brand_color',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _iconAssetMeta = const VerificationMeta(
+    'iconAsset',
+  );
+  @override
+  late final GeneratedColumn<String> iconAsset = GeneratedColumn<String>(
+    'icon_asset',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    bankName,
+    bankCode,
+    isPopular,
+    usageCount,
+    supportedFormats,
+    configJson,
+    instructionText,
+    webExportUrl,
+    brandColor,
+    iconAsset,
+    version,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'parser_configs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ParserConfigDb> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('bank_name')) {
+      context.handle(
+        _bankNameMeta,
+        bankName.isAcceptableOrUnknown(data['bank_name']!, _bankNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bankNameMeta);
+    }
+    if (data.containsKey('bank_code')) {
+      context.handle(
+        _bankCodeMeta,
+        bankCode.isAcceptableOrUnknown(data['bank_code']!, _bankCodeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bankCodeMeta);
+    }
+    if (data.containsKey('is_popular')) {
+      context.handle(
+        _isPopularMeta,
+        isPopular.isAcceptableOrUnknown(data['is_popular']!, _isPopularMeta),
+      );
+    }
+    if (data.containsKey('usage_count')) {
+      context.handle(
+        _usageCountMeta,
+        usageCount.isAcceptableOrUnknown(data['usage_count']!, _usageCountMeta),
+      );
+    }
+    if (data.containsKey('supported_formats')) {
+      context.handle(
+        _supportedFormatsMeta,
+        supportedFormats.isAcceptableOrUnknown(
+          data['supported_formats']!,
+          _supportedFormatsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_supportedFormatsMeta);
+    }
+    if (data.containsKey('config_json')) {
+      context.handle(
+        _configJsonMeta,
+        configJson.isAcceptableOrUnknown(data['config_json']!, _configJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_configJsonMeta);
+    }
+    if (data.containsKey('instruction_text')) {
+      context.handle(
+        _instructionTextMeta,
+        instructionText.isAcceptableOrUnknown(
+          data['instruction_text']!,
+          _instructionTextMeta,
+        ),
+      );
+    }
+    if (data.containsKey('web_export_url')) {
+      context.handle(
+        _webExportUrlMeta,
+        webExportUrl.isAcceptableOrUnknown(
+          data['web_export_url']!,
+          _webExportUrlMeta,
+        ),
+      );
+    }
+    if (data.containsKey('brand_color')) {
+      context.handle(
+        _brandColorMeta,
+        brandColor.isAcceptableOrUnknown(data['brand_color']!, _brandColorMeta),
+      );
+    }
+    if (data.containsKey('icon_asset')) {
+      context.handle(
+        _iconAssetMeta,
+        iconAsset.isAcceptableOrUnknown(data['icon_asset']!, _iconAssetMeta),
+      );
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ParserConfigDb map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ParserConfigDb(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      bankName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bank_name'],
+      )!,
+      bankCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bank_code'],
+      )!,
+      isPopular: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_popular'],
+      )!,
+      usageCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}usage_count'],
+      )!,
+      supportedFormats: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}supported_formats'],
+      )!,
+      configJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}config_json'],
+      )!,
+      instructionText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}instruction_text'],
+      ),
+      webExportUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}web_export_url'],
+      ),
+      brandColor: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}brand_color'],
+      ),
+      iconAsset: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon_asset'],
+      ),
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+    );
+  }
+
+  @override
+  $ParserConfigsTable createAlias(String alias) {
+    return $ParserConfigsTable(attachedDatabase, alias);
+  }
+}
+
+class ParserConfigDb extends DataClass implements Insertable<ParserConfigDb> {
+  final String id;
+  final String bankName;
+
+  /// Уникальный код: 'tbank', 'sber', 'alfa'.
+  final String bankCode;
+  final bool isPopular;
+  final int usageCount;
+
+  /// JSON-массив: ["csv","xlsx","pdf"].
+  final String supportedFormats;
+
+  /// JSON маппинг колонок. ОТКРЫТЫЙ (не E2E).
+  final String configJson;
+
+  /// JSON с шагами инструкции и скриншотами.
+  final String? instructionText;
+  final String? webExportUrl;
+
+  /// Hex-код цвета бренда.
+  final String? brandColor;
+  final String? iconAsset;
+  final int version;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String syncStatus;
+  const ParserConfigDb({
+    required this.id,
+    required this.bankName,
+    required this.bankCode,
+    required this.isPopular,
+    required this.usageCount,
+    required this.supportedFormats,
+    required this.configJson,
+    this.instructionText,
+    this.webExportUrl,
+    this.brandColor,
+    this.iconAsset,
+    required this.version,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.syncStatus,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['bank_name'] = Variable<String>(bankName);
+    map['bank_code'] = Variable<String>(bankCode);
+    map['is_popular'] = Variable<bool>(isPopular);
+    map['usage_count'] = Variable<int>(usageCount);
+    map['supported_formats'] = Variable<String>(supportedFormats);
+    map['config_json'] = Variable<String>(configJson);
+    if (!nullToAbsent || instructionText != null) {
+      map['instruction_text'] = Variable<String>(instructionText);
+    }
+    if (!nullToAbsent || webExportUrl != null) {
+      map['web_export_url'] = Variable<String>(webExportUrl);
+    }
+    if (!nullToAbsent || brandColor != null) {
+      map['brand_color'] = Variable<String>(brandColor);
+    }
+    if (!nullToAbsent || iconAsset != null) {
+      map['icon_asset'] = Variable<String>(iconAsset);
+    }
+    map['version'] = Variable<int>(version);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['sync_status'] = Variable<String>(syncStatus);
+    return map;
+  }
+
+  ParserConfigsCompanion toCompanion(bool nullToAbsent) {
+    return ParserConfigsCompanion(
+      id: Value(id),
+      bankName: Value(bankName),
+      bankCode: Value(bankCode),
+      isPopular: Value(isPopular),
+      usageCount: Value(usageCount),
+      supportedFormats: Value(supportedFormats),
+      configJson: Value(configJson),
+      instructionText: instructionText == null && nullToAbsent
+          ? const Value.absent()
+          : Value(instructionText),
+      webExportUrl: webExportUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(webExportUrl),
+      brandColor: brandColor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(brandColor),
+      iconAsset: iconAsset == null && nullToAbsent
+          ? const Value.absent()
+          : Value(iconAsset),
+      version: Value(version),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncStatus: Value(syncStatus),
+    );
+  }
+
+  factory ParserConfigDb.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ParserConfigDb(
+      id: serializer.fromJson<String>(json['id']),
+      bankName: serializer.fromJson<String>(json['bankName']),
+      bankCode: serializer.fromJson<String>(json['bankCode']),
+      isPopular: serializer.fromJson<bool>(json['isPopular']),
+      usageCount: serializer.fromJson<int>(json['usageCount']),
+      supportedFormats: serializer.fromJson<String>(json['supportedFormats']),
+      configJson: serializer.fromJson<String>(json['configJson']),
+      instructionText: serializer.fromJson<String?>(json['instructionText']),
+      webExportUrl: serializer.fromJson<String?>(json['webExportUrl']),
+      brandColor: serializer.fromJson<String?>(json['brandColor']),
+      iconAsset: serializer.fromJson<String?>(json['iconAsset']),
+      version: serializer.fromJson<int>(json['version']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'bankName': serializer.toJson<String>(bankName),
+      'bankCode': serializer.toJson<String>(bankCode),
+      'isPopular': serializer.toJson<bool>(isPopular),
+      'usageCount': serializer.toJson<int>(usageCount),
+      'supportedFormats': serializer.toJson<String>(supportedFormats),
+      'configJson': serializer.toJson<String>(configJson),
+      'instructionText': serializer.toJson<String?>(instructionText),
+      'webExportUrl': serializer.toJson<String?>(webExportUrl),
+      'brandColor': serializer.toJson<String?>(brandColor),
+      'iconAsset': serializer.toJson<String?>(iconAsset),
+      'version': serializer.toJson<int>(version),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+    };
+  }
+
+  ParserConfigDb copyWith({
+    String? id,
+    String? bankName,
+    String? bankCode,
+    bool? isPopular,
+    int? usageCount,
+    String? supportedFormats,
+    String? configJson,
+    Value<String?> instructionText = const Value.absent(),
+    Value<String?> webExportUrl = const Value.absent(),
+    Value<String?> brandColor = const Value.absent(),
+    Value<String?> iconAsset = const Value.absent(),
+    int? version,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? syncStatus,
+  }) => ParserConfigDb(
+    id: id ?? this.id,
+    bankName: bankName ?? this.bankName,
+    bankCode: bankCode ?? this.bankCode,
+    isPopular: isPopular ?? this.isPopular,
+    usageCount: usageCount ?? this.usageCount,
+    supportedFormats: supportedFormats ?? this.supportedFormats,
+    configJson: configJson ?? this.configJson,
+    instructionText: instructionText.present
+        ? instructionText.value
+        : this.instructionText,
+    webExportUrl: webExportUrl.present ? webExportUrl.value : this.webExportUrl,
+    brandColor: brandColor.present ? brandColor.value : this.brandColor,
+    iconAsset: iconAsset.present ? iconAsset.value : this.iconAsset,
+    version: version ?? this.version,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+  );
+  ParserConfigDb copyWithCompanion(ParserConfigsCompanion data) {
+    return ParserConfigDb(
+      id: data.id.present ? data.id.value : this.id,
+      bankName: data.bankName.present ? data.bankName.value : this.bankName,
+      bankCode: data.bankCode.present ? data.bankCode.value : this.bankCode,
+      isPopular: data.isPopular.present ? data.isPopular.value : this.isPopular,
+      usageCount: data.usageCount.present
+          ? data.usageCount.value
+          : this.usageCount,
+      supportedFormats: data.supportedFormats.present
+          ? data.supportedFormats.value
+          : this.supportedFormats,
+      configJson: data.configJson.present
+          ? data.configJson.value
+          : this.configJson,
+      instructionText: data.instructionText.present
+          ? data.instructionText.value
+          : this.instructionText,
+      webExportUrl: data.webExportUrl.present
+          ? data.webExportUrl.value
+          : this.webExportUrl,
+      brandColor: data.brandColor.present
+          ? data.brandColor.value
+          : this.brandColor,
+      iconAsset: data.iconAsset.present ? data.iconAsset.value : this.iconAsset,
+      version: data.version.present ? data.version.value : this.version,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ParserConfigDb(')
+          ..write('id: $id, ')
+          ..write('bankName: $bankName, ')
+          ..write('bankCode: $bankCode, ')
+          ..write('isPopular: $isPopular, ')
+          ..write('usageCount: $usageCount, ')
+          ..write('supportedFormats: $supportedFormats, ')
+          ..write('configJson: $configJson, ')
+          ..write('instructionText: $instructionText, ')
+          ..write('webExportUrl: $webExportUrl, ')
+          ..write('brandColor: $brandColor, ')
+          ..write('iconAsset: $iconAsset, ')
+          ..write('version: $version, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    bankName,
+    bankCode,
+    isPopular,
+    usageCount,
+    supportedFormats,
+    configJson,
+    instructionText,
+    webExportUrl,
+    brandColor,
+    iconAsset,
+    version,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ParserConfigDb &&
+          other.id == this.id &&
+          other.bankName == this.bankName &&
+          other.bankCode == this.bankCode &&
+          other.isPopular == this.isPopular &&
+          other.usageCount == this.usageCount &&
+          other.supportedFormats == this.supportedFormats &&
+          other.configJson == this.configJson &&
+          other.instructionText == this.instructionText &&
+          other.webExportUrl == this.webExportUrl &&
+          other.brandColor == this.brandColor &&
+          other.iconAsset == this.iconAsset &&
+          other.version == this.version &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncStatus == this.syncStatus);
+}
+
+class ParserConfigsCompanion extends UpdateCompanion<ParserConfigDb> {
+  final Value<String> id;
+  final Value<String> bankName;
+  final Value<String> bankCode;
+  final Value<bool> isPopular;
+  final Value<int> usageCount;
+  final Value<String> supportedFormats;
+  final Value<String> configJson;
+  final Value<String?> instructionText;
+  final Value<String?> webExportUrl;
+  final Value<String?> brandColor;
+  final Value<String?> iconAsset;
+  final Value<int> version;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<String> syncStatus;
+  final Value<int> rowid;
+  const ParserConfigsCompanion({
+    this.id = const Value.absent(),
+    this.bankName = const Value.absent(),
+    this.bankCode = const Value.absent(),
+    this.isPopular = const Value.absent(),
+    this.usageCount = const Value.absent(),
+    this.supportedFormats = const Value.absent(),
+    this.configJson = const Value.absent(),
+    this.instructionText = const Value.absent(),
+    this.webExportUrl = const Value.absent(),
+    this.brandColor = const Value.absent(),
+    this.iconAsset = const Value.absent(),
+    this.version = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ParserConfigsCompanion.insert({
+    required String id,
+    required String bankName,
+    required String bankCode,
+    this.isPopular = const Value.absent(),
+    this.usageCount = const Value.absent(),
+    required String supportedFormats,
+    required String configJson,
+    this.instructionText = const Value.absent(),
+    this.webExportUrl = const Value.absent(),
+    this.brandColor = const Value.absent(),
+    this.iconAsset = const Value.absent(),
+    this.version = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       bankName = Value(bankName),
+       bankCode = Value(bankCode),
+       supportedFormats = Value(supportedFormats),
+       configJson = Value(configJson);
+  static Insertable<ParserConfigDb> custom({
+    Expression<String>? id,
+    Expression<String>? bankName,
+    Expression<String>? bankCode,
+    Expression<bool>? isPopular,
+    Expression<int>? usageCount,
+    Expression<String>? supportedFormats,
+    Expression<String>? configJson,
+    Expression<String>? instructionText,
+    Expression<String>? webExportUrl,
+    Expression<String>? brandColor,
+    Expression<String>? iconAsset,
+    Expression<int>? version,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? syncStatus,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (bankName != null) 'bank_name': bankName,
+      if (bankCode != null) 'bank_code': bankCode,
+      if (isPopular != null) 'is_popular': isPopular,
+      if (usageCount != null) 'usage_count': usageCount,
+      if (supportedFormats != null) 'supported_formats': supportedFormats,
+      if (configJson != null) 'config_json': configJson,
+      if (instructionText != null) 'instruction_text': instructionText,
+      if (webExportUrl != null) 'web_export_url': webExportUrl,
+      if (brandColor != null) 'brand_color': brandColor,
+      if (iconAsset != null) 'icon_asset': iconAsset,
+      if (version != null) 'version': version,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ParserConfigsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? bankName,
+    Value<String>? bankCode,
+    Value<bool>? isPopular,
+    Value<int>? usageCount,
+    Value<String>? supportedFormats,
+    Value<String>? configJson,
+    Value<String?>? instructionText,
+    Value<String?>? webExportUrl,
+    Value<String?>? brandColor,
+    Value<String?>? iconAsset,
+    Value<int>? version,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<String>? syncStatus,
+    Value<int>? rowid,
+  }) {
+    return ParserConfigsCompanion(
+      id: id ?? this.id,
+      bankName: bankName ?? this.bankName,
+      bankCode: bankCode ?? this.bankCode,
+      isPopular: isPopular ?? this.isPopular,
+      usageCount: usageCount ?? this.usageCount,
+      supportedFormats: supportedFormats ?? this.supportedFormats,
+      configJson: configJson ?? this.configJson,
+      instructionText: instructionText ?? this.instructionText,
+      webExportUrl: webExportUrl ?? this.webExportUrl,
+      brandColor: brandColor ?? this.brandColor,
+      iconAsset: iconAsset ?? this.iconAsset,
+      version: version ?? this.version,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (bankName.present) {
+      map['bank_name'] = Variable<String>(bankName.value);
+    }
+    if (bankCode.present) {
+      map['bank_code'] = Variable<String>(bankCode.value);
+    }
+    if (isPopular.present) {
+      map['is_popular'] = Variable<bool>(isPopular.value);
+    }
+    if (usageCount.present) {
+      map['usage_count'] = Variable<int>(usageCount.value);
+    }
+    if (supportedFormats.present) {
+      map['supported_formats'] = Variable<String>(supportedFormats.value);
+    }
+    if (configJson.present) {
+      map['config_json'] = Variable<String>(configJson.value);
+    }
+    if (instructionText.present) {
+      map['instruction_text'] = Variable<String>(instructionText.value);
+    }
+    if (webExportUrl.present) {
+      map['web_export_url'] = Variable<String>(webExportUrl.value);
+    }
+    if (brandColor.present) {
+      map['brand_color'] = Variable<String>(brandColor.value);
+    }
+    if (iconAsset.present) {
+      map['icon_asset'] = Variable<String>(iconAsset.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ParserConfigsCompanion(')
+          ..write('id: $id, ')
+          ..write('bankName: $bankName, ')
+          ..write('bankCode: $bankCode, ')
+          ..write('isPopular: $isPopular, ')
+          ..write('usageCount: $usageCount, ')
+          ..write('supportedFormats: $supportedFormats, ')
+          ..write('configJson: $configJson, ')
+          ..write('instructionText: $instructionText, ')
+          ..write('webExportUrl: $webExportUrl, ')
+          ..write('brandColor: $brandColor, ')
+          ..write('iconAsset: $iconAsset, ')
+          ..write('version: $version, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ImportDraftsTable extends ImportDrafts
+    with TableInfo<$ImportDraftsTable, ImportDraftDb> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ImportDraftsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _bankNameMeta = const VerificationMeta(
+    'bankName',
+  );
+  @override
+  late final GeneratedColumn<String> bankName = GeneratedColumn<String>(
+    'bank_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _filePathMeta = const VerificationMeta(
+    'filePath',
+  );
+  @override
+  late final GeneratedColumn<String> filePath = GeneratedColumn<String>(
+    'file_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _wizardStateJsonMeta = const VerificationMeta(
+    'wizardStateJson',
+  );
+  @override
+  late final GeneratedColumn<String> wizardStateJson = GeneratedColumn<String>(
+    'wizard_state_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _parsedDataJsonMeta = const VerificationMeta(
+    'parsedDataJson',
+  );
+  @override
+  late final GeneratedColumn<String> parsedDataJson = GeneratedColumn<String>(
+    'parsed_data_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _mappingJsonMeta = const VerificationMeta(
+    'mappingJson',
+  );
+  @override
+  late final GeneratedColumn<String> mappingJson = GeneratedColumn<String>(
+    'mapping_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    bankName,
+    filePath,
+    wizardStateJson,
+    parsedDataJson,
+    mappingJson,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'import_drafts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ImportDraftDb> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('bank_name')) {
+      context.handle(
+        _bankNameMeta,
+        bankName.isAcceptableOrUnknown(data['bank_name']!, _bankNameMeta),
+      );
+    }
+    if (data.containsKey('file_path')) {
+      context.handle(
+        _filePathMeta,
+        filePath.isAcceptableOrUnknown(data['file_path']!, _filePathMeta),
+      );
+    }
+    if (data.containsKey('wizard_state_json')) {
+      context.handle(
+        _wizardStateJsonMeta,
+        wizardStateJson.isAcceptableOrUnknown(
+          data['wizard_state_json']!,
+          _wizardStateJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('parsed_data_json')) {
+      context.handle(
+        _parsedDataJsonMeta,
+        parsedDataJson.isAcceptableOrUnknown(
+          data['parsed_data_json']!,
+          _parsedDataJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('mapping_json')) {
+      context.handle(
+        _mappingJsonMeta,
+        mappingJson.isAcceptableOrUnknown(
+          data['mapping_json']!,
+          _mappingJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ImportDraftDb map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ImportDraftDb(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      bankName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}bank_name'],
+      ),
+      filePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}file_path'],
+      ),
+      wizardStateJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}wizard_state_json'],
+      ),
+      parsedDataJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parsed_data_json'],
+      ),
+      mappingJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mapping_json'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ImportDraftsTable createAlias(String alias) {
+    return $ImportDraftsTable(attachedDatabase, alias);
+  }
+}
+
+class ImportDraftDb extends DataClass implements Insertable<ImportDraftDb> {
+  final String id;
+  final String userId;
+  final String? bankName;
+  final String? filePath;
+
+  /// JSON: текущий шаг, выбранный формат, опции.
+  final String? wizardStateJson;
+
+  /// JSON распарсенных строк (до подтверждения).
+  final String? parsedDataJson;
+
+  /// JSON маппинга колонок.
+  final String? mappingJson;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const ImportDraftDb({
+    required this.id,
+    required this.userId,
+    this.bankName,
+    this.filePath,
+    this.wizardStateJson,
+    this.parsedDataJson,
+    this.mappingJson,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || bankName != null) {
+      map['bank_name'] = Variable<String>(bankName);
+    }
+    if (!nullToAbsent || filePath != null) {
+      map['file_path'] = Variable<String>(filePath);
+    }
+    if (!nullToAbsent || wizardStateJson != null) {
+      map['wizard_state_json'] = Variable<String>(wizardStateJson);
+    }
+    if (!nullToAbsent || parsedDataJson != null) {
+      map['parsed_data_json'] = Variable<String>(parsedDataJson);
+    }
+    if (!nullToAbsent || mappingJson != null) {
+      map['mapping_json'] = Variable<String>(mappingJson);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ImportDraftsCompanion toCompanion(bool nullToAbsent) {
+    return ImportDraftsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      bankName: bankName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bankName),
+      filePath: filePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(filePath),
+      wizardStateJson: wizardStateJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(wizardStateJson),
+      parsedDataJson: parsedDataJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parsedDataJson),
+      mappingJson: mappingJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mappingJson),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ImportDraftDb.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ImportDraftDb(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      bankName: serializer.fromJson<String?>(json['bankName']),
+      filePath: serializer.fromJson<String?>(json['filePath']),
+      wizardStateJson: serializer.fromJson<String?>(json['wizardStateJson']),
+      parsedDataJson: serializer.fromJson<String?>(json['parsedDataJson']),
+      mappingJson: serializer.fromJson<String?>(json['mappingJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'bankName': serializer.toJson<String?>(bankName),
+      'filePath': serializer.toJson<String?>(filePath),
+      'wizardStateJson': serializer.toJson<String?>(wizardStateJson),
+      'parsedDataJson': serializer.toJson<String?>(parsedDataJson),
+      'mappingJson': serializer.toJson<String?>(mappingJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ImportDraftDb copyWith({
+    String? id,
+    String? userId,
+    Value<String?> bankName = const Value.absent(),
+    Value<String?> filePath = const Value.absent(),
+    Value<String?> wizardStateJson = const Value.absent(),
+    Value<String?> parsedDataJson = const Value.absent(),
+    Value<String?> mappingJson = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => ImportDraftDb(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    bankName: bankName.present ? bankName.value : this.bankName,
+    filePath: filePath.present ? filePath.value : this.filePath,
+    wizardStateJson: wizardStateJson.present
+        ? wizardStateJson.value
+        : this.wizardStateJson,
+    parsedDataJson: parsedDataJson.present
+        ? parsedDataJson.value
+        : this.parsedDataJson,
+    mappingJson: mappingJson.present ? mappingJson.value : this.mappingJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ImportDraftDb copyWithCompanion(ImportDraftsCompanion data) {
+    return ImportDraftDb(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      bankName: data.bankName.present ? data.bankName.value : this.bankName,
+      filePath: data.filePath.present ? data.filePath.value : this.filePath,
+      wizardStateJson: data.wizardStateJson.present
+          ? data.wizardStateJson.value
+          : this.wizardStateJson,
+      parsedDataJson: data.parsedDataJson.present
+          ? data.parsedDataJson.value
+          : this.parsedDataJson,
+      mappingJson: data.mappingJson.present
+          ? data.mappingJson.value
+          : this.mappingJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ImportDraftDb(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('bankName: $bankName, ')
+          ..write('filePath: $filePath, ')
+          ..write('wizardStateJson: $wizardStateJson, ')
+          ..write('parsedDataJson: $parsedDataJson, ')
+          ..write('mappingJson: $mappingJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    bankName,
+    filePath,
+    wizardStateJson,
+    parsedDataJson,
+    mappingJson,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ImportDraftDb &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.bankName == this.bankName &&
+          other.filePath == this.filePath &&
+          other.wizardStateJson == this.wizardStateJson &&
+          other.parsedDataJson == this.parsedDataJson &&
+          other.mappingJson == this.mappingJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ImportDraftsCompanion extends UpdateCompanion<ImportDraftDb> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String?> bankName;
+  final Value<String?> filePath;
+  final Value<String?> wizardStateJson;
+  final Value<String?> parsedDataJson;
+  final Value<String?> mappingJson;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ImportDraftsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.bankName = const Value.absent(),
+    this.filePath = const Value.absent(),
+    this.wizardStateJson = const Value.absent(),
+    this.parsedDataJson = const Value.absent(),
+    this.mappingJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ImportDraftsCompanion.insert({
+    required String id,
+    required String userId,
+    this.bankName = const Value.absent(),
+    this.filePath = const Value.absent(),
+    this.wizardStateJson = const Value.absent(),
+    this.parsedDataJson = const Value.absent(),
+    this.mappingJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId);
+  static Insertable<ImportDraftDb> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? bankName,
+    Expression<String>? filePath,
+    Expression<String>? wizardStateJson,
+    Expression<String>? parsedDataJson,
+    Expression<String>? mappingJson,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (bankName != null) 'bank_name': bankName,
+      if (filePath != null) 'file_path': filePath,
+      if (wizardStateJson != null) 'wizard_state_json': wizardStateJson,
+      if (parsedDataJson != null) 'parsed_data_json': parsedDataJson,
+      if (mappingJson != null) 'mapping_json': mappingJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ImportDraftsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String?>? bankName,
+    Value<String?>? filePath,
+    Value<String?>? wizardStateJson,
+    Value<String?>? parsedDataJson,
+    Value<String?>? mappingJson,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ImportDraftsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      bankName: bankName ?? this.bankName,
+      filePath: filePath ?? this.filePath,
+      wizardStateJson: wizardStateJson ?? this.wizardStateJson,
+      parsedDataJson: parsedDataJson ?? this.parsedDataJson,
+      mappingJson: mappingJson ?? this.mappingJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (bankName.present) {
+      map['bank_name'] = Variable<String>(bankName.value);
+    }
+    if (filePath.present) {
+      map['file_path'] = Variable<String>(filePath.value);
+    }
+    if (wizardStateJson.present) {
+      map['wizard_state_json'] = Variable<String>(wizardStateJson.value);
+    }
+    if (parsedDataJson.present) {
+      map['parsed_data_json'] = Variable<String>(parsedDataJson.value);
+    }
+    if (mappingJson.present) {
+      map['mapping_json'] = Variable<String>(mappingJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ImportDraftsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('bankName: $bankName, ')
+          ..write('filePath: $filePath, ')
+          ..write('wizardStateJson: $wizardStateJson, ')
+          ..write('parsedDataJson: $parsedDataJson, ')
+          ..write('mappingJson: $mappingJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -21997,6 +23463,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $HolidaysTable holidays = $HolidaysTable(this);
   late final $ForecastCacheTable forecastCache = $ForecastCacheTable(this);
   late final $ReminderDraftsTable reminderDrafts = $ReminderDraftsTable(this);
+  late final $ParserConfigsTable parserConfigs = $ParserConfigsTable(this);
+  late final $ImportDraftsTable importDrafts = $ImportDraftsTable(this);
   late final UsersDao usersDao = UsersDao(this as AppDatabase);
   late final SpacesDao spacesDao = SpacesDao(this as AppDatabase);
   late final MembershipsDao membershipsDao = MembershipsDao(
@@ -22047,6 +23515,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     holidays,
     forecastCache,
     reminderDrafts,
+    parserConfigs,
+    importDrafts,
   ];
 }
 
@@ -22412,6 +23882,24 @@ final class $$UsersTableReferences
     ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_reminderDraftsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ImportDraftsTable, List<ImportDraftDb>>
+  _importDraftsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.importDrafts,
+    aliasName: 'users__id__import_drafts__user_id',
+  );
+
+  $$ImportDraftsTableProcessedTableManager get importDraftsRefs {
+    final manager = $$ImportDraftsTableTableManager(
+      $_db,
+      $_db.importDrafts,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_importDraftsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -22908,6 +24396,31 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
           }) => $$ReminderDraftsTableFilterComposer(
             $db: $db,
             $table: $db.reminderDrafts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> importDraftsRefs(
+    Expression<bool> Function($$ImportDraftsTableFilterComposer f) f,
+  ) {
+    final $$ImportDraftsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.importDrafts,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ImportDraftsTableFilterComposer(
+            $db: $db,
+            $table: $db.importDrafts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -23458,6 +24971,31 @@ class $$UsersTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> importDraftsRefs<T extends Object>(
+    Expression<T> Function($$ImportDraftsTableAnnotationComposer a) f,
+  ) {
+    final $$ImportDraftsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.importDrafts,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ImportDraftsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.importDrafts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$UsersTableTableManager
@@ -23492,6 +25030,7 @@ class $$UsersTableTableManager
             bool holidaysRefs,
             bool forecastCacheRefs,
             bool reminderDraftsRefs,
+            bool importDraftsRefs,
           })
         > {
   $$UsersTableTableManager(_$AppDatabase db, $UsersTable table)
@@ -23575,6 +25114,7 @@ class $$UsersTableTableManager
                 holidaysRefs = false,
                 forecastCacheRefs = false,
                 reminderDraftsRefs = false,
+                importDraftsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -23597,6 +25137,7 @@ class $$UsersTableTableManager
                     if (holidaysRefs) db.holidays,
                     if (forecastCacheRefs) db.forecastCache,
                     if (reminderDraftsRefs) db.reminderDrafts,
+                    if (importDraftsRefs) db.importDrafts,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -23963,6 +25504,27 @@ class $$UsersTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (importDraftsRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          ImportDraftDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._importDraftsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).importDraftsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -24002,6 +25564,7 @@ typedef $$UsersTableProcessedTableManager =
         bool holidaysRefs,
         bool forecastCacheRefs,
         bool reminderDraftsRefs,
+        bool importDraftsRefs,
       })
     >;
 typedef $$SpacesTableCreateCompanionBuilder =
@@ -42360,6 +43923,809 @@ typedef $$ReminderDraftsTableProcessedTableManager =
       ReminderDraftDb,
       PrefetchHooks Function({bool userId})
     >;
+typedef $$ParserConfigsTableCreateCompanionBuilder =
+    ParserConfigsCompanion Function({
+      required String id,
+      required String bankName,
+      required String bankCode,
+      Value<bool> isPopular,
+      Value<int> usageCount,
+      required String supportedFormats,
+      required String configJson,
+      Value<String?> instructionText,
+      Value<String?> webExportUrl,
+      Value<String?> brandColor,
+      Value<String?> iconAsset,
+      Value<int> version,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
+      Value<int> rowid,
+    });
+typedef $$ParserConfigsTableUpdateCompanionBuilder =
+    ParserConfigsCompanion Function({
+      Value<String> id,
+      Value<String> bankName,
+      Value<String> bankCode,
+      Value<bool> isPopular,
+      Value<int> usageCount,
+      Value<String> supportedFormats,
+      Value<String> configJson,
+      Value<String?> instructionText,
+      Value<String?> webExportUrl,
+      Value<String?> brandColor,
+      Value<String?> iconAsset,
+      Value<int> version,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
+      Value<int> rowid,
+    });
+
+class $$ParserConfigsTableFilterComposer
+    extends Composer<_$AppDatabase, $ParserConfigsTable> {
+  $$ParserConfigsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bankName => $composableBuilder(
+    column: $table.bankName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bankCode => $composableBuilder(
+    column: $table.bankCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isPopular => $composableBuilder(
+    column: $table.isPopular,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get usageCount => $composableBuilder(
+    column: $table.usageCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get supportedFormats => $composableBuilder(
+    column: $table.supportedFormats,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get configJson => $composableBuilder(
+    column: $table.configJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get instructionText => $composableBuilder(
+    column: $table.instructionText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get webExportUrl => $composableBuilder(
+    column: $table.webExportUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get brandColor => $composableBuilder(
+    column: $table.brandColor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get iconAsset => $composableBuilder(
+    column: $table.iconAsset,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ParserConfigsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ParserConfigsTable> {
+  $$ParserConfigsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bankName => $composableBuilder(
+    column: $table.bankName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bankCode => $composableBuilder(
+    column: $table.bankCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isPopular => $composableBuilder(
+    column: $table.isPopular,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get usageCount => $composableBuilder(
+    column: $table.usageCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get supportedFormats => $composableBuilder(
+    column: $table.supportedFormats,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get configJson => $composableBuilder(
+    column: $table.configJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get instructionText => $composableBuilder(
+    column: $table.instructionText,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get webExportUrl => $composableBuilder(
+    column: $table.webExportUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get brandColor => $composableBuilder(
+    column: $table.brandColor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get iconAsset => $composableBuilder(
+    column: $table.iconAsset,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ParserConfigsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ParserConfigsTable> {
+  $$ParserConfigsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get bankName =>
+      $composableBuilder(column: $table.bankName, builder: (column) => column);
+
+  GeneratedColumn<String> get bankCode =>
+      $composableBuilder(column: $table.bankCode, builder: (column) => column);
+
+  GeneratedColumn<bool> get isPopular =>
+      $composableBuilder(column: $table.isPopular, builder: (column) => column);
+
+  GeneratedColumn<int> get usageCount => $composableBuilder(
+    column: $table.usageCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get supportedFormats => $composableBuilder(
+    column: $table.supportedFormats,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get configJson => $composableBuilder(
+    column: $table.configJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get instructionText => $composableBuilder(
+    column: $table.instructionText,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get webExportUrl => $composableBuilder(
+    column: $table.webExportUrl,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get brandColor => $composableBuilder(
+    column: $table.brandColor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get iconAsset =>
+      $composableBuilder(column: $table.iconAsset, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+}
+
+class $$ParserConfigsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ParserConfigsTable,
+          ParserConfigDb,
+          $$ParserConfigsTableFilterComposer,
+          $$ParserConfigsTableOrderingComposer,
+          $$ParserConfigsTableAnnotationComposer,
+          $$ParserConfigsTableCreateCompanionBuilder,
+          $$ParserConfigsTableUpdateCompanionBuilder,
+          (
+            ParserConfigDb,
+            BaseReferences<_$AppDatabase, $ParserConfigsTable, ParserConfigDb>,
+          ),
+          ParserConfigDb,
+          PrefetchHooks Function()
+        > {
+  $$ParserConfigsTableTableManager(_$AppDatabase db, $ParserConfigsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ParserConfigsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ParserConfigsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ParserConfigsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> bankName = const Value.absent(),
+                Value<String> bankCode = const Value.absent(),
+                Value<bool> isPopular = const Value.absent(),
+                Value<int> usageCount = const Value.absent(),
+                Value<String> supportedFormats = const Value.absent(),
+                Value<String> configJson = const Value.absent(),
+                Value<String?> instructionText = const Value.absent(),
+                Value<String?> webExportUrl = const Value.absent(),
+                Value<String?> brandColor = const Value.absent(),
+                Value<String?> iconAsset = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ParserConfigsCompanion(
+                id: id,
+                bankName: bankName,
+                bankCode: bankCode,
+                isPopular: isPopular,
+                usageCount: usageCount,
+                supportedFormats: supportedFormats,
+                configJson: configJson,
+                instructionText: instructionText,
+                webExportUrl: webExportUrl,
+                brandColor: brandColor,
+                iconAsset: iconAsset,
+                version: version,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String bankName,
+                required String bankCode,
+                Value<bool> isPopular = const Value.absent(),
+                Value<int> usageCount = const Value.absent(),
+                required String supportedFormats,
+                required String configJson,
+                Value<String?> instructionText = const Value.absent(),
+                Value<String?> webExportUrl = const Value.absent(),
+                Value<String?> brandColor = const Value.absent(),
+                Value<String?> iconAsset = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ParserConfigsCompanion.insert(
+                id: id,
+                bankName: bankName,
+                bankCode: bankCode,
+                isPopular: isPopular,
+                usageCount: usageCount,
+                supportedFormats: supportedFormats,
+                configJson: configJson,
+                instructionText: instructionText,
+                webExportUrl: webExportUrl,
+                brandColor: brandColor,
+                iconAsset: iconAsset,
+                version: version,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ParserConfigsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ParserConfigsTable,
+      ParserConfigDb,
+      $$ParserConfigsTableFilterComposer,
+      $$ParserConfigsTableOrderingComposer,
+      $$ParserConfigsTableAnnotationComposer,
+      $$ParserConfigsTableCreateCompanionBuilder,
+      $$ParserConfigsTableUpdateCompanionBuilder,
+      (
+        ParserConfigDb,
+        BaseReferences<_$AppDatabase, $ParserConfigsTable, ParserConfigDb>,
+      ),
+      ParserConfigDb,
+      PrefetchHooks Function()
+    >;
+typedef $$ImportDraftsTableCreateCompanionBuilder =
+    ImportDraftsCompanion Function({
+      required String id,
+      required String userId,
+      Value<String?> bankName,
+      Value<String?> filePath,
+      Value<String?> wizardStateJson,
+      Value<String?> parsedDataJson,
+      Value<String?> mappingJson,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ImportDraftsTableUpdateCompanionBuilder =
+    ImportDraftsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String?> bankName,
+      Value<String?> filePath,
+      Value<String?> wizardStateJson,
+      Value<String?> parsedDataJson,
+      Value<String?> mappingJson,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ImportDraftsTableReferences
+    extends BaseReferences<_$AppDatabase, $ImportDraftsTable, ImportDraftDb> {
+  $$ImportDraftsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('import_drafts__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ImportDraftsTableFilterComposer
+    extends Composer<_$AppDatabase, $ImportDraftsTable> {
+  $$ImportDraftsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bankName => $composableBuilder(
+    column: $table.bankName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get filePath => $composableBuilder(
+    column: $table.filePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get wizardStateJson => $composableBuilder(
+    column: $table.wizardStateJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parsedDataJson => $composableBuilder(
+    column: $table.parsedDataJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mappingJson => $composableBuilder(
+    column: $table.mappingJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ImportDraftsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ImportDraftsTable> {
+  $$ImportDraftsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bankName => $composableBuilder(
+    column: $table.bankName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get filePath => $composableBuilder(
+    column: $table.filePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get wizardStateJson => $composableBuilder(
+    column: $table.wizardStateJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get parsedDataJson => $composableBuilder(
+    column: $table.parsedDataJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mappingJson => $composableBuilder(
+    column: $table.mappingJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ImportDraftsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ImportDraftsTable> {
+  $$ImportDraftsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get bankName =>
+      $composableBuilder(column: $table.bankName, builder: (column) => column);
+
+  GeneratedColumn<String> get filePath =>
+      $composableBuilder(column: $table.filePath, builder: (column) => column);
+
+  GeneratedColumn<String> get wizardStateJson => $composableBuilder(
+    column: $table.wizardStateJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get parsedDataJson => $composableBuilder(
+    column: $table.parsedDataJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get mappingJson => $composableBuilder(
+    column: $table.mappingJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ImportDraftsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ImportDraftsTable,
+          ImportDraftDb,
+          $$ImportDraftsTableFilterComposer,
+          $$ImportDraftsTableOrderingComposer,
+          $$ImportDraftsTableAnnotationComposer,
+          $$ImportDraftsTableCreateCompanionBuilder,
+          $$ImportDraftsTableUpdateCompanionBuilder,
+          (ImportDraftDb, $$ImportDraftsTableReferences),
+          ImportDraftDb,
+          PrefetchHooks Function({bool userId})
+        > {
+  $$ImportDraftsTableTableManager(_$AppDatabase db, $ImportDraftsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ImportDraftsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ImportDraftsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ImportDraftsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String?> bankName = const Value.absent(),
+                Value<String?> filePath = const Value.absent(),
+                Value<String?> wizardStateJson = const Value.absent(),
+                Value<String?> parsedDataJson = const Value.absent(),
+                Value<String?> mappingJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ImportDraftsCompanion(
+                id: id,
+                userId: userId,
+                bankName: bankName,
+                filePath: filePath,
+                wizardStateJson: wizardStateJson,
+                parsedDataJson: parsedDataJson,
+                mappingJson: mappingJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                Value<String?> bankName = const Value.absent(),
+                Value<String?> filePath = const Value.absent(),
+                Value<String?> wizardStateJson = const Value.absent(),
+                Value<String?> parsedDataJson = const Value.absent(),
+                Value<String?> mappingJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ImportDraftsCompanion.insert(
+                id: id,
+                userId: userId,
+                bankName: bankName,
+                filePath: filePath,
+                wizardStateJson: wizardStateJson,
+                parsedDataJson: parsedDataJson,
+                mappingJson: mappingJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ImportDraftsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.userId,
+                                referencedTable: $$ImportDraftsTableReferences
+                                    ._userIdTable(db),
+                                referencedColumn: $$ImportDraftsTableReferences
+                                    ._userIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ImportDraftsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ImportDraftsTable,
+      ImportDraftDb,
+      $$ImportDraftsTableFilterComposer,
+      $$ImportDraftsTableOrderingComposer,
+      $$ImportDraftsTableAnnotationComposer,
+      $$ImportDraftsTableCreateCompanionBuilder,
+      $$ImportDraftsTableUpdateCompanionBuilder,
+      (ImportDraftDb, $$ImportDraftsTableReferences),
+      ImportDraftDb,
+      PrefetchHooks Function({bool userId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -42418,4 +44784,8 @@ class $AppDatabaseManager {
       $$ForecastCacheTableTableManager(_db, _db.forecastCache);
   $$ReminderDraftsTableTableManager get reminderDrafts =>
       $$ReminderDraftsTableTableManager(_db, _db.reminderDrafts);
+  $$ParserConfigsTableTableManager get parserConfigs =>
+      $$ParserConfigsTableTableManager(_db, _db.parserConfigs);
+  $$ImportDraftsTableTableManager get importDrafts =>
+      $$ImportDraftsTableTableManager(_db, _db.importDrafts);
 }

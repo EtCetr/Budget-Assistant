@@ -11,6 +11,8 @@ import 'tables/app_settings.dart';
 import 'tables/notifications.dart';
 import 'tables/sync_conflicts.dart';
 import 'tables/sync_logs.dart';
+import 'tables/parser_configs.dart';
+import 'tables/import_drafts.dart';
 // Enum'ы из Этапа 6 (type, audit_status, sync_status)
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 // DAO — типобезопасный доступ к таблицам
@@ -24,6 +26,7 @@ import 'daos/sync_logs_dao.dart';
 import 'daos/budget_limits_dao.dart';
 import 'package:budget_assistant/core/logger.dart';
 import 'seeds/default_holidays_seed.dart';
+import 'package:budget_assistant/features/import/data/seeds/default_parser_configs_seed.dart';
 part 'app_database.g.dart';
 
 // Этап 5: Счета, Ипотеки, Категории
@@ -501,6 +504,9 @@ class ReminderDrafts extends Table {
     Holidays,
     ForecastCache,
     ReminderDrafts,
+    // Этап 15: импорт
+    ParserConfigs,
+    ImportDrafts,
   ],
   daos: [
     UsersDao,
@@ -523,7 +529,7 @@ class AppDatabase extends _$AppDatabase {
   /// v13: Этап 14 — reminders, holidays, recurring_transactions,
   /// forecast_cache, reminder_drafts + 5 колонок app_settings + сиды РФ.
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   Future<void> _createSavingsIndexes() async {
     await customStatement('''
@@ -603,6 +609,21 @@ ON forecast_cache(user_id, space_id, month_year)
 CREATE INDEX IF NOT EXISTS idx_reminder_drafts_user
 ON reminder_drafts(user_id, updated_at)
 ''');
+  }
+
+  Future<void> _createImportIndexes() async {
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_parser_configs_bank_code
+      ON parser_configs(bank_code)
+    ''');
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_parser_configs_bank_name
+      ON parser_configs(bank_name, format)
+    ''');
+    await customStatement('''
+      CREATE INDEX IF NOT EXISTS idx_import_drafts_user
+      ON import_drafts(user_id, updated_at)
+    ''');
   }
 
   Future<void> _createAllIndexes() async {
@@ -736,6 +757,7 @@ ON cashback_matrix(sync_status)
     // Фикс Этапа 14: на чистой установке индексы долгов ранее не создавались.
     await _createDebtsIndexes();
     await _createRemindersIndexes();
+    await _createImportIndexes();
   }
 
   @override
@@ -744,6 +766,7 @@ ON cashback_matrix(sync_status)
           await m.createAll();
           await _createAllIndexes();
           await DefaultHolidaysSeed.seedIfEmpty(this);
+await DefaultParserConfigsSeed.seedIfEmpty(this);
         },
         onUpgrade: (Migrator m, int from, int to) async {
           if (from < 9) {
@@ -841,7 +864,14 @@ CREATE INDEX IF NOT EXISTS idx_dashboard_widgets_sync_status
 ON dashboard_widgets(sync_status)
 ''');
           }
-          if (from < 13) {
+          if (from < 14) {
+          // Этап 15: parser_configs + import_drafts
+          await m.createTable(parserConfigs);
+          await m.createTable(importDrafts);
+          await _createImportIndexes();
+          await DefaultParserConfigsSeed.seedIfEmpty(this);
+        }
+        if (from < 13) {
             // Этап 14: Reminders (RRULE) + Calendar.
             await m.createTable(recurringTransactions);
             await m.createTable(reminders);
@@ -857,7 +887,9 @@ ON dashboard_widgets(sync_status)
             await m.addColumn(
                 appSettings, appSettings.enableFamilyHolidayAlerts);
             await _createRemindersIndexes();
+    await _createImportIndexes();
             await DefaultHolidaysSeed.seedIfEmpty(this);
+await DefaultParserConfigsSeed.seedIfEmpty(this);
           }
         },
         beforeOpen: (details) async {
