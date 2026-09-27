@@ -22,6 +22,14 @@ import '../../../recurring_payments/presentation/widgets/recurring_detection_ind
 class CalendarScreen extends ConsumerWidget {
   const CalendarScreen({super.key});
 
+  /// Заголовок месяца: именительный падеж и капитализация
+  /// ("Сентябрь 2026"): 'MMMM' в ru даёт родительный ("сентября"),
+  /// поэтому берём standalone-форму 'LLLL' (фикс пожелания владельца).
+  String _monthTitleRu(DateTime month) {
+    final s = DateFormat('LLLL yyyy', 'ru').format(month);
+    if (s.isEmpty) return s;
+    return s[0].toUpperCase() + s.substring(1);
+  }
   Color? _parseCategoryColor(String? hex) {
     if (hex == null || hex.isEmpty) return null;
     final value = hex.startsWith('#') ? hex.substring(1) : hex;
@@ -260,7 +268,7 @@ class CalendarScreen extends ConsumerWidget {
     };
     return Scaffold(
       appBar: AppBar(
-        title: Text(DateFormat('MMMM yyyy', 'ru').format(focusedMonth)),
+        title: Text(_monthTitleRu(focusedMonth)),
         actions: [
           IconButton(
             tooltip: CalendarStrings.openHolidaysTooltip,
@@ -281,6 +289,9 @@ class CalendarScreen extends ConsumerWidget {
             lastDay: DateTime(2100, 12, 31),
             focusedDay: focusedMonth,
             calendarFormat: calendarFormat,
+            headerStyle: HeaderStyle(
+              titleTextFormatter: (date, _) => _monthTitleRu(date),
+            ),
             locale: 'ru',
             startingDayOfWeek: StartingDayOfWeek.monday,
             selectedDayPredicate: (day) => isSameDay(day, selectedDay),

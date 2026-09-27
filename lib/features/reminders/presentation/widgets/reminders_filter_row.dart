@@ -11,6 +11,8 @@ import '../reminders_strings.dart';
 
 /// Горизонтальные чипы фильтров (WHERE в SQL, ТЗ 6.3.10.4).
 /// В hidden все чипы серые.
+/// Повторный тап по активному фильтру (кроме «Все») сбрасывает в «Все»
+/// (пожелание владельца, фикс 14.6-ux).
 class RemindersFilterRow extends ConsumerWidget {
   const RemindersFilterRow({super.key});
 
@@ -24,8 +26,8 @@ class RemindersFilterRow extends ConsumerWidget {
           AppColors.textSecondary),
       (RemindersUpcomingFilter.mine, RemindersStrings.filterMine,
           AppColors.colorTransfer),
-      (RemindersUpcomingFilter.assignedToMe,
-          RemindersStrings.filterAssigned, AppColors.colorIncome),
+      (RemindersUpcomingFilter.assignedToMe, RemindersStrings.filterAssigned,
+          AppColors.colorIncome),
       (RemindersUpcomingFilter.overdue, RemindersStrings.filterOverdue,
           AppColors.colorExpense),
     ];
@@ -47,7 +49,13 @@ class RemindersFilterRow extends ConsumerWidget {
             selected: selected,
             onSelected: (_) {
               MotionTokens.selection();
-              ref.read(remindersFilterProvider.notifier).set(filter);
+              final notifier =
+                  ref.read(remindersFilterProvider.notifier);
+              if (selected && filter != RemindersUpcomingFilter.all) {
+                notifier.set(RemindersUpcomingFilter.all);
+              } else {
+                notifier.set(filter);
+              }
             },
             selectedColor: chipColor.withValues(alpha: 0.25),
             side: BorderSide(
