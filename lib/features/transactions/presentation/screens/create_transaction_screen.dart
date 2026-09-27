@@ -11,9 +11,12 @@ import 'package:budget_assistant/core/errors/result.dart';
 import 'package:budget_assistant/core/formatting/money_input_parser.dart';
 import 'package:budget_assistant/core/formatting/money_text_input_formatter.dart';
 import 'package:budget_assistant/core/formatting/money_formatter.dart';
+import 'package:budget_assistant/core/logger.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/features/cashback/presentation/providers/cashback_providers.dart';
+import 'package:budget_assistant/features/reminders/presentation/providers/reminders_providers.dart';
+import 'package:budget_assistant/features/reminders/presentation/providers/reminders_repository_providers.dart';
 import '../../../../core/providers/security_providers.dart';
 import '../../domain/entities/lookup_item.dart';
 import '../../domain/models/secrecy_config.dart';
@@ -27,10 +30,20 @@ import '../providers/transactions_log_providers.dart';
 /// Роут: /transactions/create?type=expense|income|transfer
 /// Этап 10: выбор валюты операции + авто-конвертация в валюту счёта
 /// по курсу на дату (оригинал хранится в original_amount/original_currency).
+/// Этап 14 (ТЗ 6.3.11.7): query-параметры reminder_id и date —
+/// предзаполнение полей из напоминания и авто-завершение напоминания
+/// после успешного сохранения транзакции.
 class CreateTransactionScreen extends ConsumerStatefulWidget {
-  const CreateTransactionScreen({super.key, required this.type});
+  const CreateTransactionScreen({
+    super.key,
+    required this.type,
+    this.reminderId,
+    this.dateIso,
+  });
 
   final TransactionType type;
+  final String? reminderId;
+  final String? dateIso;
 
   @override
   ConsumerState<CreateTransactionScreen> createState() =>
@@ -55,9 +68,47 @@ class _CreateTransactionScreenState
     _draft = TransactionDraft(
       type: widget.type,
       accountId: '',
-      date: DateTime.now(),
+      date: _initialDate(),
       amount: 0,
     );
+    final reminderId = widget.reminderId;
+    if (reminderId != null) {
+      Future.microtask(() => _prefillFromReminder(reminderId));
+    }
+  }
+
+  /// Дата из query (?date=) или сегодня (ТЗ 6.3.6.9 / 6.3.7.6).
+  DateTime _initialDate() {
+    final parsed =
+        widget.dateIso == null ? null : DateTime.tryParse(widget.dateIso!);
+    return parsed?.toLocal() ?? DateTime.now();
+  }
+
+  /// Предзаполнение из напоминания (ТЗ 6.3.11.7):
+  /// amount, date, category, account, comment = title.
+  Future<void> _prefillFromReminder(String id) async {
+    try {
+      final reminder =
+          await ref.read(remindersRepositoryProvider).getById(id);
+      if (reminder == null || !mounted) return;
+      setState(() {
+        _draft = _draft.copyWith(
+          date: reminder.remindAt.toLocal(),
+          amount: reminder.expectedAmount ?? 0,
+          customCategoryId: reminder.linkedCategoryId,
+          linkedAccountId: reminder.linkedAccountId,
+          comment: reminder.title,
+        );
+        final amount = reminder.expectedAmount;
+        if (amount != null) {
+          _amountController.text =
+              MoneyTextInputFormatter.formatKopecks(amount);
+        }
+        _commentController.text = reminder.title;
+      });
+    } catch (e, st) {
+      AppLogger.e('Reminder prefill failed', e, st);
+    }
   }
 
   /// Принудительно перечитывает списки счетов и категорий из БД,
@@ -440,7 +491,6 @@ class _CreateTransactionScreenState
           await ref.read(accountCurrencyMapProvider.future);
       final accountCurrency = currencyMap[_draft.accountId] ?? 'RUB';
       final txCurrency = _selectedCurrency ?? accountCurrency;
-
       var saveDraft = _draft.copyWith(spaceId: spaceId);
       if (txCurrency != accountCurrency) {
         final converted = await ref.read(convertCurrencyUseCaseProvider)(
@@ -469,7 +519,6 @@ class _CreateTransactionScreenState
           originalAmount: _draft.amount,
         );
       }
-
       // Читаем настройки секретности из app_settings
       final secrecyConfig = await _loadSecrecyConfig(userId);
       final result = await usecase.call(
@@ -480,16 +529,26 @@ class _CreateTransactionScreenState
       if (!mounted) return;
       switch (result) {
         case Success(:final value):
-      HapticFeedback.mediumImpact();
-      ref.read(transactionsTriggerProvider.notifier).bump();
+          HapticFeedback.mediumImpact();
+          ref.read(transactionsTriggerProvider.notifier).bump();
           ref.invalidate(transactionsLogProvider);
-      ref.read(transactionsTriggerProvider.notifier).bump();
+          ref.read(transactionsTriggerProvider.notifier).bump();
+          var message =
+              'Сохранено: ${MoneyFormatter.formatKopecks(value.amount, accountCurrency)}';
+          // Этап 14 (ТЗ 6.3.11.7): авто-завершение напоминания,
+          // из которого создана транзакция.
+          final reminderId = widget.reminderId;
+          if (reminderId != null) {
+            try {
+              await ref.read(completeReminderUseCaseProvider)(reminderId);
+              message += '. Напоминание выполнено';
+            } catch (e, st) {
+              AppLogger.e('Auto-complete reminder failed', e, st);
+            }
+          }
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Сохранено: ${MoneyFormatter.formatKopecks(value.amount, accountCurrency)}',
-              ),
-            ),
+            SnackBar(content: Text(message)),
           );
           context.pop();
         case Error(:final failure):

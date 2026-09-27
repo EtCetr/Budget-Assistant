@@ -93,3 +93,21 @@
 | Миграции v10–v12 консолидированы в один идемпотентный блок from<12 | Prepend-вставка миграций нарушила порядок (ALTER раньше CREATE); правило: новые миграции только аппендом в конец onUpgrade |
 | Фильтр «Только долги» — CustomExpression с EXISTS-подзапросом | В Drift нет типобезопасных exists()/selectOne() внутри WHERE-выражений; имена колонок подставляются из метаданных таблиц |
 | Точка входа долгов — пункт Drawer; debts_section для ProfileScreen отложен до Этапа 21 | ProfileScreen ещё не существует (роадмап: Этап 21) |
+
+Обновления решений (Этап 14 — Reminders RRULE + Calendar)
+| Решение|Обоснование|
+| ---|---|
+| Навигация напоминаний/календаря через Drawer|Продолжение отклонения «Drawer вместо BottomNavigation» (ТЗ 6.3.10 предполагало 4-ю вкладку).|
+| Рескейдул 3 PendingIntent: старт app + CRUD + открытие RemindersScreen|Нативный zonedSchedule не запускает Dart при срабатывании; WorkManager-piggyback — долг Этапа 18.|
+| Экшен пуша «Выполнено» при убитом app пишет в БД в background-изолейте|Путь БД передаётся в payload уведомления; drift = FFI, platform channels не нужны. Отмена остальных PendingIntent — best-effort + полный рескейдул при следующем открытии.|
+| flutter_timezone добавлен (решение владельца)|Точная локализация TZDateTime для zonedSchedule; отклонение Этапа 10 («циклы кэшбэка без flutter_timezone») сохранено только для кэшбэка.|
+| RRULE: строка собирается вручную (подмножество FREQ/INTERVAL/BYDAY/BYMONTHDAY/BYMONTH/UNTIL), читается через rrule.fromString/getInstances|Стабильный API чтения; запись нашего подмножества не требует API пакета.|
+| reminders.is_secret НЕ реализован|Поля нет в ТОМ 2 §16.1; секретность подарков остаётся у транзакций/holidays. Title видим в hidden.|
+| Доп. колонки по ТОМ 6 (более поздний том): reminders.snooze_history [LOCAL], reminders.completed_at; recurring_transactions.merchant_name_normalized / average_amount_bucket / confidence / status / first_seen_date / detected_at / category_id|ТЗ 6.3.9/6.3.11 детальнее ТОМ 2; upsert-ключ идемпотентности требует открытых normalized/bucket.|
+| linked_recurring_id / linked_reminder_id — plain text без FK|Циклический FK ломает сортировку таблиц Drift при миграции.|
+| Прогноз баланса: predicted = текущий баланс − накопленные расходные события (напоминания с суммой + активные регулярки); доходы в forecast_cache появятся с WorkManager-пересчётом Этапа 18|Формула ТОМ 4 без expected_incomes на текущем этапе; зафиксировано как долг.|
+| RecalculateForecastCacheUseCase всегда пишет total-строку (category_id NULL)|Иначе updated_at не существует при нулевом прогнозе и stale-баннер зацикливается (баг 14.4e).|
+| strftime в календарных SQL обязан содержать 'unixepoch'|Drift хранит DateTime как epoch-int; без модификатора SQLite читает число как юлианский день и возвращает NULL (баг 14.4e: пустой график, streak 120, дни без заливки).|
+| Тап по дню календаря НЕ роутит: сводка дня обновляется в панели под сеткой (решение владельца)|Полные экраны доступны кнопками панели; роуты /calendar/day и /calendar/forecast сохранены для deep-link и кнопок.|
+| Триггер DetectRecurringPaymentsUseCase из Batch-импорта — долг Этапа 15|Импорт сейчас stub; ручной триггер — иконка refresh на экране детекции.|
+| Авто-завершение напоминания при оплате ключуется на query reminder_id|Колонки linked_recurring_id у transactions нет (ТОМ 2); сценарий 6.3.9.15.5c закрыт через reminder-flow.|

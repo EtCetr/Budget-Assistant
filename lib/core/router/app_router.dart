@@ -222,12 +222,19 @@ GoRouter appRouter(Ref ref) {
         path: '/transactions/create',
         name: 'create-transaction',
         builder: (context, state) {
-          final typeStr = state.uri.queryParameters['type'] ?? 'expense';
+          final q = state.uri.queryParameters;
+          final typeStr = q['type'] ?? 'expense';
           final type = TransactionType.values.firstWhere(
             (t) => t.name == typeStr,
             orElse: () => TransactionType.expense,
           );
-          return CreateTransactionScreen(type: type);
+          // Этап 14 (ТЗ 6.3.11.7): предзаполнение из напоминания +
+          // авто-завершение напоминания после сохранения транзакции.
+          return CreateTransactionScreen(
+            type: type,
+            reminderId: q['reminder_id'],
+            dateIso: q['date'],
+          );
         },
       ),
       GoRoute(

@@ -238,3 +238,12 @@ Flutter: DropdownButtonFormField в Row требует ограничения ш
 [ ] Встраивание debts_section в ProfileScreen — Этап 21.
 [ ] Аналитика: фильтр is_split = FALSE и учёт только transaction_splits — Этап 19 (CalculateYearlyAnalyticsUseCase).
 [ ] «Посмотреть транзакцию / split» из long-press долга — вместе с деталями долга (вне роадмапа, решение владельца).
+
+Этап 14 «Reminders (RRULE) + Calendar»: ЗАВЕРШЁН.
+[x] 14.1 Data: reminders, holidays, recurring_transactions, forecast_cache, reminder_drafts (schemaVersion 13), индексы ТОМ 2 §22, сиды 14 праздников РФ, +5 колонок app_settings.
+[x] 14.2 Domain напоминаний: RRULE UseCases, ScheduleRemindersUseCase (строго 3 PendingIntent), сервис локальных пушей (канал reminders, экшены Выполнено/Отложить, background-complete), POST_NOTIFICATIONS + SCHEDULE_EXACT_ALARM в манифесте, coreLibraryDesugaring в build.gradle.kts.
+[x] 14.3 UI напоминаний: RemindersScreen (табы/фильтры/swipe+undo/long-press/FAB), ReminderDetailsScreen, CreateReminderScreen (RRULE-билдер, черновики 5 сек), роуты, пункт Drawer.
+[x] 14.4 Календарная группа: HolidaysManagementScreen (пресеты read-only + CRUD личных), CalendarScreen (table_calendar, заливка дней, маркеры, легенда топ-5, bar-chart доходов/расходов, превью 14 дней, панель сводки дня, формат месяц/2 недели), DayStatisticsScreen (P&L-сводка, «бесплатный день» + streak, stacked-bar категорий, секретные заглушки 🎁), DateForecastScreen (будущие даты, дефицит-блок, кэш forecast_cache + compute-пересчёт), RecurringPaymentsDetectionScreen (группы, confidence, sticky-бар, undo, dismiss_count≥3 → auto-detect OFF), Floating Indicator на календаре, роуты /calendar*.
+[x] 14.5 Детекция регулярных платежей: detect в compute-изоляте, upsert-идемпотентность (user_id, merchant_normalized, amount_bucket), CreateReminderFromRecurringUseCase.
+[x] 14.6 Интеграции: CreateTransactionScreen читает reminder_id/date (предзаполнение amount/date/category/account/comment), авто-завершение напоминания после сохранения; DECISIONS/PROJECT_CONTEXT обновлены.
+Долги Этапа 14 (см. DECISIONS.md): WorkManager-рескейдул пушей и доходы в forecast_cache (Этап 18), триггер детекта из импорта (Этап 15), is_secret напоминаний (не реализуем).
