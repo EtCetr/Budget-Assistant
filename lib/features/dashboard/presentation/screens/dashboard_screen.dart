@@ -23,6 +23,7 @@ import '../widgets/expense_flow_chart_widget.dart';
 import '../widgets/limit_cards_widget.dart';
 import 'package:budget_assistant/features/debts/presentation/debts_strings.dart';
 import 'package:budget_assistant/features/reminders/presentation/reminders_strings.dart';
+import 'package:budget_assistant/features/calendar/presentation/calendar_strings.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -236,6 +237,14 @@ class DashboardScreen extends ConsumerWidget {
                 onTap: () {
                   Navigator.of(context).pop();
                   context.push('/reminders');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.calendar_month_outlined),
+                title: const Text(CalendarStrings.navCalendar),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  context.push('/calendar');
                 },
               ),
             ],

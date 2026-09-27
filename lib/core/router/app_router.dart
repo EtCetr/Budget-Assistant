@@ -37,6 +37,10 @@ import 'package:budget_assistant/features/transactions/presentation/screens/spli
 import 'package:budget_assistant/features/reminders/presentation/screens/reminders_screen.dart';
 import 'package:budget_assistant/features/reminders/presentation/screens/reminder_details_screen.dart';
 import 'package:budget_assistant/features/reminders/presentation/screens/create_reminder_screen.dart';
+import 'package:budget_assistant/features/calendar/presentation/screens/calendar_screen.dart';
+import 'package:budget_assistant/features/calendar/presentation/screens/day_statistics_screen.dart';
+import 'package:budget_assistant/features/calendar/presentation/screens/date_forecast_screen.dart';
+import 'package:budget_assistant/features/calendar/presentation/screens/holidays_management_screen.dart';
 part 'app_router.g.dart';
 
 @riverpod
@@ -317,6 +321,32 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) => ReminderDetailsScreen(
           reminderId: state.pathParameters['id']!,
         ),
+      ),
+      // Этап 14: календарная группа
+      GoRoute(
+        path: '/calendar',
+        name: 'calendar',
+        builder: (context, state) => const CalendarScreen(),
+      ),
+      GoRoute(
+        path: '/calendar/day',
+        name: 'calendar-day',
+        builder: (context, state) => DayStatisticsScreen(
+          dateIso: state.uri.queryParameters['date'] ??
+              DateTime.now().toIso8601String(),
+        ),
+      ),
+      GoRoute(
+        path: '/calendar/forecast',
+        name: 'calendar-forecast',
+        builder: (context, state) => DateForecastScreen(
+          initialDateIso: state.uri.queryParameters['date'],
+        ),
+      ),
+      GoRoute(
+        path: '/calendar/holidays',
+        name: 'calendar-holidays',
+        builder: (context, state) => const HolidaysManagementScreen(),
       ),
     ],
     redirect: (context, state) {
