@@ -1,5 +1,4 @@
-/// Человекочитаемое описание RRULE на русском (ТЗ 6.3.10/6.3.12:
-/// «Каждый день», «Каждые 2 недели: Пн, Ср» и т.д.).
+/// Человекочитаемое описание RRULE на русском (ТЗ 6.3.10/6.3.11/6.3.12).
 class FormatRRuleUseCase {
   static const Map<String, String> _dayNames = {
     'MO': 'Пн',
@@ -51,6 +50,11 @@ class FormatRRuleUseCase {
           sb.write(interval == 1 ? 'Каждый месяц' : 'Каждые $interval мес.');
           final md = parts['BYMONTHDAY'];
           if (md != null) sb.write(': $md-е число');
+        case 'YEARLY':
+          sb.write(interval == 1 ? 'Каждый год' : 'Каждые $interval лет');
+          final m = parts['BYMONTH'];
+          final d = parts['BYMONTHDAY'];
+          if (m != null && d != null) sb.write(': $d ${_monthNames[m] ?? m}');
         default:
           return 'Свой график';
       }

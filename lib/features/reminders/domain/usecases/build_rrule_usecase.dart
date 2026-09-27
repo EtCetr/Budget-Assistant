@@ -1,8 +1,7 @@
 import '../models/recurrence_settings.dart';
 
 /// Собирает iCal RRULE строку из настроек конструктора (ТЗ 6.3.12.4).
-/// Пишем строку вручную: поддерживаем наше подмножество, API записи
-/// пакета rrule не используем (читаем только через fromString).
+/// Пишем строку вручную (наше подмножество); чтение — пакет rrule.
 class BuildRRuleUseCase {
   static const Map<int, String> _dayCodes = {
     1: 'MO',
@@ -27,14 +26,15 @@ class BuildRRuleUseCase {
     if (s.freq == RecurrenceFreq.monthly && s.byMonthDay != null) {
       sb.write(';BYMONTHDAY=${s.byMonthDay}');
     }
+    if (s.freq == RecurrenceFreq.yearly) {
+      if (s.byMonth != null) sb.write(';BYMONTH=${s.byMonth}');
+      if (s.byMonthDay != null) sb.write(';BYMONTHDAY=${s.byMonthDay}');
+    }
     if (s.until != null) {
       final u = s.until!.toUtc();
-      final stamp = '${u.year.toString().padLeft(4, '0')}'
-          '${u.month.toString().padLeft(2, '0')}'
-          '${u.day.toString().padLeft(2, '0')}T'
-          '${u.hour.toString().padLeft(2, '0')}'
-          '${u.minute.toString().padLeft(2, '0')}'
-          '${u.second.toString().padLeft(2, '0')}Z';
+      String two(int v) => v.toString().padLeft(2, '0');
+      final stamp = '${u.year.toString().padLeft(4, '0')}${two(u.month)}'
+          '${two(u.day)}T${two(u.hour)}${two(u.minute)}${two(u.second)}Z';
       sb.write(';UNTIL=$stamp');
     }
     return sb.toString();

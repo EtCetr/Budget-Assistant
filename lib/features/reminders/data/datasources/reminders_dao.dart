@@ -1,12 +1,24 @@
 import 'package:drift/drift.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
+import 'package:budget_assistant/core/database/tables/memberships.dart';
+import 'package:budget_assistant/core/database/tables/users.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import '../../domain/entities/reminder.dart';
 import '../../domain/repositories/reminders_repository.dart';
 
 part 'reminders_dao.g.dart';
 
-@DriftAccessor(tables: [Reminders, ReminderDrafts])
+/// Опция выбора ответственного (membership.id + имя пользователя).
+class AssigneeOption {
+  const AssigneeOption({
+    required this.membershipId,
+    required this.displayName,
+  });
+  final String membershipId;
+  final String displayName;
+}
+
+@DriftAccessor(tables: [Reminders, ReminderDrafts, Memberships, Users])
 class RemindersDao extends DatabaseAccessor<AppDatabase>
     with _$RemindersDaoMixin {
   RemindersDao(super.db);
@@ -83,6 +95,22 @@ class RemindersDao extends DatabaseAccessor<AppDatabase>
           r.remindAt.isSmallerThanValue(endUtc))
       ..orderBy([(r) => OrderingTerm.asc(r.remindAt)]))
         .watch();
+  }
+
+  /// Ответственные семейства: membership.id + display_name (ТЗ 6.3.12.6).
+  Stream<List<AssigneeOption>> watchAssigneeOptions(String spaceId) {
+    final query = select(memberships).join([
+      innerJoin(users, users.id.equalsExp(memberships.userId)),
+    ])
+      ..where(memberships.spaceId.equals(spaceId) &
+          memberships.status.equals('active'));
+    return query.watch().map((rows) => [
+          for (final row in rows)
+            AssigneeOption(
+              membershipId: row.read(memberships.id)!,
+              displayName: row.read(users.displayName) ?? '',
+            ),
+        ]);
   }
 
   Future<void> insertReminder(Reminder reminder) {

@@ -15,8 +15,9 @@ T _$identity<T>(T value) => value;
 mixin _$RecurrenceSettings {
 
  RecurrenceFreq get freq; int get interval;/// 1..7 = Пн..Вс (DateTime.monday..sunday).
- List<int> get byWeekday;/// 1..31 для monthly.
- int? get byMonthDay; DateTime? get until;
+ List<int> get byWeekday;/// 1..31 для monthly/yearly.
+ int? get byMonthDay;/// 1..12 для yearly.
+ int? get byMonth; DateTime? get until;
 /// Create a copy of RecurrenceSettings
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -27,16 +28,16 @@ $RecurrenceSettingsCopyWith<RecurrenceSettings> get copyWith => _$RecurrenceSett
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is RecurrenceSettings&&(identical(other.freq, freq) || other.freq == freq)&&(identical(other.interval, interval) || other.interval == interval)&&const DeepCollectionEquality().equals(other.byWeekday, byWeekday)&&(identical(other.byMonthDay, byMonthDay) || other.byMonthDay == byMonthDay)&&(identical(other.until, until) || other.until == until));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RecurrenceSettings&&(identical(other.freq, freq) || other.freq == freq)&&(identical(other.interval, interval) || other.interval == interval)&&const DeepCollectionEquality().equals(other.byWeekday, byWeekday)&&(identical(other.byMonthDay, byMonthDay) || other.byMonthDay == byMonthDay)&&(identical(other.byMonth, byMonth) || other.byMonth == byMonth)&&(identical(other.until, until) || other.until == until));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,freq,interval,const DeepCollectionEquality().hash(byWeekday),byMonthDay,until);
+int get hashCode => Object.hash(runtimeType,freq,interval,const DeepCollectionEquality().hash(byWeekday),byMonthDay,byMonth,until);
 
 @override
 String toString() {
-  return 'RecurrenceSettings(freq: $freq, interval: $interval, byWeekday: $byWeekday, byMonthDay: $byMonthDay, until: $until)';
+  return 'RecurrenceSettings(freq: $freq, interval: $interval, byWeekday: $byWeekday, byMonthDay: $byMonthDay, byMonth: $byMonth, until: $until)';
 }
 
 
@@ -47,7 +48,7 @@ abstract mixin class $RecurrenceSettingsCopyWith<$Res>  {
   factory $RecurrenceSettingsCopyWith(RecurrenceSettings value, $Res Function(RecurrenceSettings) _then) = _$RecurrenceSettingsCopyWithImpl;
 @useResult
 $Res call({
- RecurrenceFreq freq, int interval, List<int> byWeekday, int? byMonthDay, DateTime? until
+ RecurrenceFreq freq, int interval, List<int> byWeekday, int? byMonthDay, int? byMonth, DateTime? until
 });
 
 
@@ -64,12 +65,13 @@ class _$RecurrenceSettingsCopyWithImpl<$Res>
 
 /// Create a copy of RecurrenceSettings
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? freq = null,Object? interval = null,Object? byWeekday = null,Object? byMonthDay = freezed,Object? until = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? freq = null,Object? interval = null,Object? byWeekday = null,Object? byMonthDay = freezed,Object? byMonth = freezed,Object? until = freezed,}) {
   return _then(_self.copyWith(
 freq: null == freq ? _self.freq : freq // ignore: cast_nullable_to_non_nullable
 as RecurrenceFreq,interval: null == interval ? _self.interval : interval // ignore: cast_nullable_to_non_nullable
 as int,byWeekday: null == byWeekday ? _self.byWeekday : byWeekday // ignore: cast_nullable_to_non_nullable
 as List<int>,byMonthDay: freezed == byMonthDay ? _self.byMonthDay : byMonthDay // ignore: cast_nullable_to_non_nullable
+as int?,byMonth: freezed == byMonth ? _self.byMonth : byMonth // ignore: cast_nullable_to_non_nullable
 as int?,until: freezed == until ? _self.until : until // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));
@@ -151,7 +153,7 @@ return $default(_that);case _:
 
 
 class _RecurrenceSettings implements RecurrenceSettings {
-  const _RecurrenceSettings({this.freq = RecurrenceFreq.weekly, this.interval = 1, final  List<int> byWeekday = const <int>[], this.byMonthDay, this.until}): _byWeekday = byWeekday;
+  const _RecurrenceSettings({this.freq = RecurrenceFreq.weekly, this.interval = 1, final  List<int> byWeekday = const <int>[], this.byMonthDay, this.byMonth, this.until}): _byWeekday = byWeekday;
   
 
 @override@JsonKey() final  RecurrenceFreq freq;
@@ -165,8 +167,10 @@ class _RecurrenceSettings implements RecurrenceSettings {
   return EqualUnmodifiableListView(_byWeekday);
 }
 
-/// 1..31 для monthly.
+/// 1..31 для monthly/yearly.
 @override final  int? byMonthDay;
+/// 1..12 для yearly.
+@override final  int? byMonth;
 @override final  DateTime? until;
 
 /// Create a copy of RecurrenceSettings
@@ -179,16 +183,16 @@ _$RecurrenceSettingsCopyWith<_RecurrenceSettings> get copyWith => __$RecurrenceS
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RecurrenceSettings&&(identical(other.freq, freq) || other.freq == freq)&&(identical(other.interval, interval) || other.interval == interval)&&const DeepCollectionEquality().equals(other._byWeekday, _byWeekday)&&(identical(other.byMonthDay, byMonthDay) || other.byMonthDay == byMonthDay)&&(identical(other.until, until) || other.until == until));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RecurrenceSettings&&(identical(other.freq, freq) || other.freq == freq)&&(identical(other.interval, interval) || other.interval == interval)&&const DeepCollectionEquality().equals(other._byWeekday, _byWeekday)&&(identical(other.byMonthDay, byMonthDay) || other.byMonthDay == byMonthDay)&&(identical(other.byMonth, byMonth) || other.byMonth == byMonth)&&(identical(other.until, until) || other.until == until));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,freq,interval,const DeepCollectionEquality().hash(_byWeekday),byMonthDay,until);
+int get hashCode => Object.hash(runtimeType,freq,interval,const DeepCollectionEquality().hash(_byWeekday),byMonthDay,byMonth,until);
 
 @override
 String toString() {
-  return 'RecurrenceSettings(freq: $freq, interval: $interval, byWeekday: $byWeekday, byMonthDay: $byMonthDay, until: $until)';
+  return 'RecurrenceSettings(freq: $freq, interval: $interval, byWeekday: $byWeekday, byMonthDay: $byMonthDay, byMonth: $byMonth, until: $until)';
 }
 
 
@@ -199,7 +203,7 @@ abstract mixin class _$RecurrenceSettingsCopyWith<$Res> implements $RecurrenceSe
   factory _$RecurrenceSettingsCopyWith(_RecurrenceSettings value, $Res Function(_RecurrenceSettings) _then) = __$RecurrenceSettingsCopyWithImpl;
 @override @useResult
 $Res call({
- RecurrenceFreq freq, int interval, List<int> byWeekday, int? byMonthDay, DateTime? until
+ RecurrenceFreq freq, int interval, List<int> byWeekday, int? byMonthDay, int? byMonth, DateTime? until
 });
 
 
@@ -216,12 +220,13 @@ class __$RecurrenceSettingsCopyWithImpl<$Res>
 
 /// Create a copy of RecurrenceSettings
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? freq = null,Object? interval = null,Object? byWeekday = null,Object? byMonthDay = freezed,Object? until = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? freq = null,Object? interval = null,Object? byWeekday = null,Object? byMonthDay = freezed,Object? byMonth = freezed,Object? until = freezed,}) {
   return _then(_RecurrenceSettings(
 freq: null == freq ? _self.freq : freq // ignore: cast_nullable_to_non_nullable
 as RecurrenceFreq,interval: null == interval ? _self.interval : interval // ignore: cast_nullable_to_non_nullable
 as int,byWeekday: null == byWeekday ? _self._byWeekday : byWeekday // ignore: cast_nullable_to_non_nullable
 as List<int>,byMonthDay: freezed == byMonthDay ? _self.byMonthDay : byMonthDay // ignore: cast_nullable_to_non_nullable
+as int?,byMonth: freezed == byMonth ? _self.byMonth : byMonth // ignore: cast_nullable_to_non_nullable
 as int?,until: freezed == until ? _self.until : until // ignore: cast_nullable_to_non_nullable
 as DateTime?,
   ));

@@ -34,6 +34,9 @@ import 'package:budget_assistant/features/savings_goals/presentation/screens/sav
 import 'package:budget_assistant/features/debts/presentation/screens/debts_screen.dart';
 import 'package:budget_assistant/features/debts/presentation/screens/create_debt_screen.dart';
 import 'package:budget_assistant/features/transactions/presentation/screens/split_transaction_screen.dart';
+import 'package:budget_assistant/features/reminders/presentation/screens/reminders_screen.dart';
+import 'package:budget_assistant/features/reminders/presentation/screens/reminder_details_screen.dart';
+import 'package:budget_assistant/features/reminders/presentation/screens/create_reminder_screen.dart';
 part 'app_router.g.dart';
 
 @riverpod
@@ -116,29 +119,29 @@ GoRouter appRouter(Ref ref) {
     refreshListenable: refreshNotifier,
     routes: [
       GoRoute(
-      path: '/debts',
-      name: 'debts',
-      builder: (context, state) => const DebtsScreen(),
+        path: '/debts',
+        name: 'debts',
+        builder: (context, state) => const DebtsScreen(),
       ),
-    GoRoute(
-    path: '/debts/create',
-    name: 'create-debt',
-    builder: (context, state) {
-    final q = state.uri.queryParameters;
-    return CreateDebtScreen(
-    debtId: q['id'],
-    transactionId: q['transaction_id'],
-    splitId: q['split_id'],
-    );
-    },
-    ),
-  GoRoute(
-    path: '/transactions/split/:id',
-    name: 'split-transaction',
-    builder: (context, state) => SplitTransactionScreen(
-      transactionId: state.pathParameters['id']!,
-  ),
-  ),
+      GoRoute(
+        path: '/debts/create',
+        name: 'create-debt',
+        builder: (context, state) {
+          final q = state.uri.queryParameters;
+          return CreateDebtScreen(
+            debtId: q['id'],
+            transactionId: q['transaction_id'],
+            splitId: q['split_id'],
+          );
+        },
+      ),
+      GoRoute(
+        path: '/transactions/split/:id',
+        name: 'split-transaction',
+        builder: (context, state) => SplitTransactionScreen(
+          transactionId: state.pathParameters['id']!,
+        ),
+      ),
       GoRoute(
         path: AppRoutes.home,
         name: 'home',
@@ -288,6 +291,32 @@ GoRouter appRouter(Ref ref) {
         path: '/savings-analytics',
         name: 'savings-analytics',
         builder: (context, state) => const SavingsAnalyticsScreen(),
+      ),
+      // Этап 14: напоминания
+      GoRoute(
+        path: '/reminders',
+        name: 'reminders',
+        builder: (context, state) => const RemindersScreen(),
+      ),
+      GoRoute(
+        path: '/reminders/create',
+        name: 'create-reminder',
+        builder: (context, state) {
+          final q = state.uri.queryParameters;
+          return CreateReminderScreen(
+            editReminderId: q['id'],
+            type: q['type'],
+            dateIso: q['date'],
+            copyFromReminderId: q['reminder_id'],
+          );
+        },
+      ),
+      GoRoute(
+        path: '/reminders/:id',
+        name: 'reminder-details',
+        builder: (context, state) => ReminderDetailsScreen(
+          reminderId: state.pathParameters['id']!,
+        ),
       ),
     ],
     redirect: (context, state) {
