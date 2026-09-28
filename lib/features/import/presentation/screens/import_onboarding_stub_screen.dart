@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 
-/// TODO(Этап 15): заменить на полный ImportOnboardingScreen (мастер 4 шага).
+/// TODO(Этап 15.3): заменить на полный ImportOnboardingScreen (мастер 4 шага).
 class ImportOnboardingStubScreen extends StatelessWidget {
   const ImportOnboardingStubScreen({super.key});
 
