@@ -618,7 +618,7 @@ ON reminder_drafts(user_id, updated_at)
     ''');
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_parser_configs_bank_name
-      ON parser_configs(bank_name, format)
+      ON parser_configs(bank_name, supported_formats)
     ''');
     await customStatement('''
       CREATE INDEX IF NOT EXISTS idx_import_drafts_user

@@ -10,6 +10,7 @@ import 'package:budget_assistant/features/privacy/presentation/providers/privacy
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import '../providers/post_import_review_notifier.dart';
 import '../providers/import_usecase_providers.dart';
+import 'package:budget_assistant/features/recurring_payments/presentation/providers/recurring_detection_providers.dart';
 import '../widgets/import_summary_banner.dart';
 import '../widgets/smart_detection_tabs.dart';
 import '../widgets/duplicates_tab.dart';
@@ -66,6 +67,7 @@ class _PostImportReviewScreenState
   Future<void> _finalize() async {
     final notifier = ref.read(postImportReviewProvider.notifier);
     final state = ref.read(postImportReviewProvider);
+    final userId = ref.read(currentUserIdProvider);
 
     if (notifier.summary().count == 0) {
       MotionTokens.error();
@@ -141,10 +143,24 @@ class _PostImportReviewScreenState
 
     if (!mounted) return;
     final periodDays = result.periodEnd.difference(result.periodStart).inDays;
+    // Этап 15.6: автодетект регулярных (долг Этапа 14):
+    // опция wizard + период >= 6 мес + app_settings.autoDetectRecurring.
+    var recurringTouched = 0;
+    if (result.options.detectRecurring && periodDays >= 180) {
+      try {
+        final autoOn = await ref.read(autoDetectEnabledProvider.future);
+        if (autoOn) {
+          recurringTouched = await ref
+              .read(detectRecurringPaymentsUseCaseProvider)
+              .call(userId: userId, spaceId: result.targetSpaceId);
+        }
+      } catch (_) {}
+    }
+    if (!mounted) return;
     context.go('/transactions');
     final messenger = ScaffoldMessenger.of(context);
     messenger.showSnackBar(SnackBar(
-      content: Text('Импортировано ${outcome.created.length} транзакций'),
+      content: Text('Импортировано ${outcome.created.length} транзакций${recurringTouched > 0 ? '. Регулярных кандидатов: $recurringTouched' : ''}'),
       action: (result.options.detectRecurring && periodDays >= 180)
           ? SnackBarAction(
               label: 'Проверить регулярные',

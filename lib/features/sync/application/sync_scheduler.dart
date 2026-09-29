@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:workmanager/workmanager.dart';
 
 import 'package:budget_assistant/features/sync/application/workmanager_sync_task.dart';
+import 'package:budget_assistant/features/import/application/clean_import_drafts_task.dart';
 
 /// Регистрация фоновых задач синхронизации.
 class SyncScheduler {
@@ -22,6 +23,13 @@ class SyncScheduler {
       backoffPolicy: BackoffPolicy.exponential,
       backoffPolicyDelay: const Duration(minutes: 10),
       constraints: Constraints(networkType: NetworkType.connected),
+    );
+    // Этап 15.6: очистка черновиков импорта раз в сутки (ТОМ 2 §23).
+    await Workmanager().registerPeriodicTask(
+      cleanImportDraftsTaskName,
+      cleanImportDraftsTaskName,
+      frequency: const Duration(days: 1),
+      existingWorkPolicy: ExistingWorkPolicy.keep,
     );
   }
 

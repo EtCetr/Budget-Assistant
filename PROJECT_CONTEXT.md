@@ -247,3 +247,12 @@ Flutter: DropdownButtonFormField в Row требует ограничения ш
 [x] 14.5 Детекция регулярных платежей: detect в compute-изоляте, upsert-идемпотентность (user_id, merchant_normalized, amount_bucket), CreateReminderFromRecurringUseCase.
 [x] 14.6 Интеграции: CreateTransactionScreen читает reminder_id/date (предзаполнение amount/date/category/account/comment), авто-завершение напоминания после сохранения; DECISIONS/PROJECT_CONTEXT обновлены.
 Долги Этапа 14 (см. DECISIONS.md): WorkManager-рескейдул пушей и доходы в forecast_cache (Этап 18), триггер детекта из импорта (Этап 15), is_secret напоминаний (не реализуем).
+
+Этап 15 «Batch-импорт (CSV/XLSX/PDF)»: ЗАВЕРШЁН.
+[x] 15.1 Data: parser_configs + import_drafts (schemaVersion 14), Freezed DTO, DAO, репозиторий, сиды банков, индексы.
+[x] 15.2 Парсеры: CSV (dart:convert, windows-1251, кавычки), XLSX (archive/OOXML), PDF (pdfx + ML Kit OCR, regex из config_json); UseCases детекции: дубликаты (Levenshtein < 3, разделение Дубль/Hold), переводы (Межбанк ±3 дн / СБП ±5 мин), автокатегоризация (3 уровня), финализация, секретность, календарь.
+[x] 15.3 ImportOnboardingScreen: wizard 4 шага (банк → файл → структура → счёт), автосейв черновика 5 сек + восстановление < 24 ч, автоопределение колонок (confidence ≥ 0.8), роут /import/review.
+[x] 15.4 PostImportReviewScreen: 4 таба Smart Detection, Selected Summary, валидация, FinalizeImport (skip/replace/both, merge/keep, confirm/skip), secrecy-handoff → /import/secrets, баланс-дельта.
+[x] 15.5 ImportSecretsScreen: календарь периодов секретности, кандидаты с AI-confidence, премаппинг «Подарки», ApplySecrecyMode (is_hidden_by_calendar + hidden_until_date).
+[x] 15.6 Интеграция: WorkManager-очистка import_drafts (1 раз/сутки + ленивая), авто-триггер DetectRecurringPaymentsUseCase из импорта (долг Этапа 14 закрыт), DECISIONS/PROJECT_CONTEXT обновлены.
+Долги Этапа 15: самообучение category_rules при массовом применении AI (6.3.26.12); камера/облако в FilePicker; ML Kit Status Banner не нужен (bundled).

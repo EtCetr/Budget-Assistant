@@ -7,11 +7,15 @@ import 'package:budget_assistant/core/logger.dart';
 import 'package:budget_assistant/core/services/secure_storage_service.dart';
 import 'package:budget_assistant/features/sync/application/sync_background_database.dart';
 import 'package:budget_assistant/features/sync/application/sync_service.dart';
+import 'package:budget_assistant/features/import/application/clean_import_drafts_task.dart';
 
 /// Top-level callback для WorkManager.
 @pragma('vm:entry-point')
 void syncWorkManagerCallback() {
   Workmanager().executeTask((taskName, inputData) async {
+    if (taskName == cleanImportDraftsTaskName) {
+      return await handleCleanImportDraftsTask();
+    }
     if (taskName != 'budget_assistant_periodic_sync' &&
         taskName != 'budget_assistant_one_off_sync') {
       return true;
