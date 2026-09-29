@@ -1,26 +1,7 @@
-import '../../domain/entities/parsed_row.dart';
 import '../../domain/entities/column_mapping.dart';
+import '../../domain/entities/parse_result.dart';
 
-/// Результат парсинга файла.
-class ParseResult {
-  final List<ParsedRow> rows;
-  final List<List<String>> rawRows;
-  final int totalRows;
-  final DateTime? periodStart;
-  final DateTime? periodEnd;
-  final String? error;
-
-  const ParseResult({
-    required this.rows,
-    required this.rawRows,
-    required this.totalRows,
-    this.periodStart,
-    this.periodEnd,
-    this.error,
-  });
-
-  bool get isSuccess => error == null && rows.isNotEmpty;
-}
+export '../../domain/entities/parse_result.dart';
 
 /// Общий интерфейс для всех парсеров (CSV/XLSX/PDF).
 abstract class ImportFileParser {

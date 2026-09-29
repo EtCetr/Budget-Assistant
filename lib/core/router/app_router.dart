@@ -13,6 +13,7 @@ import 'package:budget_assistant/features/security/presentation/screens/pin_onbo
 import 'package:budget_assistant/features/security/presentation/screens/pin_entry_screen.dart';
 import 'package:budget_assistant/features/security/presentation/screens/biometric_onboarding_screen.dart';
 import 'package:budget_assistant/core/router/routes.dart';
+import 'package:budget_assistant/features/import/domain/entities/import_result.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budget_assistant/features/accounts/presentation/screens/accounts_screen.dart';
 import 'package:budget_assistant/features/categories/presentation/screens/categories_screen.dart';
@@ -20,7 +21,8 @@ import 'package:budget_assistant/core/bootstrap/app_bootstrap_flags.dart';
 import 'package:budget_assistant/core/services/secure_storage_service.dart';
 import 'package:budget_assistant/core/logger.dart';
 import 'package:budget_assistant/features/transactions/presentation/screens/transactions_log_screen.dart';
-import 'package:budget_assistant/features/import/presentation/screens/import_onboarding_stub_screen.dart';
+import 'package:budget_assistant/features/import/presentation/screens/import_onboarding_screen.dart';
+import 'package:budget_assistant/features/import/presentation/screens/post_import_review_stub_screen.dart';
 import 'package:budget_assistant/features/transactions/presentation/screens/create_transaction_screen.dart';
 import 'package:budget_assistant/features/transactions/presentation/screens/edit_transaction_screen.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
@@ -216,7 +218,12 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/import/onboarding',
         name: 'import-onboarding',
-        builder: (context, state) => const ImportOnboardingStubScreen(),
+        builder: (context, state) => const ImportOnboardingScreen(),
+    ),
+    GoRoute(
+      path: '/import/review',
+      name: 'import-review',
+      builder: (context, state) => PostImportReviewStubScreen(result: state.extra is ImportResult ? state.extra as ImportResult : null),
       ),
       GoRoute(
         path: '/transactions/create',

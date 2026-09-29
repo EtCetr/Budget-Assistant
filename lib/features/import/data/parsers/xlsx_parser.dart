@@ -38,7 +38,8 @@ class XlsxParser implements ImportFileParser {
       final sheetXml = _findSheetContent(archive);
       if (sheetXml == null) {
         // ignore: prefer_const_constructors
-                return const ParseResult(rows: [], rawRows: [], totalRows: 0,
+        // ignore: prefer_const_constructors
+        return ParseResult(rows: [], rawRows: [], totalRows: 0,
             error: 'Не удалось прочитать лист XLSX');
       }
 
