@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ImportResult {
 
- String get bankName; String get bankCode; String get fileName; int get totalRows; DateTime get periodStart; DateTime get periodEnd; String get targetAccountId; String? get targetSpaceId; List<ParsedRow> get rows; List<DuplicateCandidate> get duplicates; List<TransferCandidate> get transfers; List<HoldConfirmationCandidate> get holdConfirmations;
+ String get bankName; String get bankCode; String get fileName; int get totalRows; DateTime get periodStart; DateTime get periodEnd; String get targetAccountId; String? get targetSpaceId; List<ParsedRow> get rows; List<DuplicateCandidate> get duplicates; List<TransferCandidate> get transfers; List<HoldConfirmationCandidate> get holdConfirmations; ImportOptions get options;
 /// Create a copy of ImportResult
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $ImportResultCopyWith<ImportResult> get copyWith => _$ImportResultCopyWithImpl<I
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ImportResult&&(identical(other.bankName, bankName) || other.bankName == bankName)&&(identical(other.bankCode, bankCode) || other.bankCode == bankCode)&&(identical(other.fileName, fileName) || other.fileName == fileName)&&(identical(other.totalRows, totalRows) || other.totalRows == totalRows)&&(identical(other.periodStart, periodStart) || other.periodStart == periodStart)&&(identical(other.periodEnd, periodEnd) || other.periodEnd == periodEnd)&&(identical(other.targetAccountId, targetAccountId) || other.targetAccountId == targetAccountId)&&(identical(other.targetSpaceId, targetSpaceId) || other.targetSpaceId == targetSpaceId)&&const DeepCollectionEquality().equals(other.rows, rows)&&const DeepCollectionEquality().equals(other.duplicates, duplicates)&&const DeepCollectionEquality().equals(other.transfers, transfers)&&const DeepCollectionEquality().equals(other.holdConfirmations, holdConfirmations));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ImportResult&&(identical(other.bankName, bankName) || other.bankName == bankName)&&(identical(other.bankCode, bankCode) || other.bankCode == bankCode)&&(identical(other.fileName, fileName) || other.fileName == fileName)&&(identical(other.totalRows, totalRows) || other.totalRows == totalRows)&&(identical(other.periodStart, periodStart) || other.periodStart == periodStart)&&(identical(other.periodEnd, periodEnd) || other.periodEnd == periodEnd)&&(identical(other.targetAccountId, targetAccountId) || other.targetAccountId == targetAccountId)&&(identical(other.targetSpaceId, targetSpaceId) || other.targetSpaceId == targetSpaceId)&&const DeepCollectionEquality().equals(other.rows, rows)&&const DeepCollectionEquality().equals(other.duplicates, duplicates)&&const DeepCollectionEquality().equals(other.transfers, transfers)&&const DeepCollectionEquality().equals(other.holdConfirmations, holdConfirmations)&&(identical(other.options, options) || other.options == options));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,bankName,bankCode,fileName,totalRows,periodStart,periodEnd,targetAccountId,targetSpaceId,const DeepCollectionEquality().hash(rows),const DeepCollectionEquality().hash(duplicates),const DeepCollectionEquality().hash(transfers),const DeepCollectionEquality().hash(holdConfirmations));
+int get hashCode => Object.hash(runtimeType,bankName,bankCode,fileName,totalRows,periodStart,periodEnd,targetAccountId,targetSpaceId,const DeepCollectionEquality().hash(rows),const DeepCollectionEquality().hash(duplicates),const DeepCollectionEquality().hash(transfers),const DeepCollectionEquality().hash(holdConfirmations),options);
 
 @override
 String toString() {
-  return 'ImportResult(bankName: $bankName, bankCode: $bankCode, fileName: $fileName, totalRows: $totalRows, periodStart: $periodStart, periodEnd: $periodEnd, targetAccountId: $targetAccountId, targetSpaceId: $targetSpaceId, rows: $rows, duplicates: $duplicates, transfers: $transfers, holdConfirmations: $holdConfirmations)';
+  return 'ImportResult(bankName: $bankName, bankCode: $bankCode, fileName: $fileName, totalRows: $totalRows, periodStart: $periodStart, periodEnd: $periodEnd, targetAccountId: $targetAccountId, targetSpaceId: $targetSpaceId, rows: $rows, duplicates: $duplicates, transfers: $transfers, holdConfirmations: $holdConfirmations, options: $options)';
 }
 
 
@@ -45,11 +45,11 @@ abstract mixin class $ImportResultCopyWith<$Res>  {
   factory $ImportResultCopyWith(ImportResult value, $Res Function(ImportResult) _then) = _$ImportResultCopyWithImpl;
 @useResult
 $Res call({
- String bankName, String bankCode, String fileName, int totalRows, DateTime periodStart, DateTime periodEnd, String targetAccountId, String? targetSpaceId, List<ParsedRow> rows, List<DuplicateCandidate> duplicates, List<TransferCandidate> transfers, List<HoldConfirmationCandidate> holdConfirmations
+ String bankName, String bankCode, String fileName, int totalRows, DateTime periodStart, DateTime periodEnd, String targetAccountId, String? targetSpaceId, List<ParsedRow> rows, List<DuplicateCandidate> duplicates, List<TransferCandidate> transfers, List<HoldConfirmationCandidate> holdConfirmations, ImportOptions options
 });
 
 
-
+$ImportOptionsCopyWith<$Res> get options;
 
 }
 /// @nodoc
@@ -62,7 +62,7 @@ class _$ImportResultCopyWithImpl<$Res>
 
 /// Create a copy of ImportResult
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? bankName = null,Object? bankCode = null,Object? fileName = null,Object? totalRows = null,Object? periodStart = null,Object? periodEnd = null,Object? targetAccountId = null,Object? targetSpaceId = freezed,Object? rows = null,Object? duplicates = null,Object? transfers = null,Object? holdConfirmations = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? bankName = null,Object? bankCode = null,Object? fileName = null,Object? totalRows = null,Object? periodStart = null,Object? periodEnd = null,Object? targetAccountId = null,Object? targetSpaceId = freezed,Object? rows = null,Object? duplicates = null,Object? transfers = null,Object? holdConfirmations = null,Object? options = null,}) {
   return _then(_self.copyWith(
 bankName: null == bankName ? _self.bankName : bankName // ignore: cast_nullable_to_non_nullable
 as String,bankCode: null == bankCode ? _self.bankCode : bankCode // ignore: cast_nullable_to_non_nullable
@@ -76,10 +76,20 @@ as String?,rows: null == rows ? _self.rows : rows // ignore: cast_nullable_to_no
 as List<ParsedRow>,duplicates: null == duplicates ? _self.duplicates : duplicates // ignore: cast_nullable_to_non_nullable
 as List<DuplicateCandidate>,transfers: null == transfers ? _self.transfers : transfers // ignore: cast_nullable_to_non_nullable
 as List<TransferCandidate>,holdConfirmations: null == holdConfirmations ? _self.holdConfirmations : holdConfirmations // ignore: cast_nullable_to_non_nullable
-as List<HoldConfirmationCandidate>,
+as List<HoldConfirmationCandidate>,options: null == options ? _self.options : options // ignore: cast_nullable_to_non_nullable
+as ImportOptions,
   ));
 }
-
+/// Create a copy of ImportResult
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ImportOptionsCopyWith<$Res> get options {
+  
+  return $ImportOptionsCopyWith<$Res>(_self.options, (value) {
+    return _then(_self.copyWith(options: value));
+  });
+}
 }
 
 
@@ -156,7 +166,7 @@ return $default(_that);case _:
 
 
 class _ImportResult implements ImportResult {
-  const _ImportResult({required this.bankName, required this.bankCode, required this.fileName, required this.totalRows, required this.periodStart, required this.periodEnd, required this.targetAccountId, this.targetSpaceId, required final  List<ParsedRow> rows, final  List<DuplicateCandidate> duplicates = const [], final  List<TransferCandidate> transfers = const [], final  List<HoldConfirmationCandidate> holdConfirmations = const []}): _rows = rows,_duplicates = duplicates,_transfers = transfers,_holdConfirmations = holdConfirmations;
+  const _ImportResult({required this.bankName, required this.bankCode, required this.fileName, required this.totalRows, required this.periodStart, required this.periodEnd, required this.targetAccountId, this.targetSpaceId, required final  List<ParsedRow> rows, final  List<DuplicateCandidate> duplicates = const [], final  List<TransferCandidate> transfers = const [], final  List<HoldConfirmationCandidate> holdConfirmations = const [], this.options = const ImportOptions()}): _rows = rows,_duplicates = duplicates,_transfers = transfers,_holdConfirmations = holdConfirmations;
   
 
 @override final  String bankName;
@@ -195,6 +205,7 @@ class _ImportResult implements ImportResult {
   return EqualUnmodifiableListView(_holdConfirmations);
 }
 
+@override@JsonKey() final  ImportOptions options;
 
 /// Create a copy of ImportResult
 /// with the given fields replaced by the non-null parameter values.
@@ -206,16 +217,16 @@ _$ImportResultCopyWith<_ImportResult> get copyWith => __$ImportResultCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ImportResult&&(identical(other.bankName, bankName) || other.bankName == bankName)&&(identical(other.bankCode, bankCode) || other.bankCode == bankCode)&&(identical(other.fileName, fileName) || other.fileName == fileName)&&(identical(other.totalRows, totalRows) || other.totalRows == totalRows)&&(identical(other.periodStart, periodStart) || other.periodStart == periodStart)&&(identical(other.periodEnd, periodEnd) || other.periodEnd == periodEnd)&&(identical(other.targetAccountId, targetAccountId) || other.targetAccountId == targetAccountId)&&(identical(other.targetSpaceId, targetSpaceId) || other.targetSpaceId == targetSpaceId)&&const DeepCollectionEquality().equals(other._rows, _rows)&&const DeepCollectionEquality().equals(other._duplicates, _duplicates)&&const DeepCollectionEquality().equals(other._transfers, _transfers)&&const DeepCollectionEquality().equals(other._holdConfirmations, _holdConfirmations));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ImportResult&&(identical(other.bankName, bankName) || other.bankName == bankName)&&(identical(other.bankCode, bankCode) || other.bankCode == bankCode)&&(identical(other.fileName, fileName) || other.fileName == fileName)&&(identical(other.totalRows, totalRows) || other.totalRows == totalRows)&&(identical(other.periodStart, periodStart) || other.periodStart == periodStart)&&(identical(other.periodEnd, periodEnd) || other.periodEnd == periodEnd)&&(identical(other.targetAccountId, targetAccountId) || other.targetAccountId == targetAccountId)&&(identical(other.targetSpaceId, targetSpaceId) || other.targetSpaceId == targetSpaceId)&&const DeepCollectionEquality().equals(other._rows, _rows)&&const DeepCollectionEquality().equals(other._duplicates, _duplicates)&&const DeepCollectionEquality().equals(other._transfers, _transfers)&&const DeepCollectionEquality().equals(other._holdConfirmations, _holdConfirmations)&&(identical(other.options, options) || other.options == options));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,bankName,bankCode,fileName,totalRows,periodStart,periodEnd,targetAccountId,targetSpaceId,const DeepCollectionEquality().hash(_rows),const DeepCollectionEquality().hash(_duplicates),const DeepCollectionEquality().hash(_transfers),const DeepCollectionEquality().hash(_holdConfirmations));
+int get hashCode => Object.hash(runtimeType,bankName,bankCode,fileName,totalRows,periodStart,periodEnd,targetAccountId,targetSpaceId,const DeepCollectionEquality().hash(_rows),const DeepCollectionEquality().hash(_duplicates),const DeepCollectionEquality().hash(_transfers),const DeepCollectionEquality().hash(_holdConfirmations),options);
 
 @override
 String toString() {
-  return 'ImportResult(bankName: $bankName, bankCode: $bankCode, fileName: $fileName, totalRows: $totalRows, periodStart: $periodStart, periodEnd: $periodEnd, targetAccountId: $targetAccountId, targetSpaceId: $targetSpaceId, rows: $rows, duplicates: $duplicates, transfers: $transfers, holdConfirmations: $holdConfirmations)';
+  return 'ImportResult(bankName: $bankName, bankCode: $bankCode, fileName: $fileName, totalRows: $totalRows, periodStart: $periodStart, periodEnd: $periodEnd, targetAccountId: $targetAccountId, targetSpaceId: $targetSpaceId, rows: $rows, duplicates: $duplicates, transfers: $transfers, holdConfirmations: $holdConfirmations, options: $options)';
 }
 
 
@@ -226,11 +237,11 @@ abstract mixin class _$ImportResultCopyWith<$Res> implements $ImportResultCopyWi
   factory _$ImportResultCopyWith(_ImportResult value, $Res Function(_ImportResult) _then) = __$ImportResultCopyWithImpl;
 @override @useResult
 $Res call({
- String bankName, String bankCode, String fileName, int totalRows, DateTime periodStart, DateTime periodEnd, String targetAccountId, String? targetSpaceId, List<ParsedRow> rows, List<DuplicateCandidate> duplicates, List<TransferCandidate> transfers, List<HoldConfirmationCandidate> holdConfirmations
+ String bankName, String bankCode, String fileName, int totalRows, DateTime periodStart, DateTime periodEnd, String targetAccountId, String? targetSpaceId, List<ParsedRow> rows, List<DuplicateCandidate> duplicates, List<TransferCandidate> transfers, List<HoldConfirmationCandidate> holdConfirmations, ImportOptions options
 });
 
 
-
+@override $ImportOptionsCopyWith<$Res> get options;
 
 }
 /// @nodoc
@@ -243,7 +254,7 @@ class __$ImportResultCopyWithImpl<$Res>
 
 /// Create a copy of ImportResult
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? bankName = null,Object? bankCode = null,Object? fileName = null,Object? totalRows = null,Object? periodStart = null,Object? periodEnd = null,Object? targetAccountId = null,Object? targetSpaceId = freezed,Object? rows = null,Object? duplicates = null,Object? transfers = null,Object? holdConfirmations = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? bankName = null,Object? bankCode = null,Object? fileName = null,Object? totalRows = null,Object? periodStart = null,Object? periodEnd = null,Object? targetAccountId = null,Object? targetSpaceId = freezed,Object? rows = null,Object? duplicates = null,Object? transfers = null,Object? holdConfirmations = null,Object? options = null,}) {
   return _then(_ImportResult(
 bankName: null == bankName ? _self.bankName : bankName // ignore: cast_nullable_to_non_nullable
 as String,bankCode: null == bankCode ? _self.bankCode : bankCode // ignore: cast_nullable_to_non_nullable
@@ -257,11 +268,21 @@ as String?,rows: null == rows ? _self._rows : rows // ignore: cast_nullable_to_n
 as List<ParsedRow>,duplicates: null == duplicates ? _self._duplicates : duplicates // ignore: cast_nullable_to_non_nullable
 as List<DuplicateCandidate>,transfers: null == transfers ? _self._transfers : transfers // ignore: cast_nullable_to_non_nullable
 as List<TransferCandidate>,holdConfirmations: null == holdConfirmations ? _self._holdConfirmations : holdConfirmations // ignore: cast_nullable_to_non_nullable
-as List<HoldConfirmationCandidate>,
+as List<HoldConfirmationCandidate>,options: null == options ? _self.options : options // ignore: cast_nullable_to_non_nullable
+as ImportOptions,
   ));
 }
 
-
+/// Create a copy of ImportResult
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ImportOptionsCopyWith<$Res> get options {
+  
+  return $ImportOptionsCopyWith<$Res>(_self.options, (value) {
+    return _then(_self.copyWith(options: value));
+  });
+}
 }
 
 // dart format on

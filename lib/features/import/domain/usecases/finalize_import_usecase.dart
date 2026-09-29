@@ -4,119 +4,130 @@ import 'package:uuid/uuid.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import '../entities/duplicate_candidate.dart';
+import '../entities/finalize_outcome.dart';
+import '../entities/import_result.dart';
 import '../entities/transfer_candidate.dart';
 import '../entities/hold_confirmation_candidate.dart';
-import '../entities/import_result.dart';
 
-/// Финализация импорта: обработка дубликатов, переводов, hold + создание транзакций.
-/// Обновляет баланс целевого счёта (D: Да, на сумму всех проведённых).
+/// Финализация импорта (ТЗ 6.3.26):
+/// hold -> дубликаты (skip/replace/both) -> переводы (merge/keep) ->
+/// создание выбранных строк -> корректировка баланса.
+/// Возвращает ID созданных транзакций для проверки секретности.
 class FinalizeImportUseCase {
   final AppDatabase _db;
   final Logger _logger;
 
-  FinalizeImportUseCase({
-    required AppDatabase db,
-    required Logger logger,
-  })  : _db = db,
+  FinalizeImportUseCase({required AppDatabase db, required Logger logger})
+      : _db = db,
         _logger = logger;
 
-  Future<void> call({
+  Future<FinalizeOutcome?> call({
     required ImportResult importResult,
     required String userId,
+    required Set<int> selectedRowIndices,
   }) async {
     try {
       final now = DateTime.now().toUtc();
-      var totalDeltaKopecks = 0;
+      var updatedExisting = 0;
+      var transfersCreated = 0;
+      var balanceDelta = 0;
+      final created = <CreatedImportedTransaction>[];
 
-      // 1. Обрабатываем hold-подтверждения
+      // 1. Hold-подтверждения.
       for (final hold in importResult.holdConfirmations) {
-        if (hold.selectedAction == HoldAction.confirm) {
-          await (_db.update(_db.transactions)
-                ..where((t) => t.id.equals(hold.existingTransactionId)))
-              .write(TransactionsCompanion(
-            auditStatus: const Value(AuditStatus.verified),
-            bankTransactionId: Value(hold.importedRow.bankTransactionId),
-            updatedAt: Value(now),
-            syncStatus: const Value(SyncStatus.pending),
-          ));
-        }
+        if (hold.selectedAction != HoldAction.confirm) continue;
+        await (_db.update(_db.transactions)
+              ..where((t) => t.id.equals(hold.existingTransactionId)))
+            .write(TransactionsCompanion(
+          auditStatus: const Value(AuditStatus.verified),
+          bankTransactionId: Value(hold.importedRow.bankTransactionId),
+          updatedAt: Value(now),
+          syncStatus: const Value(SyncStatus.pending),
+        ));
+        updatedExisting++;
       }
 
-      // 2. Обрабатываем переводы (merge → создаём transfer, удаляем пары)
-      for (final transfer in importResult.transfers) {
-        if (transfer.selectedAction == TransferAction.merge) {
-          final transferId = const Uuid().v4();
-          await _db.into(_db.transactions).insert(TransactionsCompanion.insert(
-                id: transferId,
-                accountId: transfer.sourceAccountId,
-                linkedAccountId: Value(transfer.targetAccountId),
-                userId: userId,
-                date: transfer.expenseRow.date.toUtc(),
-                amount: transfer.amountKopecks,
-                type: TransactionType.transfer,
-                merchantName: Value(transfer.expenseRow.merchantName),
-                createdAt: now,
-                updatedAt: now,
-                syncStatus: const Value(SyncStatus.pending),
-              ));
-          // Переводы НЕ влияют на P&L, но влияют на баланс
-          // (баланс корректируется по факту расходной части)
-        }
-      }
-
-      // 3. Собираем ID строк, которые нужно пропустить (дубли skip + переводы merge)
-      final skipRowIndices = <int>{};
+      // 2. Дубликаты: skip исключаем, replace обновляем, both оставляем.
+      final excluded = <int>{};
       for (final dup in importResult.duplicates) {
-        if (dup.selectedAction == DuplicateAction.skip) {
-          skipRowIndices.add(dup.importedRow.rowIndex);
-        }
-      }
-      for (final transfer in importResult.transfers) {
-        if (transfer.selectedAction == TransferAction.merge) {
-          skipRowIndices.add(transfer.expenseRow.rowIndex);
-          skipRowIndices.add(transfer.incomeRow.rowIndex);
+        final idx = dup.importedRow.rowIndex;
+        switch (dup.selectedAction) {
+          case DuplicateAction.skip:
+            excluded.add(idx);
+          case DuplicateAction.replace:
+            excluded.add(idx);
+            await (_db.update(_db.transactions)
+                  ..where((t) => t.id.equals(dup.existingTransactionId)))
+                .write(TransactionsCompanion(
+              customCategoryId: Value(dup.importedRow.assignedCategoryId),
+              bankCategory: Value(dup.importedRow.bankCategory),
+              comment: Value(dup.importedRow.comment),
+              bankTransactionId: Value(dup.importedRow.bankTransactionId),
+              updatedAt: Value(now),
+              syncStatus: const Value(SyncStatus.pending),
+            ));
+            updatedExisting++;
+          case DuplicateAction.both:
+            break;
         }
       }
 
-      // 4. Создаём оставшиеся транзакции
-      final rowsToCreate = importResult.rows
-          .where((r) => !skipRowIndices.contains(r.rowIndex))
-          .toList();
+      // 3. Переводы: merge создаёт transfer и исключает обе строки.
+      for (final tr in importResult.transfers) {
+        if (tr.selectedAction != TransferAction.merge) continue;
+        excluded.add(tr.expenseRow.rowIndex);
+        excluded.add(tr.incomeRow.rowIndex);
+        await _db.into(_db.transactions).insert(TransactionsCompanion.insert(
+              id: const Uuid().v4(),
+              accountId: tr.sourceAccountId,
+              linkedAccountId: Value(tr.targetAccountId),
+              userId: userId,
+              spaceId: Value(importResult.targetSpaceId),
+              date: tr.expenseRow.date.toUtc(),
+              amount: tr.amountKopecks,
+              type: TransactionType.transfer,
+              merchantName: Value(tr.expenseRow.merchantName),
+              createdAt: now,
+              updatedAt: now,
+              syncStatus: const Value(SyncStatus.pending),
+            ));
+        transfersCreated++;
+        balanceDelta -= tr.amountKopecks;
+      }
 
-      final companions = rowsToCreate.map((row) {
+      // 4. Создание выбранных строк.
+      for (final row in importResult.rows) {
+        if (!selectedRowIndices.contains(row.rowIndex)) continue;
+        if (excluded.contains(row.rowIndex)) continue;
         final type = row.amountKopecks < 0
             ? TransactionType.expense
             : TransactionType.income;
-        final absAmount = row.amountKopecks.abs();
-        totalDeltaKopecks += row.amountKopecks;
-
-        return TransactionsCompanion.insert(
-          id: const Uuid().v4(),
-          accountId: importResult.targetAccountId,
-          userId: userId,
-          spaceId: Value(importResult.targetSpaceId),
-          date: row.date.toUtc(),
-          amount: absAmount,
-          type: type,
-          merchantName: Value(row.merchantName),
-          bankCategory: Value(row.bankCategory),
-          customCategoryId: Value(row.assignedCategoryId),
-          bankTransactionId: Value(row.bankTransactionId),
-          comment: Value(row.comment),
-          originalCurrency: Value(row.originalCurrency),
-          originalAmount: Value(row.originalAmountKopecks),
-          createdAt: now,
-          updatedAt: now,
-          syncStatus: const Value(SyncStatus.pending),
-        );
-      }).toList();
-
-      if (companions.isNotEmpty) {
-        await _db.batch((b) => b.insertAll(_db.transactions, companions));
+        final id = const Uuid().v4();
+        await _db.into(_db.transactions).insert(TransactionsCompanion.insert(
+              id: id,
+              accountId: importResult.targetAccountId,
+              userId: userId,
+              spaceId: Value(importResult.targetSpaceId),
+              date: row.date.toUtc(),
+              amount: row.amountKopecks.abs(),
+              type: type,
+              merchantName: Value(row.merchantName),
+              bankCategory: Value(row.bankCategory),
+              customCategoryId: Value(row.assignedCategoryId),
+              bankTransactionId: Value(row.bankTransactionId),
+              comment: Value(row.comment),
+              originalCurrency: Value(row.originalCurrency),
+              originalAmount: Value(row.originalAmountKopecks),
+              createdAt: now,
+              updatedAt: now,
+              syncStatus: const Value(SyncStatus.pending),
+            ));
+        created.add(CreatedImportedTransaction(id: id, row: row));
+        balanceDelta += row.amountKopecks;
       }
 
-      // 5. Обновляем баланс счёта
-      if (totalDeltaKopecks != 0) {
+      // 5. Баланс целевого счёта (решение владельца D).
+      if (balanceDelta != 0) {
         final account = await (_db.select(_db.accounts)
               ..where((a) => a.id.equals(importResult.targetAccountId)))
             .getSingleOrNull();
@@ -124,19 +135,25 @@ class FinalizeImportUseCase {
           await (_db.update(_db.accounts)
                 ..where((a) => a.id.equals(importResult.targetAccountId)))
               .write(AccountsCompanion(
-            currentBalance: Value(account.currentBalance + totalDeltaKopecks),
+            currentBalance: Value(account.currentBalance + balanceDelta),
             updatedAt: Value(now),
             syncStatus: const Value('pending'),
           ));
         }
       }
 
-      _logger.i(
-          'FinalizeImport: создано ${companions.length} транзакций, '
-          'дельта баланса: $totalDeltaKopecks коп.');
+      _logger.i('FinalizeImport: создано ${created.length}, '
+          'обновлено $updatedExisting, переводов $transfersCreated, '
+          'дельта $balanceDelta');
+      return FinalizeOutcome(
+        created: created,
+        updatedExistingCount: updatedExisting,
+        transfersCreatedCount: transfersCreated,
+        balanceDeltaKopecks: balanceDelta,
+      );
     } catch (e, st) {
       _logger.e('FinalizeImportUseCase failed', error: e, stackTrace: st);
-      rethrow;
+      return null;
     }
   }
 }

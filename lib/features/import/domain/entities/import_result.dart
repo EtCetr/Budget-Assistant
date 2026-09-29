@@ -3,6 +3,7 @@ import 'parsed_row.dart';
 import 'duplicate_candidate.dart';
 import 'transfer_candidate.dart';
 import 'hold_confirmation_candidate.dart';
+import 'import_options.dart';
 
 part 'import_result.freezed.dart';
 
@@ -22,5 +23,6 @@ abstract class ImportResult with _$ImportResult {
     @Default([]) List<DuplicateCandidate> duplicates,
     @Default([]) List<TransferCandidate> transfers,
     @Default([]) List<HoldConfirmationCandidate> holdConfirmations,
+    @Default(ImportOptions()) ImportOptions options,
   }) = _ImportResult;
 }

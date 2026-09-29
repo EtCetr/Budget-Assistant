@@ -226,7 +226,7 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
     if (result == null) return null;
     final dynamic files = result.files;
     if (files == null || (files as List).isEmpty) return null;
-    return (files as List).single.path as String?;
+    return (files).single.path as String?;
   }
   // === STEP 3 ===
 

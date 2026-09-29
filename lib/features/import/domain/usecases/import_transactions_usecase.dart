@@ -107,6 +107,7 @@ class ImportTransactionsUseCase {
         duplicates: duplicates,
         transfers: transfers,
         holdConfirmations: holds,
+        options: options,
       );
     } catch (e, st) {
       _logger.e('ImportTransactionsUseCase failed', error: e, stackTrace: st);
