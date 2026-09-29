@@ -23,7 +23,7 @@ import 'package:budget_assistant/core/logger.dart';
 import 'package:budget_assistant/features/transactions/presentation/screens/transactions_log_screen.dart';
 import 'package:budget_assistant/features/import/presentation/screens/import_onboarding_screen.dart';
 import 'package:budget_assistant/features/import/presentation/screens/post_import_review_screen.dart';
-import 'package:budget_assistant/features/import/presentation/screens/import_secrets_stub_screen.dart';
+import 'package:budget_assistant/features/import/presentation/screens/import_secrets_screen.dart';
 import 'package:budget_assistant/features/import/domain/entities/import_secrecy_handoff.dart';
 import 'package:budget_assistant/features/transactions/presentation/screens/create_transaction_screen.dart';
 import 'package:budget_assistant/features/transactions/presentation/screens/edit_transaction_screen.dart';
@@ -230,7 +230,7 @@ GoRouter appRouter(Ref ref) {
     GoRoute(
       path: '/import/secrets',
       name: 'import-secrets',
-      builder: (context, state) => ImportSecretsStubScreen(handoff: state.extra is ImportSecrecyHandoff ? state.extra as ImportSecrecyHandoff : null),
+      builder: (context, state) => ImportSecretsScreen(handoff: state.extra is ImportSecrecyHandoff ? state.extra as ImportSecrecyHandoff : null),
       ),
       GoRoute(
         path: '/transactions/create',
