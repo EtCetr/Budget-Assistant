@@ -24,6 +24,10 @@ _ParserConfig _$ParserConfigFromJson(
     webExportUrl: $checkedConvert('webExportUrl', (v) => v as String?),
     brandColor: $checkedConvert('brandColor', (v) => v as String?),
     iconAsset: $checkedConvert('iconAsset', (v) => v as String?),
+    detectionPatterns: $checkedConvert(
+      'detectionPatterns',
+      (v) => v as String?,
+    ),
     version: $checkedConvert('version', (v) => (v as num?)?.toInt() ?? 1),
     createdAt: $checkedConvert('createdAt', (v) => DateTime.parse(v as String)),
     updatedAt: $checkedConvert('updatedAt', (v) => DateTime.parse(v as String)),
@@ -44,6 +48,7 @@ Map<String, dynamic> _$ParserConfigToJson(_ParserConfig instance) =>
       'webExportUrl': instance.webExportUrl,
       'brandColor': instance.brandColor,
       'iconAsset': instance.iconAsset,
+      'detectionPatterns': instance.detectionPatterns,
       'version': instance.version,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),

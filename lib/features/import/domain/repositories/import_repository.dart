@@ -8,6 +8,7 @@ abstract class ImportRepository {
   Future<ParserConfig?> getParserConfigByBankCode(String bankCode);
   Future<List<ParserConfig>> searchParserConfigs(String query);
   Future<void> incrementParserUsage(String configId);
+  Future<ParserConfig> createParserConfig(ParserConfig config);
 
   // === Import Drafts ===
   Future<void> saveImportDraft({
@@ -28,7 +29,6 @@ abstract class ImportRepository {
     required String userId,
     String? spaceId,
   });
-
   /// Обновить баланс счёта на дельту.
   Future<void> adjustAccountBalance({
     required String accountId,

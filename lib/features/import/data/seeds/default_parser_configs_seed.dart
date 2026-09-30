@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:budget_assistant/core/database/app_database.dart';
 
 /// Локальные сиды конфигураций банков.
@@ -56,6 +55,10 @@ class DefaultParserConfigsSeed {
       webExportUrl: 'https://www.tbank.ru',
       brandColor: '#FFDD2D',
       iconAsset: 'bank_tbank',
+      detectionPatterns: jsonEncode({
+        'keywords': ['т-банк', 'tinkoff', 't-bank'],
+        'headers': ['дата операции', 'сумма', 'описание'],
+      }),
       version: 1,
       createdAt: now,
       updatedAt: now,
@@ -91,6 +94,10 @@ class DefaultParserConfigsSeed {
       webExportUrl: 'https://online.sberbank.ru',
       brandColor: '#21A038',
       iconAsset: 'bank_sber',
+      detectionPatterns: jsonEncode({
+        'keywords': ['сбер', 'sberbank', 'сбербанк'],
+        'headers': ['дата проводки', 'сумма', 'наименование'],
+      }),
       version: 1,
       createdAt: now,
       updatedAt: now,
@@ -125,6 +132,10 @@ class DefaultParserConfigsSeed {
       webExportUrl: 'https://alfabank.ru',
       brandColor: '#EF3124',
       iconAsset: 'bank_alfa',
+      detectionPatterns: jsonEncode({
+        'keywords': ['альфа', 'alfabank', 'альфа-банк'],
+        'headers': ['дата', 'сумма', 'контрагент'],
+      }),
       version: 1,
       createdAt: now,
       updatedAt: now,

@@ -22093,6 +22093,18 @@ class $ParserConfigsTable extends ParserConfigs
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _detectionPatternsMeta = const VerificationMeta(
+    'detectionPatterns',
+  );
+  @override
+  late final GeneratedColumn<String> detectionPatterns =
+      GeneratedColumn<String>(
+        'detection_patterns',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _versionMeta = const VerificationMeta(
     'version',
   );
@@ -22154,6 +22166,7 @@ class $ParserConfigsTable extends ParserConfigs
     webExportUrl,
     brandColor,
     iconAsset,
+    detectionPatterns,
     version,
     createdAt,
     updatedAt,
@@ -22253,6 +22266,15 @@ class $ParserConfigsTable extends ParserConfigs
         iconAsset.isAcceptableOrUnknown(data['icon_asset']!, _iconAssetMeta),
       );
     }
+    if (data.containsKey('detection_patterns')) {
+      context.handle(
+        _detectionPatternsMeta,
+        detectionPatterns.isAcceptableOrUnknown(
+          data['detection_patterns']!,
+          _detectionPatternsMeta,
+        ),
+      );
+    }
     if (data.containsKey('version')) {
       context.handle(
         _versionMeta,
@@ -22330,6 +22352,10 @@ class $ParserConfigsTable extends ParserConfigs
         DriftSqlType.string,
         data['${effectivePrefix}icon_asset'],
       ),
+      detectionPatterns: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}detection_patterns'],
+      ),
       version: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}version'],
@@ -22377,6 +22403,9 @@ class ParserConfigDb extends DataClass implements Insertable<ParserConfigDb> {
   /// Hex-код цвета бренда.
   final String? brandColor;
   final String? iconAsset;
+
+  /// JSON с паттернами для автоопределения банка.
+  final String? detectionPatterns;
   final int version;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -22393,6 +22422,7 @@ class ParserConfigDb extends DataClass implements Insertable<ParserConfigDb> {
     this.webExportUrl,
     this.brandColor,
     this.iconAsset,
+    this.detectionPatterns,
     required this.version,
     required this.createdAt,
     required this.updatedAt,
@@ -22419,6 +22449,9 @@ class ParserConfigDb extends DataClass implements Insertable<ParserConfigDb> {
     }
     if (!nullToAbsent || iconAsset != null) {
       map['icon_asset'] = Variable<String>(iconAsset);
+    }
+    if (!nullToAbsent || detectionPatterns != null) {
+      map['detection_patterns'] = Variable<String>(detectionPatterns);
     }
     map['version'] = Variable<int>(version);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -22448,6 +22481,9 @@ class ParserConfigDb extends DataClass implements Insertable<ParserConfigDb> {
       iconAsset: iconAsset == null && nullToAbsent
           ? const Value.absent()
           : Value(iconAsset),
+      detectionPatterns: detectionPatterns == null && nullToAbsent
+          ? const Value.absent()
+          : Value(detectionPatterns),
       version: Value(version),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -22472,6 +22508,9 @@ class ParserConfigDb extends DataClass implements Insertable<ParserConfigDb> {
       webExportUrl: serializer.fromJson<String?>(json['webExportUrl']),
       brandColor: serializer.fromJson<String?>(json['brandColor']),
       iconAsset: serializer.fromJson<String?>(json['iconAsset']),
+      detectionPatterns: serializer.fromJson<String?>(
+        json['detectionPatterns'],
+      ),
       version: serializer.fromJson<int>(json['version']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -22493,6 +22532,7 @@ class ParserConfigDb extends DataClass implements Insertable<ParserConfigDb> {
       'webExportUrl': serializer.toJson<String?>(webExportUrl),
       'brandColor': serializer.toJson<String?>(brandColor),
       'iconAsset': serializer.toJson<String?>(iconAsset),
+      'detectionPatterns': serializer.toJson<String?>(detectionPatterns),
       'version': serializer.toJson<int>(version),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -22512,6 +22552,7 @@ class ParserConfigDb extends DataClass implements Insertable<ParserConfigDb> {
     Value<String?> webExportUrl = const Value.absent(),
     Value<String?> brandColor = const Value.absent(),
     Value<String?> iconAsset = const Value.absent(),
+    Value<String?> detectionPatterns = const Value.absent(),
     int? version,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -22530,6 +22571,9 @@ class ParserConfigDb extends DataClass implements Insertable<ParserConfigDb> {
     webExportUrl: webExportUrl.present ? webExportUrl.value : this.webExportUrl,
     brandColor: brandColor.present ? brandColor.value : this.brandColor,
     iconAsset: iconAsset.present ? iconAsset.value : this.iconAsset,
+    detectionPatterns: detectionPatterns.present
+        ? detectionPatterns.value
+        : this.detectionPatterns,
     version: version ?? this.version,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -22560,6 +22604,9 @@ class ParserConfigDb extends DataClass implements Insertable<ParserConfigDb> {
           ? data.brandColor.value
           : this.brandColor,
       iconAsset: data.iconAsset.present ? data.iconAsset.value : this.iconAsset,
+      detectionPatterns: data.detectionPatterns.present
+          ? data.detectionPatterns.value
+          : this.detectionPatterns,
       version: data.version.present ? data.version.value : this.version,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -22583,6 +22630,7 @@ class ParserConfigDb extends DataClass implements Insertable<ParserConfigDb> {
           ..write('webExportUrl: $webExportUrl, ')
           ..write('brandColor: $brandColor, ')
           ..write('iconAsset: $iconAsset, ')
+          ..write('detectionPatterns: $detectionPatterns, ')
           ..write('version: $version, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -22604,6 +22652,7 @@ class ParserConfigDb extends DataClass implements Insertable<ParserConfigDb> {
     webExportUrl,
     brandColor,
     iconAsset,
+    detectionPatterns,
     version,
     createdAt,
     updatedAt,
@@ -22624,6 +22673,7 @@ class ParserConfigDb extends DataClass implements Insertable<ParserConfigDb> {
           other.webExportUrl == this.webExportUrl &&
           other.brandColor == this.brandColor &&
           other.iconAsset == this.iconAsset &&
+          other.detectionPatterns == this.detectionPatterns &&
           other.version == this.version &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -22642,6 +22692,7 @@ class ParserConfigsCompanion extends UpdateCompanion<ParserConfigDb> {
   final Value<String?> webExportUrl;
   final Value<String?> brandColor;
   final Value<String?> iconAsset;
+  final Value<String?> detectionPatterns;
   final Value<int> version;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -22659,6 +22710,7 @@ class ParserConfigsCompanion extends UpdateCompanion<ParserConfigDb> {
     this.webExportUrl = const Value.absent(),
     this.brandColor = const Value.absent(),
     this.iconAsset = const Value.absent(),
+    this.detectionPatterns = const Value.absent(),
     this.version = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -22677,6 +22729,7 @@ class ParserConfigsCompanion extends UpdateCompanion<ParserConfigDb> {
     this.webExportUrl = const Value.absent(),
     this.brandColor = const Value.absent(),
     this.iconAsset = const Value.absent(),
+    this.detectionPatterns = const Value.absent(),
     this.version = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -22699,6 +22752,7 @@ class ParserConfigsCompanion extends UpdateCompanion<ParserConfigDb> {
     Expression<String>? webExportUrl,
     Expression<String>? brandColor,
     Expression<String>? iconAsset,
+    Expression<String>? detectionPatterns,
     Expression<int>? version,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -22717,6 +22771,7 @@ class ParserConfigsCompanion extends UpdateCompanion<ParserConfigDb> {
       if (webExportUrl != null) 'web_export_url': webExportUrl,
       if (brandColor != null) 'brand_color': brandColor,
       if (iconAsset != null) 'icon_asset': iconAsset,
+      if (detectionPatterns != null) 'detection_patterns': detectionPatterns,
       if (version != null) 'version': version,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -22737,6 +22792,7 @@ class ParserConfigsCompanion extends UpdateCompanion<ParserConfigDb> {
     Value<String?>? webExportUrl,
     Value<String?>? brandColor,
     Value<String?>? iconAsset,
+    Value<String?>? detectionPatterns,
     Value<int>? version,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -22755,6 +22811,7 @@ class ParserConfigsCompanion extends UpdateCompanion<ParserConfigDb> {
       webExportUrl: webExportUrl ?? this.webExportUrl,
       brandColor: brandColor ?? this.brandColor,
       iconAsset: iconAsset ?? this.iconAsset,
+      detectionPatterns: detectionPatterns ?? this.detectionPatterns,
       version: version ?? this.version,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -22799,6 +22856,9 @@ class ParserConfigsCompanion extends UpdateCompanion<ParserConfigDb> {
     if (iconAsset.present) {
       map['icon_asset'] = Variable<String>(iconAsset.value);
     }
+    if (detectionPatterns.present) {
+      map['detection_patterns'] = Variable<String>(detectionPatterns.value);
+    }
     if (version.present) {
       map['version'] = Variable<int>(version.value);
     }
@@ -22831,6 +22891,7 @@ class ParserConfigsCompanion extends UpdateCompanion<ParserConfigDb> {
           ..write('webExportUrl: $webExportUrl, ')
           ..write('brandColor: $brandColor, ')
           ..write('iconAsset: $iconAsset, ')
+          ..write('detectionPatterns: $detectionPatterns, ')
           ..write('version: $version, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -43936,6 +43997,7 @@ typedef $$ParserConfigsTableCreateCompanionBuilder =
       Value<String?> webExportUrl,
       Value<String?> brandColor,
       Value<String?> iconAsset,
+      Value<String?> detectionPatterns,
       Value<int> version,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -43955,6 +44017,7 @@ typedef $$ParserConfigsTableUpdateCompanionBuilder =
       Value<String?> webExportUrl,
       Value<String?> brandColor,
       Value<String?> iconAsset,
+      Value<String?> detectionPatterns,
       Value<int> version,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -44023,6 +44086,11 @@ class $$ParserConfigsTableFilterComposer
 
   ColumnFilters<String> get iconAsset => $composableBuilder(
     column: $table.iconAsset,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get detectionPatterns => $composableBuilder(
+    column: $table.detectionPatterns,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -44111,6 +44179,11 @@ class $$ParserConfigsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get detectionPatterns => $composableBuilder(
+    column: $table.detectionPatterns,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get version => $composableBuilder(
     column: $table.version,
     builder: (column) => ColumnOrderings(column),
@@ -44186,6 +44259,11 @@ class $$ParserConfigsTableAnnotationComposer
   GeneratedColumn<String> get iconAsset =>
       $composableBuilder(column: $table.iconAsset, builder: (column) => column);
 
+  GeneratedColumn<String> get detectionPatterns => $composableBuilder(
+    column: $table.detectionPatterns,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get version =>
       $composableBuilder(column: $table.version, builder: (column) => column);
 
@@ -44243,6 +44321,7 @@ class $$ParserConfigsTableTableManager
                 Value<String?> webExportUrl = const Value.absent(),
                 Value<String?> brandColor = const Value.absent(),
                 Value<String?> iconAsset = const Value.absent(),
+                Value<String?> detectionPatterns = const Value.absent(),
                 Value<int> version = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -44260,6 +44339,7 @@ class $$ParserConfigsTableTableManager
                 webExportUrl: webExportUrl,
                 brandColor: brandColor,
                 iconAsset: iconAsset,
+                detectionPatterns: detectionPatterns,
                 version: version,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -44279,6 +44359,7 @@ class $$ParserConfigsTableTableManager
                 Value<String?> webExportUrl = const Value.absent(),
                 Value<String?> brandColor = const Value.absent(),
                 Value<String?> iconAsset = const Value.absent(),
+                Value<String?> detectionPatterns = const Value.absent(),
                 Value<int> version = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -44296,6 +44377,7 @@ class $$ParserConfigsTableTableManager
                 webExportUrl: webExportUrl,
                 brandColor: brandColor,
                 iconAsset: iconAsset,
+                detectionPatterns: detectionPatterns,
                 version: version,
                 createdAt: createdAt,
                 updatedAt: updatedAt,

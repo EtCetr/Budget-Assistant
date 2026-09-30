@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
+
 /// Remote Config для Batch-импорта (ТОМ 2 §19.1).
-/// config_json НЕ шифруется E2E — публичные метаданные схем банков.
+/// configJson НЕ шифруется E2E — публичные метаданные схем банков.
 /// До Этапа 25: локальные сиды, sync_status='pending'.
 @DataClassName('ParserConfigDb')
 class ParserConfigs extends Table {
@@ -20,6 +21,8 @@ class ParserConfigs extends Table {
   /// Hex-код цвета бренда.
   TextColumn get brandColor => text().nullable()();
   TextColumn get iconAsset => text().nullable()();
+  /// JSON с паттернами для автоопределения банка.
+  TextColumn get detectionPatterns => text().nullable()();
   IntColumn get version => integer().withDefault(const Constant(1))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();

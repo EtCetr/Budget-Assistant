@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
@@ -68,6 +67,36 @@ class ImportRepositoryImpl implements ImportRepository {
       await _parserConfigsDao.incrementUsageCount(configId);
     } catch (e, st) {
       _logger.e('incrementParserUsage failed', error: e, stackTrace: st);
+    }
+  }
+
+  @override
+  Future<ParserConfig> createParserConfig(ParserConfig config) async {
+    try {
+      final dbRow = ParserConfigDb(
+        id: config.id,
+        bankName: config.bankName,
+        bankCode: config.bankCode,
+        isPopular: config.isPopular,
+        usageCount: config.usageCount,
+        supportedFormats: jsonEncode(config.supportedFormats),
+        configJson: config.configJson,
+        instructionText: config.instructionText,
+        webExportUrl: config.webExportUrl,
+        brandColor: config.brandColor,
+        iconAsset: config.iconAsset,
+        detectionPatterns: config.detectionPatterns,
+        version: config.version,
+        createdAt: config.createdAt,
+        updatedAt: config.updatedAt,
+        syncStatus: 'pending',
+      );
+      await _parserConfigsDao.insertOrReplace(dbRow);
+      _logger.i('Создан новый банк: ${config.bankName}');
+      return config;
+    } catch (e, st) {
+      _logger.e('createParserConfig failed', error: e, stackTrace: st);
+      rethrow;
     }
   }
 
@@ -225,6 +254,7 @@ class ImportRepositoryImpl implements ImportRepository {
       webExportUrl: row.webExportUrl,
       brandColor: row.brandColor,
       iconAsset: row.iconAsset,
+      detectionPatterns: row.detectionPatterns,
       version: row.version,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

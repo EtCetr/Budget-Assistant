@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
 import 'package:budget_assistant/core/router/app_router.dart';
 import 'package:budget_assistant/core/theme/motion_tokens.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
@@ -13,6 +14,7 @@ import 'package:budget_assistant/features/import/domain/entities/import_result.d
 import 'package:budget_assistant/features/import/domain/entities/parsed_file.dart';
 import 'package:budget_assistant/features/import/domain/entities/parser_config.dart';
 import 'package:budget_assistant/features/import/domain/entities/preview_table_data.dart';
+import 'package:budget_assistant/features/import/domain/usecases/detect_bank_from_file_usecase.dart';
 import 'import_repository_providers.dart';
 import 'import_wizard_providers.dart';
 
@@ -20,42 +22,55 @@ import 'import_wizard_providers.dart';
 class ImportOnboardingState {
   const ImportOnboardingState({
     this.step = 1,
-    this.searchQuery = '',
+    this.filePath,
+    this.fileName,
+    this.fileSizeBytes,
+    this.fileFormat,
+    this.detectedBanks = const [],
     this.selectedConfig,
-    this.format = 'csv',
+    this.customBankName,
     this.parsedFile,
     this.mapping,
     this.scopeFamily = false,
     this.targetAccountId,
     this.options = const ImportOptions(),
-    this.isParsing = false,
-    this.isLaunching = false,
-    this.parseErrorCode,
+    this.isProcessing = false,
     this.snackMessage,
     this.draftBankName,
   });
 
   final int step;
-  final String searchQuery;
+  
+  /// Шаг 1: файл
+  final String? filePath;
+  final String? fileName;
+  final int? fileSizeBytes;
+  final String? fileFormat;
+  
+  /// Шаг 2: детект банка
+  final List<DetectedBank> detectedBanks;
   final ParserConfig? selectedConfig;
-  final String format;
+  final String? customBankName;
+  
+  /// Шаг 3: маппинг
   final ParsedFile? parsedFile;
   final ColumnMapping? mapping;
+  
+  /// Шаг 4: счёт
   final bool scopeFamily;
   final String? targetAccountId;
   final ImportOptions options;
-  final bool isParsing;
-  final bool isLaunching;
-  final String? parseErrorCode;
+  
+  final bool isProcessing;
   final String? snackMessage;
   final String? draftBankName;
 
   bool get canNext {
     switch (step) {
       case 1:
-        return selectedConfig != null;
+        return filePath != null;
       case 2:
-        return parsedFile != null;
+        return selectedConfig != null || customBankName != null;
       case 3:
         return mapping != null && (parsedFile?.parseResult.rows.isNotEmpty ?? false);
       default:
@@ -65,48 +80,53 @@ class ImportOnboardingState {
 
   ImportOnboardingState copyWith({
     int? step,
-    String? searchQuery,
+    String? filePath,
+    String? fileName,
+    int? fileSizeBytes,
+    String? fileFormat,
+    List<DetectedBank>? detectedBanks,
     ParserConfig? selectedConfig,
-    String? format,
+    String? customBankName,
     ParsedFile? parsedFile,
     ColumnMapping? mapping,
     bool? scopeFamily,
     String? targetAccountId,
     ImportOptions? options,
-    bool? isParsing,
-    bool? isLaunching,
-    String? parseErrorCode,
+    bool? isProcessing,
     String? snackMessage,
     String? draftBankName,
+    bool clearFile = false,
+    bool clearBank = false,
     bool clearParsed = false,
     bool clearDraft = false,
     bool clearSnack = false,
-    bool clearError = false,
   }) {
     return ImportOnboardingState(
       step: step ?? this.step,
-      searchQuery: searchQuery ?? this.searchQuery,
-      selectedConfig: selectedConfig ?? this.selectedConfig,
-      format: format ?? this.format,
+      filePath: clearFile ? null : (filePath ?? this.filePath),
+      fileName: clearFile ? null : (fileName ?? this.fileName),
+      fileSizeBytes: clearFile ? null : (fileSizeBytes ?? this.fileSizeBytes),
+      fileFormat: clearFile ? null : (fileFormat ?? this.fileFormat),
+      detectedBanks: clearBank ? const [] : (detectedBanks ?? this.detectedBanks),
+      selectedConfig: clearBank ? null : (selectedConfig ?? this.selectedConfig),
+      customBankName: clearBank ? null : (customBankName ?? this.customBankName),
       parsedFile: clearParsed ? null : (parsedFile ?? this.parsedFile),
       mapping: clearParsed ? null : (mapping ?? this.mapping),
       scopeFamily: scopeFamily ?? this.scopeFamily,
       targetAccountId: targetAccountId ?? this.targetAccountId,
       options: options ?? this.options,
-      isParsing: isParsing ?? this.isParsing,
-      isLaunching: isLaunching ?? this.isLaunching,
-      parseErrorCode: clearError ? null : (parseErrorCode ?? this.parseErrorCode),
+      isProcessing: isProcessing ?? this.isProcessing,
       snackMessage: clearSnack ? null : (snackMessage ?? this.snackMessage),
       draftBankName: clearDraft ? null : (draftBankName ?? this.draftBankName),
     );
   }
 }
 
-/// Notifier wizard'а: шаги, файл, маппинг, автосейв черновика каждые 5 сек.
+/// Notifier wizard'а: шаги, файл, автодетект банка, маппинг, автосейв.
 class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
-  bool _disposed = false;
   Timer? _saveTimer;
   Timer? _reparseTimer;
+  bool _disposed = false;
 
   @override
   ImportOnboardingState build() {
@@ -115,7 +135,7 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
       _saveTimer?.cancel();
       _reparseTimer?.cancel();
     });
-    Future.microtask(_checkDraft);
+    Future.microtask(_cleanOldDrafts);
     return const ImportOnboardingState();
   }
 
@@ -136,82 +156,15 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
 
   void clearSnack() => state = state.copyWith(clearSnack: true);
 
-  // === STEP 1 ===
-
-  void setSearch(String q) => state = state.copyWith(searchQuery: q);
-
-  void selectConfig(ParserConfig config) {
-    MotionTokens.selection();
-    final format = config.supportedFormats.isNotEmpty
-        ? config.supportedFormats.first
-        : 'csv';
-    state = state.copyWith(
-      selectedConfig: config,
-      format: format,
-      clearParsed: true,
-    );
-    _scheduleSave();
-  }
-
-  void setFormat(String format) {
-    MotionTokens.light();
-    state = state.copyWith(format: format, clearParsed: true);
-    _scheduleSave();
-  }
-
-  // === STEP 2 ===
-
-  Future<void> pickFile() async {
-    final config = state.selectedConfig;
-    if (config == null) return;
-    MotionTokens.medium();
-    state = state.copyWith(isParsing: true, clearError: true);
-    try {
-      final path = await _pickFilePath();
-      if (path == null) {
-        state = state.copyWith(isParsing: false);
-        return;
-      }
-      final outcome = await ref
-          .read(parseImportFileUseCaseProvider)
-          .call(sourcePath: path, config: config);
-      if (outcome.isSuccess && outcome.file != null) {
-        state = state.copyWith(
-          isParsing: false,
-          parsedFile: outcome.file,
-          mapping: outcome.file!.detectedMapping,
-          snackMessage: outcome.file!.detectionConfidence >= 0.8
-              ? 'Колонки определены автоматически'
-              : 'Проверьте маппинг колонок на шаге 3',
-        );
-        _scheduleSave();
-      } else {
-        MotionTokens.error();
-        state = state.copyWith(
-          isParsing: false,
-          parseErrorCode: outcome.errorCode ?? 'parse_error',
-        );
-      }
-    } catch (_) {
-      MotionTokens.error();
-      state = state.copyWith(isParsing: false, parseErrorCode: 'parse_error');
-    }
-  }
-
-  /// file_picker менял API между мажорными версиями
-  /// (platform -> instance -> static). Динамический диспетчер
-  /// гарантирует компиляцию и работу с любой установленной версией.
-  Future<String?> _pickFilePath() async {
-    const exts = ['csv', 'xlsx', 'pdf'];
+  /// Динамический диспетчер FilePicker API (static/instance/platform).
+  Future<dynamic> _pickFile() async {
     dynamic result;
     try {
-      // Современный static API (file_picker 11+).
       result = await (FilePicker as dynamic).pickFiles(
         type: FileType.custom,
-        allowedExtensions: exts,
+        allowedExtensions: const ['csv', 'xlsx', 'pdf'],
       );
     } catch (_) {
-      // Старые версии: instance / platform.
       dynamic picker;
       try {
         picker = (FilePicker as dynamic).instance;
@@ -220,15 +173,199 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
       }
       result = await picker.pickFiles(
         type: FileType.custom,
-        allowedExtensions: exts,
+        allowedExtensions: const ['csv', 'xlsx', 'pdf'],
       );
     }
-    if (result == null) return null;
-    final dynamic files = result.files;
-    if (files == null || (files as List).isEmpty) return null;
-    return (files).single.path as String?;
+    return result;
   }
-  // === STEP 3 ===
+  // === STEP 1: Загрузка файла ===
+
+  Future<void> pickFile() async {
+    MotionTokens.medium();
+    state = state.copyWith(isProcessing: true, clearSnack: true);
+    try {
+      final res = await _pickFile();
+      final path = res?.files?.single?.path;
+      if (path == null) {
+        state = state.copyWith(isProcessing: false);
+        return;
+      }
+
+      final file = File(path);
+      final size = await file.length();
+      final ext = path.split('.').last.toLowerCase();
+
+      state = state.copyWith(
+        isProcessing: false,
+        filePath: path,
+        fileName: path.split(Platform.pathSeparator).last,
+        fileSizeBytes: size,
+        fileFormat: ext,
+        clearBank: true,
+        clearParsed: true,
+      );
+
+      // Автодетект банка
+      await _detectBank(path);
+    } catch (e) {
+      state = state.copyWith(
+        isProcessing: false,
+        snackMessage: 'Ошибка загрузки файла',
+      );
+    }
+  }
+
+  Future<void> _detectBank(String filePath) async {
+    try {
+      final configs = await ref.read(parserConfigsListProvider.future);
+      final useCase = DetectBankFromFileUseCase(logger: ref.read(_loggerProvider));
+      final detected = await useCase.call(filePath: filePath, configs: configs);
+      if (!_disposed) {
+        state = state.copyWith(detectedBanks: detected);
+        if (detected.isNotEmpty && detected.first.confidence >= 0.7) {
+          // Автовыбор банка с высокой уверенностью
+          final config = configs.firstWhere(
+            (c) => c.bankCode == detected.first.bankCode,
+            orElse: () => configs.first,
+          );
+          state = state.copyWith(selectedConfig: config);
+        }
+      }
+    } catch (e) {
+      if (!_disposed) {
+        state = state.copyWith(snackMessage: 'Не удалось определить банк');
+      }
+    }
+  }
+
+  // === STEP 2: Выбор/создание банка ===
+
+  void selectDetectedBank(String bankCode) {
+    MotionTokens.selection();
+    final configs = ref.read(parserConfigsListProvider).value ?? [];
+    final config = configs.firstWhere(
+      (c) => c.bankCode == bankCode,
+      orElse: () => configs.first,
+    );
+    state = state.copyWith(
+      selectedConfig: config,
+      customBankName: null,
+    );
+    _scheduleSave();
+  }
+
+  void setCustomBankName(String name) {
+    MotionTokens.selection();
+    state = state.copyWith(
+      customBankName: name,
+      selectedConfig: null,
+    );
+    _scheduleSave();
+  }
+
+  Future<void> createNewBank({
+    required String bankName,
+    required String bankCode,
+    required List<String> formats,
+    String? instructionText,
+    String? brandColor,
+  }) async {
+    MotionTokens.medium();
+    state = state.copyWith(isProcessing: true);
+    try {
+      final config = ParserConfig(
+        id: 'pc_${DateTime.now().millisecondsSinceEpoch}',
+        bankName: bankName,
+        bankCode: bankCode,
+        isPopular: false,
+        usageCount: 0,
+        supportedFormats: formats,
+        configJson: jsonEncode({
+          'csv': {
+            'encoding': 'UTF-8',
+            'separator': ';',
+            'skip_rows': 0,
+            'date_format': 'dd.MM.yyyy',
+          },
+        }),
+        instructionText: instructionText,
+        brandColor: brandColor,
+        detectionPatterns: jsonEncode({
+          'keywords': [bankName.toLowerCase()],
+          'headers': [],
+        }),
+        version: 1,
+        createdAt: DateTime.now().toUtc(),
+        updatedAt: DateTime.now().toUtc(),
+      );
+
+      await ref.read(importRepositoryProvider).createParserConfig(config);
+      
+      if (!_disposed) {
+        ref.invalidate(parserConfigsListProvider);
+        state = state.copyWith(
+          isProcessing: false,
+          selectedConfig: config,
+          customBankName: null,
+          snackMessage: 'Банк "$bankName" добавлен',
+        );
+      }
+    } catch (e) {
+      if (!_disposed) {
+        state = state.copyWith(
+          isProcessing: false,
+          snackMessage: 'Ошибка создания банка',
+        );
+      }
+    }
+  }
+
+  // === STEP 3: Маппинг ===
+
+  Future<void> parseFileWithConfig() async {
+    final config = state.selectedConfig;
+    if (config == null || state.filePath == null) return;
+    
+    MotionTokens.medium();
+    state = state.copyWith(isProcessing: true);
+    
+    try {
+      final useCase = ref.read(parseImportFileUseCaseProvider);
+      final outcome = await useCase.call(
+        sourcePath: state.filePath!,
+        config: config,
+      );
+
+      if (outcome.isSuccess && outcome.file != null) {
+        if (!_disposed) {
+          state = state.copyWith(
+            isProcessing: false,
+            parsedFile: outcome.file,
+            mapping: outcome.file!.detectedMapping,
+            snackMessage: outcome.file!.detectionConfidence >= 0.8
+                ? 'Колонки определены автоматически'
+                : 'Проверьте маппинг колонок',
+          );
+          _scheduleSave();
+        }
+      } else {
+        if (!_disposed) {
+          MotionTokens.error();
+          state = state.copyWith(
+            isProcessing: false,
+            snackMessage: 'Не удалось распарсить файл',
+          );
+        }
+      }
+    } catch (e) {
+      if (!_disposed) {
+        state = state.copyWith(
+          isProcessing: false,
+          snackMessage: 'Ошибка парсинга',
+        );
+      }
+    }
+  }
 
   void updateMapping(ColumnMapping mapping) {
     state = state.copyWith(mapping: mapping);
@@ -242,26 +379,29 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
     final mapping = state.mapping;
     final config = state.selectedConfig;
     if (file == null || mapping == null || config == null) return;
+    
     final result = await ref.read(parseImportFileUseCaseProvider).reparse(
-          storedPath: file.storedPath,
-          format: file.format,
-          configJson: config.configJson,
-          mapping: mapping,
-        );
-    if (_disposed) return;
-    state = state.copyWith(
-      parsedFile: ParsedFile(
-        storedPath: file.storedPath,
-        fileName: file.fileName,
-        fileSizeBytes: file.fileSizeBytes,
-        format: file.format,
-        rawRows: result.rawRows.isEmpty ? file.rawRows : result.rawRows,
-        detectedMapping: state.mapping ?? file.detectedMapping,
-        detectionConfidence: file.detectionConfidence,
-        parseResult: result,
-      ),
+      storedPath: file.storedPath,
+      format: file.format,
+      configJson: config.configJson,
+      mapping: mapping,
     );
-    _scheduleSave();
+    
+    if (!_disposed) {
+      state = state.copyWith(
+        parsedFile: ParsedFile(
+          storedPath: file.storedPath,
+          fileName: file.fileName,
+          fileSizeBytes: file.fileSizeBytes,
+          format: file.format,
+          rawRows: result.rawRows.isEmpty ? file.rawRows : result.rawRows,
+          detectedMapping: state.mapping ?? file.detectedMapping,
+          detectionConfidence: file.detectionConfidence,
+          parseResult: result,
+        ),
+      );
+      _scheduleSave();
+    }
   }
 
   PreviewTableData previewTable() {
@@ -270,17 +410,7 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
     return ref.read(previewImportDataUseCaseProvider).call(file.rawRows);
   }
 
-  List<String> currentInstructions() {
-    final raw = state.selectedConfig?.instructionText;
-    if (raw == null || raw.isEmpty) return const [];
-    try {
-      final decoded = jsonDecode(raw);
-      if (decoded is List) return decoded.map((e) => e.toString()).toList();
-    } catch (_) {}
-    return const [];
-  }
-
-  // === STEP 4 ===
+  // === STEP 4: Счёт + опции ===
 
   void setScopeFamily(bool family) {
     MotionTokens.selection();
@@ -299,30 +429,34 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
     _scheduleSave();
   }
 
-  /// Запуск детекций -> ImportResult (запись в БД — на review, 15.4).
   Future<ImportResult?> launchImport() async {
     final config = state.selectedConfig;
     final mapping = state.mapping;
     final file = state.parsedFile;
     final accountId = state.targetAccountId;
+    
     if (config == null || mapping == null || file == null || accountId == null) {
       return null;
     }
+    
     MotionTokens.medium();
-    state = state.copyWith(isLaunching: true);
+    state = state.copyWith(isProcessing: true);
+    
     try {
       final userId = ref.read(currentUserIdProvider);
       final spaceId = state.scopeFamily ? ref.read(currentSpaceIdProvider) : null;
+      
       final result = await ref.read(importTransactionsUseCaseProvider).call(
-            storedPath: file.storedPath,
-            format: file.format,
-            config: config,
-            mapping: mapping,
-            targetAccountId: accountId,
-            targetSpaceId: spaceId,
-            userId: userId,
-            options: state.options,
-          );
+        storedPath: file.storedPath,
+        format: file.format,
+        config: config,
+        mapping: mapping,
+        targetAccountId: accountId,
+        targetSpaceId: spaceId,
+        userId: userId,
+        options: state.options,
+      );
+
       if (result != null) {
         await ref.read(importRepositoryProvider).incrementParserUsage(config.id);
         await ref.read(importRepositoryProvider).deleteImportDraft(userId);
@@ -335,11 +469,11 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
       MotionTokens.error();
       return null;
     } finally {
-      if (!_disposed) state = state.copyWith(isLaunching: false);
+      if (!_disposed) state = state.copyWith(isProcessing: false);
     }
   }
 
-  // === Черновик (автосейв 5 сек) ===
+  // === Черновик ===
 
   void _scheduleSave() {
     _saveTimer?.cancel();
@@ -348,147 +482,53 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
 
   Future<void> _saveDraft() async {
     final config = state.selectedConfig;
-    final file = state.parsedFile;
+    final file = state.filePath;
     if (config == null || file == null) return;
+    
     try {
       final userId = ref.read(currentUserIdProvider);
       final mapping = state.mapping;
+      
       await ref.read(importRepositoryProvider).saveImportDraft(
-            userId: userId,
-            bankName: config.bankName,
-            filePath: file.storedPath,
-            wizardStateJson: jsonEncode({
-              'step': state.step,
-              'scopeFamily': state.scopeFamily,
-              'targetAccountId': state.targetAccountId,
-              'format': state.format,
-              'bankCode': config.bankCode,
-              'options': [
-                state.options.detectDuplicates,
-                state.options.detectTransfers,
-                state.options.checkSecrecy,
-                state.options.autoCategorize,
-                state.options.detectRecurring,
-              ],
-            }),
-            mappingJson: mapping == null ? null : jsonEncode({
-              'date': mapping.dateColumnIndex,
-              'amount': mapping.amountColumnIndex,
-              'merchant': mapping.merchantColumnIndex,
-              'category': mapping.categoryColumnIndex,
-              'comment': mapping.commentColumnIndex,
-              'currency': mapping.currencyColumnIndex,
-              'dateFormat': mapping.dateFormat,
-              'sep': mapping.csvSeparator,
-              'enc': mapping.encoding,
-              'skip': mapping.skipRows,
-              'neg': mapping.expenseIsNegative,
-            }),
-          );
+        userId: userId,
+        bankName: config.bankName,
+        filePath: file,
+        wizardStateJson: jsonEncode({
+          'step': state.step,
+          'scopeFamily': state.scopeFamily,
+          'targetAccountId': state.targetAccountId,
+          'fileFormat': state.fileFormat,
+          'bankCode': config.bankCode,
+          'options': [
+            state.options.detectDuplicates,
+            state.options.detectTransfers,
+            state.options.checkSecrecy,
+            state.options.autoCategorize,
+            state.options.detectRecurring,
+          ],
+        }),
+        mappingJson: mapping == null ? null : jsonEncode({
+          'date': mapping.dateColumnIndex,
+          'amount': mapping.amountColumnIndex,
+          'merchant': mapping.merchantColumnIndex,
+          'category': mapping.categoryColumnIndex,
+          'comment': mapping.commentColumnIndex,
+          'currency': mapping.currencyColumnIndex,
+          'dateFormat': mapping.dateFormat,
+          'sep': mapping.csvSeparator,
+          'enc': mapping.encoding,
+          'skip': mapping.skipRows,
+          'neg': mapping.expenseIsNegative,
+        }),
+      );
     } catch (_) {}
   }
 
-  Future<void> _checkDraft() async {
+  Future<void> _cleanOldDrafts() async {
     try {
-      final userId = ref.read(currentUserIdProvider);
-      final draft = await ref.read(importRepositoryProvider).getImportDraft(userId);
-      final bankName = draft?['bankName'] as String?;
-      if (bankName != null && !_disposed) {
-        state = state.copyWith(draftBankName: bankName);
-      }
+      final cutoff = DateTime.now().toUtc().subtract(const Duration(days: 7));
+      await ref.read(importDraftsDaoProvider).deleteOlderThan(cutoff);
     } catch (_) {}
-  }
-
-  void dismissDraft() {
-    final userId = ref.read(currentUserIdProvider);
-    ref.read(importRepositoryProvider).deleteImportDraft(userId);
-    state = state.copyWith(clearDraft: true);
-  }
-
-  Future<void> restoreDraft() async {
-    state = state.copyWith(clearDraft: true, isParsing: true);
-    try {
-      final userId = ref.read(currentUserIdProvider);
-      final draft = await ref.read(importRepositoryProvider).getImportDraft(userId);
-      if (draft == null) {
-        state = state.copyWith(isParsing: false);
-        return;
-      }
-      final wizard = (jsonDecode(draft['wizardStateJson'] as String? ?? '{}')
-          as Map<String, dynamic>);
-      final bankCode = wizard['bankCode'] as String?;
-      final configs = await ref.read(fetchParserConfigsUseCaseProvider).call();
-      final config = configs.where((c) => c.bankCode == bankCode).firstOrNull;
-      final storedPath = draft['filePath'] as String?;
-      if (config == null || storedPath == null || !File(storedPath).existsSync()) {
-        state = state.copyWith(
-          isParsing: false,
-          snackMessage: 'Черновик устарел, начните заново',
-        );
-        return;
-      }
-      ColumnMapping mapping = const ColumnMapping(
-        dateColumnIndex: 0,
-        amountColumnIndex: 1,
-        merchantColumnIndex: 2,
-      );
-      final rawMapping =
-          jsonDecode(draft['mappingJson'] as String? ?? '{}') as Map<String, dynamic>;
-      if (rawMapping.isNotEmpty) {
-        mapping = ColumnMapping(
-          dateColumnIndex: (rawMapping['date'] as int?) ?? 0,
-          amountColumnIndex: (rawMapping['amount'] as int?) ?? 1,
-          merchantColumnIndex: (rawMapping['merchant'] as int?) ?? 2,
-          categoryColumnIndex: rawMapping['category'] as int?,
-          commentColumnIndex: rawMapping['comment'] as int?,
-          currencyColumnIndex: rawMapping['currency'] as int?,
-          dateFormat: (rawMapping['dateFormat'] as String?) ?? 'dd.MM.yyyy',
-          csvSeparator: (rawMapping['sep'] as String?) ?? ';',
-          encoding: (rawMapping['enc'] as String?) ?? 'UTF-8',
-          skipRows: (rawMapping['skip'] as int?) ?? 0,
-          expenseIsNegative: (rawMapping['neg'] as bool?) ?? true,
-        );
-      }
-      final format = (wizard['format'] as String?) ?? 'csv';
-      final result = await ref.read(parseImportFileUseCaseProvider).reparse(
-            storedPath: storedPath,
-            format: format,
-            configJson: config.configJson,
-            mapping: mapping,
-          );
-      final opts = wizard['options'] as List<dynamic>?;
-      state = state.copyWith(
-        isParsing: false,
-        selectedConfig: config,
-        format: format,
-        step: (wizard['step'] as int?) ?? 2,
-        scopeFamily: (wizard['scopeFamily'] as bool?) ?? false,
-        targetAccountId: wizard['targetAccountId'] as String?,
-        options: opts == null
-            ? const ImportOptions()
-            : ImportOptions(
-                detectDuplicates: (opts.elementAtOrNull(0) as bool?) ?? true,
-                detectTransfers: (opts.elementAtOrNull(1) as bool?) ?? true,
-                checkSecrecy: (opts.elementAtOrNull(2) as bool?) ?? true,
-                autoCategorize: (opts.elementAtOrNull(3) as bool?) ?? true,
-                detectRecurring: (opts.elementAtOrNull(4) as bool?) ?? true,
-              ),
-        mapping: mapping,
-        parsedFile: ParsedFile(
-          storedPath: storedPath,
-          fileName: storedPath.split(Platform.pathSeparator).last,
-          fileSizeBytes: File(storedPath).lengthSync(),
-          format: format,
-          rawRows: result.rawRows,
-          detectedMapping: mapping,
-          detectionConfidence: 0,
-          parseResult: result,
-        ),
-        snackMessage: 'Черновик восстановлен',
-      );
-    } catch (_) {
-      state = state.copyWith(isParsing: false);
-    }
   }
 }
 
@@ -496,9 +536,10 @@ final importOnboardingProvider =
     NotifierProvider<ImportOnboardingNotifier, ImportOnboardingState>(
         ImportOnboardingNotifier.new);
 
-/// Поиск банков: пусто -> весь список, иначе LIKE по bank_name.
-final bankSearchProvider =
-    FutureProvider.family<List<ParserConfig>, String>((ref, query) async {
-  final useCase = ref.watch(fetchParserConfigsUseCaseProvider);
-  return query.trim().isEmpty ? useCase.call() : useCase.search(query);
+final _loggerProvider = Provider<Logger>((ref) {
+  return Logger(printer: PrettyPrinter(methodCount: 2));
+});
+
+final parserConfigsListProvider = FutureProvider<List<ParserConfig>>((ref) {
+  return ref.watch(fetchParserConfigsUseCaseProvider).call();
 });
