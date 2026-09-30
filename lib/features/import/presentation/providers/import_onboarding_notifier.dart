@@ -158,25 +158,10 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
 
   /// Динамический диспетчер FilePicker API (static/instance/platform).
   Future<dynamic> _pickFile() async {
-    dynamic result;
-    try {
-      result = await (FilePicker as dynamic).pickFiles(
-        type: FileType.custom,
-        allowedExtensions: const ['csv', 'xlsx', 'pdf'],
-      );
-    } catch (_) {
-      dynamic picker;
-      try {
-        picker = (FilePicker as dynamic).instance;
-      } catch (_) {
-        picker = (FilePicker as dynamic).platform;
-      }
-      result = await picker.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: const ['csv', 'xlsx', 'pdf'],
-      );
-    }
-    return result;
+    return await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['csv', 'xlsx', 'pdf'],
+    );
   }
   // === STEP 1: Загрузка файла ===
 
