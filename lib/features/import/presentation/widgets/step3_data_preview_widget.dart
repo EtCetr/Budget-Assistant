@@ -121,11 +121,14 @@ class Step3DataPreviewWidget extends ConsumerWidget {
             }
           },
         ),
-        SwitchListTile(
-          title: const Text('Расход — отрицательное число'),
-          value: mapping.expenseIsNegative,
-          onChanged: (v) =>
-              notifier.updateMapping(mapping.copyWith(expenseIsNegative: v)),
+        Material(
+          color: Colors.transparent,
+          child: SwitchListTile(
+            title: const Text('Расход — отрицательное число'),
+            value: mapping.expenseIsNegative,
+              onChanged: (v) =>
+                notifier.updateMapping(mapping.copyWith(expenseIsNegative: v)),
+          ),
         ),
       ],
     );

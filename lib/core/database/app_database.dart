@@ -529,7 +529,7 @@ class AppDatabase extends _$AppDatabase {
   /// v13: Этап 14 — reminders, holidays, recurring_transactions,
   /// forecast_cache, reminder_drafts + 5 колонок app_settings + сиды РФ.
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   Future<void> _createSavingsIndexes() async {
     await customStatement('''
@@ -871,7 +871,13 @@ ON dashboard_widgets(sync_status)
           await _createImportIndexes();
           await DefaultParserConfigsSeed.seedIfEmpty(this);
         }
-        if (from < 13) {
+        if (from < 15) {
+  // Этап 15: добавляем колонку detection_patterns для автоопределения банка
+  await customStatement(
+    'ALTER TABLE parser_configs ADD COLUMN detection_patterns TEXT',
+  );
+}
+if (from < 13) {
             // Этап 14: Reminders (RRULE) + Calendar.
             await m.createTable(recurringTransactions);
             await m.createTable(reminders);

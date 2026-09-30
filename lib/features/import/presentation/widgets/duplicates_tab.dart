@@ -65,18 +65,27 @@ class DuplicatesTab extends ConsumerWidget {
                   },
                   child: const Column(
                     children: [
-                      RadioListTile<DuplicateAction>(
-                          title: Text('Пропустить импорт'),
-                          value: DuplicateAction.skip,
-                          dense: true),
-                      RadioListTile<DuplicateAction>(
-                          title: Text('Заменить существующую'),
-                          value: DuplicateAction.replace,
-                          dense: true),
-                      RadioListTile<DuplicateAction>(
-                          title: Text('Импортировать обе'),
-                          value: DuplicateAction.both,
-                          dense: true),
+                      Material(
+                        color: Colors.transparent,
+                        child: RadioListTile<DuplicateAction>(
+                            title: Text('Пропустить импорт'),
+                            value: DuplicateAction.skip,
+                            dense: true),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        child: RadioListTile<DuplicateAction>(
+                            title: Text('Заменить существующую'),
+                            value: DuplicateAction.replace,
+                            dense: true),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        child: RadioListTile<DuplicateAction>(
+                            title: Text('Импортировать обе'),
+                            value: DuplicateAction.both,
+                            dense: true),
+                      ),
                     ],
                   ),
                 ),

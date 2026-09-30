@@ -2,36 +2,58 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
-
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:pdfx/pdfx.dart';
-
 import 'package:budget_assistant/features/import/domain/entities/column_mapping.dart';
 import 'package:budget_assistant/features/import/domain/entities/parsed_row.dart';
 import 'import_file_parser.dart';
 
-/// Парсер PDF-выписок банков.
-/// Пайплайн: pdfx (нативный PdfRenderer) -> bitmap страницы ->
-/// ML Kit Text Recognition (офлайн, модель в APK) -> regex из parser_configs.
-/// Кириллица поддерживается латинской моделью ML Kit v2.
+/// Парсер PDF через OCR (ML Kit).
+/// Пайплайн: pdfx рендер страницы в PNG (2000px) → ML Kit OCR → regex парсинг.
 class PdfParser implements ImportFileParser {
   final Logger _logger;
-
-  /// config_json выбранного банка (секция pdf.regex_patterns).
   final String _configJson;
-
   static const int _maxPages = 60;
-  static const double _renderWidth = 1400;
+  static const double _renderWidth = 2000;
 
   static const String _defaultDatePattern = r'\d{2}[./]\d{2}[./]\d{4}';
   static const String _defaultAmountPattern =
-      r'-?\d{1,3}(?:[\s\u00A0]\d{3})*[.,]\d{2}';
+      r'[+\-\u2013]?\s*\d{1,3}(?:[\s\u00A0]\d{3})*[.,]\d{2}';
 
   static const List<String> _incomeKeywords = [
-    'поступление', 'зачисление', 'возврат', 'кэшбэк', 'кешбэк',
-    'cashback', 'перевод от', 'сбп от',
+    'капитализация процентов',
+    'поступление',
+    'зачисление',
+    'возврат',
+    'кэшбэк',
+    'кешбэк',
+    'cashback',
+    'входящий перевод',
+    'начисление',
+  ];
+
+  static const List<String> _transferKeywords = [
+    'перевод между счетами одного клиента',
+    'внутрибанковский перевод',
+  ];
+
+  static const List<String> _skipPatterns = [
+    'страница',
+    'продолжение на следующей странице',
+    'входящий остаток',
+    'исходящий остаток',
+    'итого списаний',
+    'итого зачислений',
+    'описание операции',
+    'дата операции',
+    'сумма в валюте',
+    'выписка по договору',
+    'выписка по счёту',
+    'номер счёта',
+    'с уважением',
+    'начальник отдела',
   ];
 
   PdfParser({required Logger logger, required String configJson})
@@ -59,11 +81,11 @@ class PdfParser implements ImportFileParser {
 
       doc = await PdfDocument.openFile(filePath);
       tmpDir = await Directory.systemTemp.createTemp('pdf_import');
-
       final lines = <String>[];
       final pageCount = math.min(doc.pagesCount, _maxPages);
 
       for (var i = 1; i <= pageCount; i++) {
+        _logger.i('PDF OCR: страница $i/$pageCount');
         final page = await doc.getPage(i);
         try {
           const double width = _renderWidth;
@@ -76,7 +98,6 @@ class PdfParser implements ImportFileParser {
           );
           final Uint8List? bytes = image?.bytes;
           if (bytes == null || bytes.isEmpty) continue;
-
           final imgFile = File('${tmpDir.path}/page_$i.png');
           await imgFile.writeAsBytes(bytes, flush: true);
           final inputImage = InputImage.fromFilePath(imgFile.path);
@@ -93,14 +114,14 @@ class PdfParser implements ImportFileParser {
         }
       }
 
-      final dateRe = RegExp(_patternFromConfig('date') ?? _defaultDatePattern);
-      final amountRe =
-          RegExp(_patternFromConfig('amount') ?? _defaultAmountPattern);
+      _logger.i('PDF: распознано ${lines.length} строк');
 
+      final dateRe = RegExp(_patternFromConfig('date') ?? _defaultDatePattern);
+      final amountRe = RegExp(
+          _patternFromConfig('amount') ?? _defaultAmountPattern);
       final rows = <ParsedRow>[];
       DateTime? periodStart;
       DateTime? periodEnd;
-
       for (var i = 0; i < lines.length; i++) {
         final row = _parseLine(lines[i], i, dateRe, amountRe, mapping);
         if (row == null) continue;
@@ -112,13 +133,11 @@ class PdfParser implements ImportFileParser {
           periodEnd = row.date;
         }
       }
-
-      _logger.i('PDF: строк распознано ${lines.length}, '
-          'транзакций извлечено ${rows.length}');
+      _logger.i('PDF: транзакций извлечено ${rows.length}');
       return ParseResult(
         rows: rows,
-        rawRows: lines.map((e) => [e]).toList(),
-        totalRows: lines.length,
+        rawRows: rows.map((r) => [r.merchantName]).toList(),
+        totalRows: rows.length,
         periodStart: periodStart,
         periodEnd: periodEnd,
       );
@@ -141,8 +160,6 @@ class PdfParser implements ImportFileParser {
     }
   }
 
-  /// Достаёт regex из config_json банка: секция pdf.regex_patterns,
-  /// ключи 'date' и 'amount'.
   String? _patternFromConfig(String key) {
     try {
       final cfg = jsonDecode(_configJson);
@@ -167,40 +184,70 @@ class PdfParser implements ImportFileParser {
     RegExp amountRe,
     ColumnMapping mapping,
   ) {
+    final lower = line.toLowerCase();
+
+    for (final pattern in _skipPatterns) {
+      if (lower.contains(pattern)) return null;
+    }
+
     final dateMatch = dateRe.firstMatch(line);
     if (dateMatch == null) return null;
+    final dateStr = dateMatch.group(0)!;
+    final date = _parseDate(dateStr, mapping.dateFormat);
+    if (date == null) return null;
+
     final amounts = amountRe.allMatches(line).toList();
     if (amounts.isEmpty) return null;
+    final amountMatch = amounts.last;
+    final amountStr = amountMatch.group(0)!;
+    final parsed = _parseAmount(amountStr);
+    if (parsed == null) return null;
 
-    final dateStr = dateMatch.group(0)!;
-    final amountStr = amounts.last.group(0)!;
+    final isIncome = _isIncome(line, lower, amountStr);
+    final kopecks = isIncome ? parsed.abs() : -parsed.abs();
 
     var merchant = line
         .replaceFirst(dateStr, ' ')
         .replaceFirst(amountStr, ' ')
         .replaceAll(RegExp(r'₽|руб\.?|RUB', caseSensitive: false), ' ')
+        .replaceAll(RegExp(r'[\*\#\@\$\%\^\&\(\)\[\]\{\}\<\>]'), ' ')
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
-    if (merchant.length < 2) return null;
 
-    final date = _parseDate(dateStr, mapping.dateFormat);
-    if (date == null) return null;
-    final parsed = _parseAmount(amountStr);
-    if (parsed == null) return null;
+    merchant = merchant
+        .replaceAll(RegExp(r'дата операции мск', caseSensitive: false), '')
+        .replaceAll(
+            RegExp(r'сумма в валюте договора', caseSensitive: false), '')
+        .replaceAll(RegExp(r'в валюте договора', caseSensitive: false), '')
+        .trim();
 
-    // Знак: явный минус -> расход; ключевые слова дохода -> доход;
-    // иначе дефолт выписки -> расход.
-    final lower = line.toLowerCase();
-    final isIncome = _incomeKeywords.any((k) => lower.contains(k));
-    final kopecks =
-        (!amountStr.startsWith('-') && isIncome) ? parsed.abs() : -parsed.abs();
+    if (merchant.length < 3) return null;
+
+    String? bankCategory;
+    if (_transferKeywords.any((k) => lower.contains(k))) {
+      bankCategory = 'transfer';
+    } else if (_incomeKeywords.any((k) => lower.contains(k))) {
+      bankCategory = 'income';
+    }
 
     return ParsedRow(
       rowIndex: idx,
       date: date.toUtc(),
       amountKopecks: kopecks,
       merchantName: merchant,
+      bankCategory: bankCategory,
     );
+  }
+
+  bool _isIncome(String line, String lower, String amountStr) {
+    if (amountStr.trimLeft().startsWith('+')) return true;
+    for (final keyword in _incomeKeywords) {
+      if (lower.contains(keyword)) return true;
+    }
+    if (amountStr.contains('–') || amountStr.trimLeft().startsWith('-')) {
+      return false;
+    }
+    return false;
   }
 
   DateTime? _parseDate(String v, String fmt) {
@@ -218,7 +265,12 @@ class PdfParser implements ImportFileParser {
 
   int? _parseAmount(String v) {
     try {
-      var c = v.replaceAll(' ', '').replaceAll('\u00A0', '').trim();
+      var c = v
+          .replaceAll(' ', '')
+          .replaceAll('\u00A0', '')
+          .replaceAll('–', '-')
+          .replaceAll('+', '')
+          .trim();
       final neg = c.startsWith('-');
       c = c.replaceAll('-', '');
       if (c.contains(',') && c.contains('.')) {

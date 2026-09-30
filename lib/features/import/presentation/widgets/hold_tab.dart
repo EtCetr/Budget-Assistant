@@ -60,14 +60,20 @@ class HoldTab extends ConsumerWidget {
                   },
                   child: const Column(
                     children: [
-                      RadioListTile<HoldAction>(
-                          title: Text('Обновить статус'),
-                          value: HoldAction.confirm,
-                          dense: true),
-                      RadioListTile<HoldAction>(
-                          title: Text('Пропустить'),
-                          value: HoldAction.skip,
-                          dense: true),
+                      Material(
+                        color: Colors.transparent,
+                        child: RadioListTile<HoldAction>(
+                            title: Text('Обновить статус'),
+                            value: HoldAction.confirm,
+                            dense: true),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        child: RadioListTile<HoldAction>(
+                            title: Text('Пропустить'),
+                            value: HoldAction.skip,
+                            dense: true),
+                      ),
                     ],
                   ),
                 ),

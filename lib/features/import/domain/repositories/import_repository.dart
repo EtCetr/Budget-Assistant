@@ -10,6 +10,17 @@ abstract class ImportRepository {
   Future<void> incrementParserUsage(String configId);
   Future<ParserConfig> createParserConfig(ParserConfig config);
 
+  // === Accounts (для импорта) ===
+  Future<Map<String, dynamic>> createAccount({
+    required String name,
+    required String type,
+    required String currency,
+    required int initialBalance,
+    required String userId,
+    String? spaceId,
+    String? bankName,
+  });
+
   // === Import Drafts ===
   Future<void> saveImportDraft({
     required String userId,

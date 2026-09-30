@@ -70,14 +70,20 @@ class TransfersTab extends ConsumerWidget {
                   },
                   child: const Column(
                     children: [
-                      RadioListTile<TransferAction>(
-                          title: Text('Объединить в перевод'),
-                          value: TransferAction.merge,
-                          dense: true),
-                      RadioListTile<TransferAction>(
-                          title: Text('Оставить как есть'),
-                          value: TransferAction.keep,
-                          dense: true),
+                      Material(
+                        color: Colors.transparent,
+                        child: RadioListTile<TransferAction>(
+                            title: Text('Объединить в перевод'),
+                            value: TransferAction.merge,
+                            dense: true),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        child: RadioListTile<TransferAction>(
+                            title: Text('Оставить как есть'),
+                            value: TransferAction.keep,
+                            dense: true),
+                      ),
                     ],
                   ),
                 ),

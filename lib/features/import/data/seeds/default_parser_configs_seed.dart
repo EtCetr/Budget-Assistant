@@ -18,6 +18,7 @@ class DefaultParserConfigsSeed {
       _tbank(now),
       _sber(now),
       _alfa(now),
+      _yandex(now),
     ];
   }
 
@@ -135,6 +136,43 @@ class DefaultParserConfigsSeed {
       detectionPatterns: jsonEncode({
         'keywords': ['альфа', 'alfabank', 'альфа-банк'],
         'headers': ['дата', 'сумма', 'контрагент'],
+      }),
+      version: 1,
+      createdAt: now,
+      updatedAt: now,
+      syncStatus: 'pending',
+    );
+  }
+
+  static ParserConfigDb _yandex(DateTime now) {
+    return ParserConfigDb(
+      id: 'pc_yandex',
+      bankName: 'Яндекс Банк',
+      bankCode: 'yandex',
+      isPopular: true,
+      usageCount: 0,
+      supportedFormats: jsonEncode(['pdf']),
+      configJson: jsonEncode({
+        'pdf': {
+          'regex_patterns': {
+            'date': r'\d{2}\.\d{2}\.\d{4}',
+            'amount': r'[+\-\u2013]?\s*\d{1,3}(?:[\s\u00A0]\d{3})*[.,]\d{2}',
+          },
+        },
+      }),
+      instructionText: jsonEncode([
+        'Откройте приложение Яндекс Банка',
+        'Перейдите в раздел «Счета»',
+        'Выберите нужный счёт',
+        'Нажмите «Выписка»',
+        'Выберите период и нажмите «Скачать PDF»',
+      ]),
+      webExportUrl: 'https://yabank.yandex.ru',
+      brandColor: '#FC3F1D',
+      iconAsset: 'bank_yandex',
+      detectionPatterns: jsonEncode({
+        'keywords': ['яндекс банк', 'yandex bank', 'яндекс'],
+        'headers': ['описание операции', 'дата операции мск', 'сумма в валюте договора'],
       }),
       version: 1,
       createdAt: now,

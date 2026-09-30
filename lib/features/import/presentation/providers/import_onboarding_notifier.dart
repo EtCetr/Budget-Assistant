@@ -29,6 +29,8 @@ class ImportOnboardingState {
     this.detectedBanks = const [],
     this.selectedConfig,
     this.customBankName,
+    this.accountsForBank = const [],
+    this.selectedAccountId,
     this.parsedFile,
     this.mapping,
     this.scopeFamily = false,
@@ -52,6 +54,10 @@ class ImportOnboardingState {
   final ParserConfig? selectedConfig;
   final String? customBankName;
   
+  /// Счета для выбранного банка (из app_database.g.dart Account)
+  final List<dynamic> accountsForBank;
+  final String? selectedAccountId;
+  
   /// Шаг 3: маппинг
   final ParsedFile? parsedFile;
   final ColumnMapping? mapping;
@@ -70,7 +76,8 @@ class ImportOnboardingState {
       case 1:
         return filePath != null;
       case 2:
-        return selectedConfig != null || customBankName != null;
+        return (selectedConfig != null || customBankName != null) && 
+               selectedAccountId != null;
       case 3:
         return mapping != null && (parsedFile?.parseResult.rows.isNotEmpty ?? false);
       default:
@@ -87,6 +94,8 @@ class ImportOnboardingState {
     List<DetectedBank>? detectedBanks,
     ParserConfig? selectedConfig,
     String? customBankName,
+    List<dynamic>? accountsForBank,
+    String? selectedAccountId,
     ParsedFile? parsedFile,
     ColumnMapping? mapping,
     bool? scopeFamily,
@@ -110,6 +119,8 @@ class ImportOnboardingState {
       detectedBanks: clearBank ? const [] : (detectedBanks ?? this.detectedBanks),
       selectedConfig: clearBank ? null : (selectedConfig ?? this.selectedConfig),
       customBankName: clearBank ? null : (customBankName ?? this.customBankName),
+      accountsForBank: accountsForBank ?? this.accountsForBank,
+      selectedAccountId: clearBank ? null : (selectedAccountId ?? this.selectedAccountId),
       parsedFile: clearParsed ? null : (parsedFile ?? this.parsedFile),
       mapping: clearParsed ? null : (mapping ?? this.mapping),
       scopeFamily: scopeFamily ?? this.scopeFamily,
@@ -144,7 +155,17 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
   void next() {
     if (!state.canNext) return;
     MotionTokens.selection();
-    state = state.copyWith(step: state.step + 1);
+    
+    // При переходе на шаг 4 копируем выбранный счёт
+    if (state.step == 3) {
+      state = state.copyWith(
+        step: 4,
+        targetAccountId: state.selectedAccountId,
+      );
+    } else {
+      state = state.copyWith(step: state.step + 1);
+    }
+    
     _scheduleSave();
   }
 
@@ -156,30 +177,24 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
 
   void clearSnack() => state = state.copyWith(clearSnack: true);
 
-  /// Динамический диспетчер FilePicker API (static/instance/platform).
-  Future<dynamic> _pickFile() async {
-    return await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: const ['csv', 'xlsx', 'pdf'],
-    );
-  }
   // === STEP 1: Загрузка файла ===
 
   Future<void> pickFile() async {
     MotionTokens.medium();
     state = state.copyWith(isProcessing: true, clearSnack: true);
     try {
-      final res = await _pickFile();
-      final path = res?.files?.single?.path;
+      final res = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const ['csv', 'xlsx', 'pdf'],
+      );
+      final path = res?.files.single.path;
       if (path == null) {
         state = state.copyWith(isProcessing: false);
         return;
       }
-
       final file = File(path);
       final size = await file.length();
       final ext = path.split('.').last.toLowerCase();
-
       state = state.copyWith(
         isProcessing: false,
         filePath: path,
@@ -189,8 +204,6 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
         clearBank: true,
         clearParsed: true,
       );
-
-      // Автодетект банка
       await _detectBank(path);
     } catch (e) {
       state = state.copyWith(
@@ -208,12 +221,12 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
       if (!_disposed) {
         state = state.copyWith(detectedBanks: detected);
         if (detected.isNotEmpty && detected.first.confidence >= 0.7) {
-          // Автовыбор банка с высокой уверенностью
           final config = configs.firstWhere(
             (c) => c.bankCode == detected.first.bankCode,
             orElse: () => configs.first,
           );
           state = state.copyWith(selectedConfig: config);
+          await _loadAccountsForBank(config.bankName);
         }
       }
     } catch (e) {
@@ -223,7 +236,7 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
     }
   }
 
-  // === STEP 2: Выбор/создание банка ===
+  // === STEP 2: Выбор банка и счёта ===
 
   void selectDetectedBank(String bankCode) {
     MotionTokens.selection();
@@ -236,7 +249,76 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
       selectedConfig: config,
       customBankName: null,
     );
+    _loadAccountsForBank(config.bankName);
     _scheduleSave();
+  }
+
+  Future<void> _loadAccountsForBank(String bankName) async {
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      final spaceId = state.scopeFamily ? ref.read(currentSpaceIdProvider) : null;
+      final allAccounts = await ref.read(
+        importTargetAccountsProvider((userId, spaceId, state.scopeFamily)).future,
+      );
+      final filtered = allAccounts
+          .where((a) => a.bankName == bankName)
+          .toList();
+      if (!_disposed) {
+        state = state.copyWith(accountsForBank: filtered);
+      }
+    } catch (e) {
+      if (!_disposed) {
+        state = state.copyWith(accountsForBank: const []);
+      }
+    }
+  }
+
+  void selectAccount(String accountId) {
+    MotionTokens.selection();
+    state = state.copyWith(selectedAccountId: accountId);
+    _scheduleSave();
+  }
+
+  Future<void> createNewAccount({
+    required String accountName,
+    required String accountType,
+    required String currency,
+    int initialBalance = 0,
+  }) async {
+    MotionTokens.medium();
+    state = state.copyWith(isProcessing: true);
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      final spaceId = state.scopeFamily ? ref.read(currentSpaceIdProvider) : null;
+      final bankName = state.selectedConfig?.bankName ?? state.customBankName ?? 'Другой банк';
+      
+      final result = await ref.read(importRepositoryProvider).createAccount(
+        name: accountName,
+        type: accountType,
+        currency: currency,
+        initialBalance: initialBalance,
+        userId: userId,
+        spaceId: spaceId,
+        bankName: bankName,
+      );
+      
+      if (!_disposed) {
+        ref.invalidate(importTargetAccountsProvider((userId, spaceId, state.scopeFamily)));
+        await _loadAccountsForBank(bankName);
+        state = state.copyWith(
+          isProcessing: false,
+          selectedAccountId: result['id'] as String,
+          snackMessage: 'Счёт "$accountName" создан',
+        );
+      }
+    } catch (e) {
+      if (!_disposed) {
+        state = state.copyWith(
+          isProcessing: false,
+          snackMessage: 'Ошибка создания счёта',
+        );
+      }
+    }
   }
 
   void setCustomBankName(String name) {
@@ -244,6 +326,8 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
     state = state.copyWith(
       customBankName: name,
       selectedConfig: null,
+      accountsForBank: const [],
+      selectedAccountId: null,
     );
     _scheduleSave();
   }
@@ -292,6 +376,8 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
           isProcessing: false,
           selectedConfig: config,
           customBankName: null,
+          accountsForBank: const [],
+          selectedAccountId: null,
           snackMessage: 'Банк "$bankName" добавлен',
         );
       }
@@ -525,6 +611,3 @@ final _loggerProvider = Provider<Logger>((ref) {
   return Logger(printer: PrettyPrinter(methodCount: 2));
 });
 
-final parserConfigsListProvider = FutureProvider<List<ParserConfig>>((ref) {
-  return ref.watch(fetchParserConfigsUseCaseProvider).call();
-});

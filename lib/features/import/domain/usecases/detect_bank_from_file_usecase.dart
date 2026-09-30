@@ -17,13 +17,13 @@ class DetectedBank {
 }
 
 /// Автоопределение банка по первым строкам файла (ТЗ 6.3.25.13).
-/// Анализирует заголовки и ключевые слова.
+/// Для CSV/XLSX читает первые 10 строк. Для PDF — возвращает пустой список
+/// (детект по бинарному PDF ненадёжен, пользователь выберет вручную).
 class DetectBankFromFileUseCase {
   final Logger _logger;
 
   DetectBankFromFileUseCase({required Logger logger}) : _logger = logger;
 
-  /// Возвращает список кандидатов отсортированных по confidence.
   Future<List<DetectedBank>> call({
     required String filePath,
     required List<ParserConfig> configs,
@@ -32,11 +32,39 @@ class DetectBankFromFileUseCase {
       final file = File(filePath);
       if (!await file.exists()) return const [];
 
-      final lines = await file.readAsLines();
-      if (lines.isEmpty) return const [];
+      final ext = filePath.split('.').last.toLowerCase();
 
-      // Берём первые 10 строк для анализа
-      final sample = lines.take(10).join('\n').toLowerCase();
+      // PDF — бинарный формат, readAsLines упадёт. Пропускаем детект.
+      if (ext == 'pdf') {
+        _logger.i('DetectBank: PDF — детект пропущен (пользователь выберет вручную)');
+        return const [];
+      }
+
+      // XLSX — тоже бинарный (OOXML-zip). Пропускаем.
+      if (ext == 'xlsx') {
+        _logger.i('DetectBank: XLSX — детект пропущен');
+        return const [];
+      }
+
+      // CSV — читаем первые 10 строк
+      String sample;
+      try {
+        final lines = await file.readAsLines(encoding: utf8);
+        if (lines.isEmpty) return const [];
+        sample = lines.take(10).join('\n').toLowerCase();
+      } catch (e) {
+        // Fallback: windows-1251
+        try {
+          final bytes = await file.readAsBytes();
+          final decoded = _decodeWindows1251(bytes);
+          final lines = decoded.split('\n');
+          sample = lines.take(10).join('\n').toLowerCase();
+        } catch (e2) {
+          _logger.w('DetectBank: не удалось прочитать файл: $e2');
+          return const [];
+        }
+      }
+
       final candidates = <DetectedBank>[];
 
       for (final config in configs) {
@@ -46,7 +74,6 @@ class DetectBankFromFileUseCase {
         var score = 0.0;
         var maxScore = 0.0;
 
-        // Проверяем keywords
         if (patterns.keywords != null && patterns.keywords!.isNotEmpty) {
           maxScore += patterns.keywords!.length;
           for (final keyword in patterns.keywords!) {
@@ -56,7 +83,6 @@ class DetectBankFromFileUseCase {
           }
         }
 
-        // Проверяем headers
         if (patterns.headers != null && patterns.headers!.isNotEmpty) {
           maxScore += patterns.headers!.length;
           for (final header in patterns.headers!) {
@@ -78,9 +104,7 @@ class DetectBankFromFileUseCase {
         }
       }
 
-      // Сортируем по confidence
       candidates.sort((a, b) => b.confidence.compareTo(a.confidence));
-
       _logger.i('DetectBank: найдено ${candidates.length} кандидатов');
       return candidates;
     } catch (e, st) {
@@ -101,6 +125,25 @@ class DetectBankFromFileUseCase {
       }
     } catch (_) {}
     return null;
+  }
+
+  /// Минимальный декодер windows-1251 для банковских CSV.
+  String _decodeWindows1251(List<int> bytes) {
+    final buffer = StringBuffer();
+    for (final byte in bytes) {
+      if (byte < 128) {
+        buffer.writeCharCode(byte);
+      } else if (byte >= 192 && byte <= 255) {
+        buffer.writeCharCode(byte + 848);
+      } else if (byte == 168) {
+        buffer.writeCharCode(1025);
+      } else if (byte == 184) {
+        buffer.writeCharCode(1105);
+      } else {
+        buffer.writeCharCode(byte);
+      }
+    }
+    return buffer.toString();
   }
 }
 

@@ -100,6 +100,52 @@ class ImportRepositoryImpl implements ImportRepository {
     }
   }
 
+  // === Accounts ===
+
+  @override
+  Future<Map<String, dynamic>> createAccount({
+    required String name,
+    required String type,
+    required String currency,
+    required int initialBalance,
+    required String userId,
+    String? spaceId,
+    String? bankName,
+  }) async {
+    try {
+      final now = DateTime.now().toUtc();
+      final id = const Uuid().v4();
+      final companion = AccountsCompanion.insert(
+        id: id,
+        userId: userId,
+        spaceId: Value(spaceId),
+        bankName: bankName ?? 'Другой банк',
+        customName: name,
+        accountType: type,
+        currency: currency,
+        currentBalance: initialBalance,
+        includeInPersonalBalance: const Value(true),
+        includeInFamilyBalance: const Value(false),
+        isSharedBalance: const Value(false),
+        isSharedExpenses: const Value(false),
+        isSharedIncomes: const Value(false),
+        expenseDetailLevel: const Value('total_only'),
+        incomeDetailLevel: const Value('total_only'),
+        isArchived: const Value(false),
+        isSystem: const Value(false),
+        createdAt: now,
+        updatedAt: now,
+        syncStatus: const Value('pending'),
+      );
+      await _db.into(_db.accounts).insert(companion);
+      _logger.i('Создан счёт: $name (id=$id)');
+      return {'id': id, 'name': name, 'balance': initialBalance};
+    } catch (e, st) {
+      _logger.e('createAccount failed', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
   // === Import Drafts ===
 
   @override
