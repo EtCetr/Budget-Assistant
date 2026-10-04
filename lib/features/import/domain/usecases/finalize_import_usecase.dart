@@ -12,7 +12,6 @@ import '../entities/hold_confirmation_candidate.dart';
 /// Финализация импорта (ТЗ 6.3.26):
 /// hold -> дубликаты (skip/replace/both) -> переводы (merge/keep) ->
 /// создание выбранных строк -> корректировка баланса.
-/// Возвращает ID созданных транзакций для проверки секретности.
 class FinalizeImportUseCase {
   final AppDatabase _db;
   final Logger _logger;
@@ -32,7 +31,6 @@ class FinalizeImportUseCase {
       var transfersCreated = 0;
       var balanceDelta = 0;
       final created = <CreatedImportedTransaction>[];
-
       // 1. Hold-подтверждения.
       for (final hold in importResult.holdConfirmations) {
         if (hold.selectedAction != HoldAction.confirm) continue;
@@ -46,8 +44,7 @@ class FinalizeImportUseCase {
         ));
         updatedExisting++;
       }
-
-      // 2. Дубликаты: skip исключаем, replace обновляем, both оставляем.
+      // 2. Дубликаты.
       final excluded = <int>{};
       for (final dup in importResult.duplicates) {
         final idx = dup.importedRow.rowIndex;
@@ -71,8 +68,7 @@ class FinalizeImportUseCase {
             break;
         }
       }
-
-      // 3. Переводы: merge создаёт transfer и исключает обе строки.
+      // 3. Переводы.
       for (final tr in importResult.transfers) {
         if (tr.selectedAction != TransferAction.merge) continue;
         excluded.add(tr.expenseRow.rowIndex);
@@ -94,8 +90,7 @@ class FinalizeImportUseCase {
         transfersCreated++;
         balanceDelta -= tr.amountKopecks;
       }
-
-      // 4. Создание выбранных строк.
+      // 4. Создание выбранных строк (HOLD -> audit_status='pending').
       for (final row in importResult.rows) {
         if (!selectedRowIndices.contains(row.rowIndex)) continue;
         if (excluded.contains(row.rowIndex)) continue;
@@ -118,6 +113,9 @@ class FinalizeImportUseCase {
               comment: Value(row.comment),
               originalCurrency: Value(row.originalCurrency),
               originalAmount: Value(row.originalAmountKopecks),
+              auditStatus: row.isHold
+                  ? const Value(AuditStatus.pending)
+                  : const Value(AuditStatus.verified),
               createdAt: now,
               updatedAt: now,
               syncStatus: const Value(SyncStatus.pending),
@@ -125,8 +123,7 @@ class FinalizeImportUseCase {
         created.add(CreatedImportedTransaction(id: id, row: row));
         balanceDelta += row.amountKopecks;
       }
-
-      // 5. Баланс целевого счёта (решение владельца D).
+      // 5. Баланс целевого счёта.
       if (balanceDelta != 0) {
         final account = await (_db.select(_db.accounts)
               ..where((a) => a.id.equals(importResult.targetAccountId)))
@@ -141,7 +138,6 @@ class FinalizeImportUseCase {
           ));
         }
       }
-
       _logger.i('FinalizeImport: создано ${created.length}, '
           'обновлено $updatedExisting, переводов $transfersCreated, '
           'дельта $balanceDelta');

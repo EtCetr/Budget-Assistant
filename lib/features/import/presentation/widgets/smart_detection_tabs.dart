@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import '../providers/post_import_review_notifier.dart';
 
-/// 4 таба Smart Detection со счётчиками (ТЗ 6.3.26.4).
+/// 3 таба Smart Detection (решение владельца 2026-10: таб «Переводы» убран —
+/// эвристика давала ложные пары внутри одной выписки).
 class SmartDetectionTabs extends ConsumerWidget {
   const SmartDetectionTabs({super.key});
 
@@ -13,7 +14,6 @@ class SmartDetectionTabs extends ConsumerWidget {
     final notifier = ref.read(postImportReviewProvider.notifier);
     final tabs = [
       ('Дубли', state.duplicates.length, AppColors.colorWarning),
-      ('Переводы', state.transfers.length, AppColors.colorTransfer),
       ('Hold', state.holds.length, AppColors.colorWarning),
       ('Категории', notifier.uncategorizedCount, AppColors.colorFAB),
     ];

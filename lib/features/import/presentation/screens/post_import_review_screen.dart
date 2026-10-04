@@ -10,11 +10,11 @@ import 'package:budget_assistant/features/privacy/presentation/providers/privacy
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import '../providers/post_import_review_notifier.dart';
 import '../providers/import_usecase_providers.dart';
+import '../providers/import_onboarding_notifier.dart';
 import 'package:budget_assistant/features/recurring_payments/presentation/providers/recurring_detection_providers.dart';
 import '../widgets/import_summary_banner.dart';
 import '../widgets/smart_detection_tabs.dart';
 import '../widgets/duplicates_tab.dart';
-import '../widgets/transfers_tab.dart';
 import '../widgets/hold_tab.dart';
 import '../widgets/categories_tab.dart';
 import '../widgets/selected_summary.dart';
@@ -22,7 +22,6 @@ import '../widgets/selected_summary.dart';
 /// Экран проверки импорта (ТЗ 6.3.26).
 class PostImportReviewScreen extends ConsumerStatefulWidget {
   const PostImportReviewScreen({super.key, this.result});
-
   final ImportResult? result;
 
   @override
@@ -51,8 +50,7 @@ class _PostImportReviewScreenState
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Отменить импорт?'),
-        content: const Text(
-            'Все распознанные данные будут потеряны'),
+        content: const Text('Все распознанные данные будут потеряны'),
         actions: [
           TextButton(
               onPressed: () => ctx.pop(false), child: const Text('Нет')),
@@ -68,15 +66,12 @@ class _PostImportReviewScreenState
     final notifier = ref.read(postImportReviewProvider.notifier);
     final state = ref.read(postImportReviewProvider);
     final userId = ref.read(currentUserIdProvider);
-
     if (notifier.summary().count == 0) {
       MotionTokens.error();
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Выберите хотя бы одну транзакцию')));
       return;
     }
-
-    // Категории: предупреждение о невыбранных.
     final uncategorizedSelected = state.rows
         .where((r) =>
             state.selectedRows.contains(r.rowIndex) &&
@@ -92,8 +87,7 @@ class _PostImportReviewScreenState
               'Их можно категоризировать позже.'),
           actions: [
             TextButton(
-                onPressed: () => ctx.pop(false),
-                child: const Text('Назад')),
+                onPressed: () => ctx.pop(false), child: const Text('Назад')),
             FilledButton(
                 onPressed: () => ctx.pop(true),
                 child: const Text('Импортировать')),
@@ -102,7 +96,6 @@ class _PostImportReviewScreenState
       );
       if (proceed != true || !mounted) return;
     }
-
     final outcome = await notifier.finalize();
     if (outcome == null || !mounted) {
       if (mounted) {
@@ -112,11 +105,8 @@ class _PostImportReviewScreenState
       }
       return;
     }
-
     MotionTokens.heavy();
     final result = state.result!;
-
-    // Проверка секретности на созданных транзакциях.
     if (result.options.checkSecrecy && outcome.created.isNotEmpty) {
       try {
         final userId = ref.read(currentUserIdProvider);
@@ -140,11 +130,8 @@ class _PostImportReviewScreenState
         }
       } catch (_) {}
     }
-
     if (!mounted) return;
     final periodDays = result.periodEnd.difference(result.periodStart).inDays;
-    // Этап 15.6: автодетект регулярных (долг Этапа 14):
-    // опция wizard + период >= 6 мес + app_settings.autoDetectRecurring.
     var recurringTouched = 0;
     if (result.options.detectRecurring && periodDays >= 180) {
       try {
@@ -157,15 +144,20 @@ class _PostImportReviewScreenState
       } catch (_) {}
     }
     if (!mounted) return;
-    context.go('/transactions');
+    // Владелец (2026-10): после успеха открываем стек «Главная -> Транзакции»,
+    // чтобы с экрана транзакций можно было вернуться на главный.
     final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
+    ref.read(importOnboardingProvider.notifier).resetAfterSuccess();
+    router.go('/');
+    router.push('/transactions');
     messenger.showSnackBar(SnackBar(
-      content: Text('Импортировано ${outcome.created.length} транзакций${recurringTouched > 0 ? '. Регулярных кандидатов: $recurringTouched' : ''}'),
+      content: Text(
+          'Импортировано ${outcome.created.length} транзакций${recurringTouched > 0 ? '. Регулярных кандидатов: $recurringTouched' : ''}'),
       action: (result.options.detectRecurring && periodDays >= 180)
           ? SnackBarAction(
               label: 'Проверить регулярные',
-              onPressed: () =>
-                  context.push('/recurring-payments-detection'),
+              onPressed: () => router.push('/recurring-payments-detection'),
             )
           : null,
     ));
@@ -175,7 +167,6 @@ class _PostImportReviewScreenState
   Widget build(BuildContext context) {
     final state = ref.watch(postImportReviewProvider);
     final result = state.result;
-
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -222,8 +213,7 @@ class _PostImportReviewScreenState
                   Expanded(
                     child: switch (state.activeTab) {
                       0 => const DuplicatesTab(),
-                      1 => const TransfersTab(),
-                      2 => const HoldTab(),
+                      1 => const HoldTab(),
                       _ => const CategoriesTab(),
                     },
                   ),
@@ -233,9 +223,8 @@ class _PostImportReviewScreenState
                     child: Row(
                       children: [
                         OutlinedButton(
-                          onPressed: state.isFinalizing
-                              ? null
-                              : _confirmCancel,
+                          onPressed:
+                              state.isFinalizing ? null : _confirmCancel,
                           child: const Text('Отмена'),
                         ),
                         const SizedBox(width: 12),
@@ -243,16 +232,14 @@ class _PostImportReviewScreenState
                           child: FilledButton(
                             style: FilledButton.styleFrom(
                                 backgroundColor: AppColors.colorFAB),
-                            onPressed: state.isFinalizing
-                                ? null
-                                : _finalize,
+                            onPressed:
+                                state.isFinalizing ? null : _finalize,
                             child: state.isFinalizing
                                 ? const SizedBox(
                                     width: 20,
                                     height: 20,
                                     child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white),
+                                        strokeWidth: 2, color: Colors.white),
                                   )
                                 : const Text('Импортировать выбранные'),
                           ),

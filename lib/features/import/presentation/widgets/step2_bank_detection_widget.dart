@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import '../providers/import_onboarding_notifier.dart';
+import 'create_account_for_import_screen.dart';
 import '../providers/import_wizard_providers.dart';
 
 /// Formatter для разделения разрядов при вводе баланса.
@@ -113,6 +114,7 @@ class _Step2BankDetectionWidgetState
     );
   }
 
+  // ignore: unused_element
   void _showCreateAccountDialog() {
     showDialog(
       context: context,
@@ -430,7 +432,22 @@ class _Step2BankDetectionWidgetState
             }),
           const SizedBox(height: 12),
           OutlinedButton.icon(
-            onPressed: _showCreateAccountDialog,
+            onPressed: () async {
+              final result =
+                  await Navigator.of(context).push<Map<String, Object?>>(
+                MaterialPageRoute(
+                    builder: (_) => const CreateAccountForImportScreen()),
+              );
+              if (result == null) return;
+              await ref
+                  .read(importOnboardingProvider.notifier)
+                  .createNewAccount(
+                    accountName: result['name']! as String,
+                    accountType: result['accountType']! as String,
+                    currency: result['currency']! as String,
+                    initialBalance: result['balanceKopecks']! as int,
+                  );
+            },
             icon: const Icon(Icons.add),
             label: const Text('Добавить счёт'),
             style: OutlinedButton.styleFrom(

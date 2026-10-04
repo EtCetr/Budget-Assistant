@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-
 part 'parsed_row.freezed.dart';
 
 /// Одна строка из распарсенного файла импорта.
@@ -17,6 +16,8 @@ abstract class ParsedRow with _$ParsedRow {
     String? bankTransactionId,
     String? originalCurrency,
     int? originalAmountKopecks,
+    /// true = операция ещё не подтверждена банком (HOLD) -> audit_status='pending'.
+    @Default(false) bool isHold,
     /// Категория, назначенная пользователем в UI (изначально null).
     String? assignedCategoryId,
   }) = _ParsedRow;

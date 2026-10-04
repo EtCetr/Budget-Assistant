@@ -21,7 +21,7 @@ class PostImportReviewState {
     this.rows = const [],
     this.suggestions = const {},
     this.suggestionsLoading = false,
-    this.activeTab = 3,
+    this.activeTab = 2,
     this.isFinalizing = false,
   });
 

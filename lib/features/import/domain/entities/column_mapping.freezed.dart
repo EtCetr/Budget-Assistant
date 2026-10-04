@@ -14,18 +14,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ColumnMapping {
 
-/// Индекс колонки с датой (обязательно).
- int get dateColumnIndex;/// Индекс колонки с суммой (обязательно).
- int get amountColumnIndex;/// Индекс колонки с мерчантом (обязательно).
- int get merchantColumnIndex;/// Индекс колонки с категорией банка (опционально).
- int? get categoryColumnIndex;/// Индекс колонки с комментарием (опционально).
- int? get commentColumnIndex;/// Индекс колонки с валютой (опционально).
- int? get currencyColumnIndex;/// Формат даты: 'dd.MM.yyyy', 'dd.MM.yyyy HH:mm:ss'.
- String get dateFormat;/// Разделитель CSV.
- String get csvSeparator;/// Кодировка.
- String get encoding;/// Кол-во строк для пропуска (заголовки банка).
- int get skipRows;/// true = расход отрицательный, false = расход положительный.
- bool get expenseIsNegative;
+ int get dateColumnIndex; int get amountColumnIndex; int get merchantColumnIndex; int? get categoryColumnIndex; int? get commentColumnIndex; int? get currencyColumnIndex;/// Колонка со статусом операции; значение holdMarker => isHold.
+ int? get holdColumnIndex; String get holdMarker; String get dateFormat; String get csvSeparator; String get encoding; int get skipRows; bool get expenseIsNegative;
 /// Create a copy of ColumnMapping
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -36,16 +26,16 @@ $ColumnMappingCopyWith<ColumnMapping> get copyWith => _$ColumnMappingCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ColumnMapping&&(identical(other.dateColumnIndex, dateColumnIndex) || other.dateColumnIndex == dateColumnIndex)&&(identical(other.amountColumnIndex, amountColumnIndex) || other.amountColumnIndex == amountColumnIndex)&&(identical(other.merchantColumnIndex, merchantColumnIndex) || other.merchantColumnIndex == merchantColumnIndex)&&(identical(other.categoryColumnIndex, categoryColumnIndex) || other.categoryColumnIndex == categoryColumnIndex)&&(identical(other.commentColumnIndex, commentColumnIndex) || other.commentColumnIndex == commentColumnIndex)&&(identical(other.currencyColumnIndex, currencyColumnIndex) || other.currencyColumnIndex == currencyColumnIndex)&&(identical(other.dateFormat, dateFormat) || other.dateFormat == dateFormat)&&(identical(other.csvSeparator, csvSeparator) || other.csvSeparator == csvSeparator)&&(identical(other.encoding, encoding) || other.encoding == encoding)&&(identical(other.skipRows, skipRows) || other.skipRows == skipRows)&&(identical(other.expenseIsNegative, expenseIsNegative) || other.expenseIsNegative == expenseIsNegative));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ColumnMapping&&(identical(other.dateColumnIndex, dateColumnIndex) || other.dateColumnIndex == dateColumnIndex)&&(identical(other.amountColumnIndex, amountColumnIndex) || other.amountColumnIndex == amountColumnIndex)&&(identical(other.merchantColumnIndex, merchantColumnIndex) || other.merchantColumnIndex == merchantColumnIndex)&&(identical(other.categoryColumnIndex, categoryColumnIndex) || other.categoryColumnIndex == categoryColumnIndex)&&(identical(other.commentColumnIndex, commentColumnIndex) || other.commentColumnIndex == commentColumnIndex)&&(identical(other.currencyColumnIndex, currencyColumnIndex) || other.currencyColumnIndex == currencyColumnIndex)&&(identical(other.holdColumnIndex, holdColumnIndex) || other.holdColumnIndex == holdColumnIndex)&&(identical(other.holdMarker, holdMarker) || other.holdMarker == holdMarker)&&(identical(other.dateFormat, dateFormat) || other.dateFormat == dateFormat)&&(identical(other.csvSeparator, csvSeparator) || other.csvSeparator == csvSeparator)&&(identical(other.encoding, encoding) || other.encoding == encoding)&&(identical(other.skipRows, skipRows) || other.skipRows == skipRows)&&(identical(other.expenseIsNegative, expenseIsNegative) || other.expenseIsNegative == expenseIsNegative));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,dateColumnIndex,amountColumnIndex,merchantColumnIndex,categoryColumnIndex,commentColumnIndex,currencyColumnIndex,dateFormat,csvSeparator,encoding,skipRows,expenseIsNegative);
+int get hashCode => Object.hash(runtimeType,dateColumnIndex,amountColumnIndex,merchantColumnIndex,categoryColumnIndex,commentColumnIndex,currencyColumnIndex,holdColumnIndex,holdMarker,dateFormat,csvSeparator,encoding,skipRows,expenseIsNegative);
 
 @override
 String toString() {
-  return 'ColumnMapping(dateColumnIndex: $dateColumnIndex, amountColumnIndex: $amountColumnIndex, merchantColumnIndex: $merchantColumnIndex, categoryColumnIndex: $categoryColumnIndex, commentColumnIndex: $commentColumnIndex, currencyColumnIndex: $currencyColumnIndex, dateFormat: $dateFormat, csvSeparator: $csvSeparator, encoding: $encoding, skipRows: $skipRows, expenseIsNegative: $expenseIsNegative)';
+  return 'ColumnMapping(dateColumnIndex: $dateColumnIndex, amountColumnIndex: $amountColumnIndex, merchantColumnIndex: $merchantColumnIndex, categoryColumnIndex: $categoryColumnIndex, commentColumnIndex: $commentColumnIndex, currencyColumnIndex: $currencyColumnIndex, holdColumnIndex: $holdColumnIndex, holdMarker: $holdMarker, dateFormat: $dateFormat, csvSeparator: $csvSeparator, encoding: $encoding, skipRows: $skipRows, expenseIsNegative: $expenseIsNegative)';
 }
 
 
@@ -56,7 +46,7 @@ abstract mixin class $ColumnMappingCopyWith<$Res>  {
   factory $ColumnMappingCopyWith(ColumnMapping value, $Res Function(ColumnMapping) _then) = _$ColumnMappingCopyWithImpl;
 @useResult
 $Res call({
- int dateColumnIndex, int amountColumnIndex, int merchantColumnIndex, int? categoryColumnIndex, int? commentColumnIndex, int? currencyColumnIndex, String dateFormat, String csvSeparator, String encoding, int skipRows, bool expenseIsNegative
+ int dateColumnIndex, int amountColumnIndex, int merchantColumnIndex, int? categoryColumnIndex, int? commentColumnIndex, int? currencyColumnIndex, int? holdColumnIndex, String holdMarker, String dateFormat, String csvSeparator, String encoding, int skipRows, bool expenseIsNegative
 });
 
 
@@ -73,7 +63,7 @@ class _$ColumnMappingCopyWithImpl<$Res>
 
 /// Create a copy of ColumnMapping
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? dateColumnIndex = null,Object? amountColumnIndex = null,Object? merchantColumnIndex = null,Object? categoryColumnIndex = freezed,Object? commentColumnIndex = freezed,Object? currencyColumnIndex = freezed,Object? dateFormat = null,Object? csvSeparator = null,Object? encoding = null,Object? skipRows = null,Object? expenseIsNegative = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? dateColumnIndex = null,Object? amountColumnIndex = null,Object? merchantColumnIndex = null,Object? categoryColumnIndex = freezed,Object? commentColumnIndex = freezed,Object? currencyColumnIndex = freezed,Object? holdColumnIndex = freezed,Object? holdMarker = null,Object? dateFormat = null,Object? csvSeparator = null,Object? encoding = null,Object? skipRows = null,Object? expenseIsNegative = null,}) {
   return _then(_self.copyWith(
 dateColumnIndex: null == dateColumnIndex ? _self.dateColumnIndex : dateColumnIndex // ignore: cast_nullable_to_non_nullable
 as int,amountColumnIndex: null == amountColumnIndex ? _self.amountColumnIndex : amountColumnIndex // ignore: cast_nullable_to_non_nullable
@@ -81,7 +71,9 @@ as int,merchantColumnIndex: null == merchantColumnIndex ? _self.merchantColumnIn
 as int,categoryColumnIndex: freezed == categoryColumnIndex ? _self.categoryColumnIndex : categoryColumnIndex // ignore: cast_nullable_to_non_nullable
 as int?,commentColumnIndex: freezed == commentColumnIndex ? _self.commentColumnIndex : commentColumnIndex // ignore: cast_nullable_to_non_nullable
 as int?,currencyColumnIndex: freezed == currencyColumnIndex ? _self.currencyColumnIndex : currencyColumnIndex // ignore: cast_nullable_to_non_nullable
-as int?,dateFormat: null == dateFormat ? _self.dateFormat : dateFormat // ignore: cast_nullable_to_non_nullable
+as int?,holdColumnIndex: freezed == holdColumnIndex ? _self.holdColumnIndex : holdColumnIndex // ignore: cast_nullable_to_non_nullable
+as int?,holdMarker: null == holdMarker ? _self.holdMarker : holdMarker // ignore: cast_nullable_to_non_nullable
+as String,dateFormat: null == dateFormat ? _self.dateFormat : dateFormat // ignore: cast_nullable_to_non_nullable
 as String,csvSeparator: null == csvSeparator ? _self.csvSeparator : csvSeparator // ignore: cast_nullable_to_non_nullable
 as String,encoding: null == encoding ? _self.encoding : encoding // ignore: cast_nullable_to_non_nullable
 as String,skipRows: null == skipRows ? _self.skipRows : skipRows // ignore: cast_nullable_to_non_nullable
@@ -166,30 +158,22 @@ return $default(_that);case _:
 
 
 class _ColumnMapping implements ColumnMapping {
-  const _ColumnMapping({required this.dateColumnIndex, required this.amountColumnIndex, required this.merchantColumnIndex, this.categoryColumnIndex, this.commentColumnIndex, this.currencyColumnIndex, this.dateFormat = 'dd.MM.yyyy', this.csvSeparator = ';', this.encoding = 'UTF-8', this.skipRows = 0, this.expenseIsNegative = true});
+  const _ColumnMapping({required this.dateColumnIndex, required this.amountColumnIndex, required this.merchantColumnIndex, this.categoryColumnIndex, this.commentColumnIndex, this.currencyColumnIndex, this.holdColumnIndex, this.holdMarker = 'HOLD', this.dateFormat = 'dd.MM.yyyy', this.csvSeparator = ';', this.encoding = 'UTF-8', this.skipRows = 0, this.expenseIsNegative = true});
   
 
-/// Индекс колонки с датой (обязательно).
 @override final  int dateColumnIndex;
-/// Индекс колонки с суммой (обязательно).
 @override final  int amountColumnIndex;
-/// Индекс колонки с мерчантом (обязательно).
 @override final  int merchantColumnIndex;
-/// Индекс колонки с категорией банка (опционально).
 @override final  int? categoryColumnIndex;
-/// Индекс колонки с комментарием (опционально).
 @override final  int? commentColumnIndex;
-/// Индекс колонки с валютой (опционально).
 @override final  int? currencyColumnIndex;
-/// Формат даты: 'dd.MM.yyyy', 'dd.MM.yyyy HH:mm:ss'.
+/// Колонка со статусом операции; значение holdMarker => isHold.
+@override final  int? holdColumnIndex;
+@override@JsonKey() final  String holdMarker;
 @override@JsonKey() final  String dateFormat;
-/// Разделитель CSV.
 @override@JsonKey() final  String csvSeparator;
-/// Кодировка.
 @override@JsonKey() final  String encoding;
-/// Кол-во строк для пропуска (заголовки банка).
 @override@JsonKey() final  int skipRows;
-/// true = расход отрицательный, false = расход положительный.
 @override@JsonKey() final  bool expenseIsNegative;
 
 /// Create a copy of ColumnMapping
@@ -202,16 +186,16 @@ _$ColumnMappingCopyWith<_ColumnMapping> get copyWith => __$ColumnMappingCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ColumnMapping&&(identical(other.dateColumnIndex, dateColumnIndex) || other.dateColumnIndex == dateColumnIndex)&&(identical(other.amountColumnIndex, amountColumnIndex) || other.amountColumnIndex == amountColumnIndex)&&(identical(other.merchantColumnIndex, merchantColumnIndex) || other.merchantColumnIndex == merchantColumnIndex)&&(identical(other.categoryColumnIndex, categoryColumnIndex) || other.categoryColumnIndex == categoryColumnIndex)&&(identical(other.commentColumnIndex, commentColumnIndex) || other.commentColumnIndex == commentColumnIndex)&&(identical(other.currencyColumnIndex, currencyColumnIndex) || other.currencyColumnIndex == currencyColumnIndex)&&(identical(other.dateFormat, dateFormat) || other.dateFormat == dateFormat)&&(identical(other.csvSeparator, csvSeparator) || other.csvSeparator == csvSeparator)&&(identical(other.encoding, encoding) || other.encoding == encoding)&&(identical(other.skipRows, skipRows) || other.skipRows == skipRows)&&(identical(other.expenseIsNegative, expenseIsNegative) || other.expenseIsNegative == expenseIsNegative));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ColumnMapping&&(identical(other.dateColumnIndex, dateColumnIndex) || other.dateColumnIndex == dateColumnIndex)&&(identical(other.amountColumnIndex, amountColumnIndex) || other.amountColumnIndex == amountColumnIndex)&&(identical(other.merchantColumnIndex, merchantColumnIndex) || other.merchantColumnIndex == merchantColumnIndex)&&(identical(other.categoryColumnIndex, categoryColumnIndex) || other.categoryColumnIndex == categoryColumnIndex)&&(identical(other.commentColumnIndex, commentColumnIndex) || other.commentColumnIndex == commentColumnIndex)&&(identical(other.currencyColumnIndex, currencyColumnIndex) || other.currencyColumnIndex == currencyColumnIndex)&&(identical(other.holdColumnIndex, holdColumnIndex) || other.holdColumnIndex == holdColumnIndex)&&(identical(other.holdMarker, holdMarker) || other.holdMarker == holdMarker)&&(identical(other.dateFormat, dateFormat) || other.dateFormat == dateFormat)&&(identical(other.csvSeparator, csvSeparator) || other.csvSeparator == csvSeparator)&&(identical(other.encoding, encoding) || other.encoding == encoding)&&(identical(other.skipRows, skipRows) || other.skipRows == skipRows)&&(identical(other.expenseIsNegative, expenseIsNegative) || other.expenseIsNegative == expenseIsNegative));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,dateColumnIndex,amountColumnIndex,merchantColumnIndex,categoryColumnIndex,commentColumnIndex,currencyColumnIndex,dateFormat,csvSeparator,encoding,skipRows,expenseIsNegative);
+int get hashCode => Object.hash(runtimeType,dateColumnIndex,amountColumnIndex,merchantColumnIndex,categoryColumnIndex,commentColumnIndex,currencyColumnIndex,holdColumnIndex,holdMarker,dateFormat,csvSeparator,encoding,skipRows,expenseIsNegative);
 
 @override
 String toString() {
-  return 'ColumnMapping(dateColumnIndex: $dateColumnIndex, amountColumnIndex: $amountColumnIndex, merchantColumnIndex: $merchantColumnIndex, categoryColumnIndex: $categoryColumnIndex, commentColumnIndex: $commentColumnIndex, currencyColumnIndex: $currencyColumnIndex, dateFormat: $dateFormat, csvSeparator: $csvSeparator, encoding: $encoding, skipRows: $skipRows, expenseIsNegative: $expenseIsNegative)';
+  return 'ColumnMapping(dateColumnIndex: $dateColumnIndex, amountColumnIndex: $amountColumnIndex, merchantColumnIndex: $merchantColumnIndex, categoryColumnIndex: $categoryColumnIndex, commentColumnIndex: $commentColumnIndex, currencyColumnIndex: $currencyColumnIndex, holdColumnIndex: $holdColumnIndex, holdMarker: $holdMarker, dateFormat: $dateFormat, csvSeparator: $csvSeparator, encoding: $encoding, skipRows: $skipRows, expenseIsNegative: $expenseIsNegative)';
 }
 
 
@@ -222,7 +206,7 @@ abstract mixin class _$ColumnMappingCopyWith<$Res> implements $ColumnMappingCopy
   factory _$ColumnMappingCopyWith(_ColumnMapping value, $Res Function(_ColumnMapping) _then) = __$ColumnMappingCopyWithImpl;
 @override @useResult
 $Res call({
- int dateColumnIndex, int amountColumnIndex, int merchantColumnIndex, int? categoryColumnIndex, int? commentColumnIndex, int? currencyColumnIndex, String dateFormat, String csvSeparator, String encoding, int skipRows, bool expenseIsNegative
+ int dateColumnIndex, int amountColumnIndex, int merchantColumnIndex, int? categoryColumnIndex, int? commentColumnIndex, int? currencyColumnIndex, int? holdColumnIndex, String holdMarker, String dateFormat, String csvSeparator, String encoding, int skipRows, bool expenseIsNegative
 });
 
 
@@ -239,7 +223,7 @@ class __$ColumnMappingCopyWithImpl<$Res>
 
 /// Create a copy of ColumnMapping
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? dateColumnIndex = null,Object? amountColumnIndex = null,Object? merchantColumnIndex = null,Object? categoryColumnIndex = freezed,Object? commentColumnIndex = freezed,Object? currencyColumnIndex = freezed,Object? dateFormat = null,Object? csvSeparator = null,Object? encoding = null,Object? skipRows = null,Object? expenseIsNegative = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? dateColumnIndex = null,Object? amountColumnIndex = null,Object? merchantColumnIndex = null,Object? categoryColumnIndex = freezed,Object? commentColumnIndex = freezed,Object? currencyColumnIndex = freezed,Object? holdColumnIndex = freezed,Object? holdMarker = null,Object? dateFormat = null,Object? csvSeparator = null,Object? encoding = null,Object? skipRows = null,Object? expenseIsNegative = null,}) {
   return _then(_ColumnMapping(
 dateColumnIndex: null == dateColumnIndex ? _self.dateColumnIndex : dateColumnIndex // ignore: cast_nullable_to_non_nullable
 as int,amountColumnIndex: null == amountColumnIndex ? _self.amountColumnIndex : amountColumnIndex // ignore: cast_nullable_to_non_nullable
@@ -247,7 +231,9 @@ as int,merchantColumnIndex: null == merchantColumnIndex ? _self.merchantColumnIn
 as int,categoryColumnIndex: freezed == categoryColumnIndex ? _self.categoryColumnIndex : categoryColumnIndex // ignore: cast_nullable_to_non_nullable
 as int?,commentColumnIndex: freezed == commentColumnIndex ? _self.commentColumnIndex : commentColumnIndex // ignore: cast_nullable_to_non_nullable
 as int?,currencyColumnIndex: freezed == currencyColumnIndex ? _self.currencyColumnIndex : currencyColumnIndex // ignore: cast_nullable_to_non_nullable
-as int?,dateFormat: null == dateFormat ? _self.dateFormat : dateFormat // ignore: cast_nullable_to_non_nullable
+as int?,holdColumnIndex: freezed == holdColumnIndex ? _self.holdColumnIndex : holdColumnIndex // ignore: cast_nullable_to_non_nullable
+as int?,holdMarker: null == holdMarker ? _self.holdMarker : holdMarker // ignore: cast_nullable_to_non_nullable
+as String,dateFormat: null == dateFormat ? _self.dateFormat : dateFormat // ignore: cast_nullable_to_non_nullable
 as String,csvSeparator: null == csvSeparator ? _self.csvSeparator : csvSeparator // ignore: cast_nullable_to_non_nullable
 as String,encoding: null == encoding ? _self.encoding : encoding // ignore: cast_nullable_to_non_nullable
 as String,skipRows: null == skipRows ? _self.skipRows : skipRows // ignore: cast_nullable_to_non_nullable

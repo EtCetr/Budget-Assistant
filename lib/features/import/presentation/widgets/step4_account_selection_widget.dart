@@ -10,11 +10,9 @@ class Step4AccountSelectionWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(importOnboardingProvider);
     final notifier = ref.read(importOnboardingProvider.notifier);
-
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Сводка выбранного банка и счёта
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -27,10 +25,7 @@ class Step4AccountSelectionWidget extends ConsumerWidget {
             children: [
               const Text(
                 'Импорт в:',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 8),
               Text(
@@ -45,58 +40,47 @@ class Step4AccountSelectionWidget extends ConsumerWidget {
               Text(
                 'Счёт: ${state.selectedAccountId ?? "—"}',
                 style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
+                    fontSize: 14, color: AppColors.textSecondary),
               ),
             ],
           ),
         ),
         const SizedBox(height: 24),
-
         const Text(
           'Опции импорта',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary),
         ),
         const SizedBox(height: 12),
         SwitchListTile(
           title: const Text('Проверять дубликаты'),
           value: state.options.detectDuplicates,
           onChanged: (v) => notifier.setOptions(
-            state.options.copyWith(detectDuplicates: v),
-          ),
+              state.options.copyWith(detectDuplicates: v)),
         ),
         SwitchListTile(
           title: const Text('Искать переводы между счетами'),
           value: state.options.detectTransfers,
           onChanged: (v) => notifier.setOptions(
-            state.options.copyWith(detectTransfers: v),
-          ),
+              state.options.copyWith(detectTransfers: v)),
         ),
         SwitchListTile(
           title: const Text('Проверять режим секретности'),
           value: state.options.checkSecrecy,
-          onChanged: (v) => notifier.setOptions(
-            state.options.copyWith(checkSecrecy: v),
-          ),
+          onChanged: (v) =>
+              notifier.setOptions(state.options.copyWith(checkSecrecy: v)),
         ),
         SwitchListTile(
           title: const Text('Автокатегоризация'),
           value: state.options.autoCategorize,
-          onChanged: (v) => notifier.setOptions(
-            state.options.copyWith(autoCategorize: v),
-          ),
+          onChanged: (v) =>
+              notifier.setOptions(state.options.copyWith(autoCategorize: v)),
         ),
         SwitchListTile(
           title: const Text('Поиск регулярных платежей'),
           value: state.options.detectRecurring,
-          onChanged: (v) => notifier.setOptions(
-            state.options.copyWith(detectRecurring: v),
-          ),
+          onChanged: (v) =>
+              notifier.setOptions(state.options.copyWith(detectRecurring: v)),
         ),
         const SizedBox(height: 16),
         Container(
@@ -110,10 +94,8 @@ class Step4AccountSelectionWidget extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _summaryRow('Файл', state.parsedFile?.fileName ?? '—'),
-              _summaryRow(
-                'Транзакций',
-                '${state.parsedFile?.parseResult.rows.length ?? 0}',
-              ),
+              _summaryRow('Транзакций',
+                  '${state.parsedFile?.parseResult.rows.length ?? 0}'),
             ],
           ),
         ),
@@ -121,14 +103,24 @@ class Step4AccountSelectionWidget extends ConsumerWidget {
     );
   }
 
+  /// Фикс overflow: значение в Expanded с ellipsis (длинные имена файлов).
   Widget _summaryRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppColors.textSecondary)),
-          Text(value, style: const TextStyle(color: AppColors.textPrimary)),
+          Text(label,
+              style: const TextStyle(color: AppColors.textSecondary)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: AppColors.textPrimary),
+            ),
+          ),
         ],
       ),
     );

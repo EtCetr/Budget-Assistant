@@ -16,7 +16,6 @@ class CategoriesTab extends ConsumerWidget {
     final groups = notifier.dayGroups();
     final categoriesAsync = ref.watch(reviewCategoriesProvider);
     final state = ref.watch(postImportReviewProvider);
-
     return categoriesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (_, __) => const Center(
@@ -129,6 +128,23 @@ class CategoriesTab extends ConsumerWidget {
                     ),
                   ],
                 ),
+                if (row.isHold)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.colorWarning.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'HOLD — банк ещё не подтвердил',
+                        style: TextStyle(
+                            color: AppColors.colorWarning, fontSize: 11),
+                      ),
+                    ),
+                  ),
                 Row(
                   children: [
                     Expanded(
@@ -143,8 +159,9 @@ class CategoriesTab extends ConsumerWidget {
                               DropdownMenuItem(
                                 value: c.id as String,
                                 child: Text(
-                                    '${c.iconEmoji ?? ''} ${c.name}',
-                                    style: const TextStyle(fontSize: 13)),
+                                  '${c.iconEmoji ?? ''} ${c.name}',
+                                  style: const TextStyle(fontSize: 13),
+                                ),
                               ),
                           ],
                           onChanged: (v) =>
@@ -159,10 +176,10 @@ class CategoriesTab extends ConsumerWidget {
                         child: Padding(
                           padding: const EdgeInsets.all(4),
                           child: Text(
-                              'AI: ${(suggestion.confidence * 100).round()}%',
-                              style: const TextStyle(
-                                  color: AppColors.colorIncome,
-                                  fontSize: 12)),
+                            'AI: ${(suggestion.confidence * 100).round()}%',
+                            style: const TextStyle(
+                                color: AppColors.colorIncome, fontSize: 12),
+                          ),
                         ),
                       ),
                   ],

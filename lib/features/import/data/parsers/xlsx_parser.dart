@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:convert';
-
 import 'package:archive/archive.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
@@ -9,10 +8,9 @@ import 'package:budget_assistant/features/import/domain/entities/column_mapping.
 import 'import_file_parser.dart';
 
 /// Парсер XLSX через package:archive (ручной OOXML-zip, как в экспорте 12.8).
-/// Не требует пакета excel — избегаем конфликтов версий archive.
+/// Самозакрывающиеся ячейки &ltc .../&gt учитываются; колонки — по r="A1".
 class XlsxParser implements ImportFileParser {
   final Logger _logger;
-
   XlsxParser({required Logger logger}) : _logger = logger;
 
   @override
@@ -23,42 +21,36 @@ class XlsxParser implements ImportFileParser {
     try {
       final file = File(filePath);
       if (!await file.exists()) {
-        // ignore: prefer_const_constructors
         return ParseResult(rows: [], rawRows: [], totalRows: 0,
             error: 'Файл не найден: $filePath');
       }
-
       final bytes = await file.readAsBytes();
       final archive = ZipDecoder().decodeBytes(bytes);
-
-      // Читаем shared strings
       final sharedStrings = _readSharedStrings(archive);
-
-      // Читаем первый лист
       final sheetXml = _findSheetContent(archive);
       if (sheetXml == null) {
-        // ignore: prefer_const_constructors
-        // ignore: prefer_const_constructors
-        return ParseResult(rows: [], rawRows: [], totalRows: 0,
+        return const ParseResult(rows: [], rawRows: [], totalRows: 0,
             error: 'Не удалось прочитать лист XLSX');
       }
-
       final rawRows = _parseSheetXml(sheetXml, sharedStrings);
-
-      if (rawRows.length <= mapping.skipRows) {
+      if (rawRows.isEmpty) {
         return const ParseResult(rows: [], rawRows: [], totalRows: 0,
             error: 'Файл пуст или содержит только заголовки');
       }
-
-      final dataRows = rawRows.sublist(mapping.skipRows);
+      final dbg = rawRows.take(30).toList();
+      for (var i = 0; i < dbg.length; i++) {
+        _logger.i('XLSXDBG[$i] ${dbg[i].join(' | ')}');
+      }
+      final m = _detectByHeaders(rawRows, mapping);
+      final start = m.skipRows < rawRows.length ? m.skipRows : rawRows.length;
+      final dataRows = rawRows.sublist(start);
       final rows = <ParsedRow>[];
       DateTime? periodStart;
       DateTime? periodEnd;
-
       for (var i = 0; i < dataRows.length; i++) {
         final cols = dataRows[i];
         try {
-          final row = _parseRow(cols, i, mapping);
+          final row = _parseRow(cols, i, m);
           if (row != null) {
             rows.add(row);
             if (periodStart == null || row.date.isBefore(periodStart)) {
@@ -72,8 +64,10 @@ class XlsxParser implements ImportFileParser {
           _logger.w('XLSX: пропущена строка ${i + 1}: $e');
         }
       }
-
-      _logger.i('XLSX: распарсено ${rows.length} из ${dataRows.length} строк');
+      _logger.i('XLSX: распарсено ${rows.length} из ${dataRows.length} строк '
+          '(колонки: дата=${m.dateColumnIndex}, сумма=${m.amountColumnIndex}, '
+          'мерчант=${m.merchantColumnIndex}, hold=${m.holdColumnIndex}, '
+          'skip=${m.skipRows})');
       return ParseResult(
         rows: rows,
         rawRows: dataRows,
@@ -88,49 +82,154 @@ class XlsxParser implements ImportFileParser {
     }
   }
 
+  /// Строка заголовка ищется по именам колонок; HOLD-колонка — ТА,
+  /// где маркер HOLD реально встречается в данных (у Альфы «Дата проводки»).
+  ColumnMapping _detectByHeaders(List<List<String>> rows, ColumnMapping m) {
+    int? dateCol;
+    int? amountCol;
+    int? amountFallback;
+    int? merchantCol;
+    int? catCol;
+    int? holdPosting;
+    int? holdStatus;
+    var headerRow = -1;
+    final limit = rows.length < 60 ? rows.length : 60;
+    for (var r = 0; r < limit; r++) {
+      final row = rows[r];
+      var fDate = false;
+      var fAmount = false;
+      var fMerchant = false;
+      for (var i = 0; i < row.length; i++) {
+        final low = row[i].toLowerCase().trim();
+        if (low.isEmpty) continue;
+        if (low.contains('дата операции') ||
+            low.contains('дата транзакции') ||
+            low == 'дата') {
+          dateCol = i;
+          fDate = true;
+        } else if (low.contains('проводки')) {
+          holdPosting = i;
+        } else if (low.contains('статус')) {
+          holdStatus = i;
+        }
+        if (low.contains('сумма')) {
+          if (low.contains('операци') || low.contains('счета')) {
+            amountCol = i;
+            fAmount = true;
+          } else {
+            amountFallback = i;
+          }
+        }
+        if (low.contains('описание') ||
+            low.contains('контрагент') ||
+            low.contains('мерчант') ||
+            low.contains('наименование операции') ||
+            low.contains('назначение')) {
+          merchantCol = i;
+          fMerchant = true;
+        }
+        if (low.contains('категория')) {
+          catCol = i;
+        }
+      }
+      if (fDate && fMerchant && (fAmount || amountFallback != null)) {
+        headerRow = r;
+        break;
+      }
+    }
+    if (headerRow < 0) return m;
+    amountCol ??= amountFallback;
+    if (dateCol == null || amountCol == null || merchantCol == null) return m;
+    int? holdCol;
+    for (final candidate in [holdPosting, holdStatus]) {
+      if (candidate == null) continue;
+      final last =
+          (headerRow + 26 < rows.length) ? headerRow + 26 : rows.length - 1;
+      for (var r = headerRow + 1; r <= last; r++) {
+        final row = rows[r];
+        if (candidate < row.length &&
+            row[candidate].trim().toUpperCase() == 'HOLD') {
+          holdCol = candidate;
+          break;
+        }
+      }
+      if (holdCol != null) break;
+    }
+    return m.copyWith(
+      dateColumnIndex: dateCol,
+      amountColumnIndex: amountCol,
+      merchantColumnIndex: merchantCol,
+      categoryColumnIndex: catCol ?? m.categoryColumnIndex,
+      holdColumnIndex: holdCol ?? m.holdColumnIndex,
+      skipRows: headerRow + 1,
+    );
+  }
+
   List<String> _readSharedStrings(Archive archive) {
     final ssFile = archive.findFile('xl/sharedStrings.xml');
-    if (ssFile == null) {
-
-      return [];
-
-    }
+    if (ssFile == null) return [];
     final content = utf8.decode(ssFile.content as List<int>);
     final strings = <String>[];
-    final regex = RegExp(r'<t[^>]*>([^<]*)</t>');
-    for (final match in regex.allMatches(content)) {
-      strings.add(match.group(1) ?? '');
+    final siRegex = RegExp(r'<si\b[^>]*>(.*?)</si>', dotAll: true);
+    final tRegex = RegExp(r'<t[^>]*>([^<]*)</t>');
+    for (final si in siRegex.allMatches(content)) {
+      final buf = StringBuffer();
+      for (final t in tRegex.allMatches(si.group(1)!)) {
+        buf.write(t.group(1) ?? '');
+      }
+      strings.add(buf.toString());
     }
     return strings;
   }
 
   String? _findSheetContent(Archive archive) {
     final sheet = archive.findFile('xl/worksheets/sheet1.xml');
-    if (sheet == null) {
-
-      return null;
-
-    }
+    if (sheet == null) return null;
     return utf8.decode(sheet.content as List<int>);
+  }
+
+  int _colIndex(String letters) {
+    var n = 0;
+    for (final ch in letters.codeUnits) {
+      if (ch >= 65 && ch <= 90) {
+        n = n * 26 + (ch - 64);
+      } else {
+        break;
+      }
+    }
+    return n - 1;
   }
 
   List<List<String>> _parseSheetXml(String xml, List<String> sharedStrings) {
     final rows = <List<String>>[];
-    final rowRegex = RegExp(r'<row[^>]*>(.*?)</row>', dotAll: true);
-    final cellRegex = RegExp(r'<c[^>]*(?:t="([^"]*)")?[^>]*r="[A-Z]+(\d+)"[^>]*>(?:<v>([^<]*)</v>)?</c>');
-
+    final rowRegex = RegExp(r'<row\b[^>]*>(.*?)</row>', dotAll: true);
+    final cellRegex = RegExp(r'<c\b([^>]*?)(?:/>|>(.*?)</c>)', dotAll: true);
+    final refRe = RegExp(r'r="([A-Z]+)\d+"');
+    final typeRe = RegExp(r't="([^"]+)"');
+    final vRe = RegExp(r'<v>([^<]*)</v>');
+    final tRe = RegExp(r'<t[^>]*>([^<]*)</t>');
     for (final rowMatch in rowRegex.allMatches(xml)) {
-      final rowContent = rowMatch.group(1) ?? '';
       final cells = <String>[];
-      for (final cellMatch in cellRegex.allMatches(rowContent)) {
-        final type = cellMatch.group(1);
-        final value = cellMatch.group(3) ?? '';
-        if (type == 's') {
-          final idx = int.tryParse(value) ?? 0;
-          cells.add(idx < sharedStrings.length ? sharedStrings[idx] : value);
-        } else {
-          cells.add(value);
+      for (final cm in cellRegex.allMatches(rowMatch.group(1)!)) {
+        final attrs = cm.group(1) ?? '';
+        final inner = cm.group(2) ?? '';
+        final refM = refRe.firstMatch(attrs);
+        final col = refM == null ? cells.length : _colIndex(refM.group(1)!);
+        while (cells.length < col) {
+          cells.add('');
         }
+        final type = typeRe.firstMatch(attrs)?.group(1);
+        String value;
+        if (type == 's') {
+          final v = vRe.firstMatch(inner)?.group(1) ?? '';
+          final i = int.tryParse(v) ?? -1;
+          value = (i >= 0 && i < sharedStrings.length) ? sharedStrings[i] : v;
+        } else if (type == 'inlineStr') {
+          value = tRe.firstMatch(inner)?.group(1) ?? '';
+        } else {
+          value = vRe.firstMatch(inner)?.group(1) ?? '';
+        }
+        cells.add(value);
       }
       if (cells.isNotEmpty) rows.add(cells);
     }
@@ -141,52 +240,46 @@ class XlsxParser implements ImportFileParser {
     if (cols.length <= m.amountColumnIndex ||
         cols.length <= m.dateColumnIndex ||
         cols.length <= m.merchantColumnIndex) {
-
       return null;
-
     }
-
     final dateStr = cols[m.dateColumnIndex].trim();
     final amountStr = cols[m.amountColumnIndex].trim();
-    final merchant = cols[m.merchantColumnIndex].trim();
-    if (dateStr.isEmpty || amountStr.isEmpty || merchant.isEmpty) {
-
-      return null;
-
+    var merchant = cols[m.merchantColumnIndex].trim();
+    // Альфа: «Категория: X.Текст» -> оставляем только текст.
+    if (merchant.startsWith('Категория:')) {
+      final dot = merchant.indexOf('.');
+      if (dot > 0 && dot < merchant.length - 1) {
+        merchant = merchant.substring(dot + 1).trim();
+      }
     }
-
+    if (dateStr.isEmpty || amountStr.isEmpty || merchant.isEmpty) return null;
     final date = _parseDate(dateStr, m.dateFormat);
-    if (date == null) {
-
-      return null;
-
-    }
+    if (date == null) return null;
     final amountKopecks = _parseAmount(amountStr);
-    if (amountKopecks == null) {
-
-      return null;
-
+    if (amountKopecks == null) return null;
+    var isHold = false;
+    if (m.holdColumnIndex != null && m.holdColumnIndex! < cols.length) {
+      isHold = cols[m.holdColumnIndex!].trim().toUpperCase() ==
+          m.holdMarker.toUpperCase();
     }
-
     String? cat;
     if (m.categoryColumnIndex != null && m.categoryColumnIndex! < cols.length) {
       cat = cols[m.categoryColumnIndex!].trim();
       if (cat.isEmpty) cat = null;
     }
-
     return ParsedRow(
       rowIndex: rowIndex,
       date: date.toUtc(),
       amountKopecks: amountKopecks,
       merchantName: merchant,
       bankCategory: cat,
+      isHold: isHold,
     );
   }
 
   DateTime? _parseDate(String v, String fmt) {
-    // Excel хранит даты как числа (дни от 1900-01-01)
     final numDays = double.tryParse(v);
-    if (numDays != null && numDays > 1) {
+    if (numDays != null && numDays > 1000) {
       final base = DateTime(1899, 12, 30);
       return base.add(Duration(days: numDays.round()));
     }
@@ -205,7 +298,7 @@ class XlsxParser implements ImportFileParser {
 
   int? _parseAmount(String v) {
     try {
-      var c = v.replaceAll(' ', '').replaceAll('\u00A0', '')
+      var c = v.replaceAll(' ', '').replaceAll(' ', '')
           .replaceAll('₽', '').trim();
       final neg = c.startsWith('-') || c.startsWith('(');
       c = c.replaceAll('-', '').replaceAll('(', '').replaceAll(')', '');
@@ -218,6 +311,8 @@ class XlsxParser implements ImportFileParser {
       var k = (d * 100).round();
       if (neg) k = -k;
       return k;
-    } catch (_) { return null; }
+    } catch (_) {
+      return null;
+    }
   }
 }

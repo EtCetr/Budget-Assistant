@@ -17,6 +17,8 @@ import 'package:budget_assistant/features/import/domain/entities/preview_table_d
 import 'package:budget_assistant/features/import/domain/usecases/detect_bank_from_file_usecase.dart';
 import 'import_repository_providers.dart';
 import 'import_wizard_providers.dart';
+import 'package:budget_assistant/core/database/app_database.dart';
+import 'package:budget_assistant/features/import/data/seeds/default_parser_configs_seed.dart';
 
 /// Состояние wizard'а импорта (4 шага).
 class ImportOnboardingState {
@@ -147,7 +149,16 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
       _reparseTimer?.cancel();
     });
     Future.microtask(_cleanOldDrafts);
+    Future.microtask(_ensureBankConfigs);
     return const ImportOnboardingState();
+  }
+
+  /// Идемпотентно доводит сиды банков (Альфа v2, ВТБ, Ozon) даже если
+  /// стартовый вызов сида был ограничен пустой таблицей.
+  Future<void> _ensureBankConfigs() async {
+    try {
+      await DefaultParserConfigsSeed.seedIfEmpty(AppDatabase());
+    } catch (_) {}
   }
 
   // === Навигация по шагам ===
@@ -176,6 +187,13 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
   }
 
   void clearSnack() => state = state.copyWith(clearSnack: true);
+
+  /// Сброс мастера после успешного импорта (владелец 2026-10):
+  /// повторный вход в импорт всегда начинается с шага 1.
+  void resetAfterSuccess() {
+    _saveTimer?.cancel();
+    state = const ImportOnboardingState();
+  }
 
   // === STEP 1: Загрузка файла ===
 

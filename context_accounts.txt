@@ -1,0 +1,4583 @@
+﻿===== FILE: D:\Et_Cetr\Budget Assistant\lib\core\router\app_router.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:budget_assistant/features/auth/domain/notifiers/auth_notifier.dart';
+import 'package:budget_assistant/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:budget_assistant/features/onboarding/presentation/widgets/onboarding_wrapper.dart';
+import 'package:budget_assistant/features/auth/presentation/screens/auth_wrapper.dart';
+import 'package:budget_assistant/features/spaces/presentation/screens/space_selector_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/app_lock_screen.dart';
+import 'package:budget_assistant/features/invites/presentation/screens/accept_invite_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/pin_onboarding_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/pin_entry_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/biometric_onboarding_screen.dart';
+import 'package:budget_assistant/core/router/routes.dart';
+import 'package:budget_assistant/features/import/domain/entities/import_result.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:budget_assistant/features/accounts/presentation/screens/accounts_screen.dart';
+import 'package:budget_assistant/features/categories/presentation/screens/categories_screen.dart';
+import 'package:budget_assistant/core/bootstrap/app_bootstrap_flags.dart';
+import 'package:budget_assistant/core/services/secure_storage_service.dart';
+import 'package:budget_assistant/core/logger.dart';
+import 'package:budget_assistant/features/transactions/presentation/screens/transactions_log_screen.dart';
+import 'package:budget_assistant/features/import/presentation/screens/import_onboarding_screen.dart';
+import 'package:budget_assistant/features/import/presentation/screens/post_import_review_screen.dart';
+import 'package:budget_assistant/features/import/presentation/screens/import_secrets_screen.dart';
+import 'package:budget_assistant/features/import/domain/entities/import_secrecy_handoff.dart';
+import 'package:budget_assistant/features/transactions/presentation/screens/create_transaction_screen.dart';
+import 'package:budget_assistant/features/transactions/presentation/screens/edit_transaction_screen.dart';
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
+import 'package:budget_assistant/features/budget/presentation/screens/budget_limits_screen.dart';
+import 'package:budget_assistant/features/budget/presentation/screens/edit_budget_limit_screen.dart';
+import 'package:budget_assistant/features/cashback/presentation/screens/cashback_screen.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/providers/savings_goals_screen_providers.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/screens/create_savings_goal_screen.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/screens/savings_goals_screen.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/screens/savings_analytics_screen.dart';
+import 'package:budget_assistant/features/debts/presentation/screens/debts_screen.dart';
+import 'package:budget_assistant/features/debts/presentation/screens/create_debt_screen.dart';
+import 'package:budget_assistant/features/transactions/presentation/screens/split_transaction_screen.dart';
+import 'package:budget_assistant/features/reminders/presentation/screens/reminders_screen.dart';
+import 'package:budget_assistant/features/reminders/presentation/screens/reminder_details_screen.dart';
+import 'package:budget_assistant/features/reminders/presentation/screens/create_reminder_screen.dart';
+import 'package:budget_assistant/features/calendar/presentation/screens/calendar_screen.dart';
+import 'package:budget_assistant/features/calendar/presentation/screens/day_statistics_screen.dart';
+import 'package:budget_assistant/features/calendar/presentation/screens/date_forecast_screen.dart';
+import 'package:budget_assistant/features/calendar/presentation/screens/holidays_management_screen.dart';
+import 'package:budget_assistant/features/recurring_payments/presentation/screens/recurring_payments_detection_screen.dart';
+part 'app_router.g.dart';
+
+@riverpod
+class AppLock extends _$AppLock {
+  @override
+  bool build() => false;
+  void lock() => state = true;
+  void unlock() => state = false;
+}
+
+@riverpod
+class OnboardingStatus extends _$OnboardingStatus {
+  @override
+  String build() => AppBootstrapFlags.onboardingStatus;
+  void complete() {
+    state = 'completed';
+    AppBootstrapFlags.onboardingStatus = 'completed';
+    _persist();
+  }
+
+  void setStatus(String status) {
+    state = status;
+    AppBootstrapFlags.onboardingStatus = status;
+    _persist();
+  }
+
+  Future<void> _persist() async {
+    try {
+      await SecureStorageService().write(
+        'onboarding_completed',
+        state == 'completed' ? 'true' : 'false',
+      );
+    } catch (e, st) {
+      AppLogger.e('Failed to persist onboarding flag', e, st);
+    }
+  }
+}
+
+@riverpod
+class CurrentSpaceId extends _$CurrentSpaceId {
+  @override
+  String? build() => null;
+  void setSpaceId(String? id) => state = id;
+  void clear() => state = null;
+}
+
+@riverpod
+class PendingInviteToken extends _$PendingInviteToken {
+  @override
+  String? build() => null;
+  void setToken(String? token) => state = token;
+  void clear() => state = null;
+}
+
+class _AuthRefreshNotifier extends ChangeNotifier {
+  late final ProviderSubscription _sub;
+  _AuthRefreshNotifier(Ref ref) {
+    _sub = ref.listen(authProvider, (_, __) {
+      notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _sub.close();
+    super.dispose();
+  }
+}
+
+@riverpod
+GoRouter appRouter(Ref ref) {
+  final authStatus = ref.watch(authProvider);
+  final refreshNotifier = _AuthRefreshNotifier(ref);
+  ref.onDispose(() {
+    refreshNotifier.dispose();
+  });
+  return GoRouter(
+    initialLocation: AppRoutes.home,
+    debugLogDiagnostics: true,
+    refreshListenable: refreshNotifier,
+    routes: [
+      GoRoute(
+        path: '/debts',
+        name: 'debts',
+        builder: (context, state) => const DebtsScreen(),
+      ),
+      GoRoute(
+        path: '/debts/create',
+        name: 'create-debt',
+        builder: (context, state) {
+          final q = state.uri.queryParameters;
+          return CreateDebtScreen(
+            debtId: q['id'],
+            transactionId: q['transaction_id'],
+            splitId: q['split_id'],
+          );
+        },
+      ),
+      GoRoute(
+        path: '/transactions/split/:id',
+        name: 'split-transaction',
+        builder: (context, state) => SplitTransactionScreen(
+          transactionId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.home,
+        name: 'home',
+        builder: (context, state) => const DashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.onboarding,
+        name: 'onboarding',
+        builder: (context, state) => const OnboardingWrapper(),
+      ),
+      GoRoute(
+        path: AppRoutes.auth,
+        name: 'auth',
+        builder: (context, state) => const AuthWrapper(),
+      ),
+      GoRoute(
+        path: AppRoutes.spaceSelector,
+        name: 'space_selector',
+        builder: (context, state) => const SpaceSelectorScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.lock,
+        name: 'lock',
+        builder: (context, state) => const AppLockScreen(),
+      ),
+      GoRoute(
+        path: '${AppRoutes.invite}/accept',
+        name: 'accept_invite',
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'];
+          return AcceptInviteScreen(token: token);
+        },
+      ),
+      GoRoute(
+        path: '/security/pin-onboarding',
+        name: 'pin_onboarding',
+        builder: (context, state) => const PinOnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/security/pin-entry',
+        name: 'pin_entry',
+        builder: (context, state) => const PinEntryScreen(),
+      ),
+      GoRoute(
+        path: '/security/biometric-onboarding',
+        name: 'biometric_onboarding',
+        builder: (context, state) => const BiometricOnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/accounts',
+        name: 'accounts',
+        builder: (context, state) => AccountsScreen(
+          userId: Supabase.instance.client.auth.currentUser?.id ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/categories',
+        name: 'categories',
+        builder: (context, state) => CategoriesScreen(
+          userId: Supabase.instance.client.auth.currentUser?.id ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/transactions',
+        builder: (context, state) => const TransactionsLogScreen(),
+      ),
+      GoRoute(
+        path: '/import/onboarding',
+        name: 'import-onboarding',
+        builder: (context, state) => const ImportOnboardingScreen(),
+    ),
+    GoRoute(
+      path: '/import/review',
+      name: 'import-review',
+      builder: (context, state) => PostImportReviewScreen(result: state.extra is ImportResult ? state.extra as ImportResult : null),
+    ),
+    GoRoute(
+      path: '/import/secrets',
+      name: 'import-secrets',
+      builder: (context, state) => ImportSecretsScreen(handoff: state.extra is ImportSecrecyHandoff ? state.extra as ImportSecrecyHandoff : null),
+      ),
+      GoRoute(
+        path: '/transactions/create',
+        name: 'create-transaction',
+        builder: (context, state) {
+          final q = state.uri.queryParameters;
+          final typeStr = q['type'] ?? 'expense';
+          final type = TransactionType.values.firstWhere(
+            (t) => t.name == typeStr,
+            orElse: () => TransactionType.expense,
+          );
+          // Этап 14 (ТЗ 6.3.11.7): предзаполнение из напоминания +
+          // авто-завершение напоминания после сохранения транзакции.
+          return CreateTransactionScreen(
+            type: type,
+            reminderId: q['reminder_id'],
+            dateIso: q['date'],
+          );
+        },
+      ),
+      GoRoute(
+        path: '/transactions/edit/:id',
+        name: 'edit-transaction',
+        builder: (context, state) {
+          final id = state.pathParameters['id'];
+          if (id == null || id.isEmpty) {
+            return const Scaffold(
+              body: Center(child: Text('ID транзакции не указан')),
+            );
+          }
+          return EditTransactionScreen(transactionId: id);
+        },
+      ),
+      GoRoute(
+        path: '/budget',
+        name: 'budget',
+        builder: (context, state) => const BudgetLimitsScreen(),
+      ),
+      GoRoute(
+        path: '/budget/create',
+        name: 'create-budget-limit',
+        builder: (context, state) => const EditBudgetLimitScreen(),
+      ),
+      GoRoute(
+        path: '/budget/edit/:id',
+        name: 'edit-budget-limit',
+        builder: (context, state) {
+          final id = state.pathParameters['id'];
+          if (id == null || id.isEmpty) {
+            return const Scaffold(
+              body: Center(child: Text('ID лимита не указан')),
+            );
+          }
+          return EditBudgetLimitScreen(limitId: id);
+        },
+      ),
+      GoRoute(
+        path: '/cashback',
+        name: 'cashback',
+        builder: (context, state) => const CashbackScreen(),
+      ),
+      // Этап 12: цели накопления
+      GoRoute(
+        path: '/savings-goals',
+        name: 'savings-goals',
+        builder: (context, state) => const SavingsGoalsScreen(),
+      ),
+      GoRoute(
+        path: '/savings-goals/archive',
+        name: 'savings-goals-archive',
+        builder: (context, state) => const SavingsGoalsScreen(
+          initialTab: SavingsGoalsTab.archive,
+        ),
+      ),
+      GoRoute(
+        path: '/savings-goals/create',
+        name: 'create-savings-goal',
+        builder: (context, state) {
+          final goalId = state.uri.queryParameters['id'];
+          return CreateSavingsGoalScreen(goalId: goalId);
+        },
+      ),
+      GoRoute(
+        path: '/savings-analytics',
+        name: 'savings-analytics',
+        builder: (context, state) => const SavingsAnalyticsScreen(),
+      ),
+      // Этап 14: напоминания
+      GoRoute(
+        path: '/reminders',
+        name: 'reminders',
+        builder: (context, state) => const RemindersScreen(),
+      ),
+      GoRoute(
+        path: '/reminders/create',
+        name: 'create-reminder',
+        builder: (context, state) {
+          final q = state.uri.queryParameters;
+          return CreateReminderScreen(
+            editReminderId: q['id'],
+            type: q['type'],
+            dateIso: q['date'],
+            copyFromReminderId: q['reminder_id'],
+          );
+        },
+      ),
+      GoRoute(
+        path: '/reminders/:id',
+        name: 'reminder-details',
+        builder: (context, state) => ReminderDetailsScreen(
+          reminderId: state.pathParameters['id']!,
+        ),
+      ),
+      // Этап 14: календарная группа
+      GoRoute(
+        path: '/calendar',
+        name: 'calendar',
+        builder: (context, state) => const CalendarScreen(),
+      ),
+      GoRoute(
+        path: '/calendar/day',
+        name: 'calendar-day',
+        builder: (context, state) => DayStatisticsScreen(
+          dateIso: state.uri.queryParameters['date'] ??
+              DateTime.now().toIso8601String(),
+        ),
+      ),
+      GoRoute(
+        path: '/calendar/forecast',
+        name: 'calendar-forecast',
+        builder: (context, state) => DateForecastScreen(
+          initialDateIso: state.uri.queryParameters['date'],
+        ),
+      ),
+      GoRoute(
+        path: '/calendar/holidays',
+        name: 'calendar-holidays',
+        builder: (context, state) => const HolidaysManagementScreen(),
+      ),
+      // Этап 14: детекция регулярных платежей
+      GoRoute(
+        path: '/recurring-payments-detection',
+        name: 'recurring-detection',
+        builder: (context, state) =>
+            const RecurringPaymentsDetectionScreen(),
+      ),
+    ],
+    redirect: (context, state) {
+      final location = state.uri.toString();
+      final isAppLocked = ref.read(appLockProvider);
+      final onboardingCompleted =
+          ref.read(onboardingStatusProvider) == 'completed';
+      if (isAppLocked && location != AppRoutes.lock) {
+        return AppRoutes.lock;
+      }
+      if (authStatus == AuthStatus.unauthenticated) {
+        if (!location.startsWith(AppRoutes.auth) &&
+            !location.startsWith(AppRoutes.invite)) {
+          return AppRoutes.auth;
+        }
+        return null;
+      }
+      if (authStatus == AuthStatus.authenticated) {
+        if (!onboardingCompleted &&
+            !location.startsWith(AppRoutes.onboarding) &&
+            !location.startsWith('/security/')) {
+          return AppRoutes.onboarding;
+        }
+        if (onboardingCompleted && location.startsWith(AppRoutes.auth)) {
+          return AppRoutes.home;
+        }
+      }
+      return null;
+    },
+  );
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\core\router\app_router.g.dart =====
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'app_router.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(AppLock)
+final appLockProvider = AppLockProvider._();
+
+final class AppLockProvider extends $NotifierProvider<AppLock, bool> {
+  AppLockProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appLockProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$appLockHash();
+
+  @$internal
+  @override
+  AppLock create() => AppLock();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$appLockHash() => r'd08f8dae5fd1c3f69b679f9bf413e41371f63070';
+
+abstract class _$AppLock extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(OnboardingStatus)
+final onboardingStatusProvider = OnboardingStatusProvider._();
+
+final class OnboardingStatusProvider
+    extends $NotifierProvider<OnboardingStatus, String> {
+  OnboardingStatusProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'onboardingStatusProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$onboardingStatusHash();
+
+  @$internal
+  @override
+  OnboardingStatus create() => OnboardingStatus();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$onboardingStatusHash() => r'0e6d4c0b37c3fe22f10aca3bae71bc46c86dcb1f';
+
+abstract class _$OnboardingStatus extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(CurrentSpaceId)
+final currentSpaceIdProvider = CurrentSpaceIdProvider._();
+
+final class CurrentSpaceIdProvider
+    extends $NotifierProvider<CurrentSpaceId, String?> {
+  CurrentSpaceIdProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'currentSpaceIdProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$currentSpaceIdHash();
+
+  @$internal
+  @override
+  CurrentSpaceId create() => CurrentSpaceId();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
+  }
+}
+
+String _$currentSpaceIdHash() => r'9c914131303fa6d32d88f56e1ef1ecb9a02ae0a5';
+
+abstract class _$CurrentSpaceId extends $Notifier<String?> {
+  String? build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<String?, String?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String?, String?>,
+              String?,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(PendingInviteToken)
+final pendingInviteTokenProvider = PendingInviteTokenProvider._();
+
+final class PendingInviteTokenProvider
+    extends $NotifierProvider<PendingInviteToken, String?> {
+  PendingInviteTokenProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'pendingInviteTokenProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$pendingInviteTokenHash();
+
+  @$internal
+  @override
+  PendingInviteToken create() => PendingInviteToken();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
+  }
+}
+
+String _$pendingInviteTokenHash() =>
+    r'fe24fadadc765d709551f2060c650946edccf49d';
+
+abstract class _$PendingInviteToken extends $Notifier<String?> {
+  String? build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<String?, String?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String?, String?>,
+              String?,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(appRouter)
+final appRouterProvider = AppRouterProvider._();
+
+final class AppRouterProvider
+    extends $FunctionalProvider<GoRouter, GoRouter, GoRouter>
+    with $Provider<GoRouter> {
+  AppRouterProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appRouterProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$appRouterHash();
+
+  @$internal
+  @override
+  $ProviderElement<GoRouter> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  GoRouter create(Ref ref) {
+    return appRouter(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(GoRouter value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<GoRouter>(value),
+    );
+  }
+}
+
+String _$appRouterHash() => r'99e814ac375fc1b8ec2315b2d6922889789bd12d';
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\core\router\routes.dart =====
+// lib/core/router/routes.dart
+// Константы для маршрутов
+
+class AppRoutes {
+  static const String home = '/';
+  static const String onboarding = '/onboarding';
+  static const String auth = '/auth';
+  static const String spaceSelector = '/space-selector';
+  static const String lock = '/lock';
+  static const String invite = '/invite';
+  static const String join = '/join'; // Для Deep Link
+
+  // Подпути для онбординга (может быть реализовано иначе, например, через индекс шага)
+  static const String onboardingWelcome = '$onboarding/welcome';
+  static const String onboardingCurrency = '$onboarding/currency';
+  static const String onboardingSecurity = '$onboarding/security';
+  static const String onboardingSpace = '$onboarding/space';
+  static const String onboardingAccount = '$onboarding/account';
+
+  // Подпути для auth (например, /auth/sign-in, /auth/sign-up)
+  // static const String authSignIn = '$auth/sign-in';
+  // static const String authSignUp = '$auth/sign-up';
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\data\datasources\account_dao.dart =====
+// lib/features/accounts/data/datasources/account_dao.dart
+import 'package:drift/drift.dart';
+import '../../../../core/database/app_database.dart';
+import '../models/account_model.dart';
+
+part 'account_dao.g.dart';
+
+@DriftAccessor(tables: [Accounts])
+class AccountDao extends DatabaseAccessor<AppDatabase> with _$AccountDaoMixin {
+  AccountDao(super.db);
+
+  // ✅ НОВЫЙ МЕТОД: Stream для автообновления UI
+  Stream<List<AccountModel>> watchAccountsByUserId(String userId) {
+    final query = select(accounts)
+      ..where((t) => t.userId.equals(userId))
+      ..orderBy([(t) => OrderingTerm(expression: t.sortOrder, mode: OrderingMode.asc),
+                 (t) => OrderingTerm(expression: t.createdAt, mode: OrderingMode.desc)]);
+    
+    return query.watch().map((results) => results
+        .map((row) => AccountModel(
+              id: row.id,
+              userId: row.userId,
+              spaceId: row.spaceId,
+              bankName: row.bankName,
+              customName: row.customName,
+              cardNumberMask: row.cardNumberMask,
+              accountType: row.accountType,
+              currency: row.currency,
+              currentBalance: row.currentBalance,
+              creditLimit: row.creditLimit,
+              gracePeriodEnd: row.gracePeriodEnd,
+              minPaymentAmount: row.minPaymentAmount,
+              includeInPersonalBalance: row.includeInPersonalBalance,
+              includeInFamilyBalance: row.includeInFamilyBalance,
+              isSharedBalance: row.isSharedBalance,
+              isSharedExpenses: row.isSharedExpenses,
+              expenseDetailLevel: row.expenseDetailLevel,
+              isSharedIncomes: row.isSharedIncomes,
+              incomeDetailLevel: row.incomeDetailLevel,
+              sortOrder: row.sortOrder,
+              isArchived: row.isArchived,
+              isSystem: row.isSystem,
+              createdAt: row.createdAt,
+              updatedAt: row.updatedAt,
+              syncStatus: row.syncStatus,
+            ))
+        .toList());
+  }
+
+  // ✅ НОВЫЙ МЕТОД: Delete с каскадом для ипотеки
+    /// Удаление счёта с каскадным удалением ипотеки
+  Future<void> deleteAccount(String accountId) async {
+    try {
+      await (delete(
+        db.mortgages,
+      )..where((t) => t.accountId.equals(accountId))).go();
+      await (delete(accounts)..where((t) => t.id.equals(accountId))).go();
+    } catch (e) {
+      throw Exception('Failed to delete account: $e');
+    }
+  }
+
+  Future<List<AccountModel>> getAccountsByUserId(String userId) async {
+    try {
+      final query = select(accounts)..where((t) => t.userId.equals(userId));
+      final results = await query.get();
+
+      return results
+          .map(
+            (row) => AccountModel(
+              id: row.id,
+              userId: row.userId,
+              spaceId: row.spaceId,
+              bankName: row.bankName,
+              customName: row.customName,
+              cardNumberMask: row.cardNumberMask,
+              accountType: row.accountType,
+              currency: row.currency,
+              currentBalance: row.currentBalance,
+              creditLimit: row.creditLimit,
+              gracePeriodEnd: row.gracePeriodEnd,
+              minPaymentAmount: row.minPaymentAmount,
+              includeInPersonalBalance: row.includeInPersonalBalance,
+              includeInFamilyBalance: row.includeInFamilyBalance,
+              isSharedBalance: row.isSharedBalance,
+              isSharedExpenses: row.isSharedExpenses,
+              expenseDetailLevel: row.expenseDetailLevel,
+              isSharedIncomes: row.isSharedIncomes,
+              incomeDetailLevel: row.incomeDetailLevel,
+              sortOrder: row.sortOrder,
+              isArchived: row.isArchived,
+              isSystem: row.isSystem,
+              createdAt: row.createdAt,
+              updatedAt: row.updatedAt,
+              syncStatus: row.syncStatus,
+            ),
+          )
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to get accounts: $e');
+    }
+  }
+
+  Future<void> insertAccount(AccountModel account) async {
+    try {
+      await into(accounts).insert(
+        AccountsCompanion(
+          id: Value(account.id),
+          userId: Value(account.userId),
+          spaceId: Value(account.spaceId),
+          bankName: Value(account.bankName),
+          customName: Value(account.customName),
+          cardNumberMask: Value(account.cardNumberMask),
+          accountType: Value(account.accountType),
+          currency: Value(account.currency),
+          currentBalance: Value(account.currentBalance),
+          creditLimit: Value(account.creditLimit),
+          gracePeriodEnd: Value(account.gracePeriodEnd),
+          minPaymentAmount: Value(account.minPaymentAmount),
+          includeInPersonalBalance: Value(account.includeInPersonalBalance),
+          includeInFamilyBalance: Value(account.includeInFamilyBalance),
+          isSharedBalance: Value(account.isSharedBalance),
+          isSharedExpenses: Value(account.isSharedExpenses),
+          expenseDetailLevel: Value(account.expenseDetailLevel),
+          isSharedIncomes: Value(account.isSharedIncomes),
+          incomeDetailLevel: Value(account.incomeDetailLevel),
+          sortOrder: Value(account.sortOrder),
+          isArchived: Value(account.isArchived),
+          isSystem: Value(account.isSystem),
+          createdAt: Value(account.createdAt),
+          updatedAt: Value(account.updatedAt),
+          syncStatus: Value(account.syncStatus),
+        ),
+      );
+    } catch (e) {
+      throw Exception('Failed to insert account: $e');
+    }
+  }
+
+  Future<void> updateAccountSortOrder(String accountId, int? sortOrder) async {
+    try {
+      await (update(accounts)..where((t) => t.id.equals(accountId))).write(
+        AccountsCompanion(sortOrder: Value(sortOrder)),
+      );
+    } catch (e) {
+      throw Exception('Failed to update sort order: $e');
+    }
+  }
+
+  Future<AccountModel?> getSystemAccountByType(String accountType) async {
+    try {
+      final query = select(accounts)
+        ..where(
+          (t) => t.accountType.equals(accountType) & t.isSystem.equals(true),
+        );
+      final result = await query.getSingleOrNull();
+
+      if (result == null) return null;
+
+      return AccountModel(
+        id: result.id,
+        userId: result.userId,
+        spaceId: result.spaceId,
+        bankName: result.bankName,
+        customName: result.customName,
+        cardNumberMask: result.cardNumberMask,
+        accountType: result.accountType,
+        currency: result.currency,
+        currentBalance: result.currentBalance,
+        creditLimit: result.creditLimit,
+        gracePeriodEnd: result.gracePeriodEnd,
+        minPaymentAmount: result.minPaymentAmount,
+        includeInPersonalBalance: result.includeInPersonalBalance,
+        includeInFamilyBalance: result.includeInFamilyBalance,
+        isSharedBalance: result.isSharedBalance,
+        isSharedExpenses: result.isSharedExpenses,
+        expenseDetailLevel: result.expenseDetailLevel,
+        isSharedIncomes: result.isSharedIncomes,
+        incomeDetailLevel: result.incomeDetailLevel,
+        sortOrder: result.sortOrder,
+        isArchived: result.isArchived,
+        isSystem: result.isSystem,
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+        syncStatus: result.syncStatus,
+      );
+    } catch (e) {
+      throw Exception('Failed to get system account: $e');
+    }
+  }
+
+  // Внутрь класса AccountDao (после существующих методов)
+
+  /// Идемпотентно создаёт локальную копию профиля пользователя.
+  /// Нужна, чтобы FK accounts.user_id не падал до первой синхронизации (Этап 8).
+  Future<void> ensureLocalUser(String userId, {String email = ''}) async {
+    final existing = await (select(
+      db.users,
+    )..where((u) => u.id.equals(userId))).getSingleOrNull();
+    if (existing != null) return;
+
+    final now = DateTime.now().toUtc();
+    await into(db.users).insert(
+      UsersCompanion(
+        id: Value(userId),
+        displayName: const Value(''),
+        email: Value(email),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+      ),
+    );
+  }
+
+    /// Обновление счёта (Edit): updatedAt + возврат в очередь sync
+  Future<void> updateAccountFields({
+    required String accountId,
+    required String bankName,
+    required String customName,
+    required String accountType,
+    required String currency,
+    required int currentBalance,
+    required String? cardNumberMask,
+    required int? creditLimit,
+    required DateTime updatedAt,
+  }) async {
+    try {
+      await (update(accounts)..where((t) => t.id.equals(accountId))).write(
+        AccountsCompanion(
+          bankName: Value(bankName),
+          customName: Value(customName),
+          accountType: Value(accountType),
+          currency: Value(currency),
+          currentBalance: Value(currentBalance),
+          cardNumberMask: Value(cardNumberMask),
+          creditLimit: Value(creditLimit),
+          updatedAt: Value(updatedAt),
+          syncStatus: const Value('pending'),
+        ),
+      );
+    } catch (e) {
+      throw Exception('Failed to update account: $e');
+    }
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\data\datasources\account_dao.g.dart =====
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'account_dao.dart';
+
+// ignore_for_file: type=lint
+mixin _$AccountDaoMixin on DatabaseAccessor<AppDatabase> {
+  $UsersTable get users => attachedDatabase.users;
+  $SpacesTable get spaces => attachedDatabase.spaces;
+  $AccountsTable get accounts => attachedDatabase.accounts;
+  AccountDaoManager get managers => AccountDaoManager(this);
+}
+
+class AccountDaoManager {
+  final _$AccountDaoMixin _db;
+  AccountDaoManager(this._db);
+  $$UsersTableTableManager get users =>
+      $$UsersTableTableManager(_db.attachedDatabase, _db.users);
+  $$SpacesTableTableManager get spaces =>
+      $$SpacesTableTableManager(_db.attachedDatabase, _db.spaces);
+  $$AccountsTableTableManager get accounts =>
+      $$AccountsTableTableManager(_db.attachedDatabase, _db.accounts);
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\data\datasources\mortgage_dao.dart =====
+// lib/features/accounts/data/datasources/mortgage_dao.dart
+import 'package:drift/drift.dart';
+import '../../../../core/database/app_database.dart';
+import '../models/mortgage_model.dart';
+
+part 'mortgage_dao.g.dart';
+
+@DriftAccessor(tables: [Mortgages])
+class MortgageDao extends DatabaseAccessor<AppDatabase>
+    with _$MortgageDaoMixin {
+  MortgageDao(super.db);
+
+  Future<MortgageModel?> getMortgageByAccountId(String accountId) async {
+    try {
+      final query = select(mortgages)
+        ..where((t) => t.accountId.equals(accountId));
+      final result = await query.getSingleOrNull();
+
+      if (result == null) return null;
+
+      return MortgageModel(
+        id: result.id,
+        accountId: result.accountId,
+        initialLoanAmount: result.initialLoanAmount,
+        propertyValue: result.propertyValue,
+        interestRateBps: result.interestRateBps,
+        remainingTermMonths: result.remainingTermMonths,
+        monthlyPayment: result.monthlyPayment,
+        nextPaymentDate: result.nextPaymentDate,
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+        syncStatus: result.syncStatus,
+      );
+    } catch (e) {
+      throw Exception('Failed to get mortgage: $e');
+    }
+  }
+
+  Future<void> insertMortgage(MortgageModel mortgage) async {
+    try {
+      await into(mortgages).insert(
+        MortgagesCompanion(
+          id: Value(mortgage.id),
+          accountId: Value(mortgage.accountId),
+          initialLoanAmount: Value(mortgage.initialLoanAmount),
+          propertyValue: Value(mortgage.propertyValue),
+          interestRateBps: Value(mortgage.interestRateBps),
+          remainingTermMonths: Value(mortgage.remainingTermMonths),
+          monthlyPayment: Value(mortgage.monthlyPayment),
+          nextPaymentDate: Value(mortgage.nextPaymentDate),
+          createdAt: Value(mortgage.createdAt),
+          updatedAt: Value(mortgage.updatedAt),
+          syncStatus: Value(mortgage.syncStatus),
+        ),
+      );
+    } catch (e) {
+      throw Exception('Failed to insert mortgage: $e');
+    }
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\data\datasources\mortgage_dao.g.dart =====
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'mortgage_dao.dart';
+
+// ignore_for_file: type=lint
+mixin _$MortgageDaoMixin on DatabaseAccessor<AppDatabase> {
+  $UsersTable get users => attachedDatabase.users;
+  $SpacesTable get spaces => attachedDatabase.spaces;
+  $AccountsTable get accounts => attachedDatabase.accounts;
+  $MortgagesTable get mortgages => attachedDatabase.mortgages;
+  MortgageDaoManager get managers => MortgageDaoManager(this);
+}
+
+class MortgageDaoManager {
+  final _$MortgageDaoMixin _db;
+  MortgageDaoManager(this._db);
+  $$UsersTableTableManager get users =>
+      $$UsersTableTableManager(_db.attachedDatabase, _db.users);
+  $$SpacesTableTableManager get spaces =>
+      $$SpacesTableTableManager(_db.attachedDatabase, _db.spaces);
+  $$AccountsTableTableManager get accounts =>
+      $$AccountsTableTableManager(_db.attachedDatabase, _db.accounts);
+  $$MortgagesTableTableManager get mortgages =>
+      $$MortgagesTableTableManager(_db.attachedDatabase, _db.mortgages);
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\data\models\account_model.dart =====
+// lib/features/accounts/data/models/account_model.dart
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+// ✅ ОБЯЗАТЕЛЬНО обе part директивы
+part 'account_model.freezed.dart';
+part 'account_model.g.dart';
+
+@freezed
+abstract class AccountModel with _$AccountModel {
+  const factory AccountModel({
+    required String id,
+    required String userId,
+    String? spaceId,
+    required String bankName,
+    required String customName,
+    String? cardNumberMask,
+    required String accountType,
+    required String currency,
+    required int currentBalance,
+    int? creditLimit,
+    DateTime? gracePeriodEnd,
+    int? minPaymentAmount,
+    @Default(true) bool includeInPersonalBalance,
+    @Default(false) bool includeInFamilyBalance,
+    @Default(false) bool isSharedBalance,
+    @Default(false) bool isSharedExpenses,
+    @Default('total_only') String expenseDetailLevel,
+    @Default(false) bool isSharedIncomes,
+    @Default('total_only') String incomeDetailLevel,
+    int? sortOrder,
+    @Default(false) bool isArchived,
+    @Default(false) bool isSystem,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    @Default('pending') String syncStatus,
+  }) = _AccountModel;
+
+  factory AccountModel.fromJson(Map<String, dynamic> json) =>
+      _$AccountModelFromJson(json);
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\data\models\account_model.freezed.dart =====
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'account_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$AccountModel {
+
+ String get id; String get userId; String? get spaceId; String get bankName; String get customName; String? get cardNumberMask; String get accountType; String get currency; int get currentBalance; int? get creditLimit; DateTime? get gracePeriodEnd; int? get minPaymentAmount; bool get includeInPersonalBalance; bool get includeInFamilyBalance; bool get isSharedBalance; bool get isSharedExpenses; String get expenseDetailLevel; bool get isSharedIncomes; String get incomeDetailLevel; int? get sortOrder; bool get isArchived; bool get isSystem; DateTime get createdAt; DateTime get updatedAt; String get syncStatus;
+/// Create a copy of AccountModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AccountModelCopyWith<AccountModel> get copyWith => _$AccountModelCopyWithImpl<AccountModel>(this as AccountModel, _$identity);
+
+  /// Serializes this AccountModel to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AccountModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.bankName, bankName) || other.bankName == bankName)&&(identical(other.customName, customName) || other.customName == customName)&&(identical(other.cardNumberMask, cardNumberMask) || other.cardNumberMask == cardNumberMask)&&(identical(other.accountType, accountType) || other.accountType == accountType)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.currentBalance, currentBalance) || other.currentBalance == currentBalance)&&(identical(other.creditLimit, creditLimit) || other.creditLimit == creditLimit)&&(identical(other.gracePeriodEnd, gracePeriodEnd) || other.gracePeriodEnd == gracePeriodEnd)&&(identical(other.minPaymentAmount, minPaymentAmount) || other.minPaymentAmount == minPaymentAmount)&&(identical(other.includeInPersonalBalance, includeInPersonalBalance) || other.includeInPersonalBalance == includeInPersonalBalance)&&(identical(other.includeInFamilyBalance, includeInFamilyBalance) || other.includeInFamilyBalance == includeInFamilyBalance)&&(identical(other.isSharedBalance, isSharedBalance) || other.isSharedBalance == isSharedBalance)&&(identical(other.isSharedExpenses, isSharedExpenses) || other.isSharedExpenses == isSharedExpenses)&&(identical(other.expenseDetailLevel, expenseDetailLevel) || other.expenseDetailLevel == expenseDetailLevel)&&(identical(other.isSharedIncomes, isSharedIncomes) || other.isSharedIncomes == isSharedIncomes)&&(identical(other.incomeDetailLevel, incomeDetailLevel) || other.incomeDetailLevel == incomeDetailLevel)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder)&&(identical(other.isArchived, isArchived) || other.isArchived == isArchived)&&(identical(other.isSystem, isSystem) || other.isSystem == isSystem)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hashAll([runtimeType,id,userId,spaceId,bankName,customName,cardNumberMask,accountType,currency,currentBalance,creditLimit,gracePeriodEnd,minPaymentAmount,includeInPersonalBalance,includeInFamilyBalance,isSharedBalance,isSharedExpenses,expenseDetailLevel,isSharedIncomes,incomeDetailLevel,sortOrder,isArchived,isSystem,createdAt,updatedAt,syncStatus]);
+
+@override
+String toString() {
+  return 'AccountModel(id: $id, userId: $userId, spaceId: $spaceId, bankName: $bankName, customName: $customName, cardNumberMask: $cardNumberMask, accountType: $accountType, currency: $currency, currentBalance: $currentBalance, creditLimit: $creditLimit, gracePeriodEnd: $gracePeriodEnd, minPaymentAmount: $minPaymentAmount, includeInPersonalBalance: $includeInPersonalBalance, includeInFamilyBalance: $includeInFamilyBalance, isSharedBalance: $isSharedBalance, isSharedExpenses: $isSharedExpenses, expenseDetailLevel: $expenseDetailLevel, isSharedIncomes: $isSharedIncomes, incomeDetailLevel: $incomeDetailLevel, sortOrder: $sortOrder, isArchived: $isArchived, isSystem: $isSystem, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $AccountModelCopyWith<$Res>  {
+  factory $AccountModelCopyWith(AccountModel value, $Res Function(AccountModel) _then) = _$AccountModelCopyWithImpl;
+@useResult
+$Res call({
+ String id, String userId, String? spaceId, String bankName, String customName, String? cardNumberMask, String accountType, String currency, int currentBalance, int? creditLimit, DateTime? gracePeriodEnd, int? minPaymentAmount, bool includeInPersonalBalance, bool includeInFamilyBalance, bool isSharedBalance, bool isSharedExpenses, String expenseDetailLevel, bool isSharedIncomes, String incomeDetailLevel, int? sortOrder, bool isArchived, bool isSystem, DateTime createdAt, DateTime updatedAt, String syncStatus
+});
+
+
+
+
+}
+/// @nodoc
+class _$AccountModelCopyWithImpl<$Res>
+    implements $AccountModelCopyWith<$Res> {
+  _$AccountModelCopyWithImpl(this._self, this._then);
+
+  final AccountModel _self;
+  final $Res Function(AccountModel) _then;
+
+/// Create a copy of AccountModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? spaceId = freezed,Object? bankName = null,Object? customName = null,Object? cardNumberMask = freezed,Object? accountType = null,Object? currency = null,Object? currentBalance = null,Object? creditLimit = freezed,Object? gracePeriodEnd = freezed,Object? minPaymentAmount = freezed,Object? includeInPersonalBalance = null,Object? includeInFamilyBalance = null,Object? isSharedBalance = null,Object? isSharedExpenses = null,Object? expenseDetailLevel = null,Object? isSharedIncomes = null,Object? incomeDetailLevel = null,Object? sortOrder = freezed,Object? isArchived = null,Object? isSystem = null,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String,spaceId: freezed == spaceId ? _self.spaceId : spaceId // ignore: cast_nullable_to_non_nullable
+as String?,bankName: null == bankName ? _self.bankName : bankName // ignore: cast_nullable_to_non_nullable
+as String,customName: null == customName ? _self.customName : customName // ignore: cast_nullable_to_non_nullable
+as String,cardNumberMask: freezed == cardNumberMask ? _self.cardNumberMask : cardNumberMask // ignore: cast_nullable_to_non_nullable
+as String?,accountType: null == accountType ? _self.accountType : accountType // ignore: cast_nullable_to_non_nullable
+as String,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,currentBalance: null == currentBalance ? _self.currentBalance : currentBalance // ignore: cast_nullable_to_non_nullable
+as int,creditLimit: freezed == creditLimit ? _self.creditLimit : creditLimit // ignore: cast_nullable_to_non_nullable
+as int?,gracePeriodEnd: freezed == gracePeriodEnd ? _self.gracePeriodEnd : gracePeriodEnd // ignore: cast_nullable_to_non_nullable
+as DateTime?,minPaymentAmount: freezed == minPaymentAmount ? _self.minPaymentAmount : minPaymentAmount // ignore: cast_nullable_to_non_nullable
+as int?,includeInPersonalBalance: null == includeInPersonalBalance ? _self.includeInPersonalBalance : includeInPersonalBalance // ignore: cast_nullable_to_non_nullable
+as bool,includeInFamilyBalance: null == includeInFamilyBalance ? _self.includeInFamilyBalance : includeInFamilyBalance // ignore: cast_nullable_to_non_nullable
+as bool,isSharedBalance: null == isSharedBalance ? _self.isSharedBalance : isSharedBalance // ignore: cast_nullable_to_non_nullable
+as bool,isSharedExpenses: null == isSharedExpenses ? _self.isSharedExpenses : isSharedExpenses // ignore: cast_nullable_to_non_nullable
+as bool,expenseDetailLevel: null == expenseDetailLevel ? _self.expenseDetailLevel : expenseDetailLevel // ignore: cast_nullable_to_non_nullable
+as String,isSharedIncomes: null == isSharedIncomes ? _self.isSharedIncomes : isSharedIncomes // ignore: cast_nullable_to_non_nullable
+as bool,incomeDetailLevel: null == incomeDetailLevel ? _self.incomeDetailLevel : incomeDetailLevel // ignore: cast_nullable_to_non_nullable
+as String,sortOrder: freezed == sortOrder ? _self.sortOrder : sortOrder // ignore: cast_nullable_to_non_nullable
+as int?,isArchived: null == isArchived ? _self.isArchived : isArchived // ignore: cast_nullable_to_non_nullable
+as bool,isSystem: null == isSystem ? _self.isSystem : isSystem // ignore: cast_nullable_to_non_nullable
+as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as DateTime,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [AccountModel].
+extension AccountModelPatterns on AccountModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AccountModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AccountModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AccountModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _AccountModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AccountModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AccountModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _AccountModel implements AccountModel {
+  const _AccountModel({required this.id, required this.userId, this.spaceId, required this.bankName, required this.customName, this.cardNumberMask, required this.accountType, required this.currency, required this.currentBalance, this.creditLimit, this.gracePeriodEnd, this.minPaymentAmount, this.includeInPersonalBalance = true, this.includeInFamilyBalance = false, this.isSharedBalance = false, this.isSharedExpenses = false, this.expenseDetailLevel = 'total_only', this.isSharedIncomes = false, this.incomeDetailLevel = 'total_only', this.sortOrder, this.isArchived = false, this.isSystem = false, required this.createdAt, required this.updatedAt, this.syncStatus = 'pending'});
+  factory _AccountModel.fromJson(Map<String, dynamic> json) => _$AccountModelFromJson(json);
+
+@override final  String id;
+@override final  String userId;
+@override final  String? spaceId;
+@override final  String bankName;
+@override final  String customName;
+@override final  String? cardNumberMask;
+@override final  String accountType;
+@override final  String currency;
+@override final  int currentBalance;
+@override final  int? creditLimit;
+@override final  DateTime? gracePeriodEnd;
+@override final  int? minPaymentAmount;
+@override@JsonKey() final  bool includeInPersonalBalance;
+@override@JsonKey() final  bool includeInFamilyBalance;
+@override@JsonKey() final  bool isSharedBalance;
+@override@JsonKey() final  bool isSharedExpenses;
+@override@JsonKey() final  String expenseDetailLevel;
+@override@JsonKey() final  bool isSharedIncomes;
+@override@JsonKey() final  String incomeDetailLevel;
+@override final  int? sortOrder;
+@override@JsonKey() final  bool isArchived;
+@override@JsonKey() final  bool isSystem;
+@override final  DateTime createdAt;
+@override final  DateTime updatedAt;
+@override@JsonKey() final  String syncStatus;
+
+/// Create a copy of AccountModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AccountModelCopyWith<_AccountModel> get copyWith => __$AccountModelCopyWithImpl<_AccountModel>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$AccountModelToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AccountModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.bankName, bankName) || other.bankName == bankName)&&(identical(other.customName, customName) || other.customName == customName)&&(identical(other.cardNumberMask, cardNumberMask) || other.cardNumberMask == cardNumberMask)&&(identical(other.accountType, accountType) || other.accountType == accountType)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.currentBalance, currentBalance) || other.currentBalance == currentBalance)&&(identical(other.creditLimit, creditLimit) || other.creditLimit == creditLimit)&&(identical(other.gracePeriodEnd, gracePeriodEnd) || other.gracePeriodEnd == gracePeriodEnd)&&(identical(other.minPaymentAmount, minPaymentAmount) || other.minPaymentAmount == minPaymentAmount)&&(identical(other.includeInPersonalBalance, includeInPersonalBalance) || other.includeInPersonalBalance == includeInPersonalBalance)&&(identical(other.includeInFamilyBalance, includeInFamilyBalance) || other.includeInFamilyBalance == includeInFamilyBalance)&&(identical(other.isSharedBalance, isSharedBalance) || other.isSharedBalance == isSharedBalance)&&(identical(other.isSharedExpenses, isSharedExpenses) || other.isSharedExpenses == isSharedExpenses)&&(identical(other.expenseDetailLevel, expenseDetailLevel) || other.expenseDetailLevel == expenseDetailLevel)&&(identical(other.isSharedIncomes, isSharedIncomes) || other.isSharedIncomes == isSharedIncomes)&&(identical(other.incomeDetailLevel, incomeDetailLevel) || other.incomeDetailLevel == incomeDetailLevel)&&(identical(other.sortOrder, sortOrder) || other.sortOrder == sortOrder)&&(identical(other.isArchived, isArchived) || other.isArchived == isArchived)&&(identical(other.isSystem, isSystem) || other.isSystem == isSystem)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hashAll([runtimeType,id,userId,spaceId,bankName,customName,cardNumberMask,accountType,currency,currentBalance,creditLimit,gracePeriodEnd,minPaymentAmount,includeInPersonalBalance,includeInFamilyBalance,isSharedBalance,isSharedExpenses,expenseDetailLevel,isSharedIncomes,incomeDetailLevel,sortOrder,isArchived,isSystem,createdAt,updatedAt,syncStatus]);
+
+@override
+String toString() {
+  return 'AccountModel(id: $id, userId: $userId, spaceId: $spaceId, bankName: $bankName, customName: $customName, cardNumberMask: $cardNumberMask, accountType: $accountType, currency: $currency, currentBalance: $currentBalance, creditLimit: $creditLimit, gracePeriodEnd: $gracePeriodEnd, minPaymentAmount: $minPaymentAmount, includeInPersonalBalance: $includeInPersonalBalance, includeInFamilyBalance: $includeInFamilyBalance, isSharedBalance: $isSharedBalance, isSharedExpenses: $isSharedExpenses, expenseDetailLevel: $expenseDetailLevel, isSharedIncomes: $isSharedIncomes, incomeDetailLevel: $incomeDetailLevel, sortOrder: $sortOrder, isArchived: $isArchived, isSystem: $isSystem, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AccountModelCopyWith<$Res> implements $AccountModelCopyWith<$Res> {
+  factory _$AccountModelCopyWith(_AccountModel value, $Res Function(_AccountModel) _then) = __$AccountModelCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String userId, String? spaceId, String bankName, String customName, String? cardNumberMask, String accountType, String currency, int currentBalance, int? creditLimit, DateTime? gracePeriodEnd, int? minPaymentAmount, bool includeInPersonalBalance, bool includeInFamilyBalance, bool isSharedBalance, bool isSharedExpenses, String expenseDetailLevel, bool isSharedIncomes, String incomeDetailLevel, int? sortOrder, bool isArchived, bool isSystem, DateTime createdAt, DateTime updatedAt, String syncStatus
+});
+
+
+
+
+}
+/// @nodoc
+class __$AccountModelCopyWithImpl<$Res>
+    implements _$AccountModelCopyWith<$Res> {
+  __$AccountModelCopyWithImpl(this._self, this._then);
+
+  final _AccountModel _self;
+  final $Res Function(_AccountModel) _then;
+
+/// Create a copy of AccountModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? spaceId = freezed,Object? bankName = null,Object? customName = null,Object? cardNumberMask = freezed,Object? accountType = null,Object? currency = null,Object? currentBalance = null,Object? creditLimit = freezed,Object? gracePeriodEnd = freezed,Object? minPaymentAmount = freezed,Object? includeInPersonalBalance = null,Object? includeInFamilyBalance = null,Object? isSharedBalance = null,Object? isSharedExpenses = null,Object? expenseDetailLevel = null,Object? isSharedIncomes = null,Object? incomeDetailLevel = null,Object? sortOrder = freezed,Object? isArchived = null,Object? isSystem = null,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
+  return _then(_AccountModel(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
+as String,spaceId: freezed == spaceId ? _self.spaceId : spaceId // ignore: cast_nullable_to_non_nullable
+as String?,bankName: null == bankName ? _self.bankName : bankName // ignore: cast_nullable_to_non_nullable
+as String,customName: null == customName ? _self.customName : customName // ignore: cast_nullable_to_non_nullable
+as String,cardNumberMask: freezed == cardNumberMask ? _self.cardNumberMask : cardNumberMask // ignore: cast_nullable_to_non_nullable
+as String?,accountType: null == accountType ? _self.accountType : accountType // ignore: cast_nullable_to_non_nullable
+as String,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as String,currentBalance: null == currentBalance ? _self.currentBalance : currentBalance // ignore: cast_nullable_to_non_nullable
+as int,creditLimit: freezed == creditLimit ? _self.creditLimit : creditLimit // ignore: cast_nullable_to_non_nullable
+as int?,gracePeriodEnd: freezed == gracePeriodEnd ? _self.gracePeriodEnd : gracePeriodEnd // ignore: cast_nullable_to_non_nullable
+as DateTime?,minPaymentAmount: freezed == minPaymentAmount ? _self.minPaymentAmount : minPaymentAmount // ignore: cast_nullable_to_non_nullable
+as int?,includeInPersonalBalance: null == includeInPersonalBalance ? _self.includeInPersonalBalance : includeInPersonalBalance // ignore: cast_nullable_to_non_nullable
+as bool,includeInFamilyBalance: null == includeInFamilyBalance ? _self.includeInFamilyBalance : includeInFamilyBalance // ignore: cast_nullable_to_non_nullable
+as bool,isSharedBalance: null == isSharedBalance ? _self.isSharedBalance : isSharedBalance // ignore: cast_nullable_to_non_nullable
+as bool,isSharedExpenses: null == isSharedExpenses ? _self.isSharedExpenses : isSharedExpenses // ignore: cast_nullable_to_non_nullable
+as bool,expenseDetailLevel: null == expenseDetailLevel ? _self.expenseDetailLevel : expenseDetailLevel // ignore: cast_nullable_to_non_nullable
+as String,isSharedIncomes: null == isSharedIncomes ? _self.isSharedIncomes : isSharedIncomes // ignore: cast_nullable_to_non_nullable
+as bool,incomeDetailLevel: null == incomeDetailLevel ? _self.incomeDetailLevel : incomeDetailLevel // ignore: cast_nullable_to_non_nullable
+as String,sortOrder: freezed == sortOrder ? _self.sortOrder : sortOrder // ignore: cast_nullable_to_non_nullable
+as int?,isArchived: null == isArchived ? _self.isArchived : isArchived // ignore: cast_nullable_to_non_nullable
+as bool,isSystem: null == isSystem ? _self.isSystem : isSystem // ignore: cast_nullable_to_non_nullable
+as bool,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as DateTime,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+// dart format on
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\data\models\account_model.g.dart =====
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'account_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_AccountModel _$AccountModelFromJson(
+  Map<String, dynamic> json,
+) => $checkedCreate('_AccountModel', json, ($checkedConvert) {
+  final val = _AccountModel(
+    id: $checkedConvert('id', (v) => v as String),
+    userId: $checkedConvert('userId', (v) => v as String),
+    spaceId: $checkedConvert('spaceId', (v) => v as String?),
+    bankName: $checkedConvert('bankName', (v) => v as String),
+    customName: $checkedConvert('customName', (v) => v as String),
+    cardNumberMask: $checkedConvert('cardNumberMask', (v) => v as String?),
+    accountType: $checkedConvert('accountType', (v) => v as String),
+    currency: $checkedConvert('currency', (v) => v as String),
+    currentBalance: $checkedConvert(
+      'currentBalance',
+      (v) => (v as num).toInt(),
+    ),
+    creditLimit: $checkedConvert('creditLimit', (v) => (v as num?)?.toInt()),
+    gracePeriodEnd: $checkedConvert(
+      'gracePeriodEnd',
+      (v) => v == null ? null : DateTime.parse(v as String),
+    ),
+    minPaymentAmount: $checkedConvert(
+      'minPaymentAmount',
+      (v) => (v as num?)?.toInt(),
+    ),
+    includeInPersonalBalance: $checkedConvert(
+      'includeInPersonalBalance',
+      (v) => v as bool? ?? true,
+    ),
+    includeInFamilyBalance: $checkedConvert(
+      'includeInFamilyBalance',
+      (v) => v as bool? ?? false,
+    ),
+    isSharedBalance: $checkedConvert(
+      'isSharedBalance',
+      (v) => v as bool? ?? false,
+    ),
+    isSharedExpenses: $checkedConvert(
+      'isSharedExpenses',
+      (v) => v as bool? ?? false,
+    ),
+    expenseDetailLevel: $checkedConvert(
+      'expenseDetailLevel',
+      (v) => v as String? ?? 'total_only',
+    ),
+    isSharedIncomes: $checkedConvert(
+      'isSharedIncomes',
+      (v) => v as bool? ?? false,
+    ),
+    incomeDetailLevel: $checkedConvert(
+      'incomeDetailLevel',
+      (v) => v as String? ?? 'total_only',
+    ),
+    sortOrder: $checkedConvert('sortOrder', (v) => (v as num?)?.toInt()),
+    isArchived: $checkedConvert('isArchived', (v) => v as bool? ?? false),
+    isSystem: $checkedConvert('isSystem', (v) => v as bool? ?? false),
+    createdAt: $checkedConvert('createdAt', (v) => DateTime.parse(v as String)),
+    updatedAt: $checkedConvert('updatedAt', (v) => DateTime.parse(v as String)),
+    syncStatus: $checkedConvert('syncStatus', (v) => v as String? ?? 'pending'),
+  );
+  return val;
+});
+
+Map<String, dynamic> _$AccountModelToJson(_AccountModel instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'userId': instance.userId,
+      'spaceId': instance.spaceId,
+      'bankName': instance.bankName,
+      'customName': instance.customName,
+      'cardNumberMask': instance.cardNumberMask,
+      'accountType': instance.accountType,
+      'currency': instance.currency,
+      'currentBalance': instance.currentBalance,
+      'creditLimit': instance.creditLimit,
+      'gracePeriodEnd': instance.gracePeriodEnd?.toIso8601String(),
+      'minPaymentAmount': instance.minPaymentAmount,
+      'includeInPersonalBalance': instance.includeInPersonalBalance,
+      'includeInFamilyBalance': instance.includeInFamilyBalance,
+      'isSharedBalance': instance.isSharedBalance,
+      'isSharedExpenses': instance.isSharedExpenses,
+      'expenseDetailLevel': instance.expenseDetailLevel,
+      'isSharedIncomes': instance.isSharedIncomes,
+      'incomeDetailLevel': instance.incomeDetailLevel,
+      'sortOrder': instance.sortOrder,
+      'isArchived': instance.isArchived,
+      'isSystem': instance.isSystem,
+      'createdAt': instance.createdAt.toIso8601String(),
+      'updatedAt': instance.updatedAt.toIso8601String(),
+      'syncStatus': instance.syncStatus,
+    };
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\data\models\mortgage_model.dart =====
+// lib/features/accounts/data/models/mortgage_model.dart
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'mortgage_model.freezed.dart';
+part 'mortgage_model.g.dart';
+
+@freezed
+abstract class MortgageModel with _$MortgageModel {
+  const factory MortgageModel({
+    required String id,
+    required String accountId,
+    required int initialLoanAmount,
+    required int propertyValue,
+    required int interestRateBps,
+    required int remainingTermMonths,
+    required int monthlyPayment,
+    DateTime? nextPaymentDate,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    @Default('pending') String syncStatus,
+  }) = _MortgageModel;
+
+  factory MortgageModel.fromJson(Map<String, dynamic> json) =>
+      _$MortgageModelFromJson(json);
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\data\models\mortgage_model.freezed.dart =====
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'mortgage_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+// dart format off
+T _$identity<T>(T value) => value;
+
+/// @nodoc
+mixin _$MortgageModel {
+
+ String get id; String get accountId; int get initialLoanAmount; int get propertyValue; int get interestRateBps; int get remainingTermMonths; int get monthlyPayment; DateTime? get nextPaymentDate; DateTime get createdAt; DateTime get updatedAt; String get syncStatus;
+/// Create a copy of MortgageModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$MortgageModelCopyWith<MortgageModel> get copyWith => _$MortgageModelCopyWithImpl<MortgageModel>(this as MortgageModel, _$identity);
+
+  /// Serializes this MortgageModel to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MortgageModel&&(identical(other.id, id) || other.id == id)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.initialLoanAmount, initialLoanAmount) || other.initialLoanAmount == initialLoanAmount)&&(identical(other.propertyValue, propertyValue) || other.propertyValue == propertyValue)&&(identical(other.interestRateBps, interestRateBps) || other.interestRateBps == interestRateBps)&&(identical(other.remainingTermMonths, remainingTermMonths) || other.remainingTermMonths == remainingTermMonths)&&(identical(other.monthlyPayment, monthlyPayment) || other.monthlyPayment == monthlyPayment)&&(identical(other.nextPaymentDate, nextPaymentDate) || other.nextPaymentDate == nextPaymentDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,accountId,initialLoanAmount,propertyValue,interestRateBps,remainingTermMonths,monthlyPayment,nextPaymentDate,createdAt,updatedAt,syncStatus);
+
+@override
+String toString() {
+  return 'MortgageModel(id: $id, accountId: $accountId, initialLoanAmount: $initialLoanAmount, propertyValue: $propertyValue, interestRateBps: $interestRateBps, remainingTermMonths: $remainingTermMonths, monthlyPayment: $monthlyPayment, nextPaymentDate: $nextPaymentDate, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $MortgageModelCopyWith<$Res>  {
+  factory $MortgageModelCopyWith(MortgageModel value, $Res Function(MortgageModel) _then) = _$MortgageModelCopyWithImpl;
+@useResult
+$Res call({
+ String id, String accountId, int initialLoanAmount, int propertyValue, int interestRateBps, int remainingTermMonths, int monthlyPayment, DateTime? nextPaymentDate, DateTime createdAt, DateTime updatedAt, String syncStatus
+});
+
+
+
+
+}
+/// @nodoc
+class _$MortgageModelCopyWithImpl<$Res>
+    implements $MortgageModelCopyWith<$Res> {
+  _$MortgageModelCopyWithImpl(this._self, this._then);
+
+  final MortgageModel _self;
+  final $Res Function(MortgageModel) _then;
+
+/// Create a copy of MortgageModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? accountId = null,Object? initialLoanAmount = null,Object? propertyValue = null,Object? interestRateBps = null,Object? remainingTermMonths = null,Object? monthlyPayment = null,Object? nextPaymentDate = freezed,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,accountId: null == accountId ? _self.accountId : accountId // ignore: cast_nullable_to_non_nullable
+as String,initialLoanAmount: null == initialLoanAmount ? _self.initialLoanAmount : initialLoanAmount // ignore: cast_nullable_to_non_nullable
+as int,propertyValue: null == propertyValue ? _self.propertyValue : propertyValue // ignore: cast_nullable_to_non_nullable
+as int,interestRateBps: null == interestRateBps ? _self.interestRateBps : interestRateBps // ignore: cast_nullable_to_non_nullable
+as int,remainingTermMonths: null == remainingTermMonths ? _self.remainingTermMonths : remainingTermMonths // ignore: cast_nullable_to_non_nullable
+as int,monthlyPayment: null == monthlyPayment ? _self.monthlyPayment : monthlyPayment // ignore: cast_nullable_to_non_nullable
+as int,nextPaymentDate: freezed == nextPaymentDate ? _self.nextPaymentDate : nextPaymentDate // ignore: cast_nullable_to_non_nullable
+as DateTime?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as DateTime,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [MortgageModel].
+extension MortgageModelPatterns on MortgageModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _MortgageModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _MortgageModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _MortgageModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _MortgageModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _MortgageModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _MortgageModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _MortgageModel implements MortgageModel {
+  const _MortgageModel({required this.id, required this.accountId, required this.initialLoanAmount, required this.propertyValue, required this.interestRateBps, required this.remainingTermMonths, required this.monthlyPayment, this.nextPaymentDate, required this.createdAt, required this.updatedAt, this.syncStatus = 'pending'});
+  factory _MortgageModel.fromJson(Map<String, dynamic> json) => _$MortgageModelFromJson(json);
+
+@override final  String id;
+@override final  String accountId;
+@override final  int initialLoanAmount;
+@override final  int propertyValue;
+@override final  int interestRateBps;
+@override final  int remainingTermMonths;
+@override final  int monthlyPayment;
+@override final  DateTime? nextPaymentDate;
+@override final  DateTime createdAt;
+@override final  DateTime updatedAt;
+@override@JsonKey() final  String syncStatus;
+
+/// Create a copy of MortgageModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$MortgageModelCopyWith<_MortgageModel> get copyWith => __$MortgageModelCopyWithImpl<_MortgageModel>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$MortgageModelToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MortgageModel&&(identical(other.id, id) || other.id == id)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.initialLoanAmount, initialLoanAmount) || other.initialLoanAmount == initialLoanAmount)&&(identical(other.propertyValue, propertyValue) || other.propertyValue == propertyValue)&&(identical(other.interestRateBps, interestRateBps) || other.interestRateBps == interestRateBps)&&(identical(other.remainingTermMonths, remainingTermMonths) || other.remainingTermMonths == remainingTermMonths)&&(identical(other.monthlyPayment, monthlyPayment) || other.monthlyPayment == monthlyPayment)&&(identical(other.nextPaymentDate, nextPaymentDate) || other.nextPaymentDate == nextPaymentDate)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,accountId,initialLoanAmount,propertyValue,interestRateBps,remainingTermMonths,monthlyPayment,nextPaymentDate,createdAt,updatedAt,syncStatus);
+
+@override
+String toString() {
+  return 'MortgageModel(id: $id, accountId: $accountId, initialLoanAmount: $initialLoanAmount, propertyValue: $propertyValue, interestRateBps: $interestRateBps, remainingTermMonths: $remainingTermMonths, monthlyPayment: $monthlyPayment, nextPaymentDate: $nextPaymentDate, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$MortgageModelCopyWith<$Res> implements $MortgageModelCopyWith<$Res> {
+  factory _$MortgageModelCopyWith(_MortgageModel value, $Res Function(_MortgageModel) _then) = __$MortgageModelCopyWithImpl;
+@override @useResult
+$Res call({
+ String id, String accountId, int initialLoanAmount, int propertyValue, int interestRateBps, int remainingTermMonths, int monthlyPayment, DateTime? nextPaymentDate, DateTime createdAt, DateTime updatedAt, String syncStatus
+});
+
+
+
+
+}
+/// @nodoc
+class __$MortgageModelCopyWithImpl<$Res>
+    implements _$MortgageModelCopyWith<$Res> {
+  __$MortgageModelCopyWithImpl(this._self, this._then);
+
+  final _MortgageModel _self;
+  final $Res Function(_MortgageModel) _then;
+
+/// Create a copy of MortgageModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? accountId = null,Object? initialLoanAmount = null,Object? propertyValue = null,Object? interestRateBps = null,Object? remainingTermMonths = null,Object? monthlyPayment = null,Object? nextPaymentDate = freezed,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
+  return _then(_MortgageModel(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as String,accountId: null == accountId ? _self.accountId : accountId // ignore: cast_nullable_to_non_nullable
+as String,initialLoanAmount: null == initialLoanAmount ? _self.initialLoanAmount : initialLoanAmount // ignore: cast_nullable_to_non_nullable
+as int,propertyValue: null == propertyValue ? _self.propertyValue : propertyValue // ignore: cast_nullable_to_non_nullable
+as int,interestRateBps: null == interestRateBps ? _self.interestRateBps : interestRateBps // ignore: cast_nullable_to_non_nullable
+as int,remainingTermMonths: null == remainingTermMonths ? _self.remainingTermMonths : remainingTermMonths // ignore: cast_nullable_to_non_nullable
+as int,monthlyPayment: null == monthlyPayment ? _self.monthlyPayment : monthlyPayment // ignore: cast_nullable_to_non_nullable
+as int,nextPaymentDate: freezed == nextPaymentDate ? _self.nextPaymentDate : nextPaymentDate // ignore: cast_nullable_to_non_nullable
+as DateTime?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
+as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
+as DateTime,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
+}
+
+// dart format on
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\data\models\mortgage_model.g.dart =====
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'mortgage_model.dart';
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_MortgageModel _$MortgageModelFromJson(
+  Map<String, dynamic> json,
+) => $checkedCreate('_MortgageModel', json, ($checkedConvert) {
+  final val = _MortgageModel(
+    id: $checkedConvert('id', (v) => v as String),
+    accountId: $checkedConvert('accountId', (v) => v as String),
+    initialLoanAmount: $checkedConvert(
+      'initialLoanAmount',
+      (v) => (v as num).toInt(),
+    ),
+    propertyValue: $checkedConvert('propertyValue', (v) => (v as num).toInt()),
+    interestRateBps: $checkedConvert(
+      'interestRateBps',
+      (v) => (v as num).toInt(),
+    ),
+    remainingTermMonths: $checkedConvert(
+      'remainingTermMonths',
+      (v) => (v as num).toInt(),
+    ),
+    monthlyPayment: $checkedConvert(
+      'monthlyPayment',
+      (v) => (v as num).toInt(),
+    ),
+    nextPaymentDate: $checkedConvert(
+      'nextPaymentDate',
+      (v) => v == null ? null : DateTime.parse(v as String),
+    ),
+    createdAt: $checkedConvert('createdAt', (v) => DateTime.parse(v as String)),
+    updatedAt: $checkedConvert('updatedAt', (v) => DateTime.parse(v as String)),
+    syncStatus: $checkedConvert('syncStatus', (v) => v as String? ?? 'pending'),
+  );
+  return val;
+});
+
+Map<String, dynamic> _$MortgageModelToJson(_MortgageModel instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'accountId': instance.accountId,
+      'initialLoanAmount': instance.initialLoanAmount,
+      'propertyValue': instance.propertyValue,
+      'interestRateBps': instance.interestRateBps,
+      'remainingTermMonths': instance.remainingTermMonths,
+      'monthlyPayment': instance.monthlyPayment,
+      'nextPaymentDate': instance.nextPaymentDate?.toIso8601String(),
+      'createdAt': instance.createdAt.toIso8601String(),
+      'updatedAt': instance.updatedAt.toIso8601String(),
+      'syncStatus': instance.syncStatus,
+    };
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\data\repositories\account_repository_impl.dart =====
+// lib/features/accounts/data/repositories/account_repository_impl.dart
+import '../../domain/entities/account.dart';
+import '../../domain/entities/mortgage.dart';
+import '../../domain/repositories/account_repository.dart';
+import '../datasources/account_dao.dart';
+import '../datasources/mortgage_dao.dart';
+import 'package:logger/logger.dart';
+import 'package:uuid/uuid.dart';
+import 'package:budget_assistant/core/utils/result.dart';
+import 'package:budget_assistant/core/errors/failures.dart';
+
+class AccountRepositoryImpl implements AccountRepository {
+  final AccountDao _accountDao;
+  final MortgageDao _mortgageDao;
+  final Logger _logger;
+  final Uuid _uuid;
+
+  AccountRepositoryImpl({
+    required AccountDao accountDao,
+    required MortgageDao mortgageDao,
+    required Logger logger,
+    required Uuid uuid,
+  }) : _accountDao = accountDao,
+       _mortgageDao = mortgageDao,
+       _logger = logger,
+       _uuid = uuid;
+
+  @override
+  Future<List<Account>> getAccountsByUserId(String userId) async {
+    try {
+      final models = await _accountDao.getAccountsByUserId(userId);
+      return models.map((m) => Account.fromModel(m)).toList();
+    } catch (e, stackTrace) {
+      _logger.e(
+        'AccountRepository.getAccountsByUserId',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> insertAccount(Account account) async {
+    try {
+      final model = account.toModel();
+      await _accountDao.insertAccount(model);
+    } catch (e, stackTrace) {
+      _logger.e(
+        'AccountRepository.insertAccount',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateAccountSortOrder(String accountId, int? sortOrder) async {
+    try {
+      await _accountDao.updateAccountSortOrder(accountId, sortOrder);
+    } catch (e, stackTrace) {
+      _logger.e(
+        'AccountRepository.updateAccountSortOrder',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Account?> getSystemAccountByType(String accountType) async {
+    try {
+      final model = await _accountDao.getSystemAccountByType(accountType);
+      return model != null ? Account.fromModel(model) : null;
+    } catch (e, stackTrace) {
+      _logger.e(
+        'AccountRepository.getSystemAccountByType',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Account> getOrCreateSystemAccount(String accountType) async {
+    try {
+      var account = await getSystemAccountByType(accountType);
+
+      if (account == null) {
+        account = Account(
+          id: _uuid.v4(),
+          userId: '', // Will be set by UseCase
+          bankName: 'System',
+          customName: 'Virtual Envelope',
+          accountType: accountType,
+          currency: 'RUB',
+          currentBalance: 0,
+          isSystem: true,
+          createdAt: DateTime.now().toUtc(),
+          updatedAt: DateTime.now().toUtc(),
+          syncStatus: 'pending',
+        );
+
+        await insertAccount(account);
+      }
+
+      return account;
+    } catch (e, stackTrace) {
+      _logger.e(
+        'AccountRepository.getOrCreateSystemAccount',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Mortgage?> getMortgageByAccountId(String accountId) async {
+    try {
+      final model = await _mortgageDao.getMortgageByAccountId(accountId);
+      return model != null ? Mortgage.fromModel(model) : null;
+    } catch (e, stackTrace) {
+      _logger.e(
+        'AccountRepository.getMortgageByAccountId',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> insertMortgage(Mortgage mortgage) async {
+    try {
+      final model = mortgage.toModel();
+      await _mortgageDao.insertMortgage(model);
+    } catch (e, stackTrace) {
+      _logger.e(
+        'AccountRepository.insertMortgage',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> ensureLocalUser(String userId, {String email = ''}) async {
+    try {
+      await _accountDao.ensureLocalUser(userId, email: email);
+    } catch (e, stackTrace) {
+      _logger.e(
+        'AccountRepository.ensureLocalUser',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+    @override
+  Future<void> deleteAccount(String accountId) async {
+    try {
+      await _accountDao.deleteAccount(accountId);
+    } catch (e, stackTrace) {
+      _logger.e(
+        'AccountRepository.deleteAccount',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+    @override
+  Future<Result<void>> updateAccount({
+    required String accountId,
+    required String bankName,
+    required String customName,
+    required String accountType,
+    required String currency,
+    required int currentBalance,
+    String? cardNumberMask,
+    int? creditLimit,
+  }) async {
+    try {
+      await _accountDao.updateAccountFields(
+        accountId: accountId,
+        bankName: bankName,
+        customName: customName,
+        accountType: accountType,
+        currency: currency,
+        currentBalance: currentBalance,
+        cardNumberMask: cardNumberMask,
+        creditLimit: creditLimit,
+        updatedAt: DateTime.now().toUtc(),
+      );
+      _logger.i('Account updated: $accountId');
+      return Result.success(null);
+    } catch (e, stackTrace) {
+      _logger.e('AccountRepository.updateAccount', error: e, stackTrace: stackTrace);
+      return Result.failure(Failure.database(e.toString(), stackTrace));
+    }
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\domain\entities\account.dart =====
+// lib/features/accounts/domain/entities/account.dart
+import '../../data/models/account_model.dart';
+
+class Account {
+  final String id;
+  final String userId;
+  final String? spaceId;
+  final String bankName;
+  final String customName;
+  final String? cardNumberMask;
+  final String accountType;
+  final String currency;
+  final int currentBalance;
+  final int? creditLimit;
+  final DateTime? gracePeriodEnd;
+  final int? minPaymentAmount;
+  final bool includeInPersonalBalance;
+  final bool includeInFamilyBalance;
+  final bool isSharedBalance;
+  final bool isSharedExpenses;
+  final String expenseDetailLevel;
+  final bool isSharedIncomes;
+  final String incomeDetailLevel;
+  final int? sortOrder;
+  final bool isArchived;
+  final bool isSystem;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String syncStatus;
+
+  Account({
+    required this.id,
+    required this.userId,
+    this.spaceId,
+    required this.bankName,
+    required this.customName,
+    this.cardNumberMask,
+    required this.accountType,
+    required this.currency,
+    required this.currentBalance,
+    this.creditLimit,
+    this.gracePeriodEnd,
+    this.minPaymentAmount,
+    this.includeInPersonalBalance = true,
+    this.includeInFamilyBalance = false,
+    this.isSharedBalance = false,
+    this.isSharedExpenses = false,
+    this.expenseDetailLevel = 'total_only',
+    this.isSharedIncomes = false,
+    this.incomeDetailLevel = 'total_only',
+    this.sortOrder,
+    this.isArchived = false,
+    this.isSystem = false,
+    required this.createdAt,
+    required this.updatedAt,
+    this.syncStatus = 'pending',
+  });
+
+  factory Account.fromModel(AccountModel model) {
+    return Account(
+      id: model.id,
+      userId: model.userId,
+      spaceId: model.spaceId,
+      bankName: model.bankName,
+      customName: model.customName,
+      cardNumberMask: model.cardNumberMask,
+      accountType: model.accountType,
+      currency: model.currency,
+      currentBalance: model.currentBalance,
+      creditLimit: model.creditLimit,
+      gracePeriodEnd: model.gracePeriodEnd,
+      minPaymentAmount: model.minPaymentAmount,
+      includeInPersonalBalance: model.includeInPersonalBalance,
+      includeInFamilyBalance: model.includeInFamilyBalance,
+      isSharedBalance: model.isSharedBalance,
+      isSharedExpenses: model.isSharedExpenses,
+      expenseDetailLevel: model.expenseDetailLevel,
+      isSharedIncomes: model.isSharedIncomes,
+      incomeDetailLevel: model.incomeDetailLevel,
+      sortOrder: model.sortOrder,
+      isArchived: model.isArchived,
+      isSystem: model.isSystem,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+      syncStatus: model.syncStatus,
+    );
+  }
+
+  AccountModel toModel() {
+    return AccountModel(
+      id: id,
+      userId: userId,
+      spaceId: spaceId,
+      bankName: bankName,
+      customName: customName,
+      cardNumberMask: cardNumberMask,
+      accountType: accountType,
+      currency: currency,
+      currentBalance: currentBalance,
+      creditLimit: creditLimit,
+      gracePeriodEnd: gracePeriodEnd,
+      minPaymentAmount: minPaymentAmount,
+      includeInPersonalBalance: includeInPersonalBalance,
+      includeInFamilyBalance: includeInFamilyBalance,
+      isSharedBalance: isSharedBalance,
+      isSharedExpenses: isSharedExpenses,
+      expenseDetailLevel: expenseDetailLevel,
+      isSharedIncomes: isSharedIncomes,
+      incomeDetailLevel: incomeDetailLevel,
+      sortOrder: sortOrder,
+      isArchived: isArchived,
+      isSystem: isSystem,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      syncStatus: syncStatus,
+    );
+  }
+
+  Account copyWith({
+    String? id,
+    String? userId,
+    String? spaceId,
+    String? bankName,
+    String? customName,
+    String? cardNumberMask,
+    String? accountType,
+    String? currency,
+    int? currentBalance,
+    int? creditLimit,
+    DateTime? gracePeriodEnd,
+    int? minPaymentAmount,
+    bool? includeInPersonalBalance,
+    bool? includeInFamilyBalance,
+    bool? isSharedBalance,
+    bool? isSharedExpenses,
+    String? expenseDetailLevel,
+    bool? isSharedIncomes,
+    String? incomeDetailLevel,
+    int? sortOrder,
+    bool? isArchived,
+    bool? isSystem,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? syncStatus,
+  }) {
+    return Account(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      spaceId: spaceId ?? this.spaceId,
+      bankName: bankName ?? this.bankName,
+      customName: customName ?? this.customName,
+      cardNumberMask: cardNumberMask ?? this.cardNumberMask,
+      accountType: accountType ?? this.accountType,
+      currency: currency ?? this.currency,
+      currentBalance: currentBalance ?? this.currentBalance,
+      creditLimit: creditLimit ?? this.creditLimit,
+      gracePeriodEnd: gracePeriodEnd ?? this.gracePeriodEnd,
+      minPaymentAmount: minPaymentAmount ?? this.minPaymentAmount,
+      includeInPersonalBalance:
+          includeInPersonalBalance ?? this.includeInPersonalBalance,
+      includeInFamilyBalance:
+          includeInFamilyBalance ?? this.includeInFamilyBalance,
+      isSharedBalance: isSharedBalance ?? this.isSharedBalance,
+      isSharedExpenses: isSharedExpenses ?? this.isSharedExpenses,
+      expenseDetailLevel: expenseDetailLevel ?? this.expenseDetailLevel,
+      isSharedIncomes: isSharedIncomes ?? this.isSharedIncomes,
+      incomeDetailLevel: incomeDetailLevel ?? this.incomeDetailLevel,
+      sortOrder: sortOrder ?? this.sortOrder,
+      isArchived: isArchived ?? this.isArchived,
+      isSystem: isSystem ?? this.isSystem,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+    );
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\domain\entities\account_types.dart =====
+/// Типы счетов по ТЗ 6.0 (ТОМ 2, разд. 3).
+/// Единственный источник правды для бизнес-логики и UI.
+/// lib/features/accounts/domain/entities/account_types.dart
+abstract class AccountTypes {
+  static const debit = 'debit';
+  static const credit = 'credit';
+  static const cash = 'cash';
+  static const savings = 'savings';
+  static const safe = 'safe';
+  static const investmentBroker = 'investment_broker';
+  static const mortgage = 'mortgage';
+
+  static const all = [
+    debit,
+    credit,
+    cash,
+    savings,
+    safe,
+    investmentBroker,
+    mortgage,
+  ];
+
+  static bool isValid(String type) => all.contains(type);
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\domain\entities\mortgage.dart =====
+// lib/features/accounts/domain/entities/mortgage.dart
+import '../../data/models/mortgage_model.dart';
+
+class Mortgage {
+  final String id;
+  final String accountId;
+  final int initialLoanAmount;
+  final int propertyValue;
+  final int interestRateBps;
+  final int remainingTermMonths;
+  final int monthlyPayment;
+  final DateTime? nextPaymentDate;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String syncStatus;
+
+  Mortgage({
+    required this.id,
+    required this.accountId,
+    required this.initialLoanAmount,
+    required this.propertyValue,
+    required this.interestRateBps,
+    required this.remainingTermMonths,
+    required this.monthlyPayment,
+    this.nextPaymentDate,
+    required this.createdAt,
+    required this.updatedAt,
+    this.syncStatus = 'pending',
+  });
+
+  factory Mortgage.fromModel(MortgageModel model) {
+    return Mortgage(
+      id: model.id,
+      accountId: model.accountId,
+      initialLoanAmount: model.initialLoanAmount,
+      propertyValue: model.propertyValue,
+      interestRateBps: model.interestRateBps,
+      remainingTermMonths: model.remainingTermMonths,
+      monthlyPayment: model.monthlyPayment,
+      nextPaymentDate: model.nextPaymentDate,
+      createdAt: model.createdAt,
+      updatedAt: model.updatedAt,
+      syncStatus: model.syncStatus,
+    );
+  }
+
+  MortgageModel toModel() {
+    return MortgageModel(
+      id: id,
+      accountId: accountId,
+      initialLoanAmount: initialLoanAmount,
+      propertyValue: propertyValue,
+      interestRateBps: interestRateBps,
+      remainingTermMonths: remainingTermMonths,
+      monthlyPayment: monthlyPayment,
+      nextPaymentDate: nextPaymentDate,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      syncStatus: syncStatus,
+    );
+  }
+
+  Mortgage copyWith({
+    String? id,
+    String? accountId,
+    int? initialLoanAmount,
+    int? propertyValue,
+    int? interestRateBps,
+    int? remainingTermMonths,
+    int? monthlyPayment,
+    DateTime? nextPaymentDate,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? syncStatus,
+  }) {
+    return Mortgage(
+      id: id ?? this.id,
+      accountId: accountId ?? this.accountId,
+      initialLoanAmount: initialLoanAmount ?? this.initialLoanAmount,
+      propertyValue: propertyValue ?? this.propertyValue,
+      interestRateBps: interestRateBps ?? this.interestRateBps,
+      remainingTermMonths: remainingTermMonths ?? this.remainingTermMonths,
+      monthlyPayment: monthlyPayment ?? this.monthlyPayment,
+      nextPaymentDate: nextPaymentDate ?? this.nextPaymentDate,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+    );
+  }
+
+  /// Net Worth contribution = property_value - current_loan_balance
+  int calculateNetWorthContribution(int currentLoanBalance) {
+    return propertyValue - currentLoanBalance;
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\domain\repositories\account_repository.dart =====
+// lib/features/accounts/domain/repositories/account_repository.dart
+import '../entities/account.dart';
+import '../entities/mortgage.dart';
+import 'package:budget_assistant/core/utils/result.dart';
+
+abstract class AccountRepository {
+  Future<List<Account>> getAccountsByUserId(String userId);
+  Future<void> insertAccount(Account account);
+  Future<void> updateAccountSortOrder(String accountId, int? sortOrder);
+  Future<Account?> getSystemAccountByType(String accountType);
+  Future<Account> getOrCreateSystemAccount(String accountType);
+  Future<Mortgage?> getMortgageByAccountId(String accountId);
+  Future<void> insertMortgage(Mortgage mortgage);
+  Future<void> ensureLocalUser(String userId, {String email = ''});
+  Future<void> deleteAccount(String accountId);
+  Future<Result<void>> updateAccount({
+    required String accountId,
+    required String bankName,
+    required String customName,
+    required String accountType,
+    required String currency,
+    required int currentBalance,
+    String? cardNumberMask,
+    int? creditLimit,
+  });
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\domain\usecases\calculate_net_worth_usecase.dart =====
+// lib/features/accounts/domain/usecases/calculate_net_worth_usecase.dart
+import 'package:budget_assistant/core/errors/failures.dart';
+import 'package:budget_assistant/core/utils/result.dart';
+import 'package:logger/logger.dart';
+import '../repositories/account_repository.dart';
+
+class CalculateNetWorthUseCase {
+  final AccountRepository _repository;
+  final Logger _logger;
+
+  CalculateNetWorthUseCase({
+    required AccountRepository repository,
+    required Logger logger,
+  })  : _repository = repository,
+        _logger = logger;
+
+  /// Calculate Net Worth = Assets - Liabilities + Mortgage Equity
+  /// Formula: Sum(Assets) - Sum(Liabilities) + Sum(property_value - current_loan_balance)
+  Future<Result<int>> execute(String userId) async {
+    try {
+      final accounts = await _repository.getAccountsByUserId(userId);
+
+      int netWorth = 0;
+
+      // 1. Sum all assets (excluding mortgages and loans)
+      for (final account in accounts) {
+        if (account.accountType != 'mortgage' && account.accountType != 'loan') {
+          netWorth += account.currentBalance;
+        }
+      }
+
+      // 2. Handle mortgages: Net Worth contribution = property_value - current_loan_balance
+      for (final account in accounts) {
+        if (account.accountType == 'mortgage') {
+          final mortgage = await _repository.getMortgageByAccountId(account.id);
+          if (mortgage != null) {
+            final equity = mortgage.propertyValue - account.currentBalance;
+            netWorth += equity;
+            _logger.d('Mortgage ${account.id}: property=${mortgage.propertyValue}, '
+                'loan=${account.currentBalance}, equity=$equity');
+          }
+        } else if (account.accountType == 'loan') {
+          // Subtract loan balance (liability)
+          netWorth -= account.currentBalance;
+        }
+      }
+
+      _logger.i('Net Worth calculated for user $userId: $netWorth kopecks');
+      return Result.success(netWorth);
+    } catch (e, stackTrace) {
+      _logger.e('CalculateNetWorthUseCase failed', error: e, stackTrace: stackTrace);
+      return Result.failure(Failure.database(e.toString(), stackTrace));
+    }
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\domain\usecases\create_account_usecase.dart =====
+// lib/features/accounts/domain/usecases/create_account_usecase.dart
+import 'package:budget_assistant/core/errors/failures.dart';
+import 'package:budget_assistant/core/utils/result.dart';
+import '../entities/account.dart';
+import '../repositories/account_repository.dart';
+import 'package:logger/logger.dart';
+import 'package:uuid/uuid.dart';
+
+class CreateAccountUseCase {
+  final AccountRepository _repository;
+  final Logger _logger;
+  final Uuid _uuid;
+
+  CreateAccountUseCase({
+    required AccountRepository repository,
+    required Logger logger,
+    required Uuid uuid,
+  })  : _repository = repository,
+        _logger = logger,
+        _uuid = uuid;
+
+  Future<Result<Account>> execute({
+    required String userId,
+    required String bankName,
+    required String customName,
+    required String accountType,
+    required String currency,
+    required int currentBalance,
+    String? spaceId,
+    bool isSharedBalance = false,
+    String? cardNumberMask,
+    int? creditLimit,
+    DateTime? gracePeriodEnd,
+    int? minPaymentAmount,
+  }) async {
+    try {
+      await _repository.ensureLocalUser(userId);
+      final now = DateTime.now().toUtc();
+      final account = Account(
+        id: _uuid.v4(),
+        userId: userId,
+        spaceId: spaceId,
+        bankName: bankName,
+        customName: customName,
+        cardNumberMask: cardNumberMask,
+        accountType: accountType,
+        currency: currency,
+        currentBalance: currentBalance,
+        creditLimit: creditLimit,
+        gracePeriodEnd: gracePeriodEnd,
+        minPaymentAmount: minPaymentAmount,
+        isSharedBalance: isSharedBalance,
+        createdAt: now,
+        updatedAt: now,
+        syncStatus: 'pending',
+      );
+      await _repository.insertAccount(account);
+      _logger.i('Account created: ${account.id}');
+      return Result.success(account);
+    } catch (e, stackTrace) {
+      _logger.e('CreateAccountUseCase failed', error: e, stackTrace: stackTrace);
+      return Result.failure(Failure.database(e.toString(), stackTrace));
+    }
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\domain\usecases\delete_account_usecase.dart =====
+// lib/features/accounts/domain/usecases/delete_account_usecase.dart
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/errors/failures.dart';
+import 'package:budget_assistant/core/utils/result.dart';
+import '../repositories/account_repository.dart';
+
+class DeleteAccountUseCase {
+  final AccountRepository _repository;
+  final Logger _logger;
+
+  DeleteAccountUseCase({
+    required AccountRepository repository,
+    required Logger logger,
+  }) : _repository = repository,
+       _logger = logger;
+
+  Future<Result<void>> execute(String accountId) async {
+    try {
+      await _repository.deleteAccount(accountId);
+      _logger.i('Account deleted: $accountId');
+      return Result.success(null);
+    } catch (e, stackTrace) {
+      _logger.e(
+        'DeleteAccountUseCase failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return Result.failure(Failure.database(e.toString(), stackTrace));
+    }
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\domain\usecases\update_account_sort_order_usecase.dart =====
+// lib/features/accounts/domain/usecases/update_account_sort_order_usecase.dart
+import 'package:budget_assistant/core/errors/failures.dart';
+import 'package:budget_assistant/core/utils/result.dart';
+import 'package:logger/logger.dart';
+import '../repositories/account_repository.dart';
+
+class UpdateAccountSortOrderUseCase {
+  final AccountRepository _repository;
+  final Logger _logger;
+
+  UpdateAccountSortOrderUseCase({
+    required AccountRepository repository,
+    required Logger logger,
+  }) : _repository = repository,
+       _logger = logger;
+
+  /// Update sort order for a single account
+  /// sort_order is [LOCAL] field - NOT synced to Supabase
+  Future<Result<void>> execute({
+    required String accountId,
+    required int? sortOrder,
+  }) async {
+    try {
+      await _repository.updateAccountSortOrder(accountId, sortOrder);
+      _logger.i('Sort order updated for account $accountId: $sortOrder');
+      return Result.success(null);
+    } catch (e, stackTrace) {
+      _logger.e(
+        'UpdateAccountSortOrderUseCase failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return Result.failure(Failure.database(e.toString(), stackTrace));
+    }
+  }
+
+  /// Batch update sort orders after drag-and-drop reorder
+  Future<Result<void>> executeBatch({
+    required List<String> orderedAccountIds,
+  }) async {
+    try {
+      for (int i = 0; i < orderedAccountIds.length; i++) {
+        await _repository.updateAccountSortOrder(orderedAccountIds[i], i);
+      }
+      _logger.i(
+        'Batch sort order updated for ${orderedAccountIds.length} accounts',
+      );
+      return Result.success(null);
+    } catch (e, stackTrace) {
+      _logger.e(
+        'UpdateAccountSortOrderUseCase batch failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      return Result.failure(Failure.database(e.toString(), stackTrace));
+    }
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\domain\usecases\update_account_usecase.dart =====
+// lib/features/accounts/domain/usecases/update_account_usecase.dart
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/errors/failures.dart';
+import 'package:budget_assistant/core/utils/result.dart';
+import '../entities/account_types.dart';
+import '../repositories/account_repository.dart';
+
+class UpdateAccountUseCase {
+  final AccountRepository _repository;
+  final Logger _logger;
+
+  UpdateAccountUseCase({
+    required AccountRepository repository,
+    required Logger logger,
+  })  : _repository = repository,
+        _logger = logger;
+
+  Future<Result<void>> execute({
+    required String accountId,
+    required String bankName,
+    required String customName,
+    required String accountType,
+    required String currency,
+    required int currentBalance,
+    String? cardNumberMask,
+    int? creditLimit,
+  }) async {
+    try {
+      if (customName.trim().isEmpty) {
+        return Result.failure(
+          const Failure.validation('Account name cannot be empty'),
+        );
+      }
+      if (!AccountTypes.isValid(accountType)) {
+        return Result.failure(
+          Failure.validation('Unknown account type: $accountType'),
+        );
+      }
+
+      return await _repository.updateAccount(
+        accountId: accountId,
+        bankName: bankName.trim(),
+        customName: customName.trim(),
+        accountType: accountType,
+        currency: currency,
+        currentBalance: currentBalance,
+        cardNumberMask: cardNumberMask,
+        creditLimit: creditLimit,
+      );
+    } catch (e, stackTrace) {
+      _logger.e('UpdateAccountUseCase failed', error: e, stackTrace: stackTrace);
+      return Result.failure(Failure.database(e.toString(), stackTrace));
+    }
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\presentation\providers\account_providers.dart =====
+// lib/features/accounts/presentation/providers/account_providers.dart
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../../core/providers/database_providers.dart';
+import '../../../../core/providers/util_providers.dart';
+import '../../domain/entities/account.dart';
+import '../../domain/usecases/create_account_usecase.dart';
+import '../../domain/usecases/calculate_net_worth_usecase.dart';
+import '../../domain/usecases/update_account_sort_order_usecase.dart';
+import '../../domain/usecases/delete_account_usecase.dart';
+import '../../domain/repositories/account_repository.dart';
+import '../../data/repositories/account_repository_impl.dart';
+import '../../data/datasources/account_dao.dart';
+import '../../data/datasources/mortgage_dao.dart';
+import '../../domain/usecases/update_account_usecase.dart';
+
+part 'account_providers.g.dart';
+
+@riverpod
+class AccountDaoNotifier extends _$AccountDaoNotifier {
+  @override
+  AccountDao build() {
+    final db = ref.watch(appDatabaseProvider);
+    return AccountDao(db);
+  }
+}
+
+@riverpod
+class MortgageDaoNotifier extends _$MortgageDaoNotifier {
+  @override
+  MortgageDao build() {
+    final db = ref.watch(appDatabaseProvider);
+    return MortgageDao(db);
+  }
+}
+
+@riverpod
+class AccountRepositoryNotifier extends _$AccountRepositoryNotifier {
+  @override
+  AccountRepository build() {
+    return AccountRepositoryImpl(
+      accountDao: ref.watch(accountDaoProvider),
+      mortgageDao: ref.watch(mortgageDaoProvider),
+      logger: ref.watch(loggerProvider),
+      uuid: ref.watch(uuidProvider),
+    );
+  }
+}
+
+@riverpod
+class CreateAccountUseCaseNotifier extends _$CreateAccountUseCaseNotifier {
+  @override
+  CreateAccountUseCase build() {
+    return CreateAccountUseCase(
+      repository: ref.watch(accountRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+      uuid: ref.watch(uuidProvider),
+    );
+  }
+}
+
+@riverpod
+class DeleteAccountUseCaseNotifier extends _$DeleteAccountUseCaseNotifier {
+  @override
+  DeleteAccountUseCase build() {
+    return DeleteAccountUseCase(
+      repository: ref.watch(accountRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+    );
+  }
+}
+
+@riverpod
+class UpdateAccountSortOrderUseCaseNotifier
+    extends _$UpdateAccountSortOrderUseCaseNotifier {
+  @override
+  UpdateAccountSortOrderUseCase build() {
+    return UpdateAccountSortOrderUseCase(
+      repository: ref.watch(accountRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+    );
+  }
+}
+
+@riverpod
+class CalculateNetWorthUseCaseNotifier
+    extends _$CalculateNetWorthUseCaseNotifier {
+  @override
+  CalculateNetWorthUseCase build() {
+    return CalculateNetWorthUseCase(
+      repository: ref.watch(accountRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+    );
+  }
+}
+
+@riverpod
+class AccountsListNotifier extends _$AccountsListNotifier {
+  @override
+  Future<List<Account>> build(String userId) async {
+    final repository = ref.watch(accountRepositoryProvider);
+    return await repository.getAccountsByUserId(userId);
+  }
+}
+
+@riverpod
+class NetWorthNotifier extends _$NetWorthNotifier {
+  @override
+  Future<int> build(String userId) async {
+    final useCase = ref.watch(calculateNetWorthUseCaseProvider);
+    final result = await useCase.execute(userId);
+
+    return result.when(success: (value) => value, failure: (error) => 0);
+  }
+}
+
+@riverpod
+class UpdateAccountUseCaseNotifier extends _$UpdateAccountUseCaseNotifier {
+  @override
+  UpdateAccountUseCase build() {
+    return UpdateAccountUseCase(
+      repository: ref.watch(accountRepositoryProvider),
+      logger: ref.watch(loggerProvider),
+    );
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\presentation\providers\account_providers.g.dart =====
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'account_providers.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(AccountDaoNotifier)
+final accountDaoProvider = AccountDaoNotifierProvider._();
+
+final class AccountDaoNotifierProvider
+    extends $NotifierProvider<AccountDaoNotifier, AccountDao> {
+  AccountDaoNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'accountDaoProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$accountDaoNotifierHash();
+
+  @$internal
+  @override
+  AccountDaoNotifier create() => AccountDaoNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AccountDao value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AccountDao>(value),
+    );
+  }
+}
+
+String _$accountDaoNotifierHash() =>
+    r'553a41603974df95ea3f9bf984255bd089cce609';
+
+abstract class _$AccountDaoNotifier extends $Notifier<AccountDao> {
+  AccountDao build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AccountDao, AccountDao>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AccountDao, AccountDao>,
+              AccountDao,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(MortgageDaoNotifier)
+final mortgageDaoProvider = MortgageDaoNotifierProvider._();
+
+final class MortgageDaoNotifierProvider
+    extends $NotifierProvider<MortgageDaoNotifier, MortgageDao> {
+  MortgageDaoNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'mortgageDaoProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$mortgageDaoNotifierHash();
+
+  @$internal
+  @override
+  MortgageDaoNotifier create() => MortgageDaoNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(MortgageDao value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<MortgageDao>(value),
+    );
+  }
+}
+
+String _$mortgageDaoNotifierHash() =>
+    r'703cfbc9151ea6aca127d40f74998fd046f966a9';
+
+abstract class _$MortgageDaoNotifier extends $Notifier<MortgageDao> {
+  MortgageDao build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<MortgageDao, MortgageDao>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<MortgageDao, MortgageDao>,
+              MortgageDao,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(AccountRepositoryNotifier)
+final accountRepositoryProvider = AccountRepositoryNotifierProvider._();
+
+final class AccountRepositoryNotifierProvider
+    extends $NotifierProvider<AccountRepositoryNotifier, AccountRepository> {
+  AccountRepositoryNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'accountRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$accountRepositoryNotifierHash();
+
+  @$internal
+  @override
+  AccountRepositoryNotifier create() => AccountRepositoryNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AccountRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AccountRepository>(value),
+    );
+  }
+}
+
+String _$accountRepositoryNotifierHash() =>
+    r'f989215de8c874fe49c54484fe62a587e1840d4e';
+
+abstract class _$AccountRepositoryNotifier
+    extends $Notifier<AccountRepository> {
+  AccountRepository build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AccountRepository, AccountRepository>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AccountRepository, AccountRepository>,
+              AccountRepository,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(CreateAccountUseCaseNotifier)
+final createAccountUseCaseProvider = CreateAccountUseCaseNotifierProvider._();
+
+final class CreateAccountUseCaseNotifierProvider
+    extends
+        $NotifierProvider<CreateAccountUseCaseNotifier, CreateAccountUseCase> {
+  CreateAccountUseCaseNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'createAccountUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$createAccountUseCaseNotifierHash();
+
+  @$internal
+  @override
+  CreateAccountUseCaseNotifier create() => CreateAccountUseCaseNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(CreateAccountUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<CreateAccountUseCase>(value),
+    );
+  }
+}
+
+String _$createAccountUseCaseNotifierHash() =>
+    r'c5160a049bf4c238c0013b7b06c6033785f71e7a';
+
+abstract class _$CreateAccountUseCaseNotifier
+    extends $Notifier<CreateAccountUseCase> {
+  CreateAccountUseCase build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<CreateAccountUseCase, CreateAccountUseCase>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<CreateAccountUseCase, CreateAccountUseCase>,
+              CreateAccountUseCase,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(DeleteAccountUseCaseNotifier)
+final deleteAccountUseCaseProvider = DeleteAccountUseCaseNotifierProvider._();
+
+final class DeleteAccountUseCaseNotifierProvider
+    extends
+        $NotifierProvider<DeleteAccountUseCaseNotifier, DeleteAccountUseCase> {
+  DeleteAccountUseCaseNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'deleteAccountUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$deleteAccountUseCaseNotifierHash();
+
+  @$internal
+  @override
+  DeleteAccountUseCaseNotifier create() => DeleteAccountUseCaseNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DeleteAccountUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DeleteAccountUseCase>(value),
+    );
+  }
+}
+
+String _$deleteAccountUseCaseNotifierHash() =>
+    r'b2d4d6d46142eb4706bdd8ee0606799321a0875d';
+
+abstract class _$DeleteAccountUseCaseNotifier
+    extends $Notifier<DeleteAccountUseCase> {
+  DeleteAccountUseCase build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<DeleteAccountUseCase, DeleteAccountUseCase>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<DeleteAccountUseCase, DeleteAccountUseCase>,
+              DeleteAccountUseCase,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(UpdateAccountSortOrderUseCaseNotifier)
+final updateAccountSortOrderUseCaseProvider =
+    UpdateAccountSortOrderUseCaseNotifierProvider._();
+
+final class UpdateAccountSortOrderUseCaseNotifierProvider
+    extends
+        $NotifierProvider<
+          UpdateAccountSortOrderUseCaseNotifier,
+          UpdateAccountSortOrderUseCase
+        > {
+  UpdateAccountSortOrderUseCaseNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'updateAccountSortOrderUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$updateAccountSortOrderUseCaseNotifierHash();
+
+  @$internal
+  @override
+  UpdateAccountSortOrderUseCaseNotifier create() =>
+      UpdateAccountSortOrderUseCaseNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(UpdateAccountSortOrderUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<UpdateAccountSortOrderUseCase>(
+        value,
+      ),
+    );
+  }
+}
+
+String _$updateAccountSortOrderUseCaseNotifierHash() =>
+    r'0b424164e4fb9122d84d6ddbf2de96da9392f7dd';
+
+abstract class _$UpdateAccountSortOrderUseCaseNotifier
+    extends $Notifier<UpdateAccountSortOrderUseCase> {
+  UpdateAccountSortOrderUseCase build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref
+            as $Ref<
+              UpdateAccountSortOrderUseCase,
+              UpdateAccountSortOrderUseCase
+            >;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                UpdateAccountSortOrderUseCase,
+                UpdateAccountSortOrderUseCase
+              >,
+              UpdateAccountSortOrderUseCase,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(CalculateNetWorthUseCaseNotifier)
+final calculateNetWorthUseCaseProvider =
+    CalculateNetWorthUseCaseNotifierProvider._();
+
+final class CalculateNetWorthUseCaseNotifierProvider
+    extends
+        $NotifierProvider<
+          CalculateNetWorthUseCaseNotifier,
+          CalculateNetWorthUseCase
+        > {
+  CalculateNetWorthUseCaseNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'calculateNetWorthUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$calculateNetWorthUseCaseNotifierHash();
+
+  @$internal
+  @override
+  CalculateNetWorthUseCaseNotifier create() =>
+      CalculateNetWorthUseCaseNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(CalculateNetWorthUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<CalculateNetWorthUseCase>(value),
+    );
+  }
+}
+
+String _$calculateNetWorthUseCaseNotifierHash() =>
+    r'd183984a341cf8dca06f23617a662471f0e1c198';
+
+abstract class _$CalculateNetWorthUseCaseNotifier
+    extends $Notifier<CalculateNetWorthUseCase> {
+  CalculateNetWorthUseCase build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref as $Ref<CalculateNetWorthUseCase, CalculateNetWorthUseCase>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<CalculateNetWorthUseCase, CalculateNetWorthUseCase>,
+              CalculateNetWorthUseCase,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(AccountsListNotifier)
+final accountsListProvider = AccountsListNotifierFamily._();
+
+final class AccountsListNotifierProvider
+    extends $AsyncNotifierProvider<AccountsListNotifier, List<Account>> {
+  AccountsListNotifierProvider._({
+    required AccountsListNotifierFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'accountsListProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$accountsListNotifierHash();
+
+  @override
+  String toString() {
+    return r'accountsListProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  AccountsListNotifier create() => AccountsListNotifier();
+
+  @override
+  bool operator ==(Object other) {
+    return other is AccountsListNotifierProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$accountsListNotifierHash() =>
+    r'2a7f9aa1aa086783c05d559d3f69adb641ac0cbf';
+
+final class AccountsListNotifierFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          AccountsListNotifier,
+          AsyncValue<List<Account>>,
+          List<Account>,
+          FutureOr<List<Account>>,
+          String
+        > {
+  AccountsListNotifierFamily._()
+    : super(
+        retry: null,
+        name: r'accountsListProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  AccountsListNotifierProvider call(String userId) =>
+      AccountsListNotifierProvider._(argument: userId, from: this);
+
+  @override
+  String toString() => r'accountsListProvider';
+}
+
+abstract class _$AccountsListNotifier extends $AsyncNotifier<List<Account>> {
+  late final _$args = ref.$arg as String;
+  String get userId => _$args;
+
+  FutureOr<List<Account>> build(String userId);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<List<Account>>, List<Account>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<Account>>, List<Account>>,
+              AsyncValue<List<Account>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
+}
+
+@ProviderFor(NetWorthNotifier)
+final netWorthProvider = NetWorthNotifierFamily._();
+
+final class NetWorthNotifierProvider
+    extends $AsyncNotifierProvider<NetWorthNotifier, int> {
+  NetWorthNotifierProvider._({
+    required NetWorthNotifierFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'netWorthProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$netWorthNotifierHash();
+
+  @override
+  String toString() {
+    return r'netWorthProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  NetWorthNotifier create() => NetWorthNotifier();
+
+  @override
+  bool operator ==(Object other) {
+    return other is NetWorthNotifierProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$netWorthNotifierHash() => r'8502ecd121943e39e14a9aff4595f807c9eb857a';
+
+final class NetWorthNotifierFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          NetWorthNotifier,
+          AsyncValue<int>,
+          int,
+          FutureOr<int>,
+          String
+        > {
+  NetWorthNotifierFamily._()
+    : super(
+        retry: null,
+        name: r'netWorthProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  NetWorthNotifierProvider call(String userId) =>
+      NetWorthNotifierProvider._(argument: userId, from: this);
+
+  @override
+  String toString() => r'netWorthProvider';
+}
+
+abstract class _$NetWorthNotifier extends $AsyncNotifier<int> {
+  late final _$args = ref.$arg as String;
+  String get userId => _$args;
+
+  FutureOr<int> build(String userId);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<int>, int>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<int>, int>,
+              AsyncValue<int>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
+}
+
+@ProviderFor(UpdateAccountUseCaseNotifier)
+final updateAccountUseCaseProvider = UpdateAccountUseCaseNotifierProvider._();
+
+final class UpdateAccountUseCaseNotifierProvider
+    extends
+        $NotifierProvider<UpdateAccountUseCaseNotifier, UpdateAccountUseCase> {
+  UpdateAccountUseCaseNotifierProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'updateAccountUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$updateAccountUseCaseNotifierHash();
+
+  @$internal
+  @override
+  UpdateAccountUseCaseNotifier create() => UpdateAccountUseCaseNotifier();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(UpdateAccountUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<UpdateAccountUseCase>(value),
+    );
+  }
+}
+
+String _$updateAccountUseCaseNotifierHash() =>
+    r'eb0530e7db118878137592fdebd3b9d74a9e9e82';
+
+abstract class _$UpdateAccountUseCaseNotifier
+    extends $Notifier<UpdateAccountUseCase> {
+  UpdateAccountUseCase build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<UpdateAccountUseCase, UpdateAccountUseCase>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<UpdateAccountUseCase, UpdateAccountUseCase>,
+              UpdateAccountUseCase,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\presentation\screens\accounts_screen.dart =====
+// lib/features/accounts/presentation/screens/accounts_screen.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:budget_assistant/core/constants/currency_codes.dart';
+import 'package:budget_assistant/core/providers/security_providers.dart';
+import 'package:budget_assistant/features/spaces/presentation/providers/space_providers.dart';
+import '../providers/account_providers.dart';
+import '../widgets/expansion_tile_group.dart';
+import '../widgets/account_type_ui.dart';
+import '../../domain/entities/account.dart';
+import '../../domain/entities/account_types.dart';
+import 'package:budget_assistant/core/utils/result.dart';
+
+class AccountsScreen extends ConsumerWidget {
+  final String userId;
+  const AccountsScreen({super.key, required this.userId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final accountsAsync = ref.watch(accountsListProvider(userId));
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Accounts'),
+        leading: IconButton(
+          icon: const Icon(Icons.home),
+          tooltip: 'Home',
+          onPressed: () => context.go('/'),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.category),
+            tooltip: 'Categories',
+            onPressed: () => context.go('/categories'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'Create account',
+            onPressed: () => _showAccountDialog(context, ref),
+          ),
+        ],
+      ),
+      body: accountsAsync.when(
+        data: (accounts) => _buildAccountsList(context, ref, accounts),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text('Error loading accounts: $error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.invalidate(accountsListProvider(userId)),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccountsList(BuildContext context, WidgetRef ref, List<Account> accounts) {
+    if (accounts.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.account_balance_wallet, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            const Text('No accounts yet'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => _showAccountDialog(context, ref),
+              child: const Text('Add your first account'),
+            ),
+          ],
+        ),
+      );
+    }
+    final grouped = <String, List<Account>>{};
+    for (final account in accounts) {
+      grouped.putIfAbsent(account.accountType, () => []).add(account);
+    }
+    final orderedTypes = [
+      ...AccountTypes.all.where(grouped.containsKey),
+      ...grouped.keys.where((t) => !AccountTypes.all.contains(t)),
+    ];
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        for (final type in orderedTypes)
+          ExpansionTileGroup(
+            title: accountTypeMeta(type).label,
+            icon: accountTypeMeta(type).icon,
+            accounts: grouped[type]!,
+            onTap: (account) => _showAccountDialog(context, ref, account: account),
+            onLongPress: (account) => _showDeleteDialog(context, ref, account),
+          ),
+      ],
+    );
+  }
+
+  void _showDeleteDialog(BuildContext context, WidgetRef ref, Account account) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete account?'),
+        content: Text('Delete "${account.customName}"? This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              final useCase = ref.read(deleteAccountUseCaseProvider);
+              final result = await useCase.execute(account.id);
+              if (!context.mounted) return;
+              result.when(
+                success: (_) {
+                  ref.invalidate(accountsListProvider(userId));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Account "${account.customName}" deleted')),
+                  );
+                },
+                failure: (failure) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: ${failure.message}')),
+                  );
+                },
+              );
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAccountDialog(BuildContext context, WidgetRef ref, {Account? account}) {
+    showDialog(
+      context: context,
+      builder: (context) => _AccountDialog(userId: userId, account: account),
+    );
+  }
+}
+
+class _AccountDialog extends ConsumerStatefulWidget {
+  final String userId;
+  final Account? account;
+  const _AccountDialog({required this.userId, this.account});
+  @override
+  ConsumerState<_AccountDialog> createState() => _AccountDialogState();
+}
+
+class _AccountDialogState extends ConsumerState<_AccountDialog> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _bankController;
+  late final TextEditingController _balanceController;
+  late String _selectedType;
+  late String _selectedCurrency;
+  late bool _isShared;
+  bool _isLoading = false;
+  bool get _isEdit => widget.account != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final a = widget.account;
+    _nameController = TextEditingController(text: a?.customName ?? '');
+    _bankController = TextEditingController(text: a?.bankName ?? '');
+    _balanceController = TextEditingController(
+      text: a == null ? '' : (a.currentBalance / 100).toStringAsFixed(2),
+    );
+    _selectedType = a?.accountType ?? AccountTypes.debit;
+    _selectedCurrency = a?.currency ?? 'RUB';
+    _isShared = a?.isSharedBalance ?? false;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _bankController.dispose();
+    _balanceController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final spaces = ref.watch(userSpacesProvider).value ?? const [];
+    final currentSpaceId = ref.watch(currentSpaceIdProvider);
+    final canShare = spaces.isNotEmpty;
+    return AlertDialog(
+      title: Text(_isEdit ? 'Edit Account' : 'Create Account'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(labelText: 'Account Name', hintText: 'e.g., My Card'),
+              autofocus: !_isEdit,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _bankController,
+              decoration: const InputDecoration(labelText: 'Bank / Source', hintText: 'e.g., T-Bank, Cash box'),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _balanceController,
+              decoration: InputDecoration(labelText: 'Balance ($_selectedCurrency)', hintText: '0.00'),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedCurrency,
+              decoration: const InputDecoration(labelText: 'Currency'),
+              items: [for (final code in kCurrencyCodes) DropdownMenuItem(value: code, child: Text(code))],
+              onChanged: (value) => setState(() => _selectedCurrency = value ?? 'RUB'),
+            ),
+            const SizedBox(height: 8),
+            SwitchListTile(
+              title: const Text('Семейный счёт (общий баланс)'),
+              subtitle: Text(canShare
+                  ? 'Баланс виден всем членам активной группы'
+                  : 'Сначала присоединитесь к семейному пространству'),
+              value: _isShared,
+              onChanged: canShare
+                  ? (v) => setState(() => _isShared = v)
+                  : null,
+            ),
+            if (_isEdit)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'История операций не пересчитывается: смена валюты влияет только на новые операции и расчёты.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedType,
+              decoration: const InputDecoration(labelText: 'Type'),
+              items: [
+                for (final type in AccountTypes.all)
+                  DropdownMenuItem(value: type, child: Text(accountTypeMeta(type).label)),
+              ],
+              onChanged: (value) => setState(() => _selectedType = value ?? AccountTypes.debit),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _isLoading ? null : () => _save(currentSpaceId, spaces),
+          child: _isLoading
+              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+              : Text(_isEdit ? 'Save' : 'Create'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _save(String? currentSpaceId, List<dynamic> spaces) async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Account name is required')));
+      return;
+    }
+    setState(() => _isLoading = true);
+    try {
+      final balanceKopecks =
+          ((double.tryParse(_balanceController.text.replaceAll(',', '.')) ?? 0.0) * 100).round();
+      final bank = _bankController.text.trim().isEmpty ? 'Manual' : _bankController.text.trim();
+      final Result<void> result;
+      if (_isEdit) {
+        final a = widget.account!;
+        result = await ref.read(updateAccountUseCaseProvider).execute(
+              accountId: a.id,
+              bankName: bank,
+              customName: name,
+              accountType: _selectedType,
+              currency: _selectedCurrency,
+              currentBalance: balanceKopecks,
+              cardNumberMask: a.cardNumberMask,
+              creditLimit: a.creditLimit,
+            );
+      } else {
+        result = await ref.read(createAccountUseCaseProvider).execute(
+              userId: widget.userId,
+              bankName: bank,
+              customName: name,
+              accountType: _selectedType,
+              currency: _selectedCurrency,
+              currentBalance: balanceKopecks,
+              spaceId: _isShared ? (currentSpaceId ?? (spaces.isEmpty ? null : (spaces.first as dynamic).id as String)) : null,
+              isSharedBalance: _isShared,
+            );
+      }
+      result.when(
+        success: (_) {
+          if (!mounted) return;
+          Navigator.of(context).pop();
+          ref.invalidate(accountsListProvider(widget.userId));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Account "$name" ${_isEdit ? 'updated' : 'created'}')),
+          );
+        },
+        failure: (failure) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${failure.message}')),
+          );
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid amount: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\presentation\widgets\account_card.dart =====
+// lib/features/accounts/presentation/widgets/account_card.dart
+import 'package:flutter/material.dart';
+import '../../domain/entities/account.dart';
+
+class AccountCard extends StatelessWidget {
+  final Account account;
+  final VoidCallback? onTap;
+  const AccountCard({super.key, required this.account, this.onTap});
+
+  /// Форматирование копеек в валюте счёта (деление на 100 — только в UI).
+  String _formatBalance(int kopecks) {
+    final isNegative = kopecks < 0;
+    final abs = kopecks.abs();
+    final whole = abs ~/ 100;
+    final fraction = (abs % 100).toString().padLeft(2, '0');
+    final grouped = whole.toString().replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]} ',
+    );
+    final sign = isNegative ? '-' : '';
+    return '$sign$grouped,$fraction ${account.currency}';
+  }
+
+  Color _getGradientStartColor() {
+    switch (account.accountType) {
+      case 'debit':
+        return Colors.blue.shade700;
+      case 'credit':
+        return Colors.purple.shade700;
+      case 'savings':
+        return Colors.green.shade700;
+      case 'mortgage':
+        return Colors.orange.shade700;
+      default:
+        return Colors.grey.shade700;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [
+                _getGradientStartColor(),
+                _getGradientStartColor().withValues(alpha: 0.7),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                account.accountType.toUpperCase(),
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _formatBalance(account.currentBalance),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (account.cardNumberMask != null)
+                Text(
+                  account.cardNumberMask!,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    letterSpacing: 2,
+                  ),
+                ),
+              const SizedBox(height: 4),
+              Text(
+                account.customName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              if (account.syncStatus == 'pending')
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Icon(
+                    Icons.cloud_off,
+                    color: Colors.white.withValues(alpha: 0.5),
+                    size: 20,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\presentation\widgets\account_type_ui.dart =====
+// lib/features/accounts/presentation/widgets/account_type_ui.dart
+import 'package:flutter/material.dart';
+import '../../domain/entities/account_types.dart';
+
+/// Презентационная мета (label + иконка) для типов счетов.
+class AccountTypeUiMeta {
+  final String label;
+  final IconData icon;
+  const AccountTypeUiMeta(this.label, this.icon);
+}
+
+const Map<String, AccountTypeUiMeta> _accountTypeUi = {
+  AccountTypes.debit: AccountTypeUiMeta('Debit Cards', Icons.credit_card),
+  AccountTypes.credit: AccountTypeUiMeta('Credit Cards', Icons.credit_card),
+  AccountTypes.cash: AccountTypeUiMeta('Cash', Icons.payments),
+  AccountTypes.savings: AccountTypeUiMeta('Savings', Icons.savings),
+  AccountTypes.safe: AccountTypeUiMeta('Safes', Icons.lock),
+  AccountTypes.investmentBroker: AccountTypeUiMeta('Investments', Icons.candlestick_chart),
+  AccountTypes.mortgage: AccountTypeUiMeta('Mortgages', Icons.home),
+};
+
+AccountTypeUiMeta accountTypeMeta(String type) =>
+    _accountTypeUi[type] ?? const AccountTypeUiMeta('Other', Icons.account_balance_wallet);
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\accounts\presentation\widgets\expansion_tile_group.dart =====
+// lib/features/accounts/presentation/widgets/expansion_tile_group.dart
+import 'package:flutter/material.dart';
+import '../../domain/entities/account.dart';
+import 'account_card.dart';
+
+class ExpansionTileGroup extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final List<Account> accounts;
+  final void Function(Account account)? onTap;
+  final void Function(Account account)? onLongPress;
+
+  const ExpansionTileGroup({
+    super.key,
+    required this.title,
+    required this.icon,
+    required this.accounts,
+    this.onTap,
+    this.onLongPress,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (accounts.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: ExpansionTile(
+        leading: Icon(icon, color: Theme.of(context).primaryColor),
+        title: Text(
+          title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '(${accounts.length})',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.expand_more),
+          ],
+        ),
+        initiallyExpanded: true,
+        children: accounts.map((account) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: GestureDetector(
+              onTap: onTap == null ? null : () => onTap!(account),
+              onLongPress: onLongPress == null ? null : () => onLongPress!(account),
+              child: AccountCard(account: account),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\import\data\datasources\import_accounts_dao.dart =====
+import 'package:drift/drift.dart';
+import 'package:budget_assistant/core/database/app_database.dart';
+
+part 'import_accounts_dao.g.dart';
+
+@DriftAccessor(tables: [Accounts])
+class ImportAccountsDao extends DatabaseAccessor<AppDatabase>
+    with _$ImportAccountsDaoMixin {
+  ImportAccountsDao(super.db);
+
+  /// Целевые счета импорта (ТЗ 6.3.25.16): не архивные, не системные.
+  /// familyOnly = true → только счета текущего пространства.
+  Future<List<Account>> getTargetAccounts({
+    required String userId,
+    String? spaceId,
+    required bool familyOnly,
+  }) {
+    final query = select(accounts)
+      ..where((t) =>
+          t.userId.equals(userId) &
+          t.isArchived.equals(false) &
+          t.isSystem.equals(false));
+    if (familyOnly && spaceId != null) {
+      query.where((t) => t.spaceId.equals(spaceId));
+    }
+    query.orderBy([
+      (t) => OrderingTerm.asc(t.sortOrder),
+      (t) => OrderingTerm.desc(t.currentBalance),
+    ]);
+    return query.get();
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\import\data\datasources\import_accounts_dao.g.dart =====
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'import_accounts_dao.dart';
+
+// ignore_for_file: type=lint
+mixin _$ImportAccountsDaoMixin on DatabaseAccessor<AppDatabase> {
+  $UsersTable get users => attachedDatabase.users;
+  $SpacesTable get spaces => attachedDatabase.spaces;
+  $AccountsTable get accounts => attachedDatabase.accounts;
+  ImportAccountsDaoManager get managers => ImportAccountsDaoManager(this);
+}
+
+class ImportAccountsDaoManager {
+  final _$ImportAccountsDaoMixin _db;
+  ImportAccountsDaoManager(this._db);
+  $$UsersTableTableManager get users =>
+      $$UsersTableTableManager(_db.attachedDatabase, _db.users);
+  $$SpacesTableTableManager get spaces =>
+      $$SpacesTableTableManager(_db.attachedDatabase, _db.spaces);
+  $$AccountsTableTableManager get accounts =>
+      $$AccountsTableTableManager(_db.attachedDatabase, _db.accounts);
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\import\presentation\widgets\step2_bank_detection_widget.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/core/theme/app_colors.dart';
+import '../providers/import_onboarding_notifier.dart';
+import '../providers/import_wizard_providers.dart';
+
+/// Formatter для разделения разрядов при вводе баланса.
+/// 2000000 → 2 000 000, 2000000.50 → 2 000 000.50
+class ThousandsSeparatorFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) return newValue;
+    
+    var text = newValue.text.replaceAll(' ', '');
+    text = text.replaceAll(RegExp(r'[^\d.,]'), '');
+    text = text.replaceAll(',', '.');
+    
+    var dotIndex = text.indexOf('.');
+    if (dotIndex != -1) {
+      var beforeDot = text.substring(0, dotIndex);
+      var afterDot = text.substring(dotIndex + 1);
+      afterDot = afterDot.replaceAll('.', '');
+      text = '$beforeDot.$afterDot';
+    }
+    
+    var parts = text.split('.');
+    var integerPart = parts[0];
+    var decimalPart = parts.length > 1 ? parts[1] : '';
+    
+    var buffer = StringBuffer();
+    for (var i = 0; i < integerPart.length; i++) {
+      if (i > 0 && (integerPart.length - i) % 3 == 0) {
+        buffer.write(' ');
+      }
+      buffer.write(integerPart[i]);
+    }
+    
+    var formatted = buffer.toString();
+    if (decimalPart.isNotEmpty) {
+      formatted += '.$decimalPart';
+    }
+    
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
+
+class Step2BankDetectionWidget extends ConsumerStatefulWidget {
+  const Step2BankDetectionWidget({super.key});
+
+  @override
+  ConsumerState<Step2BankDetectionWidget> createState() =>
+      _Step2BankDetectionWidgetState();
+}
+
+class _Step2BankDetectionWidgetState
+    extends ConsumerState<Step2BankDetectionWidget> {
+  final _customBankController = TextEditingController();
+  final _accountNameController = TextEditingController();
+  final _accountBalanceController = TextEditingController();
+
+  @override
+  void dispose() {
+    _customBankController.dispose();
+    _accountNameController.dispose();
+    _accountBalanceController.dispose();
+    super.dispose();
+  }
+
+  void _showCreateBankDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Добавить новый банк'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _customBankController,
+              decoration: const InputDecoration(labelText: 'Название банка'),
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Отмена'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final name = _customBankController.text.trim();
+              if (name.isNotEmpty) {
+                ref.read(importOnboardingProvider.notifier).createNewBank(
+                  bankName: name,
+                  bankCode: name.toLowerCase().replaceAll(' ', '_'),
+                  formats: const ['csv', 'xlsx', 'pdf'],
+                );
+                Navigator.pop(ctx);
+                _customBankController.clear();
+              }
+            },
+            child: const Text('Создать'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCreateAccountDialog() {
+    var accountType = 'checking';
+    var currency = 'RUB';
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlgState) => AlertDialog(
+          title: const Text('Новый счёт'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _accountNameController,
+                decoration: const InputDecoration(labelText: 'Название счёта'),
+                autofocus: true,
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: accountType,
+                decoration: const InputDecoration(labelText: 'Тип счёта'),
+                items: const [
+                  DropdownMenuItem(value: 'checking', child: Text('Текущий')),
+                  DropdownMenuItem(value: 'card', child: Text('Карта')),
+                  DropdownMenuItem(value: 'savings', child: Text('Накопительный')),
+                  DropdownMenuItem(value: 'investment', child: Text('Инвестиционный')),
+                  DropdownMenuItem(value: 'cash', child: Text('Наличные')),
+                ],
+                onChanged: (v) => setDlgState(() => accountType = v ?? 'checking'),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: currency,
+                decoration: const InputDecoration(labelText: 'Валюта'),
+                items: const [
+                  DropdownMenuItem(value: 'RUB', child: Text('RUB')),
+                  DropdownMenuItem(value: 'USD', child: Text('USD')),
+                  DropdownMenuItem(value: 'EUR', child: Text('EUR')),
+                ],
+                onChanged: (v) => setDlgState(() => currency = v ?? 'RUB'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _accountBalanceController,
+                decoration: const InputDecoration(
+                  labelText: 'Начальный баланс',
+                  hintText: '0.00',
+                ),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [ThousandsSeparatorFormatter()],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Отмена'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final name = _accountNameController.text.trim();
+                final balanceText = _accountBalanceController.text
+                    .replaceAll(' ', '')
+                    .replaceAll(',', '.');
+                final balanceRubles = double.tryParse(balanceText) ?? 0;
+                final balanceKopecks = (balanceRubles * 100).round();
+                if (name.isNotEmpty) {
+                  ref.read(importOnboardingProvider.notifier).createNewAccount(
+                        accountName: name,
+                        accountType: accountType,
+                        currency: currency,
+                        initialBalance: balanceKopecks,
+                      );
+                  Navigator.pop(ctx);
+                  _accountNameController.clear();
+                  _accountBalanceController.clear();
+                }
+              },
+              child: const Text('Создать'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(importOnboardingProvider);
+    final notifier = ref.read(importOnboardingProvider.notifier);
+    final allBanksAsync = ref.watch(parserConfigsListProvider);
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        const Text(
+          'Определение банка',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Мы попытались определить банк по содержимому файла',
+          style: TextStyle(color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 24),
+
+        if (state.detectedBanks.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceCard,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.borderDivider),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.search_off, color: AppColors.textSecondary),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Не удалось определить банк автоматически',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          ...state.detectedBanks.map((detected) {
+            final isSelected =
+                state.selectedConfig?.bankCode == detected.bankCode;
+            return GestureDetector(
+              onTap: () => notifier.selectDetectedBank(detected.bankCode),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceCard,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.colorFAB
+                        : AppColors.borderDivider,
+                    width: isSelected ? 2 : 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            detected.bankName,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Уверенность: ${(detected.confidence * 100).round()}%',
+                            style: const TextStyle(
+                                color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                    RadioGroup<String>(
+                      groupValue: state.selectedConfig?.bankCode,
+                      onChanged: (v) {
+                        if (v != null) notifier.selectDetectedBank(v);
+                      },
+                      child: Radio<String>(value: detected.bankCode),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+
+        const SizedBox(height: 24),
+        const Divider(),
+        const SizedBox(height: 16),
+
+        const Text(
+          'Все банки',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        allBanksAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, __) =>
+              const Text('Не удалось загрузить список банков'),
+          data: (banks) {
+            if (banks.isEmpty) {
+              return const Text('Нет доступных банков');
+            }
+            return Column(
+              children: banks.map((bank) {
+                final isSelected =
+                    state.selectedConfig?.bankCode == bank.bankCode;
+                return GestureDetector(
+                  onTap: () => notifier.selectDetectedBank(bank.bankCode),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceCard,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.colorFAB
+                            : AppColors.borderDivider,
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            bank.bankName,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        RadioGroup<String>(
+                          groupValue: state.selectedConfig?.bankCode,
+                          onChanged: (v) {
+                            if (v != null) notifier.selectDetectedBank(v);
+                          },
+                          child: Radio<String>(value: bank.bankCode),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ),
+
+        const SizedBox(height: 16),
+        OutlinedButton.icon(
+          onPressed: _showCreateBankDialog,
+          icon: const Icon(Icons.add),
+          label: const Text('Добавить новый банк'),
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+          ),
+        ),
+
+        // === Секция счетов ===
+        if (state.selectedConfig != null || state.customBankName != null) ...[
+          const SizedBox(height: 24),
+          const Divider(),
+          const SizedBox(height: 16),
+          const Text(
+            'Выберите счёт',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (state.accountsForBank.isEmpty)
+            const Text(
+              'Нет счетов для этого банка',
+              style: TextStyle(color: AppColors.textSecondary),
+            )
+          else
+            ...state.accountsForBank.map((account) {
+              final isSelected = state.selectedAccountId == account.id;
+              return GestureDetector(
+                onTap: () => notifier.selectAccount(account.id),
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceCard,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.colorFAB
+                          : AppColors.borderDivider,
+                      width: isSelected ? 2 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              account.customName.isNotEmpty 
+                                  ? account.customName 
+                                  : account.bankName,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Баланс: ${(account.currentBalance / 100).toStringAsFixed(2)} ₽',
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      RadioGroup<String>(
+                        groupValue: state.selectedAccountId,
+                        onChanged: (v) {
+                          if (v != null) notifier.selectAccount(v);
+                        },
+                        child: Radio<String>(value: account.id),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: _showCreateAccountDialog,
+            icon: const Icon(Icons.add),
+            label: const Text('Добавить счёт'),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\import\presentation\widgets\step4_account_selection_widget.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/core/theme/app_colors.dart';
+import '../providers/import_onboarding_notifier.dart';
+
+class Step4AccountSelectionWidget extends ConsumerWidget {
+  const Step4AccountSelectionWidget({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(importOnboardingProvider);
+    final notifier = ref.read(importOnboardingProvider.notifier);
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // Сводка выбранного банка и счёта
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceCard,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.borderDivider),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Импорт в:',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Банк: ${state.selectedConfig?.bankName ?? state.customBankName ?? "—"}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Счёт: ${state.selectedAccountId ?? "—"}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        const Text(
+          'Опции импорта',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        SwitchListTile(
+          title: const Text('Проверять дубликаты'),
+          value: state.options.detectDuplicates,
+          onChanged: (v) => notifier.setOptions(
+            state.options.copyWith(detectDuplicates: v),
+          ),
+        ),
+        SwitchListTile(
+          title: const Text('Искать переводы между счетами'),
+          value: state.options.detectTransfers,
+          onChanged: (v) => notifier.setOptions(
+            state.options.copyWith(detectTransfers: v),
+          ),
+        ),
+        SwitchListTile(
+          title: const Text('Проверять режим секретности'),
+          value: state.options.checkSecrecy,
+          onChanged: (v) => notifier.setOptions(
+            state.options.copyWith(checkSecrecy: v),
+          ),
+        ),
+        SwitchListTile(
+          title: const Text('Автокатегоризация'),
+          value: state.options.autoCategorize,
+          onChanged: (v) => notifier.setOptions(
+            state.options.copyWith(autoCategorize: v),
+          ),
+        ),
+        SwitchListTile(
+          title: const Text('Поиск регулярных платежей'),
+          value: state.options.detectRecurring,
+          onChanged: (v) => notifier.setOptions(
+            state.options.copyWith(detectRecurring: v),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceCard,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.borderDivider),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _summaryRow('Файл', state.parsedFile?.fileName ?? '—'),
+              _summaryRow(
+                'Транзакций',
+                '${state.parsedFile?.parseResult.rows.length ?? 0}',
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _summaryRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: AppColors.textSecondary)),
+          Text(value, style: const TextStyle(color: AppColors.textPrimary)),
+        ],
+      ),
+    );
+  }
+}

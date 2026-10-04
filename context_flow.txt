@@ -1,0 +1,2610 @@
+﻿===== FILE: D:\Et_Cetr\Budget Assistant\lib\core\router\app_router.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:budget_assistant/features/auth/domain/notifiers/auth_notifier.dart';
+import 'package:budget_assistant/features/dashboard/presentation/screens/dashboard_screen.dart';
+import 'package:budget_assistant/features/onboarding/presentation/widgets/onboarding_wrapper.dart';
+import 'package:budget_assistant/features/auth/presentation/screens/auth_wrapper.dart';
+import 'package:budget_assistant/features/spaces/presentation/screens/space_selector_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/app_lock_screen.dart';
+import 'package:budget_assistant/features/invites/presentation/screens/accept_invite_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/pin_onboarding_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/pin_entry_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/biometric_onboarding_screen.dart';
+import 'package:budget_assistant/core/router/routes.dart';
+import 'package:budget_assistant/features/import/domain/entities/import_result.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:budget_assistant/features/accounts/presentation/screens/accounts_screen.dart';
+import 'package:budget_assistant/features/categories/presentation/screens/categories_screen.dart';
+import 'package:budget_assistant/core/bootstrap/app_bootstrap_flags.dart';
+import 'package:budget_assistant/core/services/secure_storage_service.dart';
+import 'package:budget_assistant/core/logger.dart';
+import 'package:budget_assistant/features/transactions/presentation/screens/transactions_log_screen.dart';
+import 'package:budget_assistant/features/import/presentation/screens/import_onboarding_screen.dart';
+import 'package:budget_assistant/features/import/presentation/screens/post_import_review_screen.dart';
+import 'package:budget_assistant/features/import/presentation/screens/import_secrets_screen.dart';
+import 'package:budget_assistant/features/import/domain/entities/import_secrecy_handoff.dart';
+import 'package:budget_assistant/features/transactions/presentation/screens/create_transaction_screen.dart';
+import 'package:budget_assistant/features/transactions/presentation/screens/edit_transaction_screen.dart';
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
+import 'package:budget_assistant/features/budget/presentation/screens/budget_limits_screen.dart';
+import 'package:budget_assistant/features/budget/presentation/screens/edit_budget_limit_screen.dart';
+import 'package:budget_assistant/features/cashback/presentation/screens/cashback_screen.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/providers/savings_goals_screen_providers.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/screens/create_savings_goal_screen.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/screens/savings_goals_screen.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/screens/savings_analytics_screen.dart';
+import 'package:budget_assistant/features/debts/presentation/screens/debts_screen.dart';
+import 'package:budget_assistant/features/debts/presentation/screens/create_debt_screen.dart';
+import 'package:budget_assistant/features/transactions/presentation/screens/split_transaction_screen.dart';
+import 'package:budget_assistant/features/reminders/presentation/screens/reminders_screen.dart';
+import 'package:budget_assistant/features/reminders/presentation/screens/reminder_details_screen.dart';
+import 'package:budget_assistant/features/reminders/presentation/screens/create_reminder_screen.dart';
+import 'package:budget_assistant/features/calendar/presentation/screens/calendar_screen.dart';
+import 'package:budget_assistant/features/calendar/presentation/screens/day_statistics_screen.dart';
+import 'package:budget_assistant/features/calendar/presentation/screens/date_forecast_screen.dart';
+import 'package:budget_assistant/features/calendar/presentation/screens/holidays_management_screen.dart';
+import 'package:budget_assistant/features/recurring_payments/presentation/screens/recurring_payments_detection_screen.dart';
+part 'app_router.g.dart';
+
+@riverpod
+class AppLock extends _$AppLock {
+  @override
+  bool build() => false;
+  void lock() => state = true;
+  void unlock() => state = false;
+}
+
+@riverpod
+class OnboardingStatus extends _$OnboardingStatus {
+  @override
+  String build() => AppBootstrapFlags.onboardingStatus;
+  void complete() {
+    state = 'completed';
+    AppBootstrapFlags.onboardingStatus = 'completed';
+    _persist();
+  }
+
+  void setStatus(String status) {
+    state = status;
+    AppBootstrapFlags.onboardingStatus = status;
+    _persist();
+  }
+
+  Future<void> _persist() async {
+    try {
+      await SecureStorageService().write(
+        'onboarding_completed',
+        state == 'completed' ? 'true' : 'false',
+      );
+    } catch (e, st) {
+      AppLogger.e('Failed to persist onboarding flag', e, st);
+    }
+  }
+}
+
+@riverpod
+class CurrentSpaceId extends _$CurrentSpaceId {
+  @override
+  String? build() => null;
+  void setSpaceId(String? id) => state = id;
+  void clear() => state = null;
+}
+
+@riverpod
+class PendingInviteToken extends _$PendingInviteToken {
+  @override
+  String? build() => null;
+  void setToken(String? token) => state = token;
+  void clear() => state = null;
+}
+
+class _AuthRefreshNotifier extends ChangeNotifier {
+  late final ProviderSubscription _sub;
+  _AuthRefreshNotifier(Ref ref) {
+    _sub = ref.listen(authProvider, (_, __) {
+      notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _sub.close();
+    super.dispose();
+  }
+}
+
+@riverpod
+GoRouter appRouter(Ref ref) {
+  final authStatus = ref.watch(authProvider);
+  final refreshNotifier = _AuthRefreshNotifier(ref);
+  ref.onDispose(() {
+    refreshNotifier.dispose();
+  });
+  return GoRouter(
+    initialLocation: AppRoutes.home,
+    debugLogDiagnostics: true,
+    refreshListenable: refreshNotifier,
+    routes: [
+      GoRoute(
+        path: '/debts',
+        name: 'debts',
+        builder: (context, state) => const DebtsScreen(),
+      ),
+      GoRoute(
+        path: '/debts/create',
+        name: 'create-debt',
+        builder: (context, state) {
+          final q = state.uri.queryParameters;
+          return CreateDebtScreen(
+            debtId: q['id'],
+            transactionId: q['transaction_id'],
+            splitId: q['split_id'],
+          );
+        },
+      ),
+      GoRoute(
+        path: '/transactions/split/:id',
+        name: 'split-transaction',
+        builder: (context, state) => SplitTransactionScreen(
+          transactionId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.home,
+        name: 'home',
+        builder: (context, state) => const DashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.onboarding,
+        name: 'onboarding',
+        builder: (context, state) => const OnboardingWrapper(),
+      ),
+      GoRoute(
+        path: AppRoutes.auth,
+        name: 'auth',
+        builder: (context, state) => const AuthWrapper(),
+      ),
+      GoRoute(
+        path: AppRoutes.spaceSelector,
+        name: 'space_selector',
+        builder: (context, state) => const SpaceSelectorScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.lock,
+        name: 'lock',
+        builder: (context, state) => const AppLockScreen(),
+      ),
+      GoRoute(
+        path: '${AppRoutes.invite}/accept',
+        name: 'accept_invite',
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'];
+          return AcceptInviteScreen(token: token);
+        },
+      ),
+      GoRoute(
+        path: '/security/pin-onboarding',
+        name: 'pin_onboarding',
+        builder: (context, state) => const PinOnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/security/pin-entry',
+        name: 'pin_entry',
+        builder: (context, state) => const PinEntryScreen(),
+      ),
+      GoRoute(
+        path: '/security/biometric-onboarding',
+        name: 'biometric_onboarding',
+        builder: (context, state) => const BiometricOnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/accounts',
+        name: 'accounts',
+        builder: (context, state) => AccountsScreen(
+          userId: Supabase.instance.client.auth.currentUser?.id ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/categories',
+        name: 'categories',
+        builder: (context, state) => CategoriesScreen(
+          userId: Supabase.instance.client.auth.currentUser?.id ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/transactions',
+        builder: (context, state) => const TransactionsLogScreen(),
+      ),
+      GoRoute(
+        path: '/import/onboarding',
+        name: 'import-onboarding',
+        builder: (context, state) => const ImportOnboardingScreen(),
+    ),
+    GoRoute(
+      path: '/import/review',
+      name: 'import-review',
+      builder: (context, state) => PostImportReviewScreen(result: state.extra is ImportResult ? state.extra as ImportResult : null),
+    ),
+    GoRoute(
+      path: '/import/secrets',
+      name: 'import-secrets',
+      builder: (context, state) => ImportSecretsScreen(handoff: state.extra is ImportSecrecyHandoff ? state.extra as ImportSecrecyHandoff : null),
+      ),
+      GoRoute(
+        path: '/transactions/create',
+        name: 'create-transaction',
+        builder: (context, state) {
+          final q = state.uri.queryParameters;
+          final typeStr = q['type'] ?? 'expense';
+          final type = TransactionType.values.firstWhere(
+            (t) => t.name == typeStr,
+            orElse: () => TransactionType.expense,
+          );
+          // Этап 14 (ТЗ 6.3.11.7): предзаполнение из напоминания +
+          // авто-завершение напоминания после сохранения транзакции.
+          return CreateTransactionScreen(
+            type: type,
+            reminderId: q['reminder_id'],
+            dateIso: q['date'],
+          );
+        },
+      ),
+      GoRoute(
+        path: '/transactions/edit/:id',
+        name: 'edit-transaction',
+        builder: (context, state) {
+          final id = state.pathParameters['id'];
+          if (id == null || id.isEmpty) {
+            return const Scaffold(
+              body: Center(child: Text('ID транзакции не указан')),
+            );
+          }
+          return EditTransactionScreen(transactionId: id);
+        },
+      ),
+      GoRoute(
+        path: '/budget',
+        name: 'budget',
+        builder: (context, state) => const BudgetLimitsScreen(),
+      ),
+      GoRoute(
+        path: '/budget/create',
+        name: 'create-budget-limit',
+        builder: (context, state) => const EditBudgetLimitScreen(),
+      ),
+      GoRoute(
+        path: '/budget/edit/:id',
+        name: 'edit-budget-limit',
+        builder: (context, state) {
+          final id = state.pathParameters['id'];
+          if (id == null || id.isEmpty) {
+            return const Scaffold(
+              body: Center(child: Text('ID лимита не указан')),
+            );
+          }
+          return EditBudgetLimitScreen(limitId: id);
+        },
+      ),
+      GoRoute(
+        path: '/cashback',
+        name: 'cashback',
+        builder: (context, state) => const CashbackScreen(),
+      ),
+      // Этап 12: цели накопления
+      GoRoute(
+        path: '/savings-goals',
+        name: 'savings-goals',
+        builder: (context, state) => const SavingsGoalsScreen(),
+      ),
+      GoRoute(
+        path: '/savings-goals/archive',
+        name: 'savings-goals-archive',
+        builder: (context, state) => const SavingsGoalsScreen(
+          initialTab: SavingsGoalsTab.archive,
+        ),
+      ),
+      GoRoute(
+        path: '/savings-goals/create',
+        name: 'create-savings-goal',
+        builder: (context, state) {
+          final goalId = state.uri.queryParameters['id'];
+          return CreateSavingsGoalScreen(goalId: goalId);
+        },
+      ),
+      GoRoute(
+        path: '/savings-analytics',
+        name: 'savings-analytics',
+        builder: (context, state) => const SavingsAnalyticsScreen(),
+      ),
+      // Этап 14: напоминания
+      GoRoute(
+        path: '/reminders',
+        name: 'reminders',
+        builder: (context, state) => const RemindersScreen(),
+      ),
+      GoRoute(
+        path: '/reminders/create',
+        name: 'create-reminder',
+        builder: (context, state) {
+          final q = state.uri.queryParameters;
+          return CreateReminderScreen(
+            editReminderId: q['id'],
+            type: q['type'],
+            dateIso: q['date'],
+            copyFromReminderId: q['reminder_id'],
+          );
+        },
+      ),
+      GoRoute(
+        path: '/reminders/:id',
+        name: 'reminder-details',
+        builder: (context, state) => ReminderDetailsScreen(
+          reminderId: state.pathParameters['id']!,
+        ),
+      ),
+      // Этап 14: календарная группа
+      GoRoute(
+        path: '/calendar',
+        name: 'calendar',
+        builder: (context, state) => const CalendarScreen(),
+      ),
+      GoRoute(
+        path: '/calendar/day',
+        name: 'calendar-day',
+        builder: (context, state) => DayStatisticsScreen(
+          dateIso: state.uri.queryParameters['date'] ??
+              DateTime.now().toIso8601String(),
+        ),
+      ),
+      GoRoute(
+        path: '/calendar/forecast',
+        name: 'calendar-forecast',
+        builder: (context, state) => DateForecastScreen(
+          initialDateIso: state.uri.queryParameters['date'],
+        ),
+      ),
+      GoRoute(
+        path: '/calendar/holidays',
+        name: 'calendar-holidays',
+        builder: (context, state) => const HolidaysManagementScreen(),
+      ),
+      // Этап 14: детекция регулярных платежей
+      GoRoute(
+        path: '/recurring-payments-detection',
+        name: 'recurring-detection',
+        builder: (context, state) =>
+            const RecurringPaymentsDetectionScreen(),
+      ),
+    ],
+    redirect: (context, state) {
+      final location = state.uri.toString();
+      final isAppLocked = ref.read(appLockProvider);
+      final onboardingCompleted =
+          ref.read(onboardingStatusProvider) == 'completed';
+      if (isAppLocked && location != AppRoutes.lock) {
+        return AppRoutes.lock;
+      }
+      if (authStatus == AuthStatus.unauthenticated) {
+        if (!location.startsWith(AppRoutes.auth) &&
+            !location.startsWith(AppRoutes.invite)) {
+          return AppRoutes.auth;
+        }
+        return null;
+      }
+      if (authStatus == AuthStatus.authenticated) {
+        if (!onboardingCompleted &&
+            !location.startsWith(AppRoutes.onboarding) &&
+            !location.startsWith('/security/')) {
+          return AppRoutes.onboarding;
+        }
+        if (onboardingCompleted && location.startsWith(AppRoutes.auth)) {
+          return AppRoutes.home;
+        }
+      }
+      return null;
+    },
+  );
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\core\router\app_router.g.dart =====
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'app_router.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+
+@ProviderFor(AppLock)
+final appLockProvider = AppLockProvider._();
+
+final class AppLockProvider extends $NotifierProvider<AppLock, bool> {
+  AppLockProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appLockProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$appLockHash();
+
+  @$internal
+  @override
+  AppLock create() => AppLock();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$appLockHash() => r'd08f8dae5fd1c3f69b679f9bf413e41371f63070';
+
+abstract class _$AppLock extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(OnboardingStatus)
+final onboardingStatusProvider = OnboardingStatusProvider._();
+
+final class OnboardingStatusProvider
+    extends $NotifierProvider<OnboardingStatus, String> {
+  OnboardingStatusProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'onboardingStatusProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$onboardingStatusHash();
+
+  @$internal
+  @override
+  OnboardingStatus create() => OnboardingStatus();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$onboardingStatusHash() => r'0e6d4c0b37c3fe22f10aca3bae71bc46c86dcb1f';
+
+abstract class _$OnboardingStatus extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(CurrentSpaceId)
+final currentSpaceIdProvider = CurrentSpaceIdProvider._();
+
+final class CurrentSpaceIdProvider
+    extends $NotifierProvider<CurrentSpaceId, String?> {
+  CurrentSpaceIdProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'currentSpaceIdProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$currentSpaceIdHash();
+
+  @$internal
+  @override
+  CurrentSpaceId create() => CurrentSpaceId();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
+  }
+}
+
+String _$currentSpaceIdHash() => r'9c914131303fa6d32d88f56e1ef1ecb9a02ae0a5';
+
+abstract class _$CurrentSpaceId extends $Notifier<String?> {
+  String? build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<String?, String?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String?, String?>,
+              String?,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(PendingInviteToken)
+final pendingInviteTokenProvider = PendingInviteTokenProvider._();
+
+final class PendingInviteTokenProvider
+    extends $NotifierProvider<PendingInviteToken, String?> {
+  PendingInviteTokenProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'pendingInviteTokenProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$pendingInviteTokenHash();
+
+  @$internal
+  @override
+  PendingInviteToken create() => PendingInviteToken();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
+  }
+}
+
+String _$pendingInviteTokenHash() =>
+    r'fe24fadadc765d709551f2060c650946edccf49d';
+
+abstract class _$PendingInviteToken extends $Notifier<String?> {
+  String? build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<String?, String?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String?, String?>,
+              String?,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+@ProviderFor(appRouter)
+final appRouterProvider = AppRouterProvider._();
+
+final class AppRouterProvider
+    extends $FunctionalProvider<GoRouter, GoRouter, GoRouter>
+    with $Provider<GoRouter> {
+  AppRouterProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appRouterProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$appRouterHash();
+
+  @$internal
+  @override
+  $ProviderElement<GoRouter> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  GoRouter create(Ref ref) {
+    return appRouter(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(GoRouter value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<GoRouter>(value),
+    );
+  }
+}
+
+String _$appRouterHash() => r'99e814ac375fc1b8ec2315b2d6922889789bd12d';
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\import\presentation\providers\import_onboarding_notifier.dart =====
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/router/app_router.dart';
+import 'package:budget_assistant/core/theme/motion_tokens.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+import 'package:budget_assistant/features/import/domain/entities/column_mapping.dart';
+import 'package:budget_assistant/features/import/domain/entities/import_options.dart';
+import 'package:budget_assistant/features/import/domain/entities/import_result.dart';
+import 'package:budget_assistant/features/import/domain/entities/parsed_file.dart';
+import 'package:budget_assistant/features/import/domain/entities/parser_config.dart';
+import 'package:budget_assistant/features/import/domain/entities/preview_table_data.dart';
+import 'package:budget_assistant/features/import/domain/usecases/detect_bank_from_file_usecase.dart';
+import 'import_repository_providers.dart';
+import 'import_wizard_providers.dart';
+import 'package:budget_assistant/core/database/app_database.dart';
+import 'package:budget_assistant/features/import/data/seeds/default_parser_configs_seed.dart';
+
+/// Состояние wizard'а импорта (4 шага).
+class ImportOnboardingState {
+  const ImportOnboardingState({
+    this.step = 1,
+    this.filePath,
+    this.fileName,
+    this.fileSizeBytes,
+    this.fileFormat,
+    this.detectedBanks = const [],
+    this.selectedConfig,
+    this.customBankName,
+    this.accountsForBank = const [],
+    this.selectedAccountId,
+    this.parsedFile,
+    this.mapping,
+    this.scopeFamily = false,
+    this.targetAccountId,
+    this.options = const ImportOptions(),
+    this.isProcessing = false,
+    this.snackMessage,
+    this.draftBankName,
+  });
+
+  final int step;
+  
+  /// Шаг 1: файл
+  final String? filePath;
+  final String? fileName;
+  final int? fileSizeBytes;
+  final String? fileFormat;
+  
+  /// Шаг 2: детект банка
+  final List<DetectedBank> detectedBanks;
+  final ParserConfig? selectedConfig;
+  final String? customBankName;
+  
+  /// Счета для выбранного банка (из app_database.g.dart Account)
+  final List<dynamic> accountsForBank;
+  final String? selectedAccountId;
+  
+  /// Шаг 3: маппинг
+  final ParsedFile? parsedFile;
+  final ColumnMapping? mapping;
+  
+  /// Шаг 4: счёт
+  final bool scopeFamily;
+  final String? targetAccountId;
+  final ImportOptions options;
+  
+  final bool isProcessing;
+  final String? snackMessage;
+  final String? draftBankName;
+
+  bool get canNext {
+    switch (step) {
+      case 1:
+        return filePath != null;
+      case 2:
+        return (selectedConfig != null || customBankName != null) && 
+               selectedAccountId != null;
+      case 3:
+        return mapping != null && (parsedFile?.parseResult.rows.isNotEmpty ?? false);
+      default:
+        return targetAccountId != null;
+    }
+  }
+
+  ImportOnboardingState copyWith({
+    int? step,
+    String? filePath,
+    String? fileName,
+    int? fileSizeBytes,
+    String? fileFormat,
+    List<DetectedBank>? detectedBanks,
+    ParserConfig? selectedConfig,
+    String? customBankName,
+    List<dynamic>? accountsForBank,
+    String? selectedAccountId,
+    ParsedFile? parsedFile,
+    ColumnMapping? mapping,
+    bool? scopeFamily,
+    String? targetAccountId,
+    ImportOptions? options,
+    bool? isProcessing,
+    String? snackMessage,
+    String? draftBankName,
+    bool clearFile = false,
+    bool clearBank = false,
+    bool clearParsed = false,
+    bool clearDraft = false,
+    bool clearSnack = false,
+  }) {
+    return ImportOnboardingState(
+      step: step ?? this.step,
+      filePath: clearFile ? null : (filePath ?? this.filePath),
+      fileName: clearFile ? null : (fileName ?? this.fileName),
+      fileSizeBytes: clearFile ? null : (fileSizeBytes ?? this.fileSizeBytes),
+      fileFormat: clearFile ? null : (fileFormat ?? this.fileFormat),
+      detectedBanks: clearBank ? const [] : (detectedBanks ?? this.detectedBanks),
+      selectedConfig: clearBank ? null : (selectedConfig ?? this.selectedConfig),
+      customBankName: clearBank ? null : (customBankName ?? this.customBankName),
+      accountsForBank: accountsForBank ?? this.accountsForBank,
+      selectedAccountId: clearBank ? null : (selectedAccountId ?? this.selectedAccountId),
+      parsedFile: clearParsed ? null : (parsedFile ?? this.parsedFile),
+      mapping: clearParsed ? null : (mapping ?? this.mapping),
+      scopeFamily: scopeFamily ?? this.scopeFamily,
+      targetAccountId: targetAccountId ?? this.targetAccountId,
+      options: options ?? this.options,
+      isProcessing: isProcessing ?? this.isProcessing,
+      snackMessage: clearSnack ? null : (snackMessage ?? this.snackMessage),
+      draftBankName: clearDraft ? null : (draftBankName ?? this.draftBankName),
+    );
+  }
+}
+
+/// Notifier wizard'а: шаги, файл, автодетект банка, маппинг, автосейв.
+class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
+  Timer? _saveTimer;
+  Timer? _reparseTimer;
+  bool _disposed = false;
+
+  @override
+  ImportOnboardingState build() {
+    ref.onDispose(() {
+      _disposed = true;
+      _saveTimer?.cancel();
+      _reparseTimer?.cancel();
+    });
+    Future.microtask(_cleanOldDrafts);
+    Future.microtask(_ensureBankConfigs);
+    return const ImportOnboardingState();
+  }
+
+  /// Идемпотентно доводит сиды банков (Альфа v2, ВТБ, Ozon) даже если
+  /// стартовый вызов сида был ограничен пустой таблицей.
+  Future<void> _ensureBankConfigs() async {
+    try {
+      await DefaultParserConfigsSeed.seedIfEmpty(AppDatabase());
+    } catch (_) {}
+  }
+
+  // === Навигация по шагам ===
+
+  void next() {
+    if (!state.canNext) return;
+    MotionTokens.selection();
+    
+    // При переходе на шаг 4 копируем выбранный счёт
+    if (state.step == 3) {
+      state = state.copyWith(
+        step: 4,
+        targetAccountId: state.selectedAccountId,
+      );
+    } else {
+      state = state.copyWith(step: state.step + 1);
+    }
+    
+    _scheduleSave();
+  }
+
+  void back() {
+    if (state.step == 1) return;
+    MotionTokens.light();
+    state = state.copyWith(step: state.step - 1);
+  }
+
+  void clearSnack() => state = state.copyWith(clearSnack: true);
+
+  // === STEP 1: Загрузка файла ===
+
+  Future<void> pickFile() async {
+    MotionTokens.medium();
+    state = state.copyWith(isProcessing: true, clearSnack: true);
+    try {
+      final res = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const ['csv', 'xlsx', 'pdf'],
+      );
+      final path = res?.files.single.path;
+      if (path == null) {
+        state = state.copyWith(isProcessing: false);
+        return;
+      }
+      final file = File(path);
+      final size = await file.length();
+      final ext = path.split('.').last.toLowerCase();
+      state = state.copyWith(
+        isProcessing: false,
+        filePath: path,
+        fileName: path.split(Platform.pathSeparator).last,
+        fileSizeBytes: size,
+        fileFormat: ext,
+        clearBank: true,
+        clearParsed: true,
+      );
+      await _detectBank(path);
+    } catch (e) {
+      state = state.copyWith(
+        isProcessing: false,
+        snackMessage: 'Ошибка загрузки файла',
+      );
+    }
+  }
+
+  Future<void> _detectBank(String filePath) async {
+    try {
+      final configs = await ref.read(parserConfigsListProvider.future);
+      final useCase = DetectBankFromFileUseCase(logger: ref.read(_loggerProvider));
+      final detected = await useCase.call(filePath: filePath, configs: configs);
+      if (!_disposed) {
+        state = state.copyWith(detectedBanks: detected);
+        if (detected.isNotEmpty && detected.first.confidence >= 0.7) {
+          final config = configs.firstWhere(
+            (c) => c.bankCode == detected.first.bankCode,
+            orElse: () => configs.first,
+          );
+          state = state.copyWith(selectedConfig: config);
+          await _loadAccountsForBank(config.bankName);
+        }
+      }
+    } catch (e) {
+      if (!_disposed) {
+        state = state.copyWith(snackMessage: 'Не удалось определить банк');
+      }
+    }
+  }
+
+  // === STEP 2: Выбор банка и счёта ===
+
+  void selectDetectedBank(String bankCode) {
+    MotionTokens.selection();
+    final configs = ref.read(parserConfigsListProvider).value ?? [];
+    final config = configs.firstWhere(
+      (c) => c.bankCode == bankCode,
+      orElse: () => configs.first,
+    );
+    state = state.copyWith(
+      selectedConfig: config,
+      customBankName: null,
+    );
+    _loadAccountsForBank(config.bankName);
+    _scheduleSave();
+  }
+
+  Future<void> _loadAccountsForBank(String bankName) async {
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      final spaceId = state.scopeFamily ? ref.read(currentSpaceIdProvider) : null;
+      final allAccounts = await ref.read(
+        importTargetAccountsProvider((userId, spaceId, state.scopeFamily)).future,
+      );
+      final filtered = allAccounts
+          .where((a) => a.bankName == bankName)
+          .toList();
+      if (!_disposed) {
+        state = state.copyWith(accountsForBank: filtered);
+      }
+    } catch (e) {
+      if (!_disposed) {
+        state = state.copyWith(accountsForBank: const []);
+      }
+    }
+  }
+
+  void selectAccount(String accountId) {
+    MotionTokens.selection();
+    state = state.copyWith(selectedAccountId: accountId);
+    _scheduleSave();
+  }
+
+  Future<void> createNewAccount({
+    required String accountName,
+    required String accountType,
+    required String currency,
+    int initialBalance = 0,
+  }) async {
+    MotionTokens.medium();
+    state = state.copyWith(isProcessing: true);
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      final spaceId = state.scopeFamily ? ref.read(currentSpaceIdProvider) : null;
+      final bankName = state.selectedConfig?.bankName ?? state.customBankName ?? 'Другой банк';
+      
+      final result = await ref.read(importRepositoryProvider).createAccount(
+        name: accountName,
+        type: accountType,
+        currency: currency,
+        initialBalance: initialBalance,
+        userId: userId,
+        spaceId: spaceId,
+        bankName: bankName,
+      );
+      
+      if (!_disposed) {
+        ref.invalidate(importTargetAccountsProvider((userId, spaceId, state.scopeFamily)));
+        await _loadAccountsForBank(bankName);
+        state = state.copyWith(
+          isProcessing: false,
+          selectedAccountId: result['id'] as String,
+          snackMessage: 'Счёт "$accountName" создан',
+        );
+      }
+    } catch (e) {
+      if (!_disposed) {
+        state = state.copyWith(
+          isProcessing: false,
+          snackMessage: 'Ошибка создания счёта',
+        );
+      }
+    }
+  }
+
+  void setCustomBankName(String name) {
+    MotionTokens.selection();
+    state = state.copyWith(
+      customBankName: name,
+      selectedConfig: null,
+      accountsForBank: const [],
+      selectedAccountId: null,
+    );
+    _scheduleSave();
+  }
+
+  Future<void> createNewBank({
+    required String bankName,
+    required String bankCode,
+    required List<String> formats,
+    String? instructionText,
+    String? brandColor,
+  }) async {
+    MotionTokens.medium();
+    state = state.copyWith(isProcessing: true);
+    try {
+      final config = ParserConfig(
+        id: 'pc_${DateTime.now().millisecondsSinceEpoch}',
+        bankName: bankName,
+        bankCode: bankCode,
+        isPopular: false,
+        usageCount: 0,
+        supportedFormats: formats,
+        configJson: jsonEncode({
+          'csv': {
+            'encoding': 'UTF-8',
+            'separator': ';',
+            'skip_rows': 0,
+            'date_format': 'dd.MM.yyyy',
+          },
+        }),
+        instructionText: instructionText,
+        brandColor: brandColor,
+        detectionPatterns: jsonEncode({
+          'keywords': [bankName.toLowerCase()],
+          'headers': [],
+        }),
+        version: 1,
+        createdAt: DateTime.now().toUtc(),
+        updatedAt: DateTime.now().toUtc(),
+      );
+
+      await ref.read(importRepositoryProvider).createParserConfig(config);
+      
+      if (!_disposed) {
+        ref.invalidate(parserConfigsListProvider);
+        state = state.copyWith(
+          isProcessing: false,
+          selectedConfig: config,
+          customBankName: null,
+          accountsForBank: const [],
+          selectedAccountId: null,
+          snackMessage: 'Банк "$bankName" добавлен',
+        );
+      }
+    } catch (e) {
+      if (!_disposed) {
+        state = state.copyWith(
+          isProcessing: false,
+          snackMessage: 'Ошибка создания банка',
+        );
+      }
+    }
+  }
+
+  // === STEP 3: Маппинг ===
+
+  Future<void> parseFileWithConfig() async {
+    final config = state.selectedConfig;
+    if (config == null || state.filePath == null) return;
+    
+    MotionTokens.medium();
+    state = state.copyWith(isProcessing: true);
+    
+    try {
+      final useCase = ref.read(parseImportFileUseCaseProvider);
+      final outcome = await useCase.call(
+        sourcePath: state.filePath!,
+        config: config,
+      );
+
+      if (outcome.isSuccess && outcome.file != null) {
+        if (!_disposed) {
+          state = state.copyWith(
+            isProcessing: false,
+            parsedFile: outcome.file,
+            mapping: outcome.file!.detectedMapping,
+            snackMessage: outcome.file!.detectionConfidence >= 0.8
+                ? 'Колонки определены автоматически'
+                : 'Проверьте маппинг колонок',
+          );
+          _scheduleSave();
+        }
+      } else {
+        if (!_disposed) {
+          MotionTokens.error();
+          state = state.copyWith(
+            isProcessing: false,
+            snackMessage: 'Не удалось распарсить файл',
+          );
+        }
+      }
+    } catch (e) {
+      if (!_disposed) {
+        state = state.copyWith(
+          isProcessing: false,
+          snackMessage: 'Ошибка парсинга',
+        );
+      }
+    }
+  }
+
+  void updateMapping(ColumnMapping mapping) {
+    state = state.copyWith(mapping: mapping);
+    _reparseTimer?.cancel();
+    _reparseTimer = Timer(const Duration(milliseconds: 500), _reparse);
+    _scheduleSave();
+  }
+
+  Future<void> _reparse() async {
+    final file = state.parsedFile;
+    final mapping = state.mapping;
+    final config = state.selectedConfig;
+    if (file == null || mapping == null || config == null) return;
+    
+    final result = await ref.read(parseImportFileUseCaseProvider).reparse(
+      storedPath: file.storedPath,
+      format: file.format,
+      configJson: config.configJson,
+      mapping: mapping,
+    );
+    
+    if (!_disposed) {
+      state = state.copyWith(
+        parsedFile: ParsedFile(
+          storedPath: file.storedPath,
+          fileName: file.fileName,
+          fileSizeBytes: file.fileSizeBytes,
+          format: file.format,
+          rawRows: result.rawRows.isEmpty ? file.rawRows : result.rawRows,
+          detectedMapping: state.mapping ?? file.detectedMapping,
+          detectionConfidence: file.detectionConfidence,
+          parseResult: result,
+        ),
+      );
+      _scheduleSave();
+    }
+  }
+
+  PreviewTableData previewTable() {
+    final file = state.parsedFile;
+    if (file == null) return const PreviewTableData(columnLabels: [], rows: []);
+    return ref.read(previewImportDataUseCaseProvider).call(file.rawRows);
+  }
+
+  // === STEP 4: Счёт + опции ===
+
+  void setScopeFamily(bool family) {
+    MotionTokens.selection();
+    state = state.copyWith(scopeFamily: family, targetAccountId: null);
+    _scheduleSave();
+  }
+
+  void setTargetAccount(String id) {
+    MotionTokens.selection();
+    state = state.copyWith(targetAccountId: id);
+    _scheduleSave();
+  }
+
+  void setOptions(ImportOptions options) {
+    state = state.copyWith(options: options);
+    _scheduleSave();
+  }
+
+  Future<ImportResult?> launchImport() async {
+    final config = state.selectedConfig;
+    final mapping = state.mapping;
+    final file = state.parsedFile;
+    final accountId = state.targetAccountId;
+    
+    if (config == null || mapping == null || file == null || accountId == null) {
+      return null;
+    }
+    
+    MotionTokens.medium();
+    state = state.copyWith(isProcessing: true);
+    
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      final spaceId = state.scopeFamily ? ref.read(currentSpaceIdProvider) : null;
+      
+      final result = await ref.read(importTransactionsUseCaseProvider).call(
+        storedPath: file.storedPath,
+        format: file.format,
+        config: config,
+        mapping: mapping,
+        targetAccountId: accountId,
+        targetSpaceId: spaceId,
+        userId: userId,
+        options: state.options,
+      );
+
+      if (result != null) {
+        await ref.read(importRepositoryProvider).incrementParserUsage(config.id);
+        await ref.read(importRepositoryProvider).deleteImportDraft(userId);
+        MotionTokens.heavy();
+      } else {
+        MotionTokens.error();
+      }
+      return result;
+    } catch (_) {
+      MotionTokens.error();
+      return null;
+    } finally {
+      if (!_disposed) state = state.copyWith(isProcessing: false);
+    }
+  }
+
+  // === Черновик ===
+
+  void _scheduleSave() {
+    _saveTimer?.cancel();
+    _saveTimer = Timer(const Duration(seconds: 5), _saveDraft);
+  }
+
+  Future<void> _saveDraft() async {
+    final config = state.selectedConfig;
+    final file = state.filePath;
+    if (config == null || file == null) return;
+    
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      final mapping = state.mapping;
+      
+      await ref.read(importRepositoryProvider).saveImportDraft(
+        userId: userId,
+        bankName: config.bankName,
+        filePath: file,
+        wizardStateJson: jsonEncode({
+          'step': state.step,
+          'scopeFamily': state.scopeFamily,
+          'targetAccountId': state.targetAccountId,
+          'fileFormat': state.fileFormat,
+          'bankCode': config.bankCode,
+          'options': [
+            state.options.detectDuplicates,
+            state.options.detectTransfers,
+            state.options.checkSecrecy,
+            state.options.autoCategorize,
+            state.options.detectRecurring,
+          ],
+        }),
+        mappingJson: mapping == null ? null : jsonEncode({
+          'date': mapping.dateColumnIndex,
+          'amount': mapping.amountColumnIndex,
+          'merchant': mapping.merchantColumnIndex,
+          'category': mapping.categoryColumnIndex,
+          'comment': mapping.commentColumnIndex,
+          'currency': mapping.currencyColumnIndex,
+          'dateFormat': mapping.dateFormat,
+          'sep': mapping.csvSeparator,
+          'enc': mapping.encoding,
+          'skip': mapping.skipRows,
+          'neg': mapping.expenseIsNegative,
+        }),
+      );
+    } catch (_) {}
+  }
+
+  Future<void> _cleanOldDrafts() async {
+    try {
+      final cutoff = DateTime.now().toUtc().subtract(const Duration(days: 7));
+      await ref.read(importDraftsDaoProvider).deleteOlderThan(cutoff);
+    } catch (_) {}
+  }
+}
+
+final importOnboardingProvider =
+    NotifierProvider<ImportOnboardingNotifier, ImportOnboardingState>(
+        ImportOnboardingNotifier.new);
+
+final _loggerProvider = Provider<Logger>((ref) {
+  return Logger(printer: PrettyPrinter(methodCount: 2));
+});
+
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\import\presentation\providers\post_import_review_notifier.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/core/theme/motion_tokens.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+import 'package:budget_assistant/features/import/domain/entities/category_suggestion.dart';
+import 'package:budget_assistant/features/import/domain/entities/duplicate_candidate.dart';
+import 'package:budget_assistant/features/import/domain/entities/finalize_outcome.dart';
+import 'package:budget_assistant/features/import/domain/entities/hold_confirmation_candidate.dart';
+import 'package:budget_assistant/features/import/domain/entities/import_result.dart';
+import 'package:budget_assistant/features/import/domain/entities/parsed_row.dart';
+import 'package:budget_assistant/features/import/domain/entities/transfer_candidate.dart';
+import 'import_usecase_providers.dart';
+
+/// Состояние экрана проверки импорта.
+class PostImportReviewState {
+  const PostImportReviewState({
+    this.result,
+    this.selectedRows = const {},
+    this.duplicates = const [],
+    this.transfers = const [],
+    this.holds = const [],
+    this.rows = const [],
+    this.suggestions = const {},
+    this.suggestionsLoading = false,
+    this.activeTab = 3,
+    this.isFinalizing = false,
+  });
+
+  final ImportResult? result;
+  final Set<int> selectedRows;
+  final List<DuplicateCandidate> duplicates;
+  final List<TransferCandidate> transfers;
+  final List<HoldConfirmationCandidate> holds;
+  final List<ParsedRow> rows;
+  final Map<int, CategorySuggestion?> suggestions;
+  final bool suggestionsLoading;
+
+  /// 0 дубли, 1 переводы, 2 hold, 3 категории (дефолт).
+  final int activeTab;
+  final bool isFinalizing;
+
+  PostImportReviewState copyWith({
+    ImportResult? result,
+    Set<int>? selectedRows,
+    List<DuplicateCandidate>? duplicates,
+    List<TransferCandidate>? transfers,
+    List<HoldConfirmationCandidate>? holds,
+    List<ParsedRow>? rows,
+    Map<int, CategorySuggestion?>? suggestions,
+    bool? suggestionsLoading,
+    int? activeTab,
+    bool? isFinalizing,
+  }) {
+    return PostImportReviewState(
+      result: result ?? this.result,
+      selectedRows: selectedRows ?? this.selectedRows,
+      duplicates: duplicates ?? this.duplicates,
+      transfers: transfers ?? this.transfers,
+      holds: holds ?? this.holds,
+      rows: rows ?? this.rows,
+      suggestions: suggestions ?? this.suggestions,
+      suggestionsLoading: suggestionsLoading ?? this.suggestionsLoading,
+      activeTab: activeTab ?? this.activeTab,
+      isFinalizing: isFinalizing ?? this.isFinalizing,
+    );
+  }
+}
+
+class PostImportReviewNotifier extends Notifier<PostImportReviewState> {
+  bool _disposed = false;
+
+  @override
+  PostImportReviewState build() {
+    ref.onDispose(() => _disposed = true);
+    return const PostImportReviewState();
+  }
+
+  void init(ImportResult result) {
+    state = PostImportReviewState(
+      result: result,
+      selectedRows: result.rows.map((r) => r.rowIndex).toSet(),
+      duplicates: result.duplicates,
+      transfers: result.transfers,
+      holds: result.holdConfirmations,
+      rows: result.rows,
+    );
+    _loadSuggestions();
+  }
+
+  Future<void> _loadSuggestions() async {
+    final r = state.result;
+    if (r == null) return;
+    state = state.copyWith(suggestionsLoading: true);
+    try {
+      final useCase = ref.read(autoCategorizeUseCaseProvider);
+      final userId = ref.read(currentUserIdProvider);
+      final map = <int, CategorySuggestion?>{};
+      for (final row in r.rows) {
+        if (row.assignedCategoryId != null) continue;
+        map[row.rowIndex] = await useCase.suggestFor(
+          merchantName: row.merchantName,
+          bankCategory: row.bankCategory,
+          userId: userId,
+          spaceId: r.targetSpaceId,
+        );
+      }
+      if (!_disposed) {
+        state = state.copyWith(suggestions: map, suggestionsLoading: false);
+      }
+    } catch (_) {
+      if (!_disposed) state = state.copyWith(suggestionsLoading: false);
+    }
+  }
+
+  void setTab(int tab) {
+    MotionTokens.selection();
+    state = state.copyWith(activeTab: tab);
+  }
+
+  void toggleRow(int rowIndex, bool value) {
+    MotionTokens.selection();
+    final next = Set<int>.of(state.selectedRows);
+    if (value) {
+      next.add(rowIndex);
+    } else {
+      next.remove(rowIndex);
+    }
+    state = state.copyWith(selectedRows: next);
+  }
+
+  void setDaySelected(List<int> indices, bool value) {
+    MotionTokens.selection();
+    final next = Set<int>.of(state.selectedRows);
+    for (final i in indices) {
+      if (value) {
+        next.add(i);
+      } else {
+        next.remove(i);
+      }
+    }
+    state = state.copyWith(selectedRows: next);
+  }
+
+  void setCategory(int rowIndex, String? categoryId) {
+    MotionTokens.selection();
+    state = state.copyWith(rows: _mapRow(rowIndex, (r) => r.copyWith(assignedCategoryId: categoryId)));
+  }
+
+  void applySuggestion(int rowIndex) {
+    final s = state.suggestions[rowIndex];
+    if (s == null) return;
+    MotionTokens.light();
+    setCategory(rowIndex, s.categoryId);
+  }
+
+  void applyAllSuggestions() {
+    MotionTokens.medium();
+    var rows = state.rows;
+    for (final entry in state.suggestions.entries) {
+      final s = entry.value;
+      if (s == null || s.confidence < 0.7) continue;
+      final idx = entry.key;
+      rows = [
+        for (final r in rows)
+          if (r.rowIndex == idx && r.assignedCategoryId == null)
+            r.copyWith(assignedCategoryId: s.categoryId)
+          else
+            r
+      ];
+    }
+    state = state.copyWith(rows: rows);
+  }
+
+  void setDuplicateAction(String id, DuplicateAction action) {
+    MotionTokens.selection();
+    state = state.copyWith(duplicates: [
+      for (final d in state.duplicates)
+        if (d.id == id) d.copyWith(selectedAction: action) else d
+    ]);
+  }
+
+  void skipAllDuplicates() {
+    MotionTokens.medium();
+    state = state.copyWith(duplicates: [
+      for (final d in state.duplicates)
+        d.copyWith(selectedAction: DuplicateAction.skip)
+    ]);
+  }
+
+  void setTransferAction(String id, TransferAction action) {
+    MotionTokens.selection();
+    state = state.copyWith(transfers: [
+      for (final t in state.transfers)
+        if (t.id == id) t.copyWith(selectedAction: action) else t
+    ]);
+  }
+
+  void mergeAllTransfers() {
+    MotionTokens.medium();
+    state = state.copyWith(transfers: [
+      for (final t in state.transfers)
+        t.copyWith(selectedAction: TransferAction.merge)
+    ]);
+  }
+
+  void setHoldAction(String id, HoldAction action) {
+    MotionTokens.selection();
+    state = state.copyWith(holds: [
+      for (final h in state.holds)
+        if (h.id == id) h.copyWith(selectedAction: action) else h
+    ]);
+  }
+
+  List<ParsedRow> _mapRow(int rowIndex, ParsedRow Function(ParsedRow) f) {
+    return [for (final r in state.rows) if (r.rowIndex == rowIndex) f(r) else r];
+  }
+
+  /// Группировка строк по дням (UTC-дата), сортировка по убыванию.
+  List<MapEntry<DateTime, List<ParsedRow>>> dayGroups() {
+    final map = <DateTime, List<ParsedRow>>{};
+    for (final row in state.rows) {
+      final d = DateTime(row.date.year, row.date.month, row.date.day);
+      (map[d] ??= []).add(row);
+    }
+    final keys = map.keys.toList()..sort((a, b) => b.compareTo(a));
+    return [for (final k in keys) MapEntry(k, map[k]!)];
+  }
+
+  ({int count, int totalKopecks}) summary() {
+    var count = 0;
+    var total = 0;
+    for (final row in state.rows) {
+      if (!state.selectedRows.contains(row.rowIndex)) continue;
+      count++;
+      total += row.amountKopecks;
+    }
+    return (count: count, totalKopecks: total);
+  }
+
+  int get uncategorizedCount {
+    var n = 0;
+    for (final row in state.rows) {
+      if (row.assignedCategoryId == null) n++;
+    }
+    return n;
+  }
+
+  Future<FinalizeOutcome?> finalize() async {
+    final r = state.result;
+    if (r == null) return null;
+    MotionTokens.light();
+    state = state.copyWith(isFinalizing: true);
+    try {
+      final userId = ref.read(currentUserIdProvider);
+      return await ref.read(finalizeImportUseCaseProvider).call(
+            importResult: r.copyWith(
+              rows: state.rows,
+              duplicates: state.duplicates,
+              transfers: state.transfers,
+              holdConfirmations: state.holds,
+            ),
+            userId: userId,
+            selectedRowIndices: state.selectedRows,
+          );
+    } catch (_) {
+      MotionTokens.error();
+      return null;
+    } finally {
+      if (!_disposed) state = state.copyWith(isFinalizing: false);
+    }
+  }
+}
+
+final postImportReviewProvider =
+    NotifierProvider<PostImportReviewNotifier, PostImportReviewState>(
+        PostImportReviewNotifier.new);
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\import\presentation\providers\post_import_review_providers.dart =====
+import 'package:drift/drift.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/core/database/app_database.dart';
+import 'package:budget_assistant/core/database/database_provider.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+
+/// Категории расхода для dropdown (Drift в провайдере, не в UI).
+final reviewCategoriesProvider = FutureProvider<List<Category>>((ref) async {
+  final db = ref.watch(appDatabaseProvider);
+  final userId = ref.watch(currentUserIdProvider);
+  return (db.select(db.categories)
+        ..where((c) => c.userId.equals(userId) & c.type.equals('expense'))
+        ..orderBy([(c) => OrderingTerm.asc(c.sortOrder)]))
+      .get();
+});
+
+/// Целевой счёт импорта (для баннера).
+final reviewTargetAccountProvider =
+    FutureProvider.family<Account?, String>((ref, accountId) async {
+  final db = ref.watch(appDatabaseProvider);
+  return (db.select(db.accounts)
+        ..where((a) => a.id.equals(accountId)))
+      .getSingleOrNull();
+});
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\import\presentation\screens\post_import_review_screen.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:budget_assistant/core/theme/app_colors.dart';
+import 'package:budget_assistant/core/theme/motion_tokens.dart';
+import 'package:budget_assistant/core/widgets/empty_state_widget.dart';
+import 'package:budget_assistant/features/import/domain/entities/import_result.dart';
+import 'package:budget_assistant/features/import/domain/entities/import_secrecy_handoff.dart';
+import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+import '../providers/post_import_review_notifier.dart';
+import '../providers/import_usecase_providers.dart';
+import 'package:budget_assistant/features/recurring_payments/presentation/providers/recurring_detection_providers.dart';
+import '../widgets/import_summary_banner.dart';
+import '../widgets/smart_detection_tabs.dart';
+import '../widgets/duplicates_tab.dart';
+import '../widgets/transfers_tab.dart';
+import '../widgets/hold_tab.dart';
+import '../widgets/categories_tab.dart';
+import '../widgets/selected_summary.dart';
+
+/// Экран проверки импорта (ТЗ 6.3.26).
+class PostImportReviewScreen extends ConsumerStatefulWidget {
+  const PostImportReviewScreen({super.key, this.result});
+
+  final ImportResult? result;
+
+  @override
+  ConsumerState<PostImportReviewScreen> createState() =>
+      _PostImportReviewScreenState();
+}
+
+class _PostImportReviewScreenState
+    extends ConsumerState<PostImportReviewScreen> {
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.result != null) {
+      _initialized = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(postImportReviewProvider.notifier).init(widget.result!);
+      });
+    }
+  }
+
+  Future<void> _confirmCancel() async {
+    MotionTokens.medium();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Отменить импорт?'),
+        content: const Text(
+            'Все распознанные данные будут потеряны'),
+        actions: [
+          TextButton(
+              onPressed: () => ctx.pop(false), child: const Text('Нет')),
+          FilledButton(
+              onPressed: () => ctx.pop(true), child: const Text('Да')),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) context.pop();
+  }
+
+  Future<void> _finalize() async {
+    final notifier = ref.read(postImportReviewProvider.notifier);
+    final state = ref.read(postImportReviewProvider);
+    final userId = ref.read(currentUserIdProvider);
+
+    if (notifier.summary().count == 0) {
+      MotionTokens.error();
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Выберите хотя бы одну транзакцию')));
+      return;
+    }
+
+    // Категории: предупреждение о невыбранных.
+    final uncategorizedSelected = state.rows
+        .where((r) =>
+            state.selectedRows.contains(r.rowIndex) &&
+            r.assignedCategoryId == null)
+        .length;
+    if (uncategorizedSelected > 0) {
+      final proceed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Импортировать без категории?'),
+          content: Text(
+              '$uncategorizedSelected выбранных транзакций без категории. '
+              'Их можно категоризировать позже.'),
+          actions: [
+            TextButton(
+                onPressed: () => ctx.pop(false),
+                child: const Text('Назад')),
+            FilledButton(
+                onPressed: () => ctx.pop(true),
+                child: const Text('Импортировать')),
+          ],
+        ),
+      );
+      if (proceed != true || !mounted) return;
+    }
+
+    final outcome = await notifier.finalize();
+    if (outcome == null || !mounted) {
+      if (mounted) {
+        MotionTokens.error();
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Не удалось завершить импорт')));
+      }
+      return;
+    }
+
+    MotionTokens.heavy();
+    final result = state.result!;
+
+    // Проверка секретности на созданных транзакциях.
+    if (result.options.checkSecrecy && outcome.created.isNotEmpty) {
+      try {
+        final userId = ref.read(currentUserIdProvider);
+        final candidates =
+            await ref.read(checkSecrecyModeUseCaseProvider).call(
+                  transactions: outcome.created.map((c) => c.row).toList(),
+                  targetSpaceId: result.targetSpaceId,
+                  userId: userId,
+                );
+        if (candidates.isNotEmpty && mounted) {
+          await context.push(
+            '/import/secrets',
+            extra: ImportSecrecyHandoff(
+              candidates: candidates,
+              transactionIdByRowIndex: {
+                for (final c in outcome.created) c.row.rowIndex: c.id
+              },
+            ),
+          );
+          return;
+        }
+      } catch (_) {}
+    }
+
+    if (!mounted) return;
+    final periodDays = result.periodEnd.difference(result.periodStart).inDays;
+    // Этап 15.6: автодетект регулярных (долг Этапа 14):
+    // опция wizard + период >= 6 мес + app_settings.autoDetectRecurring.
+    var recurringTouched = 0;
+    if (result.options.detectRecurring && periodDays >= 180) {
+      try {
+        final autoOn = await ref.read(autoDetectEnabledProvider.future);
+        if (autoOn) {
+          recurringTouched = await ref
+              .read(detectRecurringPaymentsUseCaseProvider)
+              .call(userId: userId, spaceId: result.targetSpaceId);
+        }
+      } catch (_) {}
+    }
+    if (!mounted) return;
+    context.go('/transactions');
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(SnackBar(
+      content: Text('Импортировано ${outcome.created.length} транзакций${recurringTouched > 0 ? '. Регулярных кандидатов: $recurringTouched' : ''}'),
+      action: (result.options.detectRecurring && periodDays >= 180)
+          ? SnackBarAction(
+              label: 'Проверить регулярные',
+              onPressed: () =>
+                  context.push('/recurring-payments-detection'),
+            )
+          : null,
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(postImportReviewProvider);
+    final result = state.result;
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _confirmCancel();
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.surfaceBackground,
+        appBar: AppBar(
+          backgroundColor: AppColors.surfaceBackground,
+          title: const Text('Проверка импорта'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: _confirmCancel,
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.visibility_outlined),
+              onPressed: () {
+                MotionTokens.light();
+                ref.read(privacyModeProvider.notifier).toggle();
+              },
+            ),
+          ],
+        ),
+        body: result == null || !_initialized
+            ? EmptyStateWidget(
+                icon: Icons.file_open_outlined,
+                title: 'Нет данных импорта',
+                subtitle: 'Вернитесь к мастеру импорта и загрузите файл',
+                primaryAction: EmptyStateAction(
+                    label: 'Назад', onPressed: () => context.pop()),
+              )
+            : Column(
+                children: [
+                  ImportSummaryBanner(
+                    bankName: result.bankName,
+                    fileName: result.fileName,
+                    totalRows: result.totalRows,
+                    periodStart: result.periodStart,
+                    periodEnd: result.periodEnd,
+                    targetAccountId: result.targetAccountId,
+                  ),
+                  const SmartDetectionTabs(),
+                  Expanded(
+                    child: switch (state.activeTab) {
+                      0 => const DuplicatesTab(),
+                      1 => const TransfersTab(),
+                      2 => const HoldTab(),
+                      _ => const CategoriesTab(),
+                    },
+                  ),
+                  SelectedSummary(totalCount: result.rows.length),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        OutlinedButton(
+                          onPressed: state.isFinalizing
+                              ? null
+                              : _confirmCancel,
+                          child: const Text('Отмена'),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton(
+                            style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.colorFAB),
+                            onPressed: state.isFinalizing
+                                ? null
+                                : _finalize,
+                            child: state.isFinalizing
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white),
+                                  )
+                                : const Text('Импортировать выбранные'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\providers\create_transaction_providers.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/database/app_database.dart';
+import 'package:budget_assistant/core/ports/clock_port.dart';
+import 'package:budget_assistant/core/services/elapsed_realtime_service.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+import 'package:budget_assistant/features/accounts/presentation/providers/account_providers.dart';
+import 'package:budget_assistant/features/savings_goals/presentation/providers/savings_goal_port_providers.dart';
+import 'package:budget_assistant/features/transactions/domain/models/transaction.dart';
+import 'package:budget_assistant/features/transactions/domain/models/transaction_split.dart';
+import '../../data/repositories/transactions_repository_impl.dart';
+import '../../domain/repositories/transactions_repository.dart';
+import '../../domain/usecases/create_transaction_usecase.dart';
+import '../../domain/usecases/update_transaction_usecase.dart';
+
+/// Общий экземпляр Logger для провайдеров фичи.
+final Logger _logger = Logger();
+
+/// Реальный репозиторий транзакций (Drift, Этап 6).
+final transactionsRepositoryProvider = Provider<TransactionsRepository>((ref) {
+  return TransactionsRepositoryImpl(db: AppDatabase(), logger: _logger);
+});
+
+/// Боевая реализация монотонных часов через platform channel.
+final elapsedRealtimeServiceProvider = Provider<ClockPort>(
+  (ref) => ElapsedRealtimeService(),
+);
+
+/// UseCase создания транзакции (Этап 6).
+///
+/// Этап 12: передаётся порт прогресса целей накопления — при
+/// создании транзакции с savings_goal_id обновляется current_amount цели.
+final createTransactionUseCaseProvider = Provider<CreateTransactionUseCase>(
+  (ref) => CreateTransactionUseCase(
+    repository: ref.watch(transactionsRepositoryProvider),
+    logger: _logger,
+    clock: ref.watch(elapsedRealtimeServiceProvider),
+    savingsGoalProgressPort: ref.watch(savingsGoalProgressPortProvider),
+  ),
+);
+
+/// UseCase обновления транзакции (Этап 7+).
+final updateTransactionUseCaseProvider = Provider<UpdateTransactionUseCase>(
+  (ref) => UpdateTransactionUseCase(
+    repository: ref.watch(transactionsRepositoryProvider),
+    logger: _logger,
+    clock: ref.watch(elapsedRealtimeServiceProvider),
+  ),
+);
+
+/// Id текущего пользователя для формы создания/редактирования.
+final currentUserIdForCreateProvider = Provider<String>(
+  (ref) => ref.watch(currentUserIdProvider),
+);
+
+/// Этап 10: карта id счёта -> код валюты счёта.
+/// Нужна формам создания/редактирования для мультивалютного ввода
+/// и предпросмотра конвертации.
+final accountCurrencyMapProvider = FutureProvider<Map<String, String>>((ref) async {
+  final repo = ref.watch(accountRepositoryProvider);
+  final userId = ref.watch(currentUserIdForCreateProvider);
+  final accounts = await repo.getAccountsByUserId(userId);
+  return {for (final a in accounts) a.id: a.currency};
+});
+
+/// Загрузка транзакции по ID для экрана редактирования.
+final editTransactionProvider = FutureProvider.autoDispose
+    .family<Transaction?, String>((ref, id) async {
+  final repo = ref.watch(transactionsRepositoryProvider);
+  try {
+    return await repo.getTransactionById(id);
+  } catch (_) {
+    return null;
+  }
+});
+
+/// Загрузка сплитов транзакции для экрана редактирования.
+final editTransactionSplitsProvider = FutureProvider.autoDispose
+    .family<List<TransactionSplit>, String>((ref, id) async {
+  final repo = ref.watch(transactionsRepositoryProvider);
+  try {
+    return await repo.getSplitsForTransaction(id);
+  } catch (_) {
+    return const [];
+  }
+});
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\providers\split_drafts_providers.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/database/database_provider.dart';
+import '../../data/datasources/split_drafts_dao.dart';
+import '../../data/repositories/split_drafts_repository_impl.dart';
+import '../../domain/repositories/split_drafts_repository.dart';
+
+final Logger _logger = Logger();
+
+final splitDraftsDaoProvider = Provider<SplitDraftsDao>((ref) {
+  return SplitDraftsDao(ref.watch(appDatabaseProvider));
+});
+
+final splitDraftsRepositoryProvider = Provider<SplitDraftsRepository>((ref) {
+  return SplitDraftsRepositoryImpl(
+    dao: ref.watch(splitDraftsDaoProvider),
+    logger: _logger,
+  );
+});
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\providers\split_transaction_form_providers.dart =====
+import 'dart:async';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+import '../../domain/entities/split_position_draft.dart';
+import '../../domain/models/transaction.dart';
+import 'create_transaction_providers.dart';
+import 'split_drafts_providers.dart';
+import 'split_transaction_providers.dart';
+
+final Logger _logger = Logger();
+
+/// Состояние экрана разделения транзакции (ТЗ 6.3.15).
+class SplitTransactionFormState {
+  const SplitTransactionFormState({
+    this.transactionId = '',
+    this.source,
+    this.positions = const <SplitPositionDraft>[],
+    this.initialized = false,
+    this.isDirty = false,
+    this.draftAvailable = false,
+    this.existingSplitsCount = 0,
+  });
+
+  final String transactionId;
+  final Transaction? source;
+  final List<SplitPositionDraft> positions;
+  final bool initialized;
+  final bool isDirty;
+  final bool draftAvailable;
+  final int existingSplitsCount;
+
+  SplitTransactionFormState copyWith({
+    String? transactionId,
+    Transaction? source,
+    List<SplitPositionDraft>? positions,
+    bool? initialized,
+    bool? isDirty,
+    bool? draftAvailable,
+    int? existingSplitsCount,
+  }) {
+    return SplitTransactionFormState(
+      transactionId: transactionId ?? this.transactionId,
+      source: source ?? this.source,
+      positions: positions ?? this.positions,
+      initialized: initialized ?? this.initialized,
+      isDirty: isDirty ?? this.isDirty,
+      draftAvailable: draftAvailable ?? this.draftAvailable,
+      existingSplitsCount: existingSplitsCount ?? this.existingSplitsCount,
+    );
+  }
+}
+
+class SplitTransactionFormNotifier extends Notifier<SplitTransactionFormState> {
+  Timer? _draftTimer;
+  List<SplitPositionDraft>? _pendingDraft;
+  int _posCounter = 0;
+
+  @override
+  SplitTransactionFormState build() {
+    ref.onDispose(() => _draftTimer?.cancel());
+    return const SplitTransactionFormState();
+  }
+
+  Future<void> init(String transactionId) async {
+    _draftTimer?.cancel();
+    _pendingDraft = null;
+    state = const SplitTransactionFormState();
+    try {
+      final tx = await ref
+          .read(transactionsRepositoryProvider)
+          .getTransactionById(transactionId);
+      if (tx == null) {
+        state = const SplitTransactionFormState(initialized: true);
+        return;
+      }
+      final splits = await ref
+          .read(transactionsRepositoryProvider)
+          .getSplitsForTransaction(transactionId);
+      final fromSplits = splits
+          .map(
+            (s) => SplitPositionDraft(
+              id: s.id,
+              name: '',
+              amount: s.amount,
+              categoryId: s.categoryId,
+              description: s.description ?? '',
+              fromOcr: false,
+            ),
+          )
+          .toList();
+      final draft = await ref
+          .read(splitDraftsRepositoryProvider)
+          .getFreshPositions(transactionId);
+      _pendingDraft = draft;
+      state = SplitTransactionFormState(
+        transactionId: transactionId,
+        source: tx,
+        positions: fromSplits,
+        initialized: true,
+        draftAvailable: draft != null,
+        existingSplitsCount: splits.length,
+      );
+    } catch (e, st) {
+      _logger.e('SplitForm init failed', error: e, stackTrace: st);
+      state = const SplitTransactionFormState(initialized: true);
+    }
+  }
+
+  Future<void> restoreDraft() async {
+    final draft = _pendingDraft;
+    if (draft == null) return;
+    _pendingDraft = null;
+    _touch(state.copyWith(positions: draft, draftAvailable: false));
+  }
+
+  Future<void> discardDraft() async {
+    _pendingDraft = null;
+    state = state.copyWith(draftAvailable: false);
+    try {
+      await ref
+          .read(splitDraftsRepositoryProvider)
+          .deleteByTransaction(state.transactionId);
+    } catch (e, st) {
+      _logger.w('Failed to delete split draft', error: e, stackTrace: st);
+    }
+  }
+
+  void addPosition() {
+    _posCounter++;
+    final id = 'pos_${DateTime.now().microsecondsSinceEpoch}_$_posCounter';
+    _touch(state.copyWith(positions: [
+      ...state.positions,
+      SplitPositionDraft(
+        id: id,
+        name: '',
+        amount: 0,
+        categoryId: null,
+        description: '',
+        fromOcr: false,
+      ),
+    ]));
+  }
+
+  /// Точечное обновление позиции: пересоздаём сущность конструктором
+  /// (copyWith freezed не принимает nullable для non-null полей).
+  void updatePosition(
+    String id, {
+    String? name,
+    int? amount,
+    String? categoryId,
+    String? description,
+  }) {
+    _touch(state.copyWith(positions: [
+      for (final p in state.positions)
+        if (p.id == id)
+          SplitPositionDraft(
+            id: p.id,
+            name: name ?? p.name,
+            amount: amount ?? p.amount,
+            categoryId: categoryId ?? p.categoryId,
+            description: description ?? p.description,
+            fromOcr: p.fromOcr,
+          )
+        else
+          p,
+    ]));
+  }
+
+  void removePosition(String id) {
+    _touch(state.copyWith(
+      positions: state.positions.where((p) => p.id != id).toList(),
+    ));
+  }
+
+  void reorder(int oldIndex, int newIndex) {
+    var to = newIndex;
+    if (to > oldIndex) to--;
+    final next = [...state.positions];
+    final item = next.removeAt(oldIndex);
+    next.insert(to, item);
+    _touch(state.copyWith(positions: next));
+  }
+
+  void markSaved() {
+    _draftTimer?.cancel();
+    _pendingDraft = null;
+    state = state.copyWith(isDirty: false, draftAvailable: false);
+  }
+
+  void _touch(SplitTransactionFormState next) {
+    state = next.copyWith(isDirty: true);
+    _draftTimer?.cancel();
+    _draftTimer = Timer(const Duration(seconds: 5), _saveDraft);
+  }
+
+  Future<void> _saveDraft() async {
+    if (!state.isDirty || state.transactionId.isEmpty) return;
+    try {
+      await ref
+          .read(splitDraftsRepositoryProvider)
+          .savePositions(state.transactionId, state.positions);
+    } catch (e, st) {
+      _logger.w('Failed to autosave split draft', error: e, stackTrace: st);
+    }
+  }
+}
+
+final splitTransactionFormProvider =
+    NotifierProvider<SplitTransactionFormNotifier, SplitTransactionFormState>(
+  SplitTransactionFormNotifier.new,
+);
+
+/// Нераспределённый остаток (копейки): сумма транзакции минус позиции.
+final splitRemainderKopecksProvider = Provider<int>((ref) {
+  final state = ref.watch(splitTransactionFormProvider);
+  final total = state.source?.amount ?? 0;
+  var assigned = 0;
+  for (final p in state.positions) {
+    assigned += p.amount;
+  }
+  return total - assigned;
+});
+
+final splitFormValidationProvider = Provider<String?>((ref) {
+  final state = ref.watch(splitTransactionFormProvider);
+  final source = state.source;
+  if (source == null) return SplitFormErrors.sourceNotFound;
+  return ref.watch(validateSplitFormUseCaseProvider)(
+    transactionAmountKopecks: source.amount,
+    positions: state.positions,
+  );
+});
+
+/// Тексты ошибок валидации сплита (домен не знает UI-строки экрана).
+abstract final class SplitFormErrors {
+  static const String sourceNotFound = 'Транзакция не найдена';
+}
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\providers\split_transaction_providers.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/database/database_provider.dart';
+import '../../data/datasources/app_settings_split_offer_source.dart';
+import '../../domain/services/split_offer_settings_port.dart';
+import '../../domain/usecases/create_transaction_split_usecase.dart';
+import '../../domain/usecases/update_split_offer_count_usecase.dart';
+import '../../domain/usecases/validate_split_form_usecase.dart';
+import 'create_transaction_providers.dart';
+import 'split_drafts_providers.dart';
+
+final Logger _logger = Logger();
+
+final splitOfferSettingsPortProvider =
+    Provider<SplitOfferSettingsPort>((ref) {
+  return AppSettingsSplitOfferSource(
+    dao: ref.watch(appSettingsDaoProvider),
+    logger: _logger,
+  );
+});
+
+final validateSplitFormUseCaseProvider =
+    Provider<ValidateSplitFormUseCase>((ref) {
+  return ValidateSplitFormUseCase();
+});
+
+final createTransactionSplitUseCaseProvider =
+    Provider<CreateTransactionSplitUseCase>((ref) {
+  return CreateTransactionSplitUseCase(
+    repository: ref.watch(transactionsRepositoryProvider),
+    drafts: ref.watch(splitDraftsRepositoryProvider),
+    logger: _logger,
+  );
+});
+
+final updateSplitOfferCountUseCaseProvider =
+    Provider<UpdateSplitOfferCountUseCase>((ref) {
+  return UpdateSplitOfferCountUseCase(
+    settings: ref.watch(splitOfferSettingsPortProvider),
+    logger: _logger,
+  );
+});
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\providers\transactions_log_providers.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+
+import 'package:budget_assistant/core/errors/result.dart';
+import 'package:budget_assistant/core/providers/database_providers.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+
+import '../../../../core/providers/security_providers.dart';
+import '../../data/repositories/drift_transactions_log_repository.dart';
+import '../../domain/entities/lookup_item.dart';
+import '../../domain/entities/transaction_day_group.dart';
+import '../../domain/entities/transaction_ui_model.dart';
+import '../../domain/entities/transactions_filter_state.dart';
+import '../../domain/repositories/transactions_log_repository.dart';
+import '../../domain/usecases/calculate_day_summary_usecase.dart';
+import '../../domain/usecases/get_transactions_log_page_usecase.dart';
+import '../../domain/usecases/group_transactions_by_day_usecase.dart';
+import '../../domain/usecases/hide_transaction_as_gift_usecase.dart';
+import '../../domain/usecases/mark_as_refund_usecase.dart';
+import '../../domain/usecases/update_transaction_category_usecase.dart';
+import '../../domain/usecases/unhide_transaction_as_gift_usecase.dart';
+import '../../domain/usecases/toggle_large_expense_usecase.dart';
+abstract interface class SyncService {
+  Future<int> forceSyncNow();
+}
+
+class LocalOnlySyncService implements SyncService {
+  final Logger _log = Logger();
+
+  @override
+  Future<int> forceSyncNow() async {
+    _log.i('Local-only refresh. Real Supabase sync will be added in Stage 8.');
+    return 0;
+  }
+}
+
+final syncServiceProvider = Provider<SyncService>(
+  (ref) => LocalOnlySyncService(),
+);
+
+final transactionsLogRepositoryProvider = Provider<TransactionsLogRepository>(
+  (ref) => DriftTransactionsLogRepository(ref.watch(appDatabaseProvider)),
+);
+
+final getTransactionsLogPageUseCaseProvider = Provider(
+  (ref) => GetTransactionsLogPageUseCase(
+    ref.watch(transactionsLogRepositoryProvider),
+  ),
+);
+
+final calculateDaySummaryUseCaseProvider = Provider(
+  (ref) => CalculateDaySummaryUseCase(),
+);
+
+final groupTransactionsByDayUseCaseProvider = Provider(
+  (ref) => GroupTransactionsByDayUseCase(
+    ref.watch(calculateDaySummaryUseCaseProvider),
+  ),
+);
+
+final hideTransactionAsGiftUseCaseProvider = Provider(
+  (ref) => HideTransactionAsGiftUseCase(
+    ref.watch(transactionsLogRepositoryProvider),
+  ),
+);
+
+final markAsRefundUseCaseProvider = Provider(
+  (ref) => MarkAsRefundUseCase(ref.watch(transactionsLogRepositoryProvider)),
+);
+
+final updateTransactionCategoryUseCaseProvider = Provider(
+  (ref) => UpdateTransactionCategoryUseCase(
+    ref.watch(transactionsLogRepositoryProvider),
+  ),
+);
+
+final toggleLargeExpenseUseCaseProvider = Provider(
+  (ref) =>
+      ToggleLargeExpenseUseCase(ref.watch(transactionsLogRepositoryProvider)),
+);
+
+final transactionCategoryLookupProvider = FutureProvider<List<LookupItem>>(
+  (ref) => ref.watch(transactionsLogRepositoryProvider).fetchCategories(),
+);
+
+final transactionAccountLookupProvider = FutureProvider<List<LookupItem>>(
+  (ref) => ref.watch(transactionsLogRepositoryProvider).fetchAccounts(),
+);
+
+final hasPendingSyncProvider = StreamProvider<bool>(
+  (ref) => ref
+      .watch(transactionsLogRepositoryProvider)
+      .watchPendingSyncCount()
+      .map((count) => count > 0),
+);
+
+// ---------------------------------------------------------------------------
+// Фильтры (Riverpod 3: Notifier вместо StateNotifier)
+// ---------------------------------------------------------------------------
+
+class TransactionsFilterNotifier extends Notifier<TransactionsFilterState> {
+  @override
+  TransactionsFilterState build() => const TransactionsFilterState();
+
+  void setScope(TransactionsScope scope) =>
+      state = state.copyWith(scope: scope);
+
+  void setType(TransactionTypeFilter type) =>
+      state = state.copyWith(type: type);
+
+  void setCategoryIds(List<String> ids) =>
+      state = state.copyWith(categoryIds: ids);
+
+  void setAccountIds(List<String> ids) =>
+      state = state.copyWith(accountIds: ids);
+
+  void setPeriod(TransactionsPeriodPreset period) =>
+      state = state.copyWith(period: period);
+
+  void setCustomPeriod(DateTime from, DateTime to) => state = state.copyWith(
+    period: TransactionsPeriodPreset.custom,
+    customFrom: from,
+    customTo: to,
+  );
+
+  void setAmountRange(int? fromKopecks, int? toKopecks) => state = state
+      .copyWith(amountFromKopecks: fromKopecks, amountToKopecks: toKopecks);
+
+  void toggleOnlyWithReceipt() =>
+      state = state.copyWith(onlyWithReceipt: !state.onlyWithReceipt);
+
+  void toggleOnlySplit() => state = state.copyWith(onlySplit: !state.onlySplit);
+
+  void toggleOnlyDebts() => state = state.copyWith(onlyDebts: !state.onlyDebts);
+
+  void setSearch(String value) => state = state.copyWith(search: value);
+
+  void reset() => state = const TransactionsFilterState();
+
+  void toggleExcludeOwn() =>
+      state = state.copyWith(excludeOwn: !state.excludeOwn);  
+  
+  void toggleExcludeLargeExpenses() =>
+      state = state.copyWith(excludeLargeExpenses: !state.excludeLargeExpenses);
+}
+
+final transactionsFilterProvider =
+    NotifierProvider<TransactionsFilterNotifier, TransactionsFilterState>(
+      TransactionsFilterNotifier.new,
+    );
+
+// ---------------------------------------------------------------------------
+// Состояние списка
+// ---------------------------------------------------------------------------
+
+class TransactionsLogState {
+  const TransactionsLogState({
+    required this.groups,
+    required this.loadedItems,
+    required this.isLoadingMore,
+    required this.hasMore,
+    required this.page,
+  });
+
+  factory TransactionsLogState.initial() => const TransactionsLogState(
+    groups: AsyncLoading(),
+    loadedItems: [],
+    isLoadingMore: false,
+    hasMore: true,
+    page: 0,
+  );
+
+  final AsyncValue<List<TransactionDayGroupUi>> groups;
+  final List<TransactionUiModel> loadedItems;
+  final bool isLoadingMore;
+  final bool hasMore;
+  final int page;
+
+  TransactionsLogState copyWith({
+    AsyncValue<List<TransactionDayGroupUi>>? groups,
+    List<TransactionUiModel>? loadedItems,
+    bool? isLoadingMore,
+    bool? hasMore,
+    int? page,
+  }) {
+    return TransactionsLogState(
+      groups: groups ?? this.groups,
+      loadedItems: loadedItems ?? this.loadedItems,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      hasMore: hasMore ?? this.hasMore,
+      page: page ?? this.page,
+    );
+  }
+}
+
+class TransactionsLogNotifier extends Notifier<TransactionsLogState> {
+  final Logger _log = Logger();
+
+  late TransactionsFilterState _filter;
+  late String _userId;
+  late String? _spaceId;
+
+  @override
+  TransactionsLogState build() {
+    // Перечитываем зависимости: при смене фильтров/пространства build
+    // выполнится заново и список перезагрузится с первой страницы.
+    _filter = ref.watch(transactionsFilterProvider);
+
+    try {
+      _userId = ref.watch(currentUserIdProvider);
+    } catch (_) {
+      _userId = '';
+    }
+
+    _spaceId = ref.watch(currentSpaceIdProvider);
+
+    Future.microtask(loadFirst);
+    return TransactionsLogState.initial();
+  }
+
+  Future<void> loadFirst() async {
+    state = TransactionsLogState.initial();
+    await _load(page: 0, append: false);
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || !state.hasMore || state.groups.isLoading) {
+      return;
+    }
+    state = state.copyWith(isLoadingMore: true);
+    await _load(page: state.page + 1, append: true);
+  }
+
+  Future<void> _load({required int page, required bool append}) async {
+    if (_userId.isEmpty) {
+      state = state.copyWith(
+        groups: const AsyncError(
+          'Нет авторизованного пользователя',
+          StackTrace.empty,
+        ),
+        isLoadingMore: false,
+      );
+      return;
+    }
+
+    final result = await ref.read(getTransactionsLogPageUseCaseProvider)(
+      filter: _filter,
+      currentUserId: _userId,
+      currentSpaceId: _spaceId,
+      page: page,
+    );
+
+    switch (result) {
+      case Success<TransactionPageUi>(:final value):
+        final allItems = append
+            ? [...state.loadedItems, ...value.items]
+            : value.items;
+
+        // Защита по спеке 6.7: если группировка/форматирование упадёт,
+        // переходим в error-state с кнопкой Retry, а не в вечный skeleton.
+        final List<TransactionDayGroupUi> grouped;
+        try {
+          grouped = ref.read(groupTransactionsByDayUseCaseProvider)(allItems);
+        } catch (e, s) {
+          _log.e(
+            'Grouping transactions by day failed',
+            error: e,
+            stackTrace: s,
+          );
+          state = state.copyWith(
+            groups: AsyncError('Не удалось сгруппировать транзакции', s),
+            isLoadingMore: false,
+          );
+          return;
+        }
+
+        state = state.copyWith(
+          groups: AsyncData(grouped),
+          loadedItems: allItems,
+          isLoadingMore: false,
+          hasMore: value.hasMore,
+          page: page,
+        );
+
+      case Error<TransactionPageUi>(:final failure):
+        _log.e('Failed to load transactions page', error: failure);
+
+        if (!append || state.loadedItems.isEmpty) {
+          state = state.copyWith(
+            groups: AsyncError(
+              'Не удалось загрузить транзакции',
+              StackTrace.current,
+            ),
+            isLoadingMore: false,
+          );
+        } else {
+          state = state.copyWith(isLoadingMore: false);
+        }
+    }
+  }
+}
+
+final unhideTransactionAsGiftUseCaseProvider = Provider(
+  (ref) => UnhideTransactionAsGiftUseCase(
+    ref.watch(transactionsLogRepositoryProvider),
+  ),
+);
+
+final transactionsLogProvider =
+    NotifierProvider<TransactionsLogNotifier, TransactionsLogState>(
+      TransactionsLogNotifier.new,
+    );
+===== FILE: D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\providers\transactions_providers.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+import 'package:budget_assistant/features/privacy/presentation/privacy_formatter.dart';
+
+/// Нотификатор режима приватности (Riverpod 3.x, без StateProvider).
+///
+/// Источники режима (подключаются на этапах 21 и 23):
+/// - app_settings.default_balance_visibility;
+/// - shake-to-hide;
+/// - face-down;
+/// - auto-hide timeout;
+/// - biometric/PIN unhide.
+class PrivacyModeNotifier extends Notifier<BalanceVisibilityMode> {
+  @override
+  BalanceVisibilityMode build() {
+    // Базовое значение. Этап 21 заменит на чтение из app_settings.
+    return BalanceVisibilityMode.visible;
+  }
+
+  void setMode(BalanceVisibilityMode mode) {
+    state = mode;
+  }
+
+  void toggle() {
+    state = switch (state) {
+      BalanceVisibilityMode.visible => BalanceVisibilityMode.partial,
+      BalanceVisibilityMode.partial => BalanceVisibilityMode.hidden,
+      BalanceVisibilityMode.hidden => BalanceVisibilityMode.visible,
+    };
+  }
+}
+
+final privacyModeProvider =
+    NotifierProvider<PrivacyModeNotifier, BalanceVisibilityMode>(
+      PrivacyModeNotifier.new,
+    );
+
+/// Единственная точка доступа к PrivacyFormatter.
+/// Виджеты получают formatter ТОЛЬКО отсюда (ТОМ 6, раздел 6.6).
+final privacyFormatterProvider = Provider<PrivacyFormatter>((ref) {
+  return const PrivacyFormatter();
+});
