@@ -166,15 +166,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 8),
               for (final f in profile.families)
                 _familyCard(f, profile),
-              _addRow(_nameController, 'Название семьи (создать)', TextInputType.text,
-                  () => _save(TransferProfile(
-                      myPhones: profile.myPhones,
-                      myNames: profile.myNames,
-                      familyAsTransfers: profile.familyAsTransfers,
-                      families: [
-                        ...profile.families,
-                        FamilyGroup(name: _nameController.text.trim()),
-                      ]))),
             ],
           ]),
         ],
