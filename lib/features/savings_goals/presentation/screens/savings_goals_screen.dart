@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -53,6 +54,7 @@ class _SavingsGoalsScreenState extends ConsumerState<SavingsGoalsScreen> {
       _checkForAchievements(next.value ?? const []);
     });
     return Scaffold(
+      drawer: const AppDrawer(currentRoute: '/savings-goals'),
       appBar: AppBar(
         title: const Text(SavingsGoalsStrings.screenTitle),
         actions: [

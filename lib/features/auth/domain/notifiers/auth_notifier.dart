@@ -1,4 +1,3 @@
-﻿// lib/features/auth/domain/notifiers/auth_notifier.dart
 import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -39,7 +38,6 @@ class AuthNotifier extends _$AuthNotifier {
     }
   }
 
-  // ИСПРАВЛЕНО: Убран .map((_) {}), который ломал парсер riverpod_generator
   Future<Result<void>> signInWithEmailAndPassword(
     String email,
     String password,
@@ -58,8 +56,15 @@ class AuthNotifier extends _$AuthNotifier {
     return _repository.signInWithOtp(email);
   }
 
+  Future<Result<void>> signInWithGoogle() async {
+    final result = await _repository.signInWithGoogle();
+    return result.when(
+      success: (_) => Result.success(null),
+      failure: (f) => Result.failure(f),
+    );
+  }
+
   Future<Result<void>> signOut() async {
     return _repository.signOut();
   }
 }
- 

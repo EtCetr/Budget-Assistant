@@ -8,28 +8,25 @@ import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/core/theme/motion_tokens.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import '../calendar_strings.dart';
 import '../providers/calendar_screen_providers.dart';
 import '../providers/date_forecast_providers.dart';
 import '../widgets/calendar_day_panel.dart';
 import '../../../recurring_payments/presentation/widgets/recurring_detection_indicator.dart';
 
-/// Экран календаря (ТЗ 6.3.5 + пожелание владельца 14.4e-2):
-/// сетка с заливкой дней и маркерами, сводка выбранного дня СНИЗУ
-/// (тап по дню НЕ открывает другой экран), bar-chart доходов/расходов,
-/// легенда топ-5, превью событий на 14 дней, рабочий переключатель
-/// формата (месяц / 2 недели / неделя).
+/// Экран календаря (ТЗ 6.3.5): сетка с заливкой дней и маркерами,
+/// сводка выбранного дня СНИЗУ, bar-chart доходов/расходов за видимый период
+/// (месяц / 2 недели / неделя), легенда топ-5, превью событий на 14 дней.
 class CalendarScreen extends ConsumerWidget {
   const CalendarScreen({super.key});
 
-  /// Заголовок месяца: именительный падеж и капитализация
-  /// ("Сентябрь 2026"): 'MMMM' в ru даёт родительный ("сентября"),
-  /// поэтому берём standalone-форму 'LLLL' (фикс пожелания владельца).
   String _monthTitleRu(DateTime month) {
     final s = DateFormat('LLLL yyyy', 'ru').format(month);
     if (s.isEmpty) return s;
     return s[0].toUpperCase() + s.substring(1);
   }
+
   Color? _parseCategoryColor(String? hex) {
     if (hex == null || hex.isEmpty) return null;
     final value = hex.startsWith('#') ? hex.substring(1) : hex;
@@ -37,6 +34,88 @@ class CalendarScreen extends ConsumerWidget {
     final parsed = int.tryParse(value, radix: 16);
     if (parsed == null) return null;
     return Color(value.length == 6 ? parsed + 0xFF000000 : parsed);
+  }
+
+  /// Видимые дни для графика: зависят от формата и сфокусированного дня,
+  /// поэтому график обновляется при листании и смене формата.
+  List<DateTime> _visibleDays(DateTime focusedDay, CalendarFormat format) {
+    final start = focusedDay.subtract(Duration(days: focusedDay.weekday - 1));
+    switch (format) {
+      case CalendarFormat.week:
+        return List.generate(
+            7, (i) => DateTime(start.year, start.month, start.day + i));
+      case CalendarFormat.twoWeeks:
+        return List.generate(
+            14, (i) => DateTime(start.year, start.month, start.day + i));
+      case CalendarFormat.month:
+        final n = DateTime(focusedDay.year, focusedDay.month + 1, 0).day;
+        return List.generate(
+            n, (i) => DateTime(focusedDay.year, focusedDay.month, i + 1));
+    }
+  }
+
+  Widget _flowChart(Map<String, dynamic> flow, List<DateTime> days) {
+    double maxRub = 1;
+    final groups = <BarChartGroupData>[];
+    for (int i = 0; i < days.length; i++) {
+      final day = days[i];
+      final key =
+          '${day.year.toString().padLeft(4, '0')}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+      final row = flow[key];
+      final income = (row as dynamic)?.income as int? ?? 0;
+      final expense = (row as dynamic)?.expense as int? ?? 0;
+      final incomeRub = income / 100.0;
+      final expenseRub = expense / 100.0;
+      if (incomeRub > maxRub) maxRub = incomeRub;
+      if (expenseRub > maxRub) maxRub = expenseRub;
+      groups.add(BarChartGroupData(x: i, barsSpace: 1, barRods: [
+        BarChartRodData(
+            toY: incomeRub,
+            color: AppColors.colorIncome,
+            width: 3,
+            borderRadius: BorderRadius.circular(1)),
+        BarChartRodData(
+            toY: expenseRub,
+            color: AppColors.colorExpense,
+            width: 3,
+            borderRadius: BorderRadius.circular(1)),
+      ]));
+    }
+    return SizedBox(
+      height: 140,
+      child: BarChart(BarChartData(
+        maxY: maxRub * 1.1,
+        barTouchData: const BarTouchData(enabled: false),
+        gridData: const FlGridData(show: false),
+        borderData: FlBorderData(show: false),
+        titlesData: FlTitlesData(
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 20,
+              interval: 1,
+              getTitlesWidget: (value, meta) {
+                final idx = value.toInt();
+                if (idx < 0 || idx >= days.length) {
+                  return const SizedBox.shrink();
+                }
+                return Text(
+                  days[idx].day.toString(),
+                  style: const TextStyle(
+                      fontSize: 9, color: AppColors.textSecondary),
+                );
+              },
+            ),
+          ),
+        ),
+        barGroups: groups,
+      )),
+    );
   }
 
   Widget _dayCell(
@@ -81,9 +160,7 @@ class CalendarScreen extends ConsumerWidget {
       background = AppColors.surfaceCard;
     } else if (freeDay) {
       background = AppColors.surfaceCard;
-      border = Border.all(
-        color: AppColors.colorIncome.withValues(alpha: 0.4),
-      );
+      border = Border.all(color: AppColors.colorIncome.withValues(alpha: 0.4));
     }
     final dominant = agg?.dominantCategoryId;
     final catColor = _parseCategoryColor(
@@ -116,10 +193,8 @@ class CalendarScreen extends ConsumerWidget {
             Positioned(
               top: 2,
               left: 3,
-              child: Text(
-                agg!.holidays.first.iconEmoji ?? '🎉',
-                style: const TextStyle(fontSize: 10),
-              ),
+              child: Text(agg!.holidays.first.iconEmoji ?? '🎉',
+                  style: const TextStyle(fontSize: 10)),
             ),
           if (!isOtherMonth &&
               !isFuture &&
@@ -147,17 +222,12 @@ class CalendarScreen extends ConsumerWidget {
                 width: 7,
                 height: 7,
                 decoration: const BoxDecoration(
-                  color: AppColors.textSecondary,
-                  shape: BoxShape.circle,
-                ),
+                    color: AppColors.textSecondary, shape: BoxShape.circle),
               ),
             ),
           if (freeDay)
             const Positioned(
-              bottom: 1,
-              right: 2,
-              child: Text('🎉', style: TextStyle(fontSize: 9)),
-            ),
+                bottom: 1, right: 2, child: Text('🎉', style: TextStyle(fontSize: 9))),
           if (!isOtherMonth && (agg?.reminderCount ?? 0) > 0)
             const Positioned(
               bottom: 1,
@@ -169,87 +239,15 @@ class CalendarScreen extends ConsumerWidget {
             const Positioned(
               bottom: 2,
               right: 3,
-              child:
-                  Icon(Icons.circle, size: 6, color: AppColors.colorTransfer),
+              child: Icon(Icons.circle, size: 6, color: AppColors.colorTransfer),
             ),
         ],
       ),
     );
   }
 
-  Widget _monthChart(Map<String, dynamic> flow, String monthKey) {
-    final y = int.parse(monthKey.substring(0, 4));
-    final m = int.parse(monthKey.substring(5, 7));
-    final daysInMonth = DateTime(y, m + 1, 0).day;
-    double maxRub = 1;
-    final groups = <BarChartGroupData>[];
-    for (int i = 0; i < daysInMonth; i++) {
-      final key = '$monthKey-${(i + 1).toString().padLeft(2, '0')}';
-      final row = flow[key];
-      final income = (row as dynamic)?.income as int? ?? 0;
-      final expense = (row as dynamic)?.expense as int? ?? 0;
-      final incomeRub = income / 100.0;
-      final expenseRub = expense / 100.0;
-      if (incomeRub > maxRub) maxRub = incomeRub;
-      if (expenseRub > maxRub) maxRub = expenseRub;
-      groups.add(
-        BarChartGroupData(
-          x: i,
-          barsSpace: 1,
-          barRods: [
-            BarChartRodData(
-              toY: incomeRub,
-              color: AppColors.colorIncome,
-              width: 3,
-              borderRadius: BorderRadius.circular(1),
-            ),
-            BarChartRodData(
-              toY: expenseRub,
-              color: AppColors.colorExpense,
-              width: 3,
-              borderRadius: BorderRadius.circular(1),
-            ),
-          ],
-        ),
-      );
-    }
-    return SizedBox(
-      height: 140,
-      child: BarChart(
-        BarChartData(
-          maxY: maxRub * 1.1,
-          barTouchData: const BarTouchData(enabled: false),
-          gridData: const FlGridData(show: false),
-          borderData: FlBorderData(show: false),
-          titlesData: FlTitlesData(
-            topTitles:
-                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles:
-                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            leftTitles:
-                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 20,
-                interval: 5,
-                getTitlesWidget: (value, meta) => Text(
-                  '${value.toInt() + 1}',
-                  style: const TextStyle(
-                      fontSize: 9, color: AppColors.textSecondary),
-                ),
-              ),
-            ),
-          ),
-          barGroups: groups,
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(privacyModeProvider);
     final mode = ref.watch(privacyModeProvider);
     final formatter = ref.watch(privacyFormatterProvider);
     final currency = ref.watch(calendarBaseCurrencyProvider).value ?? 'RUB';
@@ -267,6 +265,7 @@ class CalendarScreen extends ConsumerWidget {
       for (final e in events) calendarDayKey(e.dateUtc.toLocal()),
     };
     return Scaffold(
+      drawer: const AppDrawer(currentRoute: '/calendar'),
       appBar: AppBar(
         title: Text(_monthTitleRu(focusedMonth)),
         actions: [
@@ -323,8 +322,7 @@ class CalendarScreen extends ConsumerWidget {
           ),
           const CalendarDayPanel(),
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppSpacing.spacing8),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacing8),
             child: Row(
               children: [
                 Container(
@@ -351,14 +349,13 @@ class CalendarScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.spacing8),
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppSpacing.spacing8),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacing8),
             child: Text(CalendarStrings.chartTitle,
                 style: Theme.of(context).textTheme.titleMedium),
           ),
           Padding(
             padding: const EdgeInsets.all(AppSpacing.spacing8),
-            child: _monthChart(flow, monthKey),
+            child: _flowChart(flow, _visibleDays(focusedMonth, calendarFormat)),
           ),
           if (legend.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.spacing8),
@@ -375,21 +372,18 @@ class CalendarScreen extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final entry = legend[index];
                   final cat = categories[entry.key];
-                  final color = _parseCategoryColor(cat?.colorHex) ??
-                      AppColors.textSecondary;
+                  final color =
+                      _parseCategoryColor(cat?.colorHex) ?? AppColors.textSecondary;
                   return ActionChip(
                     backgroundColor: color.withValues(alpha: 0.2),
                     label: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text(cat?.name ?? '—',
+                            style: TextStyle(color: color, fontSize: 12)),
                         Text(
-                          cat?.name ?? '—',
-                          style: TextStyle(color: color, fontSize: 12),
-                        ),
-                        Text(
-                          formatter.formatAmount(
-                              entry.value, currency, mode),
+                          formatter.formatAmount(entry.value, currency, mode),
                           style: TextStyle(color: color, fontSize: 11),
                         ),
                       ],
@@ -414,11 +408,9 @@ class CalendarScreen extends ConsumerWidget {
               if (items.isEmpty) {
                 return const Padding(
                   padding: EdgeInsets.all(AppSpacing.spacing8),
-                  child: Text(
-                    CalendarStrings.noEventsUpcoming,
-                    style: TextStyle(
-                        color: AppColors.textSecondary, fontSize: 13),
-                  ),
+                  child: Text(CalendarStrings.noEventsUpcoming,
+                      style:
+                          TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                 );
               }
               return Column(
@@ -428,28 +420,20 @@ class CalendarScreen extends ConsumerWidget {
                       dense: true,
                       contentPadding: EdgeInsets.zero,
                       leading: Text(
-                        item.emoji ??
-                            (item.kind == 'recurring' ? '💳' : '🔔'),
+                        item.emoji ?? (item.kind == 'recurring' ? '💳' : '🔔'),
                         style: const TextStyle(fontSize: 20),
                       ),
-                      title: Text(
-                        formatter.formatName(item.title, mode),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      subtitle: Text(
-                        DateFormat('d MMMM', 'ru').format(item.date),
-                        style: const TextStyle(fontSize: 12),
-                      ),
+                      title: Text(formatter.formatName(item.title, mode),
+                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                      subtitle: Text(DateFormat('d MMMM', 'ru').format(item.date),
+                          style: const TextStyle(fontSize: 12)),
                       trailing: item.amountKopecks == null
                           ? null
                           : Text(
                               formatter.formatAmount(
                                   item.amountKopecks!, currency, mode),
                               style: const TextStyle(
-                                  color: AppColors.colorExpense,
-                                  fontSize: 13),
-                            ),
+                                  color: AppColors.colorExpense, fontSize: 13)),
                       onTap: item.reminderId == null
                           ? null
                           : () {

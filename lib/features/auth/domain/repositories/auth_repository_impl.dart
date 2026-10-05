@@ -1,5 +1,4 @@
-﻿// lib/features/auth/domain/repositories/auth_repository_impl.dart
-import 'package:supabase_flutter/supabase_flutter.dart';
+﻿import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budget_assistant/core/utils/result.dart';
 import 'package:budget_assistant/core/errors/failures.dart';
 import 'package:budget_assistant/core/logger.dart';
@@ -8,7 +7,6 @@ import 'package:budget_assistant/features/auth/domain/repositories/i_auth_reposi
 
 class AuthRepositoryImpl implements IAuthRepository {
   final AuthRemoteDataSource _remoteDataSource;
-
   AuthRepositoryImpl(this._remoteDataSource);
 
   @override
@@ -72,6 +70,18 @@ class AuthRepositoryImpl implements IAuthRepository {
     } catch (e, stackTrace) {
       AppLogger.e('signInWithOtp failed', e, stackTrace);
       return Result.failure(Failure.network('OTP failed: $e', stackTrace));
+    }
+  }
+
+  @override
+  Future<Result<bool>> signInWithGoogle() async {
+    try {
+      final response = await _remoteDataSource.signInWithGoogle();
+      AppLogger.i('Google OAuth started');
+      return Result.success(response);
+    } catch (e, stackTrace) {
+      AppLogger.e('signInWithGoogle failed', e, stackTrace);
+      return Result.failure(Failure.network('Google sign in failed: $e', stackTrace));
     }
   }
 

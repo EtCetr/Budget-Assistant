@@ -1,6 +1,6 @@
 ﻿import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budget_assistant/core/errors/failures.dart';
-import 'package:budget_assistant/core/logger.dart'; // Добавлен импорт
+import 'package:budget_assistant/core/logger.dart';
 
 abstract class AuthRemoteDataSource {
   Future<User?> getCurrentUser();
@@ -13,13 +13,13 @@ abstract class AuthRemoteDataSource {
     String password,
   );
   Future<void> signInWithOtp(String email);
+  Future<bool> signInWithGoogle();
   Future<void> signOut();
   Stream<AuthState> get authStateChanges;
 }
 
 class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
-  final GoTrueClient _client; // Поле должно быть ТОЛЬКО в реализации
-
+  final GoTrueClient _client;
   SupabaseAuthRemoteDataSource(this._client);
 
   @override
@@ -65,6 +65,23 @@ class SupabaseAuthRemoteDataSource implements AuthRemoteDataSource {
     } catch (e, st) {
       AppLogger.e('OTP sign in failed', e, st);
       throw Failure.authentication('OTP sign in failed: $e', st);
+    }
+  }
+
+  @override
+  Future<bool> signInWithGoogle() async {
+    try {
+      final opened = await _client.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: 'io.supabase.flutterauth://callback',
+      );
+      if (!opened) {
+        throw const Failure.authentication('Не удалось открыть браузер для Google');
+      }
+      return true;
+    } catch (e, st) {
+      AppLogger.e('Google sign in failed', e, st);
+      throw Failure.authentication('Google sign in failed: $e', st);
     }
   }
 

@@ -29,6 +29,7 @@ import 'package:budget_assistant/features/transactions/presentation/screens/crea
 import 'package:budget_assistant/features/transactions/presentation/screens/edit_transaction_screen.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import 'package:budget_assistant/features/budget/presentation/screens/budget_limits_screen.dart';
+import 'package:budget_assistant/features/profile/presentation/screens/profile_screen.dart';
 import 'package:budget_assistant/features/budget/presentation/screens/edit_budget_limit_screen.dart';
 import 'package:budget_assistant/features/cashback/presentation/screens/cashback_screen.dart';
 import 'package:budget_assistant/features/savings_goals/presentation/providers/savings_goals_screen_providers.dart';
@@ -292,7 +293,12 @@ GoRouter appRouter(Ref ref) {
         name: 'cashback',
         builder: (context, state) => const CashbackScreen(),
       ),
-      // Этап 12: цели накопления
+      GoRoute(
+      path: '/profile',
+      name: 'profile',
+      builder: (context, state) => const ProfileScreen(),
+    ),
+    // Этап 12: цели накопления
       GoRoute(
         path: '/savings-goals',
         name: 'savings-goals',

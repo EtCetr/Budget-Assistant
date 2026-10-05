@@ -14,6 +14,7 @@ abstract class IAuthRepository {
   );
   Future<Result<void>> signInWithOtp(
     String email,
-  ); // Изменено на void для совместимости
+  );
+  Future<Result<bool>> signInWithGoogle();
   Future<Result<void>> signOut();
 }

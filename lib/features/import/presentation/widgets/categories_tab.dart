@@ -106,7 +106,6 @@ class CategoriesTab extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
                       child: Text(
@@ -117,34 +116,24 @@ class CategoriesTab extends ConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    IconButton(
+                      tooltip: 'Пометить как перевод',
+                      icon: const Icon(Icons.swap_horiz, size: 20),
+                      onPressed: () => notifier.toggleTransfer(row.rowIndex),
+                    ),
                     Text(
                       formatter.formatAmount(row.amountKopecks, 'RUB', mode),
                       style: TextStyle(
-                        color: row.amountKopecks < 0
-                            ? AppColors.colorExpense
-                            : AppColors.colorIncome,
+                        color: row.isTransfer
+                            ? AppColors.colorTransfer
+                            : (row.amountKopecks < 0
+                                ? AppColors.colorExpense
+                                : AppColors.colorIncome),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
                 ),
-                if (row.isHold)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 2),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppColors.colorWarning.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'HOLD — банк ещё не подтвердил',
-                        style: TextStyle(
-                            color: AppColors.colorWarning, fontSize: 11),
-                      ),
-                    ),
-                  ),
                 Row(
                   children: [
                     Expanded(
@@ -160,8 +149,7 @@ class CategoriesTab extends ConsumerWidget {
                                 value: c.id as String,
                                 child: Text(
                                   '${c.iconEmoji ?? ''} ${c.name}',
-                                  style: const TextStyle(fontSize: 13),
-                                ),
+                                  style: const TextStyle(fontSize: 13)),
                               ),
                           ],
                           onChanged: (v) =>
@@ -178,8 +166,7 @@ class CategoriesTab extends ConsumerWidget {
                           child: Text(
                             'AI: ${(suggestion.confidence * 100).round()}%',
                             style: const TextStyle(
-                                color: AppColors.colorIncome, fontSize: 12),
-                          ),
+                                color: AppColors.colorIncome, fontSize: 12)),
                         ),
                       ),
                   ],

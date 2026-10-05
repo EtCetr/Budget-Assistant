@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budget_assistant/core/router/app_router.dart';
@@ -238,6 +239,7 @@ class _RecurringPaymentsDetectionScreenState
     final bannerDismissed =
         ref.watch(infoBannerDismissedProvider).value ?? false;
     return Scaffold(
+      drawer: const AppDrawer(currentRoute: '/recurring-payments-detection'),
       appBar: AppBar(
         title: const Text(RecurringDetectionStrings.screenTitle),
         actions: [

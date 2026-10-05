@@ -144,8 +144,7 @@ class TransactionsFilterNotifier extends Notifier<TransactionsFilterState> {
       state = state.copyWith(excludeLargeExpenses: !state.excludeLargeExpenses);
 }
 
-final transactionsFilterProvider =
-    NotifierProvider<TransactionsFilterNotifier, TransactionsFilterState>(
+final transactionsFilterProvider = NotifierProvider.autoDispose<TransactionsFilterNotifier, TransactionsFilterState>(
       TransactionsFilterNotifier.new,
     );
 
@@ -306,7 +305,6 @@ final unhideTransactionAsGiftUseCaseProvider = Provider(
   ),
 );
 
-final transactionsLogProvider =
-    NotifierProvider<TransactionsLogNotifier, TransactionsLogState>(
+final transactionsLogProvider = NotifierProvider.autoDispose<TransactionsLogNotifier, TransactionsLogState>(
       TransactionsLogNotifier.new,
     );

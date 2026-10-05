@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
@@ -31,6 +32,7 @@ class BudgetLimitsScreen extends ConsumerWidget {
     final userId = ref.watch(currentUserIdProvider);
     final categoriesAsync = ref.watch(categoriesListProvider(userId));
     return Scaffold(
+      drawer: const AppDrawer(currentRoute: '/budget'),
       appBar: AppBar(
         title: const Text('Бюджет и лимиты'),
         centerTitle: true,

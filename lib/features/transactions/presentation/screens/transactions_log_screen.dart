@@ -20,6 +20,7 @@ import '../widgets/fab_create_menu.dart';
 import '../widgets/transactions_empty_state.dart';
 import '../widgets/transactions_filter_chip_group.dart';
 import '../widgets/transactions_list.dart';
+import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import '../widgets/transactions_segmented_control.dart';
 
 class TransactionsLogScreen extends ConsumerWidget {
@@ -63,6 +64,7 @@ class TransactionsLogScreen extends ConsumerWidget {
     }
 
     return Scaffold(
+      drawer: const AppDrawer(currentRoute: '/transactions'),
       appBar: AppBar(
         title: const Text(TransactionsLogLabels.title),
         actions: [

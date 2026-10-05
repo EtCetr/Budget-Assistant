@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
@@ -104,6 +105,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
       }
     });
     return Scaffold(
+      drawer: const AppDrawer(currentRoute: '/reminders'),
       appBar: AppBar(
         title: const Text(RemindersStrings.screenTitle),
         actions: [

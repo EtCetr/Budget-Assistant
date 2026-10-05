@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -34,6 +35,7 @@ class _SavingsAnalyticsScreenState extends ConsumerState<SavingsAnalyticsScreen>
     final goalsAsync = ref.watch(analyticsAllGoalsProvider);
     final exportBlocked = privacyMode == BalanceVisibilityMode.hidden;
     return Scaffold(
+      drawer: const AppDrawer(currentRoute: '/savings-analytics'),
       appBar: AppBar(
         title: const Text(SavingsGoalsStrings.analyticsTitle),
         actions: [

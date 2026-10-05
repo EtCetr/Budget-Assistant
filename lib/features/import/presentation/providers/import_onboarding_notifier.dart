@@ -17,6 +17,7 @@ import 'package:budget_assistant/features/import/domain/entities/preview_table_d
 import 'package:budget_assistant/features/import/domain/usecases/detect_bank_from_file_usecase.dart';
 import 'import_repository_providers.dart';
 import 'import_wizard_providers.dart';
+import 'package:budget_assistant/core/providers/transfer_profile_provider.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/features/import/data/seeds/default_parser_configs_seed.dart';
 
@@ -535,6 +536,7 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
       final userId = ref.read(currentUserIdProvider);
       final spaceId = state.scopeFamily ? ref.read(currentSpaceIdProvider) : null;
       
+      final transferProfile = await ref.read(transferProfileProvider.notifier).load();
       final result = await ref.read(importTransactionsUseCaseProvider).call(
         storedPath: file.storedPath,
         format: file.format,
@@ -544,6 +546,7 @@ class ImportOnboardingNotifier extends Notifier<ImportOnboardingState> {
         targetSpaceId: spaceId,
         userId: userId,
         options: state.options,
+      transferProfile: transferProfile,
       );
 
       if (result != null) {

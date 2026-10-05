@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:budget_assistant/core/router/routes.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/core/widgets/offline_error_card.dart';
@@ -30,18 +30,8 @@ class DebtsScreen extends ConsumerWidget {
     final debtsAsync = ref.watch(debtsStreamProvider);
     final privacyMode = ref.watch(privacyModeProvider);
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go(AppRoutes.home);
-            }
-          },
-        ),
-        title: const Text(DebtsStrings.screenTitle),
+            drawer: const AppDrawer(currentRoute: '/debts'),
+      appBar: AppBar( title: const Text(DebtsStrings.screenTitle),
         actions: [
           GestureDetector(
             onLongPress: () => _showPrivacySheet(context, ref),

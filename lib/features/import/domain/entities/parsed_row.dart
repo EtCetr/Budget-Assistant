@@ -18,6 +18,8 @@ abstract class ParsedRow with _$ParsedRow {
     int? originalAmountKopecks,
     /// true = операция ещё не подтверждена банком (HOLD) -> audit_status='pending'.
     @Default(false) bool isHold,
+    /// true = помечена как перевод между своими счетами -> type='transfer'.
+    @Default(false) bool isTransfer,
     /// Категория, назначенная пользователем в UI (изначально null).
     String? assignedCategoryId,
   }) = _ParsedRow;

@@ -7,7 +7,6 @@ import 'package:budget_assistant/features/import/domain/entities/finalize_outcom
 import 'package:budget_assistant/features/import/domain/entities/hold_confirmation_candidate.dart';
 import 'package:budget_assistant/features/import/domain/entities/import_result.dart';
 import 'package:budget_assistant/features/import/domain/entities/parsed_row.dart';
-import 'package:budget_assistant/features/import/domain/entities/transfer_candidate.dart';
 import 'import_usecase_providers.dart';
 
 /// Состояние экрана проверки импорта.
@@ -16,19 +15,17 @@ class PostImportReviewState {
     this.result,
     this.selectedRows = const {},
     this.duplicates = const [],
-    this.transfers = const [],
     this.holds = const [],
     this.rows = const [],
     this.suggestions = const {},
     this.suggestionsLoading = false,
-    this.activeTab = 2,
+    this.activeTab = 3,
     this.isFinalizing = false,
   });
 
   final ImportResult? result;
   final Set<int> selectedRows;
   final List<DuplicateCandidate> duplicates;
-  final List<TransferCandidate> transfers;
   final List<HoldConfirmationCandidate> holds;
   final List<ParsedRow> rows;
   final Map<int, CategorySuggestion?> suggestions;
@@ -42,7 +39,6 @@ class PostImportReviewState {
     ImportResult? result,
     Set<int>? selectedRows,
     List<DuplicateCandidate>? duplicates,
-    List<TransferCandidate>? transfers,
     List<HoldConfirmationCandidate>? holds,
     List<ParsedRow>? rows,
     Map<int, CategorySuggestion?>? suggestions,
@@ -54,7 +50,6 @@ class PostImportReviewState {
       result: result ?? this.result,
       selectedRows: selectedRows ?? this.selectedRows,
       duplicates: duplicates ?? this.duplicates,
-      transfers: transfers ?? this.transfers,
       holds: holds ?? this.holds,
       rows: rows ?? this.rows,
       suggestions: suggestions ?? this.suggestions,
@@ -79,7 +74,6 @@ class PostImportReviewNotifier extends Notifier<PostImportReviewState> {
       result: result,
       selectedRows: result.rows.map((r) => r.rowIndex).toSet(),
       duplicates: result.duplicates,
-      transfers: result.transfers,
       holds: result.holdConfirmations,
       rows: result.rows,
     );
@@ -140,6 +134,12 @@ class PostImportReviewNotifier extends Notifier<PostImportReviewState> {
     state = state.copyWith(selectedRows: next);
   }
 
+  /// Переключить признак «перевод» у строки (табы Переводы <-> Категории).
+  void toggleTransfer(int rowIndex) {
+    MotionTokens.selection();
+    state = state.copyWith(rows: _mapRow(rowIndex, (r) => r.copyWith(isTransfer: !r.isTransfer)));
+  }
+
   void setCategory(int rowIndex, String? categoryId) {
     MotionTokens.selection();
     state = state.copyWith(rows: _mapRow(rowIndex, (r) => r.copyWith(assignedCategoryId: categoryId)));
@@ -186,22 +186,6 @@ class PostImportReviewNotifier extends Notifier<PostImportReviewState> {
     ]);
   }
 
-  void setTransferAction(String id, TransferAction action) {
-    MotionTokens.selection();
-    state = state.copyWith(transfers: [
-      for (final t in state.transfers)
-        if (t.id == id) t.copyWith(selectedAction: action) else t
-    ]);
-  }
-
-  void mergeAllTransfers() {
-    MotionTokens.medium();
-    state = state.copyWith(transfers: [
-      for (final t in state.transfers)
-        t.copyWith(selectedAction: TransferAction.merge)
-    ]);
-  }
-
   void setHoldAction(String id, HoldAction action) {
     MotionTokens.selection();
     state = state.copyWith(holds: [
@@ -239,10 +223,13 @@ class PostImportReviewNotifier extends Notifier<PostImportReviewState> {
   int get uncategorizedCount {
     var n = 0;
     for (final row in state.rows) {
+      if (row.isTransfer) continue;
       if (row.assignedCategoryId == null) n++;
     }
     return n;
   }
+
+  int get transferCount => state.rows.where((r) => r.isTransfer).length;
 
   Future<FinalizeOutcome?> finalize() async {
     final r = state.result;
@@ -255,7 +242,7 @@ class PostImportReviewNotifier extends Notifier<PostImportReviewState> {
             importResult: r.copyWith(
               rows: state.rows,
               duplicates: state.duplicates,
-              transfers: state.transfers,
+              transfers: const [],
               holdConfirmations: state.holds,
             ),
             userId: userId,

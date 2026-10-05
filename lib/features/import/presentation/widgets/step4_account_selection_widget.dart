@@ -59,7 +59,7 @@ class Step4AccountSelectionWidget extends ConsumerWidget {
               state.options.copyWith(detectDuplicates: v)),
         ),
         SwitchListTile(
-          title: const Text('Искать переводы между счетами'),
+          title: const Text('Помечать переводы между своими счетами'),
           value: state.options.detectTransfers,
           onChanged: (v) => notifier.setOptions(
               state.options.copyWith(detectTransfers: v)),

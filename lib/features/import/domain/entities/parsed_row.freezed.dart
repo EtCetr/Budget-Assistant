@@ -16,7 +16,8 @@ mixin _$ParsedRow {
 
  int get rowIndex; DateTime get date;/// Копейки. Отрицательное = расход, положительное = доход.
  int get amountKopecks; String get merchantName; String? get bankCategory; String? get comment; String? get bankTransactionId; String? get originalCurrency; int? get originalAmountKopecks;/// true = операция ещё не подтверждена банком (HOLD) -> audit_status='pending'.
- bool get isHold;/// Категория, назначенная пользователем в UI (изначально null).
+ bool get isHold;/// true = помечена как перевод между своими счетами -> type='transfer'.
+ bool get isTransfer;/// Категория, назначенная пользователем в UI (изначально null).
  String? get assignedCategoryId;
 /// Create a copy of ParsedRow
 /// with the given fields replaced by the non-null parameter values.
@@ -28,16 +29,16 @@ $ParsedRowCopyWith<ParsedRow> get copyWith => _$ParsedRowCopyWithImpl<ParsedRow>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ParsedRow&&(identical(other.rowIndex, rowIndex) || other.rowIndex == rowIndex)&&(identical(other.date, date) || other.date == date)&&(identical(other.amountKopecks, amountKopecks) || other.amountKopecks == amountKopecks)&&(identical(other.merchantName, merchantName) || other.merchantName == merchantName)&&(identical(other.bankCategory, bankCategory) || other.bankCategory == bankCategory)&&(identical(other.comment, comment) || other.comment == comment)&&(identical(other.bankTransactionId, bankTransactionId) || other.bankTransactionId == bankTransactionId)&&(identical(other.originalCurrency, originalCurrency) || other.originalCurrency == originalCurrency)&&(identical(other.originalAmountKopecks, originalAmountKopecks) || other.originalAmountKopecks == originalAmountKopecks)&&(identical(other.isHold, isHold) || other.isHold == isHold)&&(identical(other.assignedCategoryId, assignedCategoryId) || other.assignedCategoryId == assignedCategoryId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ParsedRow&&(identical(other.rowIndex, rowIndex) || other.rowIndex == rowIndex)&&(identical(other.date, date) || other.date == date)&&(identical(other.amountKopecks, amountKopecks) || other.amountKopecks == amountKopecks)&&(identical(other.merchantName, merchantName) || other.merchantName == merchantName)&&(identical(other.bankCategory, bankCategory) || other.bankCategory == bankCategory)&&(identical(other.comment, comment) || other.comment == comment)&&(identical(other.bankTransactionId, bankTransactionId) || other.bankTransactionId == bankTransactionId)&&(identical(other.originalCurrency, originalCurrency) || other.originalCurrency == originalCurrency)&&(identical(other.originalAmountKopecks, originalAmountKopecks) || other.originalAmountKopecks == originalAmountKopecks)&&(identical(other.isHold, isHold) || other.isHold == isHold)&&(identical(other.isTransfer, isTransfer) || other.isTransfer == isTransfer)&&(identical(other.assignedCategoryId, assignedCategoryId) || other.assignedCategoryId == assignedCategoryId));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,rowIndex,date,amountKopecks,merchantName,bankCategory,comment,bankTransactionId,originalCurrency,originalAmountKopecks,isHold,assignedCategoryId);
+int get hashCode => Object.hash(runtimeType,rowIndex,date,amountKopecks,merchantName,bankCategory,comment,bankTransactionId,originalCurrency,originalAmountKopecks,isHold,isTransfer,assignedCategoryId);
 
 @override
 String toString() {
-  return 'ParsedRow(rowIndex: $rowIndex, date: $date, amountKopecks: $amountKopecks, merchantName: $merchantName, bankCategory: $bankCategory, comment: $comment, bankTransactionId: $bankTransactionId, originalCurrency: $originalCurrency, originalAmountKopecks: $originalAmountKopecks, isHold: $isHold, assignedCategoryId: $assignedCategoryId)';
+  return 'ParsedRow(rowIndex: $rowIndex, date: $date, amountKopecks: $amountKopecks, merchantName: $merchantName, bankCategory: $bankCategory, comment: $comment, bankTransactionId: $bankTransactionId, originalCurrency: $originalCurrency, originalAmountKopecks: $originalAmountKopecks, isHold: $isHold, isTransfer: $isTransfer, assignedCategoryId: $assignedCategoryId)';
 }
 
 
@@ -48,7 +49,7 @@ abstract mixin class $ParsedRowCopyWith<$Res>  {
   factory $ParsedRowCopyWith(ParsedRow value, $Res Function(ParsedRow) _then) = _$ParsedRowCopyWithImpl;
 @useResult
 $Res call({
- int rowIndex, DateTime date, int amountKopecks, String merchantName, String? bankCategory, String? comment, String? bankTransactionId, String? originalCurrency, int? originalAmountKopecks, bool isHold, String? assignedCategoryId
+ int rowIndex, DateTime date, int amountKopecks, String merchantName, String? bankCategory, String? comment, String? bankTransactionId, String? originalCurrency, int? originalAmountKopecks, bool isHold, bool isTransfer, String? assignedCategoryId
 });
 
 
@@ -65,7 +66,7 @@ class _$ParsedRowCopyWithImpl<$Res>
 
 /// Create a copy of ParsedRow
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? rowIndex = null,Object? date = null,Object? amountKopecks = null,Object? merchantName = null,Object? bankCategory = freezed,Object? comment = freezed,Object? bankTransactionId = freezed,Object? originalCurrency = freezed,Object? originalAmountKopecks = freezed,Object? isHold = null,Object? assignedCategoryId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? rowIndex = null,Object? date = null,Object? amountKopecks = null,Object? merchantName = null,Object? bankCategory = freezed,Object? comment = freezed,Object? bankTransactionId = freezed,Object? originalCurrency = freezed,Object? originalAmountKopecks = freezed,Object? isHold = null,Object? isTransfer = null,Object? assignedCategoryId = freezed,}) {
   return _then(_self.copyWith(
 rowIndex: null == rowIndex ? _self.rowIndex : rowIndex // ignore: cast_nullable_to_non_nullable
 as int,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
@@ -77,6 +78,7 @@ as String?,bankTransactionId: freezed == bankTransactionId ? _self.bankTransacti
 as String?,originalCurrency: freezed == originalCurrency ? _self.originalCurrency : originalCurrency // ignore: cast_nullable_to_non_nullable
 as String?,originalAmountKopecks: freezed == originalAmountKopecks ? _self.originalAmountKopecks : originalAmountKopecks // ignore: cast_nullable_to_non_nullable
 as int?,isHold: null == isHold ? _self.isHold : isHold // ignore: cast_nullable_to_non_nullable
+as bool,isTransfer: null == isTransfer ? _self.isTransfer : isTransfer // ignore: cast_nullable_to_non_nullable
 as bool,assignedCategoryId: freezed == assignedCategoryId ? _self.assignedCategoryId : assignedCategoryId // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
@@ -158,7 +160,7 @@ return $default(_that);case _:
 
 
 class _ParsedRow implements ParsedRow {
-  const _ParsedRow({required this.rowIndex, required this.date, required this.amountKopecks, required this.merchantName, this.bankCategory, this.comment, this.bankTransactionId, this.originalCurrency, this.originalAmountKopecks, this.isHold = false, this.assignedCategoryId});
+  const _ParsedRow({required this.rowIndex, required this.date, required this.amountKopecks, required this.merchantName, this.bankCategory, this.comment, this.bankTransactionId, this.originalCurrency, this.originalAmountKopecks, this.isHold = false, this.isTransfer = false, this.assignedCategoryId});
   
 
 @override final  int rowIndex;
@@ -173,6 +175,8 @@ class _ParsedRow implements ParsedRow {
 @override final  int? originalAmountKopecks;
 /// true = операция ещё не подтверждена банком (HOLD) -> audit_status='pending'.
 @override@JsonKey() final  bool isHold;
+/// true = помечена как перевод между своими счетами -> type='transfer'.
+@override@JsonKey() final  bool isTransfer;
 /// Категория, назначенная пользователем в UI (изначально null).
 @override final  String? assignedCategoryId;
 
@@ -186,16 +190,16 @@ _$ParsedRowCopyWith<_ParsedRow> get copyWith => __$ParsedRowCopyWithImpl<_Parsed
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ParsedRow&&(identical(other.rowIndex, rowIndex) || other.rowIndex == rowIndex)&&(identical(other.date, date) || other.date == date)&&(identical(other.amountKopecks, amountKopecks) || other.amountKopecks == amountKopecks)&&(identical(other.merchantName, merchantName) || other.merchantName == merchantName)&&(identical(other.bankCategory, bankCategory) || other.bankCategory == bankCategory)&&(identical(other.comment, comment) || other.comment == comment)&&(identical(other.bankTransactionId, bankTransactionId) || other.bankTransactionId == bankTransactionId)&&(identical(other.originalCurrency, originalCurrency) || other.originalCurrency == originalCurrency)&&(identical(other.originalAmountKopecks, originalAmountKopecks) || other.originalAmountKopecks == originalAmountKopecks)&&(identical(other.isHold, isHold) || other.isHold == isHold)&&(identical(other.assignedCategoryId, assignedCategoryId) || other.assignedCategoryId == assignedCategoryId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ParsedRow&&(identical(other.rowIndex, rowIndex) || other.rowIndex == rowIndex)&&(identical(other.date, date) || other.date == date)&&(identical(other.amountKopecks, amountKopecks) || other.amountKopecks == amountKopecks)&&(identical(other.merchantName, merchantName) || other.merchantName == merchantName)&&(identical(other.bankCategory, bankCategory) || other.bankCategory == bankCategory)&&(identical(other.comment, comment) || other.comment == comment)&&(identical(other.bankTransactionId, bankTransactionId) || other.bankTransactionId == bankTransactionId)&&(identical(other.originalCurrency, originalCurrency) || other.originalCurrency == originalCurrency)&&(identical(other.originalAmountKopecks, originalAmountKopecks) || other.originalAmountKopecks == originalAmountKopecks)&&(identical(other.isHold, isHold) || other.isHold == isHold)&&(identical(other.isTransfer, isTransfer) || other.isTransfer == isTransfer)&&(identical(other.assignedCategoryId, assignedCategoryId) || other.assignedCategoryId == assignedCategoryId));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,rowIndex,date,amountKopecks,merchantName,bankCategory,comment,bankTransactionId,originalCurrency,originalAmountKopecks,isHold,assignedCategoryId);
+int get hashCode => Object.hash(runtimeType,rowIndex,date,amountKopecks,merchantName,bankCategory,comment,bankTransactionId,originalCurrency,originalAmountKopecks,isHold,isTransfer,assignedCategoryId);
 
 @override
 String toString() {
-  return 'ParsedRow(rowIndex: $rowIndex, date: $date, amountKopecks: $amountKopecks, merchantName: $merchantName, bankCategory: $bankCategory, comment: $comment, bankTransactionId: $bankTransactionId, originalCurrency: $originalCurrency, originalAmountKopecks: $originalAmountKopecks, isHold: $isHold, assignedCategoryId: $assignedCategoryId)';
+  return 'ParsedRow(rowIndex: $rowIndex, date: $date, amountKopecks: $amountKopecks, merchantName: $merchantName, bankCategory: $bankCategory, comment: $comment, bankTransactionId: $bankTransactionId, originalCurrency: $originalCurrency, originalAmountKopecks: $originalAmountKopecks, isHold: $isHold, isTransfer: $isTransfer, assignedCategoryId: $assignedCategoryId)';
 }
 
 
@@ -206,7 +210,7 @@ abstract mixin class _$ParsedRowCopyWith<$Res> implements $ParsedRowCopyWith<$Re
   factory _$ParsedRowCopyWith(_ParsedRow value, $Res Function(_ParsedRow) _then) = __$ParsedRowCopyWithImpl;
 @override @useResult
 $Res call({
- int rowIndex, DateTime date, int amountKopecks, String merchantName, String? bankCategory, String? comment, String? bankTransactionId, String? originalCurrency, int? originalAmountKopecks, bool isHold, String? assignedCategoryId
+ int rowIndex, DateTime date, int amountKopecks, String merchantName, String? bankCategory, String? comment, String? bankTransactionId, String? originalCurrency, int? originalAmountKopecks, bool isHold, bool isTransfer, String? assignedCategoryId
 });
 
 
@@ -223,7 +227,7 @@ class __$ParsedRowCopyWithImpl<$Res>
 
 /// Create a copy of ParsedRow
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? rowIndex = null,Object? date = null,Object? amountKopecks = null,Object? merchantName = null,Object? bankCategory = freezed,Object? comment = freezed,Object? bankTransactionId = freezed,Object? originalCurrency = freezed,Object? originalAmountKopecks = freezed,Object? isHold = null,Object? assignedCategoryId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? rowIndex = null,Object? date = null,Object? amountKopecks = null,Object? merchantName = null,Object? bankCategory = freezed,Object? comment = freezed,Object? bankTransactionId = freezed,Object? originalCurrency = freezed,Object? originalAmountKopecks = freezed,Object? isHold = null,Object? isTransfer = null,Object? assignedCategoryId = freezed,}) {
   return _then(_ParsedRow(
 rowIndex: null == rowIndex ? _self.rowIndex : rowIndex // ignore: cast_nullable_to_non_nullable
 as int,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
@@ -235,6 +239,7 @@ as String?,bankTransactionId: freezed == bankTransactionId ? _self.bankTransacti
 as String?,originalCurrency: freezed == originalCurrency ? _self.originalCurrency : originalCurrency // ignore: cast_nullable_to_non_nullable
 as String?,originalAmountKopecks: freezed == originalAmountKopecks ? _self.originalAmountKopecks : originalAmountKopecks // ignore: cast_nullable_to_non_nullable
 as int?,isHold: null == isHold ? _self.isHold : isHold // ignore: cast_nullable_to_non_nullable
+as bool,isTransfer: null == isTransfer ? _self.isTransfer : isTransfer // ignore: cast_nullable_to_non_nullable
 as bool,assignedCategoryId: freezed == assignedCategoryId ? _self.assignedCategoryId : assignedCategoryId // ignore: cast_nullable_to_non_nullable
 as String?,
   ));

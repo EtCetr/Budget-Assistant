@@ -1,7 +1,7 @@
-// lib/features/accounts/presentation/screens/accounts_screen.dart
+﻿// lib/features/accounts/presentation/screens/accounts_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:budget_assistant/core/constants/currency_codes.dart';
 import 'package:budget_assistant/core/providers/security_providers.dart';
 import 'package:budget_assistant/features/spaces/presentation/providers/space_providers.dart';
@@ -20,19 +20,10 @@ class AccountsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final accountsAsync = ref.watch(accountsListProvider(userId));
     return Scaffold(
+      drawer: const AppDrawer(currentRoute: '/accounts'),
       appBar: AppBar(
         title: const Text('Accounts'),
-        leading: IconButton(
-          icon: const Icon(Icons.home),
-          tooltip: 'Home',
-          onPressed: () => context.go('/'),
-        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.category),
-            tooltip: 'Categories',
-            onPressed: () => context.go('/categories'),
-          ),
           IconButton(
             icon: const Icon(Icons.add),
             tooltip: 'Create account',

@@ -7,19 +7,19 @@ import '../entities/hold_confirmation_candidate.dart';
 import '../entities/import_options.dart';
 import '../entities/import_result.dart';
 import '../entities/parser_config.dart';
-import '../entities/transfer_candidate.dart';
+import '../entities/transfer_profile.dart';
 import 'auto_categorize_usecase.dart';
 import 'detect_duplicates_usecase.dart';
-import 'detect_transfers_usecase.dart';
+import 'mark_transfers_usecase.dart';
 import 'parse_import_file_usecase.dart';
 
 /// Оркестратор запуска импорта (ТЗ 6.3.25.19):
-/// парсинг → автокатегоризация → дубликаты/hold → переводы → ImportResult.
-/// Записи в БД НЕТ — финализация на PostImportReviewScreen (15.4).
+/// парсинг -> автокатегоризация -> дубликаты/hold -> пометка переводов -> ImportResult.
+/// Переводы НЕ объединяются: строки помечаются isTransfer и создаются type='transfer'.
 class ImportTransactionsUseCase {
   final ParseImportFileUseCase _parseUseCase;
   final DetectDuplicatesUseCase _duplicates;
-  final DetectTransfersUseCase _transfers;
+  final MarkTransfersUseCase _markTransfers;
   final AutoCategorizeUseCase _categorize;
   final AppSettingsDao _settingsDao;
   final Logger _logger;
@@ -27,13 +27,13 @@ class ImportTransactionsUseCase {
   ImportTransactionsUseCase({
     required ParseImportFileUseCase parseUseCase,
     required DetectDuplicatesUseCase duplicates,
-    required DetectTransfersUseCase transfers,
+    required MarkTransfersUseCase markTransfers,
     required AutoCategorizeUseCase categorize,
     required AppSettingsDao settingsDao,
     required Logger logger,
   })  : _parseUseCase = parseUseCase,
         _duplicates = duplicates,
-        _transfers = transfers,
+        _markTransfers = markTransfers,
         _categorize = categorize,
         _settingsDao = settingsDao,
         _logger = logger;
@@ -47,6 +47,7 @@ class ImportTransactionsUseCase {
     required String? targetSpaceId,
     required String userId,
     required ImportOptions options,
+    TransferProfile transferProfile = const TransferProfile(),
   }) async {
     try {
       final settings = await _settingsDao.getForUser(userId);
@@ -60,7 +61,6 @@ class ImportTransactionsUseCase {
         _logger.w('Импорт: парсинг не дал строк (${parsed.error})');
         return null;
       }
-
       var rows = parsed.rows;
       if (options.autoCategorize) {
         rows = await _categorize.categorizeAll(
@@ -69,7 +69,9 @@ class ImportTransactionsUseCase {
           spaceId: targetSpaceId,
         );
       }
-
+      if (options.detectTransfers) {
+        rows = _markTransfers(rows: rows, profile: transferProfile);
+      }
       var duplicates = const <DuplicateCandidate>[];
       var holds = const <HoldConfirmationCandidate>[];
       if (options.detectDuplicates) {
@@ -81,19 +83,9 @@ class ImportTransactionsUseCase {
         duplicates = analysis.duplicates;
         holds = analysis.holdConfirmations;
       }
-
-      var transfers = const <TransferCandidate>[];
-      if (options.detectTransfers) {
-        transfers = await _transfers.call(
-          importedRows: rows,
-          sourceAccountId: targetAccountId,
-          interbankToleranceDays: settings.duplicateDateToleranceDays,
-          sbpToleranceMinutes: settings.transferTimeToleranceMinutes,
-        );
-      }
-
+      final transferCount = rows.where((r) => r.isTransfer).length;
       _logger.i('Импорт: ${rows.length} строк, ${duplicates.length} дублей, '
-          '${transfers.length} переводов, ${holds.length} hold');
+          '$transferCount переводов, ${holds.length} hold');
       return ImportResult(
         bankName: config.bankName,
         bankCode: config.bankCode,
@@ -105,7 +97,7 @@ class ImportTransactionsUseCase {
         targetSpaceId: targetSpaceId,
         rows: rows,
         duplicates: duplicates,
-        transfers: transfers,
+        transfers: const [],
         holdConfirmations: holds,
         options: options,
       );

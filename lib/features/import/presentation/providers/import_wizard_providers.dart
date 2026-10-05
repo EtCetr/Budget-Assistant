@@ -7,6 +7,7 @@ import 'package:budget_assistant/features/import/domain/entities/parser_config.d
 import 'package:budget_assistant/features/import/domain/usecases/auto_detect_columns_usecase.dart';
 import 'package:budget_assistant/features/import/domain/usecases/fetch_parser_configs_usecase.dart';
 import 'package:budget_assistant/features/import/domain/usecases/import_transactions_usecase.dart';
+import 'package:budget_assistant/features/import/domain/usecases/mark_transfers_usecase.dart';
 import 'package:budget_assistant/features/import/domain/usecases/parse_import_file_usecase.dart';
 import 'package:budget_assistant/features/import/domain/usecases/preview_import_data_usecase.dart';
 import 'import_repository_providers.dart';
@@ -41,12 +42,16 @@ final previewImportDataUseCaseProvider =
   return PreviewImportDataUseCase();
 });
 
+final markTransfersUseCaseProvider = Provider<MarkTransfersUseCase>((ref) {
+  return MarkTransfersUseCase();
+});
+
 final importTransactionsUseCaseProvider =
     Provider<ImportTransactionsUseCase>((ref) {
   return ImportTransactionsUseCase(
     parseUseCase: ref.watch(parseImportFileUseCaseProvider),
     duplicates: ref.watch(detectDuplicatesUseCaseProvider),
-    transfers: ref.watch(detectTransfersUseCaseProvider),
+    markTransfers: ref.watch(markTransfersUseCaseProvider),
     categorize: ref.watch(autoCategorizeUseCaseProvider),
     settingsDao: ref.watch(appSettingsDaoProvider),
     logger: ref.watch(_importLoggerProvider),

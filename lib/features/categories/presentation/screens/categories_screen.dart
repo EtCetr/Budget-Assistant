@@ -1,7 +1,7 @@
-// lib/features/categories/presentation/screens/categories_screen.dart
+﻿// lib/features/categories/presentation/screens/categories_screen.dart
 import 'package:flutter/material.dart';
+import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:budget_assistant/core/utils/result.dart';
 import '../providers/category_providers.dart';
 import '../widgets/category_tree_view.dart';
@@ -15,19 +15,10 @@ class CategoriesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsync = ref.watch(categoriesGroupedByTypeProvider(userId));
     return Scaffold(
+      drawer: const AppDrawer(currentRoute: '/categories'),
       appBar: AppBar(
         title: const Text('Categories'),
-        leading: IconButton(
-          icon: const Icon(Icons.home),
-          tooltip: 'Home',
-          onPressed: () => context.go('/'),
-        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.account_balance_wallet),
-            tooltip: 'Accounts',
-            onPressed: () => context.go('/accounts'),
-          ),
           IconButton(
             icon: const Icon(Icons.add),
             tooltip: 'Create category',

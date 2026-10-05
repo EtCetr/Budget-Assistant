@@ -94,9 +94,11 @@ class FinalizeImportUseCase {
       for (final row in importResult.rows) {
         if (!selectedRowIndices.contains(row.rowIndex)) continue;
         if (excluded.contains(row.rowIndex)) continue;
-        final type = row.amountKopecks < 0
-            ? TransactionType.expense
-            : TransactionType.income;
+        final type = row.isTransfer
+            ? TransactionType.transfer
+            : (row.amountKopecks < 0
+                ? TransactionType.expense
+                : TransactionType.income);
         final id = const Uuid().v4();
         await _db.into(_db.transactions).insert(TransactionsCompanion.insert(
               id: id,

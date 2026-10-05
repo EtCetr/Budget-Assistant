@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
@@ -187,6 +188,7 @@ class _CashbackScreenState extends ConsumerState<CashbackScreen> {
     final source = ref.watch(cashbackAccountsSourceProvider);
     final currentSpaceId = ref.watch(currentSpaceIdProvider);
     return Scaffold(
+      drawer: const AppDrawer(currentRoute: '/cashback'),
       appBar: AppBar(
         title: const Text('Кэшбэк'),
         actions: [

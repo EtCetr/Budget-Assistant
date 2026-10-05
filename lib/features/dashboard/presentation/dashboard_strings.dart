@@ -33,4 +33,5 @@ abstract final class DashboardStrings {
   static const navBudget = 'Бюджет и лимиты';
   static const navCashback = 'Кэшбэк';
   static const navSavingsGoals = 'Цели накопления';
+  static const navProfile = 'Профиль';
 }

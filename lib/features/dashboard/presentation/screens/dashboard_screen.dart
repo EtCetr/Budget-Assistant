@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import '../../../../core/providers/security_providers.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -21,9 +20,7 @@ import '../widgets/dashboard_empty_state.dart';
 import '../widgets/dashboard_settings_sheet.dart';
 import '../widgets/expense_flow_chart_widget.dart';
 import '../widgets/limit_cards_widget.dart';
-import 'package:budget_assistant/features/debts/presentation/debts_strings.dart';
-import 'package:budget_assistant/features/reminders/presentation/reminders_strings.dart';
-import 'package:budget_assistant/features/calendar/presentation/calendar_strings.dart';
+import '../widgets/app_drawer.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -161,96 +158,7 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      drawer: Drawer(
-        child: SafeArea(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              const DrawerHeader(
-                child: Align(
-                  alignment: Alignment.bottomLeft,
-                  child: Text(
-                    'Budget Assistant',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.receipt_long),
-                title: const Text(DashboardStrings.navTransactions),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  context.push('/transactions');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.account_balance_wallet),
-                title: const Text(DashboardStrings.navAccounts),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  context.push('/accounts');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.category),
-                title: const Text(DashboardStrings.navCategories),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  context.push('/categories');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.pie_chart),
-                title: const Text(DashboardStrings.navBudget),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  context.push('/budget');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.loyalty),
-                title: const Text(DashboardStrings.navCashback),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  context.push('/cashback');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.savings),
-                title: const Text(DashboardStrings.navSavingsGoals),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  context.push('/savings-goals');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.handshake_outlined),
-                title: const Text(DebtsStrings.screenTitle),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  context.push('/debts');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.notifications_outlined),
-                title: const Text(RemindersStrings.screenTitle),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  context.push('/reminders');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.calendar_month_outlined),
-                title: const Text(CalendarStrings.navCalendar),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  context.push('/calendar');
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+      drawer: const AppDrawer(currentRoute: '/'),
       body: RefreshIndicator(
         onRefresh: () => _refresh(context, ref),
         child: layoutAsync.when(
