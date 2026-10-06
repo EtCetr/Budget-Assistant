@@ -474,6 +474,76 @@ class ReminderDrafts extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+// ЭТАП 16: чеки, позиции чека, алиасы товаров + черновики чеков (ТОМ 2 17.2-17.4, 23).
+@DataClassName('ReceiptDb')
+class Receipts extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text().references(Users, #id)();
+  TextColumn get spaceId => text().nullable().references(Spaces, #id)();
+  TextColumn get transactionId =>
+      text().nullable().references(Transactions, #id)();
+  TextColumn get storeName => text()(); // [E2E]
+  IntColumn get totalAmount => integer()(); // [E2E] копейки
+  DateTimeColumn get receiptDate => dateTime()(); // UTC
+  TextColumn get fiscalData => text().nullable()(); // [E2E] JSON
+  TextColumn get rawOcrText => text().nullable()(); // [E2E]
+  TextColumn get imagePath => text().nullable()();
+  TextColumn get status => text().withDefault(const Constant('draft'))();
+  TextColumn get currency => text().withDefault(const Constant('RUB'))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get syncStatus => text().withDefault(const Constant('pending'))();
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('ReceiptItemDb')
+class ReceiptItems extends Table {
+  TextColumn get id => text()();
+  TextColumn get receiptId => text().references(Receipts, #id)();
+  TextColumn get originalName => text()(); // [E2E]
+  TextColumn get normalizedName => text().nullable()(); // [E2E]
+  RealColumn get quantity => real().withDefault(const Constant(1.0))();
+  IntColumn get unitPrice => integer()(); // [E2E] копейки
+  IntColumn get totalPrice => integer()(); // [E2E] копейки
+  TextColumn get categoryId =>
+      text().nullable().references(Categories, #id)();
+  BoolColumn get isExcluded =>
+      boolean().withDefault(const Constant(false))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get syncStatus => text().withDefault(const Constant('pending'))();
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('ProductAliasDb')
+class ProductAliases extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text().references(Users, #id)();
+  TextColumn get spaceId => text().nullable().references(Spaces, #id)();
+  TextColumn get originalNameHash => text()(); // SHA-256(lowercase(original_name))
+  TextColumn get normalizedName => text()(); // [E2E]
+  TextColumn get categoryId => text().references(Categories, #id)();
+  IntColumn get usageCount => integer().withDefault(const Constant(1))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  TextColumn get syncStatus => text().withDefault(const Constant('pending'))();
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('ReceiptDraftDb')
+class ReceiptDrafts extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text().references(Users, #id)();
+  TextColumn get receiptId => text().nullable()();
+  TextColumn get formDataJson => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  @override
+  Set<Column> get primaryKey => {id};
+}
 @DriftDatabase(
   tables: [
     Users,
@@ -507,7 +577,11 @@ class ReminderDrafts extends Table {
     // Этап 15: импорт
     ParserConfigs,
     ImportDrafts,
-  ],
+Receipts,
+ReceiptItems,
+ProductAliases,
+ReceiptDrafts,
+],
   daos: [
     UsersDao,
     SpacesDao,
@@ -529,7 +603,7 @@ class AppDatabase extends _$AppDatabase {
   /// v13: Этап 14 — reminders, holidays, recurring_transactions,
   /// forecast_cache, reminder_drafts + 5 колонок app_settings + сиды РФ.
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   Future<void> _createSavingsIndexes() async {
     await customStatement('''
@@ -626,7 +700,34 @@ ON reminder_drafts(user_id, updated_at)
     ''');
   }
 
-  Future<void> _createAllIndexes() async {
+  Future<void> _createReceiptsIndexes() async {
+  // ТОМ 2 22: матчинг, JOIN с чеком, поиск алиасов по хэшу без расшифровки.
+  await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_receipts_transaction_date
+ON receipts(transaction_id, receipt_date, sync_status)
+''');
+  await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_receipts_user_space
+ON receipts(user_id, space_id)
+''');
+  await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_receipt_items_receipt
+ON receipt_items(receipt_id, sync_status)
+''');
+  await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_product_aliases_hash
+ON product_aliases(original_name_hash)
+''');
+  await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_product_aliases_user
+ON product_aliases(user_id, space_id, usage_count)
+''');
+  await customStatement('''
+CREATE INDEX IF NOT EXISTS idx_receipt_drafts_user
+ON receipt_drafts(user_id, updated_at)
+''');
+}
+Future<void> _createAllIndexes() async {
     await customStatement('''
 CREATE INDEX IF NOT EXISTS idx_memberships_user
 ON memberships(user_id, status)
@@ -758,7 +859,8 @@ ON cashback_matrix(sync_status)
     await _createDebtsIndexes();
     await _createRemindersIndexes();
     await _createImportIndexes();
-  }
+await _createReceiptsIndexes();
+}
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -897,6 +999,14 @@ if (from < 13) {
             await DefaultHolidaysSeed.seedIfEmpty(this);
 await DefaultParserConfigsSeed.seedIfEmpty(this);
           }
+if (from < 16) {
+// Этап 16: receipts, receipt_items, product_aliases, receipt_drafts.
+await m.createTable(receipts);
+await m.createTable(receiptItems);
+await m.createTable(productAliases);
+await m.createTable(receiptDrafts);
+await _createReceiptsIndexes();
+}
         },
         beforeOpen: (details) async {
           AppLogger.i(
