@@ -47,6 +47,8 @@ import 'package:budget_assistant/features/calendar/presentation/screens/day_stat
 import 'package:budget_assistant/features/calendar/presentation/screens/date_forecast_screen.dart';
 import 'package:budget_assistant/features/calendar/presentation/screens/holidays_management_screen.dart';
 import 'package:budget_assistant/features/recurring_payments/presentation/screens/recurring_payments_detection_screen.dart';
+import 'package:budget_assistant/features/receipts/presentation/screens/scan_receipt_screen.dart';
+import 'package:budget_assistant/features/receipts/presentation/screens/receipt_preview_screen.dart';
 part 'app_router.g.dart';
 
 @riverpod
@@ -383,6 +385,22 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) =>
             const RecurringPaymentsDetectionScreen(),
       ),
+GoRoute(
+path: '/receipts/scan',
+name: 'receipts-scan',
+builder: (context, state) {
+final q = state.uri.queryParameters;
+return ScanReceiptScreen(transactionId: q['transaction_id']);
+},
+),
+GoRoute(
+path: '/receipts/:id/preview',
+name: 'receipt-preview',
+builder: (context, state) => ReceiptPreviewScreen(
+receiptId: state.pathParameters['id']!,
+transactionId: state.uri.queryParameters['transaction_id'],
+),
+),
     ],
     redirect: (context, state) {
       final location = state.uri.toString();
