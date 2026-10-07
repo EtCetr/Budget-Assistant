@@ -271,3 +271,9 @@ Flutter: DropdownButtonFormField в Row требует ограничения ш
 - Навигация: AppDrawer на всех экранах; убраны «домик» и кросс-ссылки; после импорта → /transactions; мастер импорта сбрасывается после успеха.
 - Фильтры лога транзакций: autoDispose (сброс при уходе с экрана).
 - Auth: Google (Supabase OAuth) + подтверждение email по настройке Supabase «Confirm email».
+## Этап 16 — DONE
+- Экраны: ScanReceiptScreen (QR mobile_scanner / OCR ML Kit / галерея), ReceiptPreviewScreen (превью+privacy, метаданные, матчинг A-Г, позиции, ProductNamingDialog), SplitReceiptScreen (ТЗ 6.3.48).
+- БД v16: receipts, receipt_items, product_aliases, receipt_drafts + индексы (ТОМ 2 §22).
+- Роуты: /receipts/scan, /receipts/:id/preview, /receipts/:id/split. Вход в сканер — long-press по транзакции («Прикрепить чек»).
+- Спам-защита: offer_product_naming_count / offer_receipt_split_count (>=3 -> автооффер выкл).
+- Открытые долги: список чеков (будущий этап); загрузка фото чека в Supabase Storage (этап 25, sync_images_to_cloud); product_analytics_cache (этап 20); персист инфо-баннера сплита; вычистка осиротевших черновиков.
