@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../labels/transactions_log_labels.dart';
-import '../../../receipts/presentation/labels/receipts_strings.dart';
 
 class FabCreateMenu extends ConsumerWidget {
   const FabCreateMenu({super.key});
@@ -72,14 +71,6 @@ Future<void> showFabCreateMenu(BuildContext context) async {
                 context.push('/import/onboarding');
               },
             ),
-ListTile(
-leading: const Icon(Icons.receipt_long_outlined),
-title: const Text(ReceiptsStrings.fabScanReceipt),
-onTap: () {
-Navigator.of(sheetContext).pop();
-context.push('/receipts/scan');
-},
-),
             const SizedBox(height: 12),
           ],
         ),

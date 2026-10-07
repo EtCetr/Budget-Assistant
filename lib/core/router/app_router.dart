@@ -49,6 +49,7 @@ import 'package:budget_assistant/features/calendar/presentation/screens/holidays
 import 'package:budget_assistant/features/recurring_payments/presentation/screens/recurring_payments_detection_screen.dart';
 import 'package:budget_assistant/features/receipts/presentation/screens/scan_receipt_screen.dart';
 import 'package:budget_assistant/features/receipts/presentation/screens/receipt_preview_screen.dart';
+import 'package:budget_assistant/features/receipts/presentation/screens/split_receipt_screen.dart';
 part 'app_router.g.dart';
 
 @riverpod
@@ -400,6 +401,12 @@ builder: (context, state) => ReceiptPreviewScreen(
 receiptId: state.pathParameters['id']!,
 transactionId: state.uri.queryParameters['transaction_id'],
 ),
+),
+GoRoute(
+path: '/receipts/:id/split',
+name: 'receipt-split',
+builder: (context, state) =>
+SplitReceiptScreen(receiptId: state.pathParameters['id']!),
 ),
     ],
     redirect: (context, state) {

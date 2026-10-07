@@ -1,7 +1,11 @@
 import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
+import 'package:budget_assistant/core/database/daos/app_settings_dao.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
+import 'package:budget_assistant/features/receipts/domain/dtos/receipt_category_lookup.dart';
+import 'package:budget_assistant/features/receipts/domain/dtos/receipt_offer_settings.dart';
+import 'package:budget_assistant/features/receipts/domain/dtos/transaction_match_candidate.dart';
 import 'package:budget_assistant/features/receipts/domain/entities/receipt.dart';
 import 'package:budget_assistant/features/receipts/domain/entities/receipt_item.dart';
 import 'package:budget_assistant/features/receipts/domain/repositories/receipts_repository.dart';
@@ -21,7 +25,8 @@ class ReceiptsRepositoryImpl implements ReceiptsRepository {
         await _db.into(_db.receipts).insert(_toReceiptCompanion(receipt));
         if (items.isNotEmpty) {
           await _db.batch((batch) {
-            batch.insertAll(_db.receiptItems, items.map(_toReceiptItemCompanion).toList());
+            batch.insertAll(
+                _db.receiptItems, items.map(_toReceiptItemCompanion).toList());
           });
         }
       });
@@ -37,10 +42,13 @@ class ReceiptsRepositoryImpl implements ReceiptsRepository {
       await _db.transaction(() async {
         await (_db.update(_db.receipts)..where((r) => r.id.equals(receipt.id)))
             .write(_toReceiptCompanion(receipt));
-        await (_db.delete(_db.receiptItems)..where((i) => i.receiptId.equals(receipt.id))).go();
+        await (_db.delete(_db.receiptItems)
+              ..where((i) => i.receiptId.equals(receipt.id)))
+            .go();
         if (items.isNotEmpty) {
           await _db.batch((batch) {
-            batch.insertAll(_db.receiptItems, items.map(_toReceiptItemCompanion).toList());
+            batch.insertAll(
+                _db.receiptItems, items.map(_toReceiptItemCompanion).toList());
           });
         }
       });
@@ -54,7 +62,9 @@ class ReceiptsRepositoryImpl implements ReceiptsRepository {
   Future<void> deleteReceipt(String id) async {
     try {
       await _db.transaction(() async {
-        await (_db.delete(_db.receiptItems)..where((i) => i.receiptId.equals(id))).go();
+        await (_db.delete(_db.receiptItems)
+              ..where((i) => i.receiptId.equals(id)))
+            .go();
         await (_db.delete(_db.receipts)..where((r) => r.id.equals(id))).go();
       });
     } catch (e, stack) {
@@ -66,7 +76,9 @@ class ReceiptsRepositoryImpl implements ReceiptsRepository {
   @override
   Future<Receipt?> getReceiptById(String id) async {
     try {
-      final row = await (_db.select(_db.receipts)..where((r) => r.id.equals(id))).getSingleOrNull();
+      final row = await (_db.select(_db.receipts)
+            ..where((r) => r.id.equals(id)))
+          .getSingleOrNull();
       return row == null ? null : _fromDb(row);
     } catch (e, stack) {
       _logger.e('Failed to get receipt', error: e, stackTrace: stack);
@@ -78,8 +90,8 @@ class ReceiptsRepositoryImpl implements ReceiptsRepository {
   Future<List<Receipt>> getReceiptsByUser(String userId) async {
     try {
       final rows = await (_db.select(_db.receipts)
-        ..where((r) => r.userId.equals(userId))
-        ..orderBy([(r) => OrderingTerm.desc(r.receiptDate)]))
+            ..where((r) => r.userId.equals(userId))
+            ..orderBy([(r) => OrderingTerm.desc(r.receiptDate)]))
           .get();
       return rows.map(_fromDb).toList();
     } catch (e, stack) {
@@ -91,7 +103,9 @@ class ReceiptsRepositoryImpl implements ReceiptsRepository {
   @override
   Future<List<ReceiptItem>> getItemsByReceiptId(String receiptId) async {
     try {
-      final rows = await (_db.select(_db.receiptItems)..where((i) => i.receiptId.equals(receiptId))).get();
+      final rows = await (_db.select(_db.receiptItems)
+            ..where((i) => i.receiptId.equals(receiptId)))
+          .get();
       return rows.map(_receiptItemFromDb).toList();
     } catch (e, stack) {
       _logger.e('Failed to get receipt items', error: e, stackTrace: stack);
@@ -109,6 +123,189 @@ class ReceiptsRepositoryImpl implements ReceiptsRepository {
       ));
     } catch (e, stack) {
       _logger.e('Failed to update receipt status', error: e, stackTrace: stack);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> saveReceipt(Receipt receipt) async {
+    try {
+      await (_db.update(_db.receipts)..where((r) => r.id.equals(receipt.id)))
+          .write(_toReceiptCompanion(receipt));
+    } catch (e, stack) {
+      _logger.e('Failed to save receipt meta', error: e, stackTrace: stack);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> saveItems(String receiptId, List<ReceiptItem> items) async {
+    try {
+      await _db.transaction(() async {
+        await (_db.delete(_db.receiptItems)
+              ..where((i) => i.receiptId.equals(receiptId)))
+            .go();
+        if (items.isNotEmpty) {
+          await _db.batch((batch) {
+            batch.insertAll(
+                _db.receiptItems, items.map(_toReceiptItemCompanion).toList());
+          });
+        }
+      });
+    } catch (e, stack) {
+      _logger.e('Failed to save receipt items', error: e, stackTrace: stack);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<TransactionMatchCandidate>> findMatchCandidates({
+    required int totalKop,
+    required DateTime dateUtc,
+  }) async {
+    try {
+      final min = (totalKop * 0.95).round();
+      final max = (totalKop * 1.05).round();
+      final start = dateUtc.subtract(const Duration(hours: 48));
+      final end = dateUtc.add(const Duration(hours: 48));
+      final rows = await (_db.select(_db.transactions)
+            ..where((t) =>
+                t.type.equals('expense') &
+                t.amount.isBetweenValues(min, max) &
+                t.date.isBetweenValues(start, end))
+            ..orderBy([(t) => OrderingTerm.desc(t.date)]))
+          .get();
+      return rows
+          .map((t) => TransactionMatchCandidate(
+                id: t.id,
+                dateUtc: t.date,
+                amountKop: t.amount,
+                auditStatus: t.auditStatus.name,
+                hasReceipt: t.receiptId != null,
+              ))
+          .toList();
+    } catch (e, stack) {
+      _logger.e('Failed to find match candidates', error: e, stackTrace: stack);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> linkReceiptToTransaction({
+    required String receiptId,
+    required String transactionId,
+  }) async {
+    try {
+      if (transactionId.isEmpty) {
+        throw StateError('Empty transactionId');
+      }
+      await _db.transaction(() async {
+        final tx = await (_db.select(_db.transactions)
+              ..where((t) => t.id.equals(transactionId)))
+            .getSingleOrNull();
+        if (tx == null) {
+          throw StateError('Transaction not found: $transactionId');
+        }
+        // ТЗ 6.3.23.5: привязка к hold-операциям запрещена.
+        if (tx.auditStatus == AuditStatus.pending) {
+          throw StateError('Cannot link receipt to pending transaction');
+        }
+        final now = DateTime.now().toUtc();
+        await (_db.update(_db.receipts)..where((r) => r.id.equals(receiptId)))
+            .write(ReceiptsCompanion(
+          transactionId: Value(transactionId),
+          status: const Value('matched'),
+          updatedAt: Value(now),
+          syncStatus: const Value('pending'),
+        ));
+        await (_db.update(_db.transactions)
+              ..where((t) => t.id.equals(transactionId)))
+            .write(TransactionsCompanion(
+          receiptId: Value(receiptId),
+          updatedAt: Value(now),
+          syncStatus: const Value(SyncStatus.pending),
+        ));
+      });
+    } catch (e, stack) {
+      _logger.e('Failed to link receipt', error: e, stackTrace: stack);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<ReceiptCategoryLookup>> getExpenseCategories({
+    required String? spaceId,
+  }) async {
+    try {
+      final query = _db.select(_db.categories)
+        ..where((c) {
+          final isExpense = c.type.equals('expense');
+          if (spaceId == null) {
+            return isExpense & c.spaceId.isNull();
+          }
+          return isExpense & (c.spaceId.equals(spaceId) | c.spaceId.isNull());
+        })
+        ..orderBy([(c) => OrderingTerm.asc(c.name)]);
+      final rows = await query.get();
+      return rows
+          .map((c) => ReceiptCategoryLookup(
+                id: c.id,
+                name: c.name,
+                iconEmoji: c.iconEmoji,
+                colorHex: c.colorHex,
+              ))
+          .toList();
+    } catch (e, stack) {
+      _logger.e('Failed to get expense categories', error: e, stackTrace: stack);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ReceiptOfferSettings> getReceiptOfferSettings(String userId) async {
+    try {
+      final s = await AppSettingsDao(_db).getForUser(userId);
+      return ReceiptOfferSettings(
+        autoOfferNaming: s.autoOfferProductNaming,
+        offerNamingCount: s.offerProductNamingCount,
+        autoOfferSplit: s.autoOfferReceiptSplit,
+        offerSplitCount: s.offerReceiptSplitCount,
+        syncImagesToCloud: s.syncImagesToCloud,
+      );
+    } catch (e, stack) {
+      _logger.e('Failed to get settings', error: e, stackTrace: stack);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> recordNamingDecision(
+    String userId, {
+    required bool accepted,
+  }) async {
+    try {
+      final dao = AppSettingsDao(_db);
+      if (accepted) {
+        await dao.updateForUser(
+          userId,
+          const AppSettingsCompanion(
+            offerProductNamingCount: Value(0),
+            autoOfferProductNaming: Value(true),
+          ),
+        );
+        return;
+      }
+      final settings = await dao.getForUser(userId);
+      final newCount = settings.offerProductNamingCount + 1;
+      await dao.updateForUser(
+        userId,
+        AppSettingsCompanion(
+          offerProductNamingCount: Value(newCount),
+          autoOfferProductNaming: Value(newCount < 3),
+        ),
+      );
+    } catch (e, stack) {
+      _logger.e('Failed to record naming decision', error: e, stackTrace: stack);
       rethrow;
     }
   }

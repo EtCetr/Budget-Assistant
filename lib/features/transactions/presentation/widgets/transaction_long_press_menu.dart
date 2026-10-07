@@ -168,13 +168,13 @@ Future<void> showTransactionLongPressMenu({
                     context.push('/debts/create?transaction_id=${transaction.id}');
                 },
             ),
-            if (transaction.receiptId == null)
+            if (transaction.receiptId == null || transaction.receiptId!.isEmpty)
               ListTile(
                 leading: const Icon(Icons.photo_camera_outlined),
                 title: const Text(TransactionsLogLabels.attachReceipt),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
-context.push('/receipts/scan?transaction_id=');
+context.push('/receipts/scan?transaction_id=${transaction.id}');
                 },
               )
             else

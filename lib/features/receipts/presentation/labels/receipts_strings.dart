@@ -29,8 +29,50 @@ abstract final class ReceiptsStrings {
   static const String helpGallery =
       'Выберите сохранённое фото или скриншот чека и укажите тип содержимого.';
   static const String previewTitle = 'Предпросмотр чека';
-  static const String saveFailed =
-      'Не удалось сохранить черновик чека. Попробуйте ещё раз';
   static const String previewPlaceholder =
       'Черновик чека создан. Полноценный предпросмотр появится в под-шаге 16.4.';
+  static const String saveFailed =
+      'Не удалось сохранить черновик чека. Попробуйте ещё раз';
+  static const String metadataStore = 'Магазин';
+  static const String metadataDate = 'Дата чека';
+  static const String metadataTotal = 'Итоговая сумма';
+  static const String matchTitle = 'Привязка к операции';
+  static const String matchNone = 'Автоматических совпадений не найдено';
+  static const String matchCreate = 'Создать новую транзакцию';
+  static const String matchSkip = 'Пропустить';
+  static const String matchAttach = 'Прикрепить';
+  static const String matchChooseOther = 'Выбрать другую';
+  static const String matchConfirmSel = 'Подтвердить выбор';
+  static const String matchPending =
+      'Операция в статусе hold — привязка будет доступна после верификации';
+  static const String matchAlready = 'Чек привязан к операции';
+  static const String matchAttached = 'Чек прикреплён';
+  static const String itemsTitle = 'Позиции чека';
+  static const String itemAdd = 'Добавить позицию';
+  static const String itemName = 'Название';
+  static const String itemQty = 'Кол-во';
+  static const String itemPrice = 'Цена';
+  static const String itemCategory = 'Категория';
+  static const String itemExclude = 'Исключить';
+  static const String summaryOk = 'Сумма позиций сходится с итогом';
+  static const String summaryMismatch = 'Сумма позиций НЕ сходится с итогом';
+  static const String confirmButton = 'Подтвердить и сохранить';
+  static const String savedSnack = 'Чек сохранён';
+  static const String namingTitle = 'Дать название товару?';
+  static const String namingHint =
+      'Название поможет точнее считать аналитику товаров';
+  static const String namingScopeSelf = 'Только я';
+  static const String namingScopeFamily = 'Семья';
+  static const String namingSave = 'Дать название';
+  static const String namingSkip = 'Пропустить';
+  static const String matchPreselected =
+      'Прикрепить к операции, из которой открыт экран?';
+  static const String scanNoTransaction =
+      'Сканирование доступно из операции: удерживайте транзакцию и выберите «Прикрепить чек»';
+  static const String hintLink = 'привяжите чек к операции';
+  static const String splitTitle = 'Разделение чека';
+  static const String splitPlaceholder =
+      'Экран разделения чека появится в под-шаге 16.5.';
+  static const String imageHidden = 'Фото скрыто (приватный режим)';
+  static const String imageCloud = 'Фото будет доступно после синхронизации';
 }

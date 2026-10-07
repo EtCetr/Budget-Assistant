@@ -25,8 +25,14 @@ class ScanReceiptScreen extends ConsumerStatefulWidget {
 class _ScanReceiptScreenState extends ConsumerState<ScanReceiptScreen> {
   bool _processing = false;
 
+  /// Пустой query-параметр считаем отсутствующим (защита от 'съеденного' id).
+  String? get _txId =>
+      (widget.transactionId == null || widget.transactionId!.isEmpty)
+          ? null
+          : widget.transactionId;
+
   String _previewRoute(String receiptId) {
-    final t = widget.transactionId;
+    final t = _txId;
     return t == null
         ? '/receipts/$receiptId/preview'
         : '/receipts/$receiptId/preview?transaction_id=$t';
@@ -70,7 +76,7 @@ class _ScanReceiptScreenState extends ConsumerState<ScanReceiptScreen> {
         raw: raw,
         userId: ref.read(currentUserIdProvider),
         spaceId: ref.read(currentSpaceIdProvider),
-        transactionId: widget.transactionId,
+        transactionId: _txId,
       ));
 
   Future<void> _onOcrPhoto(String path) => _run(() => ref
@@ -79,7 +85,7 @@ class _ScanReceiptScreenState extends ConsumerState<ScanReceiptScreen> {
         sourcePath: path,
         userId: ref.read(currentUserIdProvider),
         spaceId: ref.read(currentSpaceIdProvider),
-        transactionId: widget.transactionId,
+        transactionId: _txId,
       ));
 
   void _showHelp() {
@@ -116,6 +122,20 @@ class _ScanReceiptScreenState extends ConsumerState<ScanReceiptScreen> {
     final mode = ref.watch(scanModeProvider);
     final galleryImage = ref.watch(galleryImageProvider);
     final galleryType = ref.watch(galleryContentTypeProvider);
+    if (_txId == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text(ReceiptsStrings.scanTitle)),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              ReceiptsStrings.scanNoTransaction,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text(ReceiptsStrings.scanTitle),
