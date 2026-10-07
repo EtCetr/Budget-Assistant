@@ -3,6 +3,7 @@ import '../dtos/receipt_offer_settings.dart';
 import '../dtos/transaction_match_candidate.dart';
 import '../entities/receipt.dart';
 import '../entities/receipt_item.dart';
+import 'package:budget_assistant/features/transactions/domain/entities/split_position_draft.dart';
 
 abstract class ReceiptsRepository {
   Future<void> createReceipt(Receipt receipt, List<ReceiptItem> items);
@@ -42,4 +43,23 @@ abstract class ReceiptsRepository {
 
   /// Этап 16.4: защита от спама именования (ТЗ 6.3.49.4).
   Future<void> recordNamingDecision(String userId, {required bool accepted});
+
+  /// Этап 16.5: свежий (<24 ч) черновик разделения (split_drafts).
+  Future<List<SplitPositionDraft>?> getFreshSplitDraft(String transactionId);
+
+  /// Этап 16.5: автосохранение черновика разделения.
+  Future<void> saveSplitDraft(
+      String transactionId, List<SplitPositionDraft> positions);
+
+  /// Этап 16.5: атомарное применение разделения чека:
+  /// is_split=TRUE + transaction_splits + удаление черновика.
+  Future<void> applyReceiptSplit({
+    required String receiptId,
+    required String transactionId,
+    required String actorUserId,
+    required List<SplitPositionDraft> positions,
+  });
+
+  /// Этап 16.5: спам-защита предложений разделения (ТЗ 6.3.48.8).
+  Future<void> recordSplitDecision(String userId, {required bool accepted});
 }

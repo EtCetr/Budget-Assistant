@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:drift/drift.dart';
+import 'package:budget_assistant/features/transactions/domain/entities/split_position_draft.dart';
 import 'package:logger/logger.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/database/daos/app_settings_dao.dart';
@@ -389,5 +391,137 @@ class ReceiptsRepositoryImpl implements ReceiptsRepository {
       (s) => s.name == status,
       orElse: () => SyncStatus.pending,
     );
+  }
+  @override
+  Future<List<SplitPositionDraft>?> getFreshSplitDraft(
+      String transactionId) async {
+    try {
+      final row = await (_db.select(_db.splitDrafts)
+            ..where((d) => d.transactionId.equals(transactionId)))
+          .getSingleOrNull();
+      if (row == null) return null;
+      if (DateTime.now().toUtc().difference(row.updatedAt) >
+          const Duration(hours: 24)) {
+        return null;
+      }
+      final decoded = jsonDecode(row.positionsJson);
+      if (decoded is! List) return null;
+      return decoded
+          .map((e) =>
+              SplitPositionDraft.fromJson((e as Map).cast<String, dynamic>()))
+          .toList();
+    } catch (e, stack) {
+      _logger.e('Failed to read split draft', error: e, stackTrace: stack);
+      return null;
+    }
+  }
+
+  @override
+  Future<void> saveSplitDraft(
+      String transactionId, List<SplitPositionDraft> positions) async {
+    try {
+      final now = DateTime.now().toUtc();
+      await (_db.delete(_db.splitDrafts)
+            ..where((d) => d.transactionId.equals(transactionId)))
+          .go();
+      await _db.into(_db.splitDrafts).insert(SplitDraftsCompanion(
+            id: Value('draft_$transactionId'),
+            transactionId: Value(transactionId),
+            positionsJson:
+                Value(jsonEncode(positions.map((e) => e.toJson()).toList())),
+            createdAt: Value(now),
+            updatedAt: Value(now),
+          ));
+    } catch (e, stack) {
+      _logger.e('Failed to save split draft', error: e, stackTrace: stack);
+    }
+  }
+
+  @override
+  Future<void> applyReceiptSplit({
+    required String receiptId,
+    required String transactionId,
+    required String actorUserId,
+    required List<SplitPositionDraft> positions,
+  }) async {
+    try {
+      await _db.transaction(() async {
+        final tx = await (_db.select(_db.transactions)
+              ..where((t) => t.id.equals(transactionId)))
+            .getSingleOrNull();
+        if (tx == null) {
+          throw StateError('Transaction not found: $transactionId');
+        }
+        if (tx.userId != actorUserId) {
+          throw StateError('Only owner can split transaction: $transactionId');
+        }
+        final now = DateTime.now().toUtc();
+        await (_db.update(_db.transactions)
+              ..where((t) => t.id.equals(transactionId)))
+            .write(TransactionsCompanion(
+          isSplit: const Value(true),
+          updatedAt: Value(now),
+          syncStatus: const Value(SyncStatus.pending),
+        ));
+        await (_db.delete(_db.transactionSplits)
+              ..where((s) => s.transactionId.equals(transactionId)))
+            .go();
+        await _db.batch((batch) {
+          batch.insertAll(
+            _db.transactionSplits,
+            positions
+                .map((p) => TransactionSplitsCompanion(
+                      id: Value(p.id),
+                      transactionId: Value(transactionId),
+                      categoryId: Value(p.categoryId!),
+                      amount: Value(p.amount),
+                      description: Value(p.description),
+                      createdAt: Value(now),
+                      updatedAt: Value(now),
+                      syncStatus: const Value(SyncStatus.pending),
+                    ))
+                .toList(),
+          );
+        });
+        await (_db.delete(_db.splitDrafts)
+              ..where((d) => d.transactionId.equals(transactionId)))
+            .go();
+      });
+    } catch (e, stack) {
+      _logger.e('Failed to apply receipt split', error: e, stackTrace: stack);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> recordSplitDecision(
+    String userId, {
+    required bool accepted,
+  }) async {
+    try {
+      final dao = AppSettingsDao(_db);
+      if (accepted) {
+        await dao.updateForUser(
+          userId,
+          const AppSettingsCompanion(
+            offerReceiptSplitCount: Value(0),
+            autoOfferReceiptSplit: Value(true),
+          ),
+        );
+        return;
+      }
+      final settings = await dao.getForUser(userId);
+      final newCount = settings.offerReceiptSplitCount + 1;
+      await dao.updateForUser(
+        userId,
+        AppSettingsCompanion(
+          offerReceiptSplitCount: Value(newCount),
+          autoOfferReceiptSplit: Value(newCount < 3),
+        ),
+      );
+    } catch (e, stack) {
+      _logger.e('Failed to record split decision', error: e, stackTrace: stack);
+      rethrow;
+    }
   }
 }
