@@ -19,5 +19,6 @@ abstract interface class AdminRepository {
   Future<InvitationInfo> generateInvite({required String spaceId, required String actorId, required MemberRole role});
   Future<void> revokeInvite({required String spaceId, required String actorId, required String inviteId});
   Future<void> sendReminder({required String spaceId, required String actorId, required MemberInfo target});
+  Future<void> dissolveSpace({required String spaceId, required String actorId});
   Future<String> acceptInvitation({required InviteBundle bundle, required String userId});
 }

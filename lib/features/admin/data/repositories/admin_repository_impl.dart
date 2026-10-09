@@ -7,7 +7,8 @@ import 'package:uuid/uuid.dart';
 
 class AdminRepositoryImpl implements AdminRepository {
   AdminRepositoryImpl({required AdminDao dao, required InviteCryptoService crypto})
-      : _dao = dao, _crypto = crypto;
+      : _dao = dao,
+        _crypto = crypto;
 
   final AdminDao _dao;
   final InviteCryptoService _crypto;
@@ -20,17 +21,21 @@ class AdminRepositoryImpl implements AdminRepository {
   @override
   Stream<ActivityStats> watchActivity(String spaceId) => _dao.watchActivity(spaceId);
   @override
-  Stream<List<InvitationInfo>> watchInvitations(String spaceId) => _dao.watchInvitations(spaceId);
+  Stream<List<InvitationInfo>> watchInvitations(String spaceId) =>
+      _dao.watchInvitations(spaceId);
   @override
   Stream<List<AuditEntry>> watchAudit(String spaceId) => _dao.watchAudit(spaceId);
   @override
-  Stream<int> watchExMemberDebtCount(String spaceId) => _dao.watchExMemberDebtCount(spaceId);
+  Stream<int> watchExMemberDebtCount(String spaceId) =>
+      _dao.watchExMemberDebtCount(spaceId);
 
   @override
   Future<bool> isAdmin(String userId, String spaceId) async {
     try {
       final members = await _dao.watchMembers(spaceId).first;
-      return members.any((m) => m.userId == userId && m.role == MemberRole.admin &&
+      return members.any((m) =>
+          m.userId == userId &&
+          m.role == MemberRole.admin &&
           m.status == MemberStatus.active);
     } catch (e, st) {
       AppLogger.e('isAdmin failed', e, st);
@@ -48,13 +53,19 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
-  Future<void> changeRole({required String spaceId, required String actorId,
-      required MemberInfo target, required MemberRole newRole}) async {
+  Future<void> changeRole({
+    required String spaceId,
+    required String actorId,
+    required MemberInfo target,
+    required MemberRole newRole,
+  }) async {
     try {
       await _guardAdmin(spaceId, actorId);
       if (target.role == MemberRole.admin && newRole == MemberRole.member) {
         final admins = await _dao.countActiveAdmins(spaceId);
-        if (admins <= 1) throw const AdminFailure('Нельзя лишить прав последнего админа');
+        if (admins <= 1) {
+          throw const AdminFailure('Нельзя лишить прав последнего админа');
+        }
       }
       await _dao.changeRole(target.id, newRole);
       await _audit(spaceId, actorId, AuditAction.roleChanged, target.userId,
@@ -66,10 +77,16 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
-  Future<void> suspend({required String spaceId, required String actorId, required MemberInfo target}) async {
+  Future<void> suspend({
+    required String spaceId,
+    required String actorId,
+    required MemberInfo target,
+  }) async {
     try {
       await _guardAdmin(spaceId, actorId);
-      if (target.role == MemberRole.admin) throw const AdminFailure('Нельзя приостановить админа');
+      if (target.role == MemberRole.admin) {
+        throw const AdminFailure('Нельзя приостановить админа');
+      }
       await _dao.setStatus(target.id, MemberStatus.suspended);
       await _audit(spaceId, actorId, AuditAction.memberSuspended, target.userId);
     } catch (e, st) {
@@ -79,7 +96,11 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
-  Future<void> resume({required String spaceId, required String actorId, required MemberInfo target}) async {
+  Future<void> resume({
+    required String spaceId,
+    required String actorId,
+    required MemberInfo target,
+  }) async {
     try {
       await _guardAdmin(spaceId, actorId);
       await _dao.setStatus(target.id, MemberStatus.active);
@@ -91,10 +112,16 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
-  Future<void> remove({required String spaceId, required String actorId, required MemberInfo target}) async {
+  Future<void> remove({
+    required String spaceId,
+    required String actorId,
+    required MemberInfo target,
+  }) async {
     try {
       await _guardAdmin(spaceId, actorId);
-      if (target.userId == actorId) throw const AdminFailure('Нельзя удалить самого себя');
+      if (target.userId == actorId) {
+        throw const AdminFailure('Нельзя удалить самого себя');
+      }
       if (target.role == MemberRole.admin) {
         throw const AdminFailure('Сначала передайте роль админа или понизьте роль');
       }
@@ -108,12 +135,20 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
-  Future<void> transferAdmin({required String spaceId, required String actorId,
-      required MemberInfo from, required MemberInfo to}) async {
+  Future<void> transferAdmin({
+    required String spaceId,
+    required String actorId,
+    required MemberInfo from,
+    required MemberInfo to,
+  }) async {
     try {
       await _guardAdmin(spaceId, actorId);
-      if (from.userId != actorId) throw const AdminFailure('Передать можно только свою роль');
-      if (to.status != MemberStatus.active) throw const AdminFailure('Целевой участник неактивен');
+      if (from.userId != actorId) {
+        throw const AdminFailure('Передать можно только свою роль');
+      }
+      if (to.status != MemberStatus.active) {
+        throw const AdminFailure('Целевой участник неактивен');
+      }
       await _dao.transferAdmin(from.id, to.id);
       await _audit(spaceId, actorId, AuditAction.adminTransferred, to.userId);
     } catch (e, st) {
@@ -123,18 +158,30 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
-  Future<InvitationInfo> generateInvite({required String spaceId, required String actorId,
-      required MemberRole role}) async {
+  Future<InvitationInfo> generateInvite({
+    required String spaceId,
+    required String actorId,
+    required MemberRole role,
+  }) async {
     try {
       await _guardAdmin(spaceId, actorId);
       final packed = await _crypto.packSpaceSalt(spaceId: spaceId);
       final now = DateTime.now().toUtc();
-      final bundle = InviteBundle(t: packed.token, s: spaceId, e: packed.encryptedSalt,
-          r: role.dbValue, x: now.add(const Duration(hours: 24)).millisecondsSinceEpoch);
+      final bundle = InviteBundle(
+        t: packed.token,
+        s: spaceId,
+        e: packed.encryptedSalt,
+        r: role.dbValue,
+        x: now.add(const Duration(hours: 24)).millisecondsSinceEpoch,
+      );
       final inv = InvitationInfo(
-        id: _uuid.v4(), spaceId: spaceId, role: role, status: 'active',
+        id: _uuid.v4(),
+        spaceId: spaceId,
+        role: role,
+        status: 'active',
         expiresAt: DateTime.fromMillisecondsSinceEpoch(bundle.x, isUtc: true),
-        createdAt: now, deepLink: 'budgetassistant://join?token=${bundle.toLinkToken()}',
+        createdAt: now,
+        deepLink: 'budgetassistant://join?token=${bundle.toLinkToken()}',
       );
       await _dao.insertInvitation(inv, bundle.toLinkToken(), packed.encryptedSalt, actorId);
       await _audit(spaceId, actorId, AuditAction.inviteGenerated, inv.id);
@@ -146,7 +193,11 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
-  Future<void> revokeInvite({required String spaceId, required String actorId, required String inviteId}) async {
+  Future<void> revokeInvite({
+    required String spaceId,
+    required String actorId,
+    required String inviteId,
+  }) async {
     try {
       await _guardAdmin(spaceId, actorId);
       await _dao.revokeInvitation(inviteId);
@@ -158,11 +209,16 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
-  Future<void> sendReminder({required String spaceId, required String actorId, required MemberInfo target}) async {
+  Future<void> sendReminder({
+    required String spaceId,
+    required String actorId,
+    required MemberInfo target,
+  }) async {
     try {
       await _guardAdmin(spaceId, actorId);
       await _dao.insertReminderNotification(
-        id: _uuid.v4(), userId: target.userId,
+        id: _uuid.v4(),
+        userId: target.userId,
         title: 'Напоминание от администратора',
         body: 'Пожалуйста, откройте приложение и синхронизируйте данные семейства.',
       );
@@ -174,20 +230,44 @@ class AdminRepositoryImpl implements AdminRepository {
   }
 
   @override
-  Future<String> acceptInvitation({required InviteBundle bundle, required String userId}) async {
+  Future<void> dissolveSpace({
+    required String spaceId,
+    required String actorId,
+  }) async {
+    try {
+      await _guardAdmin(spaceId, actorId);
+      final members = await _dao.watchMembers(spaceId).first;
+      final active = members.where((m) => m.status == MemberStatus.active).length;
+      if (active != 1) {
+        throw const AdminFailure('Удалить группу можно только при единственном участнике');
+      }
+      await _dao.dissolveSpace(spaceId, _uuid.v4(), actorId);
+    } catch (e, st) {
+      AppLogger.e('dissolveSpace failed', e, st);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String> acceptInvitation({
+    required InviteBundle bundle,
+    required String userId,
+  }) async {
     try {
       if (DateTime.now().toUtc().millisecondsSinceEpoch > bundle.x) {
         throw const AdminFailure('Срок действия приглашения истёк');
       }
-      final salt = await _crypto.unpackSpaceSalt(bundle);
-      await _crypto.writeSpaceKey(bundle.s, salt);
       final existing = await _dao.watchMembers(bundle.s).first;
       if (existing.any((e) => e.userId == userId && e.status != MemberStatus.left)) {
         throw const AdminFailure('Вы уже участник этого пространства');
       }
+      final salt = await _crypto.unpackSpaceSalt(bundle);
+      await _crypto.writeSpaceKey(bundle.s, salt);
       await _dao.joinSpace(
-        spaceId: bundle.s, userId: userId,
-        role: MemberRole.fromDb(bundle.r), membershipId: _uuid.v4(),
+        spaceId: bundle.s,
+        userId: userId,
+        role: MemberRole.fromDb(bundle.r),
+        membershipId: _uuid.v4(),
       );
       return bundle.s;
     } catch (e, st) {
@@ -198,11 +278,24 @@ class AdminRepositoryImpl implements AdminRepository {
 
   Future<void> _guardAdmin(String spaceId, String actorId) async {
     final ok = await isAdmin(actorId, spaceId);
-    if (!ok) throw const AdminFailure('Недостаточно прав: требуется роль админа');
+    if (!ok) {
+      throw const AdminFailure('Недостаточно прав: требуется роль админа');
+    }
   }
 
-  Future<void> _audit(String spaceId, String actorId, AuditAction action, String? targetId,
-      [String metadata = '{}']) =>
-      _dao.insertAuditFull(id: _uuid.v4(), spaceId: spaceId, actorId: actorId,
-          action: action, targetId: targetId, metadataJson: metadata);
+  Future<void> _audit(
+    String spaceId,
+    String actorId,
+    AuditAction action,
+    String? targetId, [
+    String metadata = '{}',
+  ]) =>
+      _dao.insertAuditFull(
+        id: _uuid.v4(),
+        spaceId: spaceId,
+        actorId: actorId,
+        action: action,
+        targetId: targetId,
+        metadataJson: metadata,
+      );
 }

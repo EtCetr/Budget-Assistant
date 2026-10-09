@@ -8,9 +8,10 @@ import 'package:budget_assistant/features/privacy/domain/models/balance_visibili
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
 
 /// Карточка участника (ТОМ 6, §6.3.33). Privacy: имя через formatName,
-/// аватар серый в hidden-режиме (матрица приватности).
+/// аватар серый в hidden (матрица приватности).
 class MemberCard extends ConsumerWidget {
-  const MemberCard({super.key, required this.member, required this.onMenuTap, this.isSelf = false});
+  const MemberCard(
+      {super.key, required this.member, required this.onMenuTap, this.isSelf = false});
 
   final MemberInfo member;
   final VoidCallback onMenuTap;
@@ -47,10 +48,9 @@ class MemberCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pf = ref.watch(privacyFormatterProvider);
     final mode = ref.watch(privacyModeProvider);
-    final avatarColor = (mode == BalanceVisibilityMode.hidden ||
-            member.status == MemberStatus.suspended)
-        ? Colors.grey
-        : _avatarColor(member.userId);
+    final hidden = mode == BalanceVisibilityMode.hidden;
+    final avatarColor =
+        (hidden || member.status == MemberStatus.suspended) ? Colors.grey : _avatarColor(member.userId);
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.spacing12),
       decoration: BoxDecoration(
@@ -72,10 +72,7 @@ class MemberCard extends ConsumerWidget {
               CircleAvatar(
                 radius: 22,
                 backgroundColor: avatarColor,
-                child: Text(
-                    mode == BalanceVisibilityMode.hidden
-                        ? '••'
-                        : _initials(member.displayName),
+                child: Text(hidden ? '••' : _initials(member.displayName),
                     style: const TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold)),
               ),
@@ -95,7 +92,8 @@ class MemberCard extends ConsumerWidget {
                       if (isSelf) ...[
                         const SizedBox(width: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: AppColors.colorFAB.withValues(alpha: 0.15),
                             borderRadius: const BorderRadius.all(Radius.circular(8)),
@@ -121,8 +119,8 @@ class MemberCard extends ConsumerWidget {
                         const Icon(Icons.warning_amber,
                             size: 14, color: AppColors.colorExpense),
                         const Text(' >30д',
-                            style: TextStyle(
-                                color: AppColors.colorExpense, fontSize: 11)),
+                            style:
+                                TextStyle(color: AppColors.colorExpense, fontSize: 11)),
                       ],
                     ]),
                   ])),
@@ -147,8 +145,8 @@ class MemberCard extends ConsumerWidget {
           borderRadius: const BorderRadius.all(Radius.circular(8)),
         ),
         child: Text(label,
-            style: TextStyle(
-                color: color, fontSize: 11, fontWeight: FontWeight.w600)),
+            style:
+                TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600)),
       );
 
   Widget _statusChip() {

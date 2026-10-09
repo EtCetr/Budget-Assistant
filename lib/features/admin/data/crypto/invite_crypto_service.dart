@@ -21,10 +21,7 @@ class InviteCryptoService {
   /// из случайного IKM-токена. Возвращает (token-base64, encryptedSalt-base64).
   Future<({String token, String encryptedSalt})> packSpaceSalt({required String spaceId}) async {
     try {
-      final salt = await _storage.read('enc_key_$spaceId');
-      if (salt == null) {
-        throw const AdminFailure('Мастер-ключ пространства не найден на этом устройстве');
-      }
+      final salt = await _ensureSpaceKey(spaceId);
       final ikm = _randomBytes(32);
       final key = HkdfUtils.deriveKey(
         ikm: ikm,
@@ -64,6 +61,19 @@ class InviteCryptoService {
       AppLogger.e('writeSpaceKey failed', e, st);
       rethrow;
     }
+  }
+
+  /// Repair (D17-13): пространства Этапа 3 не писали enc_key_{spaceId}.
+  /// Нет ключа -> генерируем 32 байта и пишем в формат ТОМ 3 §2.1.
+  Future<String> _ensureSpaceKey(String spaceId) async {
+    final existing = await _storage.read('enc_key_$spaceId');
+    if (existing != null && existing.isNotEmpty) {
+      return existing;
+    }
+    final key = base64.encode(_randomBytes(32));
+    await _storage.write('enc_key_$spaceId', key);
+    AppLogger.w('Space master key repaired (generated) for $spaceId');
+    return key;
   }
 
   Uint8List _randomBytes(int len) =>

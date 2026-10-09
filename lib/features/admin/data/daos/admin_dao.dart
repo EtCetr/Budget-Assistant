@@ -201,6 +201,26 @@ class AdminDao {
         ],
       );
 
+  /// D17-12: soft-delete группы (status='dissolved'), только при 1 участнике (guard в repo).
+  Future<void> dissolveSpace(String spaceId, String auditId, String actorId) =>
+      _db.transaction(() async {
+        final now = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+        await _db.customUpdate(
+          "UPDATE spaces SET status = 'dissolved', updated_at = ?, sync_status = 'pending' WHERE id = ?",
+          variables: [Variable.withInt(now), Variable.withString(spaceId)],
+        );
+        await _db.customUpdate(
+          "UPDATE memberships SET status = 'left', left_at = ?, updated_at = ?, sync_status = 'pending' WHERE space_id = ? AND status = 'active'",
+          variables: [
+            Variable.withInt(now), Variable.withInt(now), Variable.withString(spaceId),
+          ],
+        );
+        await insertAuditFull(
+          id: auditId, spaceId: spaceId, actorId: actorId,
+          action: AuditAction.spaceDissolved, targetId: spaceId,
+        );
+      });
+
   Future<void> joinSpace({required String spaceId, required String userId,
       required MemberRole role, required String membershipId}) =>
       _db.transaction(() async {

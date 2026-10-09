@@ -31,7 +31,7 @@ enum MemberStatus {
 
 enum AuditAction {
   roleChanged, memberSuspended, memberResumed, memberRemoved,
-  adminTransferred, inviteGenerated, inviteRevoked, reminderSent, memberJoined;
+  adminTransferred, inviteGenerated, inviteRevoked, reminderSent, memberJoined, spaceDissolved;
   String get dbValue => name;
   String get label => switch (this) {
         AuditAction.roleChanged => 'Изменена роль',
@@ -43,6 +43,7 @@ enum AuditAction {
         AuditAction.inviteRevoked => 'Отозвано приглашение',
         AuditAction.reminderSent => 'Отправлено напоминание',
         AuditAction.memberJoined => 'Участник присоединился',
+        AuditAction.spaceDissolved => 'Расформирование пространства',
       };
   static AuditAction fromDb(String? v) =>
       AuditAction.values.firstWhere((e) => e.name == v, orElse: () => AuditAction.roleChanged);

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:budget_assistant/core/providers/security_providers.dart' as sec;
+import 'package:budget_assistant/core/router/app_router.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/core/widgets/skeleton_shimmer.dart';
@@ -10,8 +12,10 @@ import 'package:budget_assistant/features/admin/presentation/providers/admin_pro
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/features/privacy/presentation/privacy_formatter.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+import 'package:budget_assistant/features/spaces/presentation/providers/space_providers.dart';
 
-/// Хаб администратора (ТОМ 6, §6.3.32). Privacy-matrix: суммы/имена через PrivacyFormatter.
+/// Хаб администратора (ТОМ 6, §6.3.32).
+/// AppBar: [переключатель пространств] [участники] [журнал]. Нижних плашек нет.
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
 
@@ -30,6 +34,15 @@ class AdminDashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Администрирование'),
         actions: [
+          _spaceSwitcher(context, ref, scope),
+          IconButton(
+            tooltip: 'Управление участниками',
+            icon: const Icon(Icons.group),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              context.push('/admin/members');
+            },
+          ),
           IconButton(
             tooltip: 'Журнал действий',
             icon: const Icon(Icons.history),
@@ -52,8 +65,9 @@ class AdminDashboardScreen extends ConsumerWidget {
                     style: const TextStyle(color: AppColors.textPrimary)))),
         data: (isAdmin) {
           if (isAdmin) {
-            WidgetsBinding.instance.addPostFrameCallback(
-                (_) => ref.read(updateLastActiveAtUseCaseProvider).call(scope.userId, scope.spaceId));
+            WidgetsBinding.instance.addPostFrameCallback((_) => ref
+                .read(updateLastActiveAtUseCaseProvider)
+                .call(scope.userId, scope.spaceId));
             return _body(context, ref, scope);
           }
           return const Center(
@@ -69,6 +83,29 @@ class AdminDashboardScreen extends ConsumerWidget {
     );
   }
 
+  Widget _spaceSwitcher(BuildContext context, WidgetRef ref, AdminScope scope) {
+    final spaces = ref.watch(userSpacesProvider).value ?? const [];
+    if (spaces.length < 2) {
+      return const SizedBox.shrink();
+    }
+    return PopupMenuButton<String>(
+      tooltip: 'Пространство',
+      icon: const Icon(Icons.swap_horiz),
+      onSelected: (id) {
+        ref.read(currentSpaceIdProvider.notifier).setSpaceId(id);
+        ref.read(sec.currentSpaceIdProvider.notifier).set(id);
+        ref.invalidate(adminAccessProvider(scope));
+      },
+      itemBuilder: (_) => [
+        for (final s in spaces)
+          PopupMenuItem<String>(
+            value: s.id,
+            child: Text(s.id == scope.spaceId ? '• ${s.name}' : s.name),
+          ),
+      ],
+    );
+  }
+
   Widget _body(BuildContext context, WidgetRef ref, AdminScope scope) {
     final pf = ref.watch(privacyFormatterProvider);
     final mode = ref.watch(privacyModeProvider);
@@ -79,7 +116,7 @@ class AdminDashboardScreen extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: () async => ref.invalidate(adminAccessProvider(scope)),
       child: ListView(padding: const EdgeInsets.all(AppSpacing.spacing16), children: [
-        _infoCard(context, info, pf, mode),
+        _infoCard(context, ref, info, scope, pf, mode),
         const SizedBox(height: AppSpacing.spacing16),
         stats.when(
           loading: () => SkeletonShimmer.card(),
@@ -195,30 +232,12 @@ class AdminDashboardScreen extends ConsumerWidget {
                       ]))),
                 ]),
         ),
-        const SizedBox(height: AppSpacing.spacing16),
-        FilledButton.icon(
-          onPressed: () {
-            HapticFeedback.lightImpact();
-            context.push('/admin/members');
-          },
-          icon: const Icon(Icons.group),
-          label: const Text('Управление участниками'),
-        ),
-        const SizedBox(height: AppSpacing.spacing12),
-        OutlinedButton.icon(
-          onPressed: () {
-            HapticFeedback.lightImpact();
-            _showAuditSheet(context, ref, scope.spaceId);
-          },
-          icon: const Icon(Icons.history),
-          label: const Text('Журнал действий админов'),
-        ),
       ]),
     );
   }
 
-  Widget _infoCard(BuildContext context, AsyncValue<SpaceInfo?> info,
-      PrivacyFormatter pf, BalanceVisibilityMode mode) {
+  Widget _infoCard(BuildContext context, WidgetRef ref, AsyncValue<SpaceInfo?> info,
+      AdminScope scope, PrivacyFormatter pf, BalanceVisibilityMode mode) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.spacing16),
       decoration: BoxDecoration(
@@ -259,9 +278,62 @@ class AdminDashboardScreen extends ConsumerWidget {
                 Text('ID: ${s.id.length > 8 ? s.id.substring(0, 8) : s.id}…',
                     style: const TextStyle(
                         color: AppColors.textSecondary, fontSize: 12)),
+                if (s.membersCount == 1) ...[
+                  const Divider(height: 24),
+                  TextButton.icon(
+                    onPressed: () => _confirmDissolve(context, ref, scope, pf.formatSpaceName(s.name, mode)),
+                    icon: const Icon(Icons.delete_forever, color: AppColors.colorExpense),
+                    label: const Text('Удалить группу',
+                        style: TextStyle(color: AppColors.colorExpense)),
+                  ),
+                ],
               ]),
       ),
     );
+  }
+
+  Future<void> _confirmDissolve(BuildContext context, WidgetRef ref,
+      AdminScope scope, String spaceName) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceCard,
+        title: const Text('Удалить группу?',
+            style: TextStyle(color: AppColors.textPrimary)),
+        content: Text(
+            'Группа «$spaceName» будет расформирована (в ней только вы). '
+            'История операций сохранится локально и будет помечена к синхронизации.',
+            style: const TextStyle(color: AppColors.textSecondary)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Отмена')),
+          FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.colorExpense),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Удалить')),
+        ],
+      ),
+    );
+    if (ok != true) {
+      return;
+    }
+    try {
+      await ref.read(dissolveSpaceUseCaseProvider).call(
+          spaceId: scope.spaceId, actorId: scope.userId);
+      ref.read(currentSpaceIdProvider.notifier).setSpaceId(null);
+      ref.read(sec.currentSpaceIdProvider.notifier).set(null);
+      ref.invalidate(userSpacesProvider);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Группа расформирована')));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Ошибка: $e')));
+      }
+    }
   }
 
   Widget _gridCard(BuildContext context, String title, String value, String subtitle,

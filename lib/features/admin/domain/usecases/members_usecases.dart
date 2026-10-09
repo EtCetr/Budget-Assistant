@@ -101,3 +101,15 @@ class SendReminderUseCase {
     }
   }
 }
+class DissolveSpaceUseCase {
+  DissolveSpaceUseCase(this._repo);
+  final AdminRepository _repo;
+  Future<void> call({required String spaceId, required String actorId}) async {
+    try {
+      await _repo.dissolveSpace(spaceId: spaceId, actorId: actorId);
+    } catch (e, st) {
+      AppLogger.e('DissolveSpace failed', e, st);
+      rethrow;
+    }
+  }
+}
