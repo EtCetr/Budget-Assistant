@@ -179,6 +179,22 @@ _AppSettingsModel _$AppSettingsModelFromJson(
       'enableFamilyHolidayAlerts',
       (v) => v as bool? ?? true,
     ),
+    notificationSettingsJson: $checkedConvert(
+      'notificationSettingsJson',
+      (v) => v as String? ?? '{}',
+    ),
+    notificationInfoDismissed: $checkedConvert(
+      'notificationInfoDismissed',
+      (v) => v as bool? ?? false,
+    ),
+    digestInfoDismissed: $checkedConvert(
+      'digestInfoDismissed',
+      (v) => v as bool? ?? false,
+    ),
+    importInfoDismissed: $checkedConvert(
+      'importInfoDismissed',
+      (v) => v as bool? ?? false,
+    ),
     createdAt: $checkedConvert('createdAt', (v) => DateTime.parse(v as String)),
     updatedAt: $checkedConvert('updatedAt', (v) => DateTime.parse(v as String)),
     syncStatus: $checkedConvert('syncStatus', (v) => v as String? ?? 'pending'),
@@ -235,6 +251,10 @@ Map<String, dynamic> _$AppSettingsModelToJson(
   'recurringDetectionDismissCount': instance.recurringDetectionDismissCount,
   'autoDetectRecurring': instance.autoDetectRecurring,
   'enableFamilyHolidayAlerts': instance.enableFamilyHolidayAlerts,
+  'notificationSettingsJson': instance.notificationSettingsJson,
+  'notificationInfoDismissed': instance.notificationInfoDismissed,
+  'digestInfoDismissed': instance.digestInfoDismissed,
+  'importInfoDismissed': instance.importInfoDismissed,
   'createdAt': instance.createdAt.toIso8601String(),
   'updatedAt': instance.updatedAt.toIso8601String(),
   'syncStatus': instance.syncStatus,

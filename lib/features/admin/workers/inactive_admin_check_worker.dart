@@ -3,6 +3,7 @@ import 'package:drift/drift.dart' show Variable;
 import 'package:uuid/uuid.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:budget_assistant/core/logger.dart';
+import 'package:budget_assistant/features/admin/domain/entities/admin_entities.dart';
 import 'package:budget_assistant/features/sync/application/sync_background_database.dart';
 
 /// Heartbeat + «Мёртвый админ» (ТОМ 6 6.3.32/6.3.33, раз в сутки).
@@ -105,7 +106,7 @@ Future<bool> handleInactiveAdminCheckTask() async {
             Variable.withString(const Uuid().v4()),
             Variable.withString(spaceId),
             Variable.withString(uid),
-            Variable.withString('emergency_promotion'),
+            Variable.withString(AuditAction.emergencyPromotion.dbValue),
             Variable.withString('member'),
             Variable.withString(mid),
             Variable.withString('{"type":"emergency_admin_promotion"}'),

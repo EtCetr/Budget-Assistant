@@ -121,6 +121,19 @@ class AppSettings extends Table with SyncableTable {
       .withDefault(const Constant(true))();
   TextColumn get digestConfig =>
       text().named('digest_config').withDefault(const Constant('{}'))();
+  // Этап 18 (6.3.40/6.3.41): 27 пушей x свитчи одним JSON [LOCAL] + баннеры.
+  TextColumn get notificationSettingsJson => text()
+      .named('notification_settings_json')
+      .withDefault(const Constant('{}'))();
+  BoolColumn get notificationInfoDismissed => boolean()
+      .named('notification_info_dismissed')
+      .withDefault(const Constant(false))();
+  BoolColumn get digestInfoDismissed => boolean()
+      .named('digest_info_dismissed')
+      .withDefault(const Constant(false))();
+  BoolColumn get importInfoDismissed => boolean()
+      .named('import_info_dismissed')
+      .withDefault(const Constant(false))();
   // Этап 14: календарная группа [LOCAL]
   BoolColumn get holidaysInfoDismissed => boolean()
       .named('holidays_info_dismissed')

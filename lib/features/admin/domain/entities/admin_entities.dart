@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
+
 part 'admin_entities.freezed.dart';
 
 class AdminFailure implements Exception {
@@ -21,32 +22,72 @@ enum MemberStatus {
   active, suspended, left;
   String get dbValue => name;
   String get label => switch (this) {
-        MemberStatus.active => 'Активен',
-        MemberStatus.suspended => 'Приостановлен',
-        MemberStatus.left => 'Вышел',
-      };
+    MemberStatus.active => 'Активен',
+    MemberStatus.suspended => 'Приостановлен',
+    MemberStatus.left => 'Вышел',
+  };
   static MemberStatus fromDb(String? v) =>
       MemberStatus.values.firstWhere((e) => e.name == v, orElse: () => MemberStatus.active);
 }
 
+/// Действия журнала аудита.
+///
+/// ВАЖНО (Этап 17/18, D18-8): в БД храним camelCase (dbValue = name).
+/// Легаси-записи воркера Этапа 17 и псевдокод спеки 6.3.35 использовали
+/// snake_case ('emergency_promotion' и т.п.) — fromDb понимает оба варианта.
 enum AuditAction {
   roleChanged, memberSuspended, memberResumed, memberRemoved,
-  adminTransferred, inviteGenerated, inviteRevoked, reminderSent, memberJoined, spaceDissolved;
+  adminTransferred, inviteGenerated, inviteRevoked, reminderSent, memberJoined, spaceDissolved,
+  // Этап 18 (6.3.35/6.3.36):
+  memberInvited, memberLeft, autoPromotion, emergencyPromotion, syncReminderSent,
+  spaceRenamed, spaceBudgetChanged, spaceDataExported;
+
   String get dbValue => name;
+
   String get label => switch (this) {
-        AuditAction.roleChanged => 'Изменена роль',
-        AuditAction.memberSuspended => 'Участник приостановлен',
-        AuditAction.memberResumed => 'Участник возобновлён',
-        AuditAction.memberRemoved => 'Участник удалён',
-        AuditAction.adminTransferred => 'Передача роли админа',
-        AuditAction.inviteGenerated => 'Создано приглашение',
-        AuditAction.inviteRevoked => 'Отозвано приглашение',
-        AuditAction.reminderSent => 'Отправлено напоминание',
-        AuditAction.memberJoined => 'Участник присоединился',
-        AuditAction.spaceDissolved => 'Расформирование пространства',
-      };
-  static AuditAction fromDb(String? v) =>
-      AuditAction.values.firstWhere((e) => e.name == v, orElse: () => AuditAction.roleChanged);
+    AuditAction.roleChanged => 'Изменена роль',
+    AuditAction.memberSuspended => 'Участник приостановлен',
+    AuditAction.memberResumed => 'Участник возобновлён',
+    AuditAction.memberRemoved => 'Участник удалён',
+    AuditAction.adminTransferred => 'Передача роли админа',
+    AuditAction.inviteGenerated => 'Создано приглашение',
+    AuditAction.inviteRevoked => 'Отозвано приглашение',
+    AuditAction.reminderSent => 'Отправлено напоминание',
+    AuditAction.memberJoined => 'Участник присоединился',
+    AuditAction.spaceDissolved => 'Расформирование пространства',
+    AuditAction.memberInvited => 'Приглашение отправлено',
+    AuditAction.memberLeft => 'Участник вышел',
+    AuditAction.autoPromotion => 'Авто-повышение',
+    AuditAction.emergencyPromotion => 'Аварийное повышение',
+    AuditAction.syncReminderSent => 'Напоминание о синхронизации',
+    AuditAction.spaceRenamed => 'Пространство переименовано',
+    AuditAction.spaceBudgetChanged => 'Изменён семейный бюджет',
+    AuditAction.spaceDataExported => 'Экспорт данных пространства',
+  };
+
+  /// Легаси snake_case (воркер Этапа 17, спека 6.3.35).
+  static const Map<String, AuditAction> _legacy = {
+    'emergency_promotion': AuditAction.emergencyPromotion,
+    'auto_promotion': AuditAction.autoPromotion,
+    'member_invited': AuditAction.memberInvited,
+    'member_joined': AuditAction.memberJoined,
+    'member_removed': AuditAction.memberRemoved,
+    'member_left': AuditAction.memberLeft,
+    'role_changed': AuditAction.roleChanged,
+    'admin_transfer': AuditAction.adminTransferred,
+    'space_dissolved': AuditAction.spaceDissolved,
+    'sync_reminder_sent': AuditAction.syncReminderSent,
+  };
+
+  static AuditAction fromDb(String? v) {
+    if (v == null) return AuditAction.roleChanged;
+    final legacy = _legacy[v];
+    if (legacy != null) return legacy;
+    return AuditAction.values.firstWhere(
+      (e) => e.name == v,
+      orElse: () => AuditAction.roleChanged,
+    );
+  }
 }
 
 enum CriticalAlertType { soloAdmin, inactiveMembers, exMemberDebt }
@@ -135,7 +176,6 @@ abstract class AuditEntry with _$AuditEntry {
   }) = _AuditEntry;
 }
 
-/// Пакет инвайт-ссылки (t=token-IKM, s=spaceId, e=encryptedSalt, r=role, x=expiry UTC ms).
 @freezed
 abstract class InviteBundle with _$InviteBundle {
   const factory InviteBundle({
@@ -160,9 +200,9 @@ abstract class InviteBundle with _$InviteBundle {
     } catch (_) {
       throw const AdminFailure('Некорректная ссылка приглашения');
     }
-  }  }
-/// Методы сериализации инвайт-пакета вынесены в extension: freezed не генерирует
-/// обычные методы внутри @freezed-класса (только factory/геттеры полей).
+  }
+}
+
 extension InviteBundleX on InviteBundle {
   String toLinkToken() =>
       base64Url.encode(utf8.encode(jsonEncode({'t': t, 's': s, 'e': e, 'r': r, 'x': x})));

@@ -193,6 +193,8 @@ class BudgetLimits extends Table {
   IntColumn get limitAmount => integer()();
   IntColumn get alertPercent => integer().withDefault(const Constant(80))();
   IntColumn get alertAmount => integer().withDefault(const Constant(0))();
+  // Этап 18 (6.3.36): статус лимита ('active' | 'cancelled' при dissolve).
+  TextColumn get status => text().withDefault(const Constant('active'))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   TextColumn get syncStatus =>
@@ -606,7 +608,7 @@ class AppDatabase extends _$AppDatabase {
   /// v13: Этап 14 — reminders, holidays, recurring_transactions,
   /// forecast_cache, reminder_drafts + 5 колонок app_settings + сиды РФ.
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   Future<void> _createSavingsIndexes() async {
     await customStatement('''
@@ -1015,6 +1017,20 @@ await m.createTable(productAliases);
 await m.createTable(receiptDrafts);
 await _createReceiptsIndexes();
 }
+        if (from < 18) {
+          // Этап 18: identity/dissolve пространства, статус лимитов,
+          // JSON-настройки уведомлений и дайджестов (6.3.36/6.3.40/6.3.41).
+          await m.addColumn(spaces, spaces.iconEmoji);
+          await m.addColumn(spaces, spaces.iconColor);
+          await m.addColumn(spaces, spaces.monthlyBudgetLimit);
+          await m.addColumn(spaces, spaces.dissolvedAt);
+          await m.addColumn(spaces, spaces.dissolvedBy);
+          await m.addColumn(budgetLimits, budgetLimits.status);
+          await m.addColumn(appSettings, appSettings.notificationSettingsJson);
+          await m.addColumn(appSettings, appSettings.notificationInfoDismissed);
+          await m.addColumn(appSettings, appSettings.digestInfoDismissed);
+          await m.addColumn(appSettings, appSettings.importInfoDismissed);
+        }
         },
         beforeOpen: (details) async {
           AppLogger.i(
@@ -1025,6 +1041,12 @@ await _createReceiptsIndexes();
               'CREATE UNIQUE INDEX IF NOT EXISTS idx_dashboard_widgets_user_type ON dashboard_widgets(user_id, widget_type)');
           await customStatement(
               'CREATE INDEX IF NOT EXISTS idx_dashboard_widgets_sync_status ON dashboard_widgets(sync_status)');
+        await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_audit_log_action ON admin_audit_log(action_type)');
+        await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_notifications_dedup ON notifications(user_id, type, related_entity_id, created_at)');
+        await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_budget_limits_space_status ON budget_limits(space_id, status)');
           await customStatement('PRAGMA journal_mode = WAL');
           await customStatement('PRAGMA synchronous = NORMAL');
           final tables = await customSelect(

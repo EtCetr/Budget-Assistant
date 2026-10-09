@@ -1943,6 +1943,60 @@ class $SpacesTable extends Spaces with TableInfo<$SpacesTable, Space> {
     requiredDuringInsert: false,
     defaultValue: const Constant('RUB'),
   );
+  static const VerificationMeta _iconEmojiMeta = const VerificationMeta(
+    'iconEmoji',
+  );
+  @override
+  late final GeneratedColumn<String> iconEmoji = GeneratedColumn<String>(
+    'icon_emoji',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _iconColorMeta = const VerificationMeta(
+    'iconColor',
+  );
+  @override
+  late final GeneratedColumn<String> iconColor = GeneratedColumn<String>(
+    'icon_color',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _monthlyBudgetLimitMeta =
+      const VerificationMeta('monthlyBudgetLimit');
+  @override
+  late final GeneratedColumn<int> monthlyBudgetLimit = GeneratedColumn<int>(
+    'monthly_budget_limit',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _dissolvedAtMeta = const VerificationMeta(
+    'dissolvedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> dissolvedAt = GeneratedColumn<DateTime>(
+    'dissolved_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _dissolvedByMeta = const VerificationMeta(
+    'dissolvedBy',
+  );
+  @override
+  late final GeneratedColumn<String> dissolvedBy = GeneratedColumn<String>(
+    'dissolved_by',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     createdAt,
@@ -1953,6 +2007,11 @@ class $SpacesTable extends Spaces with TableInfo<$SpacesTable, Space> {
     encryptionSalt,
     status,
     currencyCode,
+    iconEmoji,
+    iconColor,
+    monthlyBudgetLimit,
+    dissolvedAt,
+    dissolvedBy,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2023,6 +2082,45 @@ class $SpacesTable extends Spaces with TableInfo<$SpacesTable, Space> {
         ),
       );
     }
+    if (data.containsKey('icon_emoji')) {
+      context.handle(
+        _iconEmojiMeta,
+        iconEmoji.isAcceptableOrUnknown(data['icon_emoji']!, _iconEmojiMeta),
+      );
+    }
+    if (data.containsKey('icon_color')) {
+      context.handle(
+        _iconColorMeta,
+        iconColor.isAcceptableOrUnknown(data['icon_color']!, _iconColorMeta),
+      );
+    }
+    if (data.containsKey('monthly_budget_limit')) {
+      context.handle(
+        _monthlyBudgetLimitMeta,
+        monthlyBudgetLimit.isAcceptableOrUnknown(
+          data['monthly_budget_limit']!,
+          _monthlyBudgetLimitMeta,
+        ),
+      );
+    }
+    if (data.containsKey('dissolved_at')) {
+      context.handle(
+        _dissolvedAtMeta,
+        dissolvedAt.isAcceptableOrUnknown(
+          data['dissolved_at']!,
+          _dissolvedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('dissolved_by')) {
+      context.handle(
+        _dissolvedByMeta,
+        dissolvedBy.isAcceptableOrUnknown(
+          data['dissolved_by']!,
+          _dissolvedByMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2064,6 +2162,26 @@ class $SpacesTable extends Spaces with TableInfo<$SpacesTable, Space> {
         DriftSqlType.string,
         data['${effectivePrefix}currency_code'],
       )!,
+      iconEmoji: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon_emoji'],
+      ),
+      iconColor: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon_color'],
+      ),
+      monthlyBudgetLimit: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}monthly_budget_limit'],
+      ),
+      dissolvedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}dissolved_at'],
+      ),
+      dissolvedBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}dissolved_by'],
+      ),
     );
   }
 
@@ -2082,6 +2200,11 @@ class Space extends DataClass implements Insertable<Space> {
   final String encryptionSalt;
   final String status;
   final String currencyCode;
+  final String? iconEmoji;
+  final String? iconColor;
+  final int? monthlyBudgetLimit;
+  final DateTime? dissolvedAt;
+  final String? dissolvedBy;
   const Space({
     required this.createdAt,
     required this.updatedAt,
@@ -2091,6 +2214,11 @@ class Space extends DataClass implements Insertable<Space> {
     required this.encryptionSalt,
     required this.status,
     required this.currencyCode,
+    this.iconEmoji,
+    this.iconColor,
+    this.monthlyBudgetLimit,
+    this.dissolvedAt,
+    this.dissolvedBy,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2103,6 +2231,21 @@ class Space extends DataClass implements Insertable<Space> {
     map['encryption_salt'] = Variable<String>(encryptionSalt);
     map['status'] = Variable<String>(status);
     map['currency_code'] = Variable<String>(currencyCode);
+    if (!nullToAbsent || iconEmoji != null) {
+      map['icon_emoji'] = Variable<String>(iconEmoji);
+    }
+    if (!nullToAbsent || iconColor != null) {
+      map['icon_color'] = Variable<String>(iconColor);
+    }
+    if (!nullToAbsent || monthlyBudgetLimit != null) {
+      map['monthly_budget_limit'] = Variable<int>(monthlyBudgetLimit);
+    }
+    if (!nullToAbsent || dissolvedAt != null) {
+      map['dissolved_at'] = Variable<DateTime>(dissolvedAt);
+    }
+    if (!nullToAbsent || dissolvedBy != null) {
+      map['dissolved_by'] = Variable<String>(dissolvedBy);
+    }
     return map;
   }
 
@@ -2116,6 +2259,21 @@ class Space extends DataClass implements Insertable<Space> {
       encryptionSalt: Value(encryptionSalt),
       status: Value(status),
       currencyCode: Value(currencyCode),
+      iconEmoji: iconEmoji == null && nullToAbsent
+          ? const Value.absent()
+          : Value(iconEmoji),
+      iconColor: iconColor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(iconColor),
+      monthlyBudgetLimit: monthlyBudgetLimit == null && nullToAbsent
+          ? const Value.absent()
+          : Value(monthlyBudgetLimit),
+      dissolvedAt: dissolvedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dissolvedAt),
+      dissolvedBy: dissolvedBy == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dissolvedBy),
     );
   }
 
@@ -2133,6 +2291,11 @@ class Space extends DataClass implements Insertable<Space> {
       encryptionSalt: serializer.fromJson<String>(json['encryptionSalt']),
       status: serializer.fromJson<String>(json['status']),
       currencyCode: serializer.fromJson<String>(json['currencyCode']),
+      iconEmoji: serializer.fromJson<String?>(json['iconEmoji']),
+      iconColor: serializer.fromJson<String?>(json['iconColor']),
+      monthlyBudgetLimit: serializer.fromJson<int?>(json['monthlyBudgetLimit']),
+      dissolvedAt: serializer.fromJson<DateTime?>(json['dissolvedAt']),
+      dissolvedBy: serializer.fromJson<String?>(json['dissolvedBy']),
     );
   }
   @override
@@ -2147,6 +2310,11 @@ class Space extends DataClass implements Insertable<Space> {
       'encryptionSalt': serializer.toJson<String>(encryptionSalt),
       'status': serializer.toJson<String>(status),
       'currencyCode': serializer.toJson<String>(currencyCode),
+      'iconEmoji': serializer.toJson<String?>(iconEmoji),
+      'iconColor': serializer.toJson<String?>(iconColor),
+      'monthlyBudgetLimit': serializer.toJson<int?>(monthlyBudgetLimit),
+      'dissolvedAt': serializer.toJson<DateTime?>(dissolvedAt),
+      'dissolvedBy': serializer.toJson<String?>(dissolvedBy),
     };
   }
 
@@ -2159,6 +2327,11 @@ class Space extends DataClass implements Insertable<Space> {
     String? encryptionSalt,
     String? status,
     String? currencyCode,
+    Value<String?> iconEmoji = const Value.absent(),
+    Value<String?> iconColor = const Value.absent(),
+    Value<int?> monthlyBudgetLimit = const Value.absent(),
+    Value<DateTime?> dissolvedAt = const Value.absent(),
+    Value<String?> dissolvedBy = const Value.absent(),
   }) => Space(
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -2168,6 +2341,13 @@ class Space extends DataClass implements Insertable<Space> {
     encryptionSalt: encryptionSalt ?? this.encryptionSalt,
     status: status ?? this.status,
     currencyCode: currencyCode ?? this.currencyCode,
+    iconEmoji: iconEmoji.present ? iconEmoji.value : this.iconEmoji,
+    iconColor: iconColor.present ? iconColor.value : this.iconColor,
+    monthlyBudgetLimit: monthlyBudgetLimit.present
+        ? monthlyBudgetLimit.value
+        : this.monthlyBudgetLimit,
+    dissolvedAt: dissolvedAt.present ? dissolvedAt.value : this.dissolvedAt,
+    dissolvedBy: dissolvedBy.present ? dissolvedBy.value : this.dissolvedBy,
   );
   Space copyWithCompanion(SpacesCompanion data) {
     return Space(
@@ -2185,6 +2365,17 @@ class Space extends DataClass implements Insertable<Space> {
       currencyCode: data.currencyCode.present
           ? data.currencyCode.value
           : this.currencyCode,
+      iconEmoji: data.iconEmoji.present ? data.iconEmoji.value : this.iconEmoji,
+      iconColor: data.iconColor.present ? data.iconColor.value : this.iconColor,
+      monthlyBudgetLimit: data.monthlyBudgetLimit.present
+          ? data.monthlyBudgetLimit.value
+          : this.monthlyBudgetLimit,
+      dissolvedAt: data.dissolvedAt.present
+          ? data.dissolvedAt.value
+          : this.dissolvedAt,
+      dissolvedBy: data.dissolvedBy.present
+          ? data.dissolvedBy.value
+          : this.dissolvedBy,
     );
   }
 
@@ -2198,7 +2389,12 @@ class Space extends DataClass implements Insertable<Space> {
           ..write('name: $name, ')
           ..write('encryptionSalt: $encryptionSalt, ')
           ..write('status: $status, ')
-          ..write('currencyCode: $currencyCode')
+          ..write('currencyCode: $currencyCode, ')
+          ..write('iconEmoji: $iconEmoji, ')
+          ..write('iconColor: $iconColor, ')
+          ..write('monthlyBudgetLimit: $monthlyBudgetLimit, ')
+          ..write('dissolvedAt: $dissolvedAt, ')
+          ..write('dissolvedBy: $dissolvedBy')
           ..write(')'))
         .toString();
   }
@@ -2213,6 +2409,11 @@ class Space extends DataClass implements Insertable<Space> {
     encryptionSalt,
     status,
     currencyCode,
+    iconEmoji,
+    iconColor,
+    monthlyBudgetLimit,
+    dissolvedAt,
+    dissolvedBy,
   );
   @override
   bool operator ==(Object other) =>
@@ -2225,7 +2426,12 @@ class Space extends DataClass implements Insertable<Space> {
           other.name == this.name &&
           other.encryptionSalt == this.encryptionSalt &&
           other.status == this.status &&
-          other.currencyCode == this.currencyCode);
+          other.currencyCode == this.currencyCode &&
+          other.iconEmoji == this.iconEmoji &&
+          other.iconColor == this.iconColor &&
+          other.monthlyBudgetLimit == this.monthlyBudgetLimit &&
+          other.dissolvedAt == this.dissolvedAt &&
+          other.dissolvedBy == this.dissolvedBy);
 }
 
 class SpacesCompanion extends UpdateCompanion<Space> {
@@ -2237,6 +2443,11 @@ class SpacesCompanion extends UpdateCompanion<Space> {
   final Value<String> encryptionSalt;
   final Value<String> status;
   final Value<String> currencyCode;
+  final Value<String?> iconEmoji;
+  final Value<String?> iconColor;
+  final Value<int?> monthlyBudgetLimit;
+  final Value<DateTime?> dissolvedAt;
+  final Value<String?> dissolvedBy;
   final Value<int> rowid;
   const SpacesCompanion({
     this.createdAt = const Value.absent(),
@@ -2247,6 +2458,11 @@ class SpacesCompanion extends UpdateCompanion<Space> {
     this.encryptionSalt = const Value.absent(),
     this.status = const Value.absent(),
     this.currencyCode = const Value.absent(),
+    this.iconEmoji = const Value.absent(),
+    this.iconColor = const Value.absent(),
+    this.monthlyBudgetLimit = const Value.absent(),
+    this.dissolvedAt = const Value.absent(),
+    this.dissolvedBy = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SpacesCompanion.insert({
@@ -2258,6 +2474,11 @@ class SpacesCompanion extends UpdateCompanion<Space> {
     required String encryptionSalt,
     this.status = const Value.absent(),
     this.currencyCode = const Value.absent(),
+    this.iconEmoji = const Value.absent(),
+    this.iconColor = const Value.absent(),
+    this.monthlyBudgetLimit = const Value.absent(),
+    this.dissolvedAt = const Value.absent(),
+    this.dissolvedBy = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -2271,6 +2492,11 @@ class SpacesCompanion extends UpdateCompanion<Space> {
     Expression<String>? encryptionSalt,
     Expression<String>? status,
     Expression<String>? currencyCode,
+    Expression<String>? iconEmoji,
+    Expression<String>? iconColor,
+    Expression<int>? monthlyBudgetLimit,
+    Expression<DateTime>? dissolvedAt,
+    Expression<String>? dissolvedBy,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2282,6 +2508,12 @@ class SpacesCompanion extends UpdateCompanion<Space> {
       if (encryptionSalt != null) 'encryption_salt': encryptionSalt,
       if (status != null) 'status': status,
       if (currencyCode != null) 'currency_code': currencyCode,
+      if (iconEmoji != null) 'icon_emoji': iconEmoji,
+      if (iconColor != null) 'icon_color': iconColor,
+      if (monthlyBudgetLimit != null)
+        'monthly_budget_limit': monthlyBudgetLimit,
+      if (dissolvedAt != null) 'dissolved_at': dissolvedAt,
+      if (dissolvedBy != null) 'dissolved_by': dissolvedBy,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2295,6 +2527,11 @@ class SpacesCompanion extends UpdateCompanion<Space> {
     Value<String>? encryptionSalt,
     Value<String>? status,
     Value<String>? currencyCode,
+    Value<String?>? iconEmoji,
+    Value<String?>? iconColor,
+    Value<int?>? monthlyBudgetLimit,
+    Value<DateTime?>? dissolvedAt,
+    Value<String?>? dissolvedBy,
     Value<int>? rowid,
   }) {
     return SpacesCompanion(
@@ -2306,6 +2543,11 @@ class SpacesCompanion extends UpdateCompanion<Space> {
       encryptionSalt: encryptionSalt ?? this.encryptionSalt,
       status: status ?? this.status,
       currencyCode: currencyCode ?? this.currencyCode,
+      iconEmoji: iconEmoji ?? this.iconEmoji,
+      iconColor: iconColor ?? this.iconColor,
+      monthlyBudgetLimit: monthlyBudgetLimit ?? this.monthlyBudgetLimit,
+      dissolvedAt: dissolvedAt ?? this.dissolvedAt,
+      dissolvedBy: dissolvedBy ?? this.dissolvedBy,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2337,6 +2579,21 @@ class SpacesCompanion extends UpdateCompanion<Space> {
     if (currencyCode.present) {
       map['currency_code'] = Variable<String>(currencyCode.value);
     }
+    if (iconEmoji.present) {
+      map['icon_emoji'] = Variable<String>(iconEmoji.value);
+    }
+    if (iconColor.present) {
+      map['icon_color'] = Variable<String>(iconColor.value);
+    }
+    if (monthlyBudgetLimit.present) {
+      map['monthly_budget_limit'] = Variable<int>(monthlyBudgetLimit.value);
+    }
+    if (dissolvedAt.present) {
+      map['dissolved_at'] = Variable<DateTime>(dissolvedAt.value);
+    }
+    if (dissolvedBy.present) {
+      map['dissolved_by'] = Variable<String>(dissolvedBy.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2354,6 +2611,11 @@ class SpacesCompanion extends UpdateCompanion<Space> {
           ..write('encryptionSalt: $encryptionSalt, ')
           ..write('status: $status, ')
           ..write('currencyCode: $currencyCode, ')
+          ..write('iconEmoji: $iconEmoji, ')
+          ..write('iconColor: $iconColor, ')
+          ..write('monthlyBudgetLimit: $monthlyBudgetLimit, ')
+          ..write('dissolvedAt: $dissolvedAt, ')
+          ..write('dissolvedBy: $dissolvedBy, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3614,6 +3876,61 @@ class $AppSettingsTable extends AppSettings
     requiredDuringInsert: false,
     defaultValue: const Constant('{}'),
   );
+  static const VerificationMeta _notificationSettingsJsonMeta =
+      const VerificationMeta('notificationSettingsJson');
+  @override
+  late final GeneratedColumn<String> notificationSettingsJson =
+      GeneratedColumn<String>(
+        'notification_settings_json',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const Constant('{}'),
+      );
+  static const VerificationMeta _notificationInfoDismissedMeta =
+      const VerificationMeta('notificationInfoDismissed');
+  @override
+  late final GeneratedColumn<bool> notificationInfoDismissed =
+      GeneratedColumn<bool>(
+        'notification_info_dismissed',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("notification_info_dismissed" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _digestInfoDismissedMeta =
+      const VerificationMeta('digestInfoDismissed');
+  @override
+  late final GeneratedColumn<bool> digestInfoDismissed = GeneratedColumn<bool>(
+    'digest_info_dismissed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("digest_info_dismissed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _importInfoDismissedMeta =
+      const VerificationMeta('importInfoDismissed');
+  @override
+  late final GeneratedColumn<bool> importInfoDismissed = GeneratedColumn<bool>(
+    'import_info_dismissed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("import_info_dismissed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _holidaysInfoDismissedMeta =
       const VerificationMeta('holidaysInfoDismissed');
   @override
@@ -3731,6 +4048,10 @@ class $AppSettingsTable extends AppSettings
     reminderTimeOfDay,
     autoCreateRemindersForRecurring,
     digestConfig,
+    notificationSettingsJson,
+    notificationInfoDismissed,
+    digestInfoDismissed,
+    importInfoDismissed,
     holidaysInfoDismissed,
     recurringDetectionInfoDismissed,
     recurringDetectionDismissCount,
@@ -4131,6 +4452,42 @@ class $AppSettingsTable extends AppSettings
         ),
       );
     }
+    if (data.containsKey('notification_settings_json')) {
+      context.handle(
+        _notificationSettingsJsonMeta,
+        notificationSettingsJson.isAcceptableOrUnknown(
+          data['notification_settings_json']!,
+          _notificationSettingsJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notification_info_dismissed')) {
+      context.handle(
+        _notificationInfoDismissedMeta,
+        notificationInfoDismissed.isAcceptableOrUnknown(
+          data['notification_info_dismissed']!,
+          _notificationInfoDismissedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('digest_info_dismissed')) {
+      context.handle(
+        _digestInfoDismissedMeta,
+        digestInfoDismissed.isAcceptableOrUnknown(
+          data['digest_info_dismissed']!,
+          _digestInfoDismissedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('import_info_dismissed')) {
+      context.handle(
+        _importInfoDismissedMeta,
+        importInfoDismissed.isAcceptableOrUnknown(
+          data['import_info_dismissed']!,
+          _importInfoDismissedMeta,
+        ),
+      );
+    }
     if (data.containsKey('holidays_info_dismissed')) {
       context.handle(
         _holidaysInfoDismissedMeta,
@@ -4361,6 +4718,22 @@ class $AppSettingsTable extends AppSettings
         DriftSqlType.string,
         data['${effectivePrefix}digest_config'],
       )!,
+      notificationSettingsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notification_settings_json'],
+      )!,
+      notificationInfoDismissed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}notification_info_dismissed'],
+      )!,
+      digestInfoDismissed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}digest_info_dismissed'],
+      )!,
+      importInfoDismissed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}import_info_dismissed'],
+      )!,
       holidaysInfoDismissed: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}holidays_info_dismissed'],
@@ -4435,6 +4808,10 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
   final String reminderTimeOfDay;
   final bool autoCreateRemindersForRecurring;
   final String digestConfig;
+  final String notificationSettingsJson;
+  final bool notificationInfoDismissed;
+  final bool digestInfoDismissed;
+  final bool importInfoDismissed;
   final bool holidaysInfoDismissed;
   final bool recurringDetectionInfoDismissed;
   final int recurringDetectionDismissCount;
@@ -4485,6 +4862,10 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     required this.reminderTimeOfDay,
     required this.autoCreateRemindersForRecurring,
     required this.digestConfig,
+    required this.notificationSettingsJson,
+    required this.notificationInfoDismissed,
+    required this.digestInfoDismissed,
+    required this.importInfoDismissed,
     required this.holidaysInfoDismissed,
     required this.recurringDetectionInfoDismissed,
     required this.recurringDetectionDismissCount,
@@ -4570,6 +4951,14 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       autoCreateRemindersForRecurring,
     );
     map['digest_config'] = Variable<String>(digestConfig);
+    map['notification_settings_json'] = Variable<String>(
+      notificationSettingsJson,
+    );
+    map['notification_info_dismissed'] = Variable<bool>(
+      notificationInfoDismissed,
+    );
+    map['digest_info_dismissed'] = Variable<bool>(digestInfoDismissed);
+    map['import_info_dismissed'] = Variable<bool>(importInfoDismissed);
     map['holidays_info_dismissed'] = Variable<bool>(holidaysInfoDismissed);
     map['recurring_detection_info_dismissed'] = Variable<bool>(
       recurringDetectionInfoDismissed,
@@ -4630,6 +5019,10 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       reminderTimeOfDay: Value(reminderTimeOfDay),
       autoCreateRemindersForRecurring: Value(autoCreateRemindersForRecurring),
       digestConfig: Value(digestConfig),
+      notificationSettingsJson: Value(notificationSettingsJson),
+      notificationInfoDismissed: Value(notificationInfoDismissed),
+      digestInfoDismissed: Value(digestInfoDismissed),
+      importInfoDismissed: Value(importInfoDismissed),
       holidaysInfoDismissed: Value(holidaysInfoDismissed),
       recurringDetectionInfoDismissed: Value(recurringDetectionInfoDismissed),
       recurringDetectionDismissCount: Value(recurringDetectionDismissCount),
@@ -4740,6 +5133,18 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
         json['autoCreateRemindersForRecurring'],
       ),
       digestConfig: serializer.fromJson<String>(json['digestConfig']),
+      notificationSettingsJson: serializer.fromJson<String>(
+        json['notificationSettingsJson'],
+      ),
+      notificationInfoDismissed: serializer.fromJson<bool>(
+        json['notificationInfoDismissed'],
+      ),
+      digestInfoDismissed: serializer.fromJson<bool>(
+        json['digestInfoDismissed'],
+      ),
+      importInfoDismissed: serializer.fromJson<bool>(
+        json['importInfoDismissed'],
+      ),
       holidaysInfoDismissed: serializer.fromJson<bool>(
         json['holidaysInfoDismissed'],
       ),
@@ -4839,6 +5244,14 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
         autoCreateRemindersForRecurring,
       ),
       'digestConfig': serializer.toJson<String>(digestConfig),
+      'notificationSettingsJson': serializer.toJson<String>(
+        notificationSettingsJson,
+      ),
+      'notificationInfoDismissed': serializer.toJson<bool>(
+        notificationInfoDismissed,
+      ),
+      'digestInfoDismissed': serializer.toJson<bool>(digestInfoDismissed),
+      'importInfoDismissed': serializer.toJson<bool>(importInfoDismissed),
       'holidaysInfoDismissed': serializer.toJson<bool>(holidaysInfoDismissed),
       'recurringDetectionInfoDismissed': serializer.toJson<bool>(
         recurringDetectionInfoDismissed,
@@ -4898,6 +5311,10 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     String? reminderTimeOfDay,
     bool? autoCreateRemindersForRecurring,
     String? digestConfig,
+    String? notificationSettingsJson,
+    bool? notificationInfoDismissed,
+    bool? digestInfoDismissed,
+    bool? importInfoDismissed,
     bool? holidaysInfoDismissed,
     bool? recurringDetectionInfoDismissed,
     int? recurringDetectionDismissCount,
@@ -4967,6 +5384,12 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     autoCreateRemindersForRecurring:
         autoCreateRemindersForRecurring ?? this.autoCreateRemindersForRecurring,
     digestConfig: digestConfig ?? this.digestConfig,
+    notificationSettingsJson:
+        notificationSettingsJson ?? this.notificationSettingsJson,
+    notificationInfoDismissed:
+        notificationInfoDismissed ?? this.notificationInfoDismissed,
+    digestInfoDismissed: digestInfoDismissed ?? this.digestInfoDismissed,
+    importInfoDismissed: importInfoDismissed ?? this.importInfoDismissed,
     holidaysInfoDismissed: holidaysInfoDismissed ?? this.holidaysInfoDismissed,
     recurringDetectionInfoDismissed:
         recurringDetectionInfoDismissed ?? this.recurringDetectionInfoDismissed,
@@ -5103,6 +5526,18 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       digestConfig: data.digestConfig.present
           ? data.digestConfig.value
           : this.digestConfig,
+      notificationSettingsJson: data.notificationSettingsJson.present
+          ? data.notificationSettingsJson.value
+          : this.notificationSettingsJson,
+      notificationInfoDismissed: data.notificationInfoDismissed.present
+          ? data.notificationInfoDismissed.value
+          : this.notificationInfoDismissed,
+      digestInfoDismissed: data.digestInfoDismissed.present
+          ? data.digestInfoDismissed.value
+          : this.digestInfoDismissed,
+      importInfoDismissed: data.importInfoDismissed.present
+          ? data.importInfoDismissed.value
+          : this.importInfoDismissed,
       holidaysInfoDismissed: data.holidaysInfoDismissed.present
           ? data.holidaysInfoDismissed.value
           : this.holidaysInfoDismissed,
@@ -5178,6 +5613,10 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
             'autoCreateRemindersForRecurring: $autoCreateRemindersForRecurring, ',
           )
           ..write('digestConfig: $digestConfig, ')
+          ..write('notificationSettingsJson: $notificationSettingsJson, ')
+          ..write('notificationInfoDismissed: $notificationInfoDismissed, ')
+          ..write('digestInfoDismissed: $digestInfoDismissed, ')
+          ..write('importInfoDismissed: $importInfoDismissed, ')
           ..write('holidaysInfoDismissed: $holidaysInfoDismissed, ')
           ..write(
             'recurringDetectionInfoDismissed: $recurringDetectionInfoDismissed, ',
@@ -5237,6 +5676,10 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     reminderTimeOfDay,
     autoCreateRemindersForRecurring,
     digestConfig,
+    notificationSettingsJson,
+    notificationInfoDismissed,
+    digestInfoDismissed,
+    importInfoDismissed,
     holidaysInfoDismissed,
     recurringDetectionInfoDismissed,
     recurringDetectionDismissCount,
@@ -5298,6 +5741,10 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
           other.autoCreateRemindersForRecurring ==
               this.autoCreateRemindersForRecurring &&
           other.digestConfig == this.digestConfig &&
+          other.notificationSettingsJson == this.notificationSettingsJson &&
+          other.notificationInfoDismissed == this.notificationInfoDismissed &&
+          other.digestInfoDismissed == this.digestInfoDismissed &&
+          other.importInfoDismissed == this.importInfoDismissed &&
           other.holidaysInfoDismissed == this.holidaysInfoDismissed &&
           other.recurringDetectionInfoDismissed ==
               this.recurringDetectionInfoDismissed &&
@@ -5352,6 +5799,10 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   final Value<String> reminderTimeOfDay;
   final Value<bool> autoCreateRemindersForRecurring;
   final Value<String> digestConfig;
+  final Value<String> notificationSettingsJson;
+  final Value<bool> notificationInfoDismissed;
+  final Value<bool> digestInfoDismissed;
+  final Value<bool> importInfoDismissed;
   final Value<bool> holidaysInfoDismissed;
   final Value<bool> recurringDetectionInfoDismissed;
   final Value<int> recurringDetectionDismissCount;
@@ -5403,6 +5854,10 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     this.reminderTimeOfDay = const Value.absent(),
     this.autoCreateRemindersForRecurring = const Value.absent(),
     this.digestConfig = const Value.absent(),
+    this.notificationSettingsJson = const Value.absent(),
+    this.notificationInfoDismissed = const Value.absent(),
+    this.digestInfoDismissed = const Value.absent(),
+    this.importInfoDismissed = const Value.absent(),
     this.holidaysInfoDismissed = const Value.absent(),
     this.recurringDetectionInfoDismissed = const Value.absent(),
     this.recurringDetectionDismissCount = const Value.absent(),
@@ -5455,6 +5910,10 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     this.reminderTimeOfDay = const Value.absent(),
     this.autoCreateRemindersForRecurring = const Value.absent(),
     this.digestConfig = const Value.absent(),
+    this.notificationSettingsJson = const Value.absent(),
+    this.notificationInfoDismissed = const Value.absent(),
+    this.digestInfoDismissed = const Value.absent(),
+    this.importInfoDismissed = const Value.absent(),
     this.holidaysInfoDismissed = const Value.absent(),
     this.recurringDetectionInfoDismissed = const Value.absent(),
     this.recurringDetectionDismissCount = const Value.absent(),
@@ -5508,6 +5967,10 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     Expression<String>? reminderTimeOfDay,
     Expression<bool>? autoCreateRemindersForRecurring,
     Expression<String>? digestConfig,
+    Expression<String>? notificationSettingsJson,
+    Expression<bool>? notificationInfoDismissed,
+    Expression<bool>? digestInfoDismissed,
+    Expression<bool>? importInfoDismissed,
     Expression<bool>? holidaysInfoDismissed,
     Expression<bool>? recurringDetectionInfoDismissed,
     Expression<int>? recurringDetectionDismissCount,
@@ -5588,6 +6051,14 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
       if (autoCreateRemindersForRecurring != null)
         'auto_create_reminders_for_recurring': autoCreateRemindersForRecurring,
       if (digestConfig != null) 'digest_config': digestConfig,
+      if (notificationSettingsJson != null)
+        'notification_settings_json': notificationSettingsJson,
+      if (notificationInfoDismissed != null)
+        'notification_info_dismissed': notificationInfoDismissed,
+      if (digestInfoDismissed != null)
+        'digest_info_dismissed': digestInfoDismissed,
+      if (importInfoDismissed != null)
+        'import_info_dismissed': importInfoDismissed,
       if (holidaysInfoDismissed != null)
         'holidays_info_dismissed': holidaysInfoDismissed,
       if (recurringDetectionInfoDismissed != null)
@@ -5647,6 +6118,10 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     Value<String>? reminderTimeOfDay,
     Value<bool>? autoCreateRemindersForRecurring,
     Value<String>? digestConfig,
+    Value<String>? notificationSettingsJson,
+    Value<bool>? notificationInfoDismissed,
+    Value<bool>? digestInfoDismissed,
+    Value<bool>? importInfoDismissed,
     Value<bool>? holidaysInfoDismissed,
     Value<bool>? recurringDetectionInfoDismissed,
     Value<int>? recurringDetectionDismissCount,
@@ -5723,6 +6198,12 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
           autoCreateRemindersForRecurring ??
           this.autoCreateRemindersForRecurring,
       digestConfig: digestConfig ?? this.digestConfig,
+      notificationSettingsJson:
+          notificationSettingsJson ?? this.notificationSettingsJson,
+      notificationInfoDismissed:
+          notificationInfoDismissed ?? this.notificationInfoDismissed,
+      digestInfoDismissed: digestInfoDismissed ?? this.digestInfoDismissed,
+      importInfoDismissed: importInfoDismissed ?? this.importInfoDismissed,
       holidaysInfoDismissed:
           holidaysInfoDismissed ?? this.holidaysInfoDismissed,
       recurringDetectionInfoDismissed:
@@ -5922,6 +6403,22 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     if (digestConfig.present) {
       map['digest_config'] = Variable<String>(digestConfig.value);
     }
+    if (notificationSettingsJson.present) {
+      map['notification_settings_json'] = Variable<String>(
+        notificationSettingsJson.value,
+      );
+    }
+    if (notificationInfoDismissed.present) {
+      map['notification_info_dismissed'] = Variable<bool>(
+        notificationInfoDismissed.value,
+      );
+    }
+    if (digestInfoDismissed.present) {
+      map['digest_info_dismissed'] = Variable<bool>(digestInfoDismissed.value);
+    }
+    if (importInfoDismissed.present) {
+      map['import_info_dismissed'] = Variable<bool>(importInfoDismissed.value);
+    }
     if (holidaysInfoDismissed.present) {
       map['holidays_info_dismissed'] = Variable<bool>(
         holidaysInfoDismissed.value,
@@ -6006,6 +6503,10 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
             'autoCreateRemindersForRecurring: $autoCreateRemindersForRecurring, ',
           )
           ..write('digestConfig: $digestConfig, ')
+          ..write('notificationSettingsJson: $notificationSettingsJson, ')
+          ..write('notificationInfoDismissed: $notificationInfoDismissed, ')
+          ..write('digestInfoDismissed: $digestInfoDismissed, ')
+          ..write('importInfoDismissed: $importInfoDismissed, ')
           ..write('holidaysInfoDismissed: $holidaysInfoDismissed, ')
           ..write(
             'recurringDetectionInfoDismissed: $recurringDetectionInfoDismissed, ',
@@ -13693,6 +14194,16 @@ class $BudgetLimitsTable extends BudgetLimits
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('active'),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -13738,6 +14249,7 @@ class $BudgetLimitsTable extends BudgetLimits
     limitAmount,
     alertPercent,
     alertAmount,
+    status,
     createdAt,
     updatedAt,
     syncStatus,
@@ -13826,6 +14338,12 @@ class $BudgetLimitsTable extends BudgetLimits
         ),
       );
     }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -13893,6 +14411,10 @@ class $BudgetLimitsTable extends BudgetLimits
         DriftSqlType.int,
         data['${effectivePrefix}alert_amount'],
       )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -13924,6 +14446,7 @@ class BudgetLimitDb extends DataClass implements Insertable<BudgetLimitDb> {
   final int limitAmount;
   final int alertPercent;
   final int alertAmount;
+  final String status;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String syncStatus;
@@ -13937,6 +14460,7 @@ class BudgetLimitDb extends DataClass implements Insertable<BudgetLimitDb> {
     required this.limitAmount,
     required this.alertPercent,
     required this.alertAmount,
+    required this.status,
     required this.createdAt,
     required this.updatedAt,
     required this.syncStatus,
@@ -13955,6 +14479,7 @@ class BudgetLimitDb extends DataClass implements Insertable<BudgetLimitDb> {
     map['limit_amount'] = Variable<int>(limitAmount);
     map['alert_percent'] = Variable<int>(alertPercent);
     map['alert_amount'] = Variable<int>(alertAmount);
+    map['status'] = Variable<String>(status);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['sync_status'] = Variable<String>(syncStatus);
@@ -13974,6 +14499,7 @@ class BudgetLimitDb extends DataClass implements Insertable<BudgetLimitDb> {
       limitAmount: Value(limitAmount),
       alertPercent: Value(alertPercent),
       alertAmount: Value(alertAmount),
+      status: Value(status),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       syncStatus: Value(syncStatus),
@@ -13995,6 +14521,7 @@ class BudgetLimitDb extends DataClass implements Insertable<BudgetLimitDb> {
       limitAmount: serializer.fromJson<int>(json['limitAmount']),
       alertPercent: serializer.fromJson<int>(json['alertPercent']),
       alertAmount: serializer.fromJson<int>(json['alertAmount']),
+      status: serializer.fromJson<String>(json['status']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       syncStatus: serializer.fromJson<String>(json['syncStatus']),
@@ -14013,6 +14540,7 @@ class BudgetLimitDb extends DataClass implements Insertable<BudgetLimitDb> {
       'limitAmount': serializer.toJson<int>(limitAmount),
       'alertPercent': serializer.toJson<int>(alertPercent),
       'alertAmount': serializer.toJson<int>(alertAmount),
+      'status': serializer.toJson<String>(status),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'syncStatus': serializer.toJson<String>(syncStatus),
@@ -14029,6 +14557,7 @@ class BudgetLimitDb extends DataClass implements Insertable<BudgetLimitDb> {
     int? limitAmount,
     int? alertPercent,
     int? alertAmount,
+    String? status,
     DateTime? createdAt,
     DateTime? updatedAt,
     String? syncStatus,
@@ -14042,6 +14571,7 @@ class BudgetLimitDb extends DataClass implements Insertable<BudgetLimitDb> {
     limitAmount: limitAmount ?? this.limitAmount,
     alertPercent: alertPercent ?? this.alertPercent,
     alertAmount: alertAmount ?? this.alertAmount,
+    status: status ?? this.status,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     syncStatus: syncStatus ?? this.syncStatus,
@@ -14065,6 +14595,7 @@ class BudgetLimitDb extends DataClass implements Insertable<BudgetLimitDb> {
       alertAmount: data.alertAmount.present
           ? data.alertAmount.value
           : this.alertAmount,
+      status: data.status.present ? data.status.value : this.status,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncStatus: data.syncStatus.present
@@ -14085,6 +14616,7 @@ class BudgetLimitDb extends DataClass implements Insertable<BudgetLimitDb> {
           ..write('limitAmount: $limitAmount, ')
           ..write('alertPercent: $alertPercent, ')
           ..write('alertAmount: $alertAmount, ')
+          ..write('status: $status, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncStatus: $syncStatus')
@@ -14103,6 +14635,7 @@ class BudgetLimitDb extends DataClass implements Insertable<BudgetLimitDb> {
     limitAmount,
     alertPercent,
     alertAmount,
+    status,
     createdAt,
     updatedAt,
     syncStatus,
@@ -14120,6 +14653,7 @@ class BudgetLimitDb extends DataClass implements Insertable<BudgetLimitDb> {
           other.limitAmount == this.limitAmount &&
           other.alertPercent == this.alertPercent &&
           other.alertAmount == this.alertAmount &&
+          other.status == this.status &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.syncStatus == this.syncStatus);
@@ -14135,6 +14669,7 @@ class BudgetLimitsCompanion extends UpdateCompanion<BudgetLimitDb> {
   final Value<int> limitAmount;
   final Value<int> alertPercent;
   final Value<int> alertAmount;
+  final Value<String> status;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<String> syncStatus;
@@ -14149,6 +14684,7 @@ class BudgetLimitsCompanion extends UpdateCompanion<BudgetLimitDb> {
     this.limitAmount = const Value.absent(),
     this.alertPercent = const Value.absent(),
     this.alertAmount = const Value.absent(),
+    this.status = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncStatus = const Value.absent(),
@@ -14164,6 +14700,7 @@ class BudgetLimitsCompanion extends UpdateCompanion<BudgetLimitDb> {
     required int limitAmount,
     this.alertPercent = const Value.absent(),
     this.alertAmount = const Value.absent(),
+    this.status = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.syncStatus = const Value.absent(),
@@ -14186,6 +14723,7 @@ class BudgetLimitsCompanion extends UpdateCompanion<BudgetLimitDb> {
     Expression<int>? limitAmount,
     Expression<int>? alertPercent,
     Expression<int>? alertAmount,
+    Expression<String>? status,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<String>? syncStatus,
@@ -14201,6 +14739,7 @@ class BudgetLimitsCompanion extends UpdateCompanion<BudgetLimitDb> {
       if (limitAmount != null) 'limit_amount': limitAmount,
       if (alertPercent != null) 'alert_percent': alertPercent,
       if (alertAmount != null) 'alert_amount': alertAmount,
+      if (status != null) 'status': status,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncStatus != null) 'sync_status': syncStatus,
@@ -14218,6 +14757,7 @@ class BudgetLimitsCompanion extends UpdateCompanion<BudgetLimitDb> {
     Value<int>? limitAmount,
     Value<int>? alertPercent,
     Value<int>? alertAmount,
+    Value<String>? status,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<String>? syncStatus,
@@ -14233,6 +14773,7 @@ class BudgetLimitsCompanion extends UpdateCompanion<BudgetLimitDb> {
       limitAmount: limitAmount ?? this.limitAmount,
       alertPercent: alertPercent ?? this.alertPercent,
       alertAmount: alertAmount ?? this.alertAmount,
+      status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       syncStatus: syncStatus ?? this.syncStatus,
@@ -14270,6 +14811,9 @@ class BudgetLimitsCompanion extends UpdateCompanion<BudgetLimitDb> {
     if (alertAmount.present) {
       map['alert_amount'] = Variable<int>(alertAmount.value);
     }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -14297,6 +14841,7 @@ class BudgetLimitsCompanion extends UpdateCompanion<BudgetLimitDb> {
           ..write('limitAmount: $limitAmount, ')
           ..write('alertPercent: $alertPercent, ')
           ..write('alertAmount: $alertAmount, ')
+          ..write('status: $status, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncStatus: $syncStatus, ')
@@ -30552,6 +31097,11 @@ typedef $$SpacesTableCreateCompanionBuilder =
       required String encryptionSalt,
       Value<String> status,
       Value<String> currencyCode,
+      Value<String?> iconEmoji,
+      Value<String?> iconColor,
+      Value<int?> monthlyBudgetLimit,
+      Value<DateTime?> dissolvedAt,
+      Value<String?> dissolvedBy,
       Value<int> rowid,
     });
 typedef $$SpacesTableUpdateCompanionBuilder =
@@ -30564,6 +31114,11 @@ typedef $$SpacesTableUpdateCompanionBuilder =
       Value<String> encryptionSalt,
       Value<String> status,
       Value<String> currencyCode,
+      Value<String?> iconEmoji,
+      Value<String?> iconColor,
+      Value<int?> monthlyBudgetLimit,
+      Value<DateTime?> dissolvedAt,
+      Value<String?> dissolvedBy,
       Value<int> rowid,
     });
 
@@ -30879,6 +31434,31 @@ class $$SpacesTableFilterComposer
 
   ColumnFilters<String> get currencyCode => $composableBuilder(
     column: $table.currencyCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get iconEmoji => $composableBuilder(
+    column: $table.iconEmoji,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get iconColor => $composableBuilder(
+    column: $table.iconColor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get monthlyBudgetLimit => $composableBuilder(
+    column: $table.monthlyBudgetLimit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dissolvedAt => $composableBuilder(
+    column: $table.dissolvedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dissolvedBy => $composableBuilder(
+    column: $table.dissolvedBy,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -31282,6 +31862,31 @@ class $$SpacesTableOrderingComposer
     column: $table.currencyCode,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get iconEmoji => $composableBuilder(
+    column: $table.iconEmoji,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get iconColor => $composableBuilder(
+    column: $table.iconColor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get monthlyBudgetLimit => $composableBuilder(
+    column: $table.monthlyBudgetLimit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dissolvedAt => $composableBuilder(
+    column: $table.dissolvedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dissolvedBy => $composableBuilder(
+    column: $table.dissolvedBy,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SpacesTableAnnotationComposer
@@ -31320,6 +31925,27 @@ class $$SpacesTableAnnotationComposer
 
   GeneratedColumn<String> get currencyCode => $composableBuilder(
     column: $table.currencyCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get iconEmoji =>
+      $composableBuilder(column: $table.iconEmoji, builder: (column) => column);
+
+  GeneratedColumn<String> get iconColor =>
+      $composableBuilder(column: $table.iconColor, builder: (column) => column);
+
+  GeneratedColumn<int> get monthlyBudgetLimit => $composableBuilder(
+    column: $table.monthlyBudgetLimit,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get dissolvedAt => $composableBuilder(
+    column: $table.dissolvedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get dissolvedBy => $composableBuilder(
+    column: $table.dissolvedBy,
     builder: (column) => column,
   );
 
@@ -31726,6 +32352,11 @@ class $$SpacesTableTableManager
                 Value<String> encryptionSalt = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<String> currencyCode = const Value.absent(),
+                Value<String?> iconEmoji = const Value.absent(),
+                Value<String?> iconColor = const Value.absent(),
+                Value<int?> monthlyBudgetLimit = const Value.absent(),
+                Value<DateTime?> dissolvedAt = const Value.absent(),
+                Value<String?> dissolvedBy = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SpacesCompanion(
                 createdAt: createdAt,
@@ -31736,6 +32367,11 @@ class $$SpacesTableTableManager
                 encryptionSalt: encryptionSalt,
                 status: status,
                 currencyCode: currencyCode,
+                iconEmoji: iconEmoji,
+                iconColor: iconColor,
+                monthlyBudgetLimit: monthlyBudgetLimit,
+                dissolvedAt: dissolvedAt,
+                dissolvedBy: dissolvedBy,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -31748,6 +32384,11 @@ class $$SpacesTableTableManager
                 required String encryptionSalt,
                 Value<String> status = const Value.absent(),
                 Value<String> currencyCode = const Value.absent(),
+                Value<String?> iconEmoji = const Value.absent(),
+                Value<String?> iconColor = const Value.absent(),
+                Value<int?> monthlyBudgetLimit = const Value.absent(),
+                Value<DateTime?> dissolvedAt = const Value.absent(),
+                Value<String?> dissolvedBy = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SpacesCompanion.insert(
                 createdAt: createdAt,
@@ -31758,6 +32399,11 @@ class $$SpacesTableTableManager
                 encryptionSalt: encryptionSalt,
                 status: status,
                 currencyCode: currencyCode,
+                iconEmoji: iconEmoji,
+                iconColor: iconColor,
+                monthlyBudgetLimit: monthlyBudgetLimit,
+                dissolvedAt: dissolvedAt,
+                dissolvedBy: dissolvedBy,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -32789,6 +33435,10 @@ typedef $$AppSettingsTableCreateCompanionBuilder =
       Value<String> reminderTimeOfDay,
       Value<bool> autoCreateRemindersForRecurring,
       Value<String> digestConfig,
+      Value<String> notificationSettingsJson,
+      Value<bool> notificationInfoDismissed,
+      Value<bool> digestInfoDismissed,
+      Value<bool> importInfoDismissed,
       Value<bool> holidaysInfoDismissed,
       Value<bool> recurringDetectionInfoDismissed,
       Value<int> recurringDetectionDismissCount,
@@ -32842,6 +33492,10 @@ typedef $$AppSettingsTableUpdateCompanionBuilder =
       Value<String> reminderTimeOfDay,
       Value<bool> autoCreateRemindersForRecurring,
       Value<String> digestConfig,
+      Value<String> notificationSettingsJson,
+      Value<bool> notificationInfoDismissed,
+      Value<bool> digestInfoDismissed,
+      Value<bool> importInfoDismissed,
       Value<bool> holidaysInfoDismissed,
       Value<bool> recurringDetectionInfoDismissed,
       Value<int> recurringDetectionDismissCount,
@@ -33093,6 +33747,26 @@ class $$AppSettingsTableFilterComposer
 
   ColumnFilters<String> get digestConfig => $composableBuilder(
     column: $table.digestConfig,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notificationSettingsJson => $composableBuilder(
+    column: $table.notificationSettingsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get notificationInfoDismissed => $composableBuilder(
+    column: $table.notificationInfoDismissed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get digestInfoDismissed => $composableBuilder(
+    column: $table.digestInfoDismissed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get importInfoDismissed => $composableBuilder(
+    column: $table.importInfoDismissed,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -33370,6 +34044,26 @@ class $$AppSettingsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get notificationSettingsJson => $composableBuilder(
+    column: $table.notificationSettingsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get notificationInfoDismissed => $composableBuilder(
+    column: $table.notificationInfoDismissed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get digestInfoDismissed => $composableBuilder(
+    column: $table.digestInfoDismissed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get importInfoDismissed => $composableBuilder(
+    column: $table.importInfoDismissed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get holidaysInfoDismissed => $composableBuilder(
     column: $table.holidaysInfoDismissed,
     builder: (column) => ColumnOrderings(column),
@@ -33639,6 +34333,26 @@ class $$AppSettingsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get notificationSettingsJson => $composableBuilder(
+    column: $table.notificationSettingsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get notificationInfoDismissed => $composableBuilder(
+    column: $table.notificationInfoDismissed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get digestInfoDismissed => $composableBuilder(
+    column: $table.digestInfoDismissed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get importInfoDismissed => $composableBuilder(
+    column: $table.importInfoDismissed,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get holidaysInfoDismissed => $composableBuilder(
     column: $table.holidaysInfoDismissed,
     builder: (column) => column,
@@ -33764,6 +34478,10 @@ class $$AppSettingsTableTableManager
                 Value<bool> autoCreateRemindersForRecurring =
                     const Value.absent(),
                 Value<String> digestConfig = const Value.absent(),
+                Value<String> notificationSettingsJson = const Value.absent(),
+                Value<bool> notificationInfoDismissed = const Value.absent(),
+                Value<bool> digestInfoDismissed = const Value.absent(),
+                Value<bool> importInfoDismissed = const Value.absent(),
                 Value<bool> holidaysInfoDismissed = const Value.absent(),
                 Value<bool> recurringDetectionInfoDismissed =
                     const Value.absent(),
@@ -33818,6 +34536,10 @@ class $$AppSettingsTableTableManager
                 autoCreateRemindersForRecurring:
                     autoCreateRemindersForRecurring,
                 digestConfig: digestConfig,
+                notificationSettingsJson: notificationSettingsJson,
+                notificationInfoDismissed: notificationInfoDismissed,
+                digestInfoDismissed: digestInfoDismissed,
+                importInfoDismissed: importInfoDismissed,
                 holidaysInfoDismissed: holidaysInfoDismissed,
                 recurringDetectionInfoDismissed:
                     recurringDetectionInfoDismissed,
@@ -33875,6 +34597,10 @@ class $$AppSettingsTableTableManager
                 Value<bool> autoCreateRemindersForRecurring =
                     const Value.absent(),
                 Value<String> digestConfig = const Value.absent(),
+                Value<String> notificationSettingsJson = const Value.absent(),
+                Value<bool> notificationInfoDismissed = const Value.absent(),
+                Value<bool> digestInfoDismissed = const Value.absent(),
+                Value<bool> importInfoDismissed = const Value.absent(),
                 Value<bool> holidaysInfoDismissed = const Value.absent(),
                 Value<bool> recurringDetectionInfoDismissed =
                     const Value.absent(),
@@ -33929,6 +34655,10 @@ class $$AppSettingsTableTableManager
                 autoCreateRemindersForRecurring:
                     autoCreateRemindersForRecurring,
                 digestConfig: digestConfig,
+                notificationSettingsJson: notificationSettingsJson,
+                notificationInfoDismissed: notificationInfoDismissed,
+                digestInfoDismissed: digestInfoDismissed,
+                importInfoDismissed: importInfoDismissed,
                 holidaysInfoDismissed: holidaysInfoDismissed,
                 recurringDetectionInfoDismissed:
                     recurringDetectionInfoDismissed,
@@ -41411,6 +42141,7 @@ typedef $$BudgetLimitsTableCreateCompanionBuilder =
       required int limitAmount,
       Value<int> alertPercent,
       Value<int> alertAmount,
+      Value<String> status,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<String> syncStatus,
@@ -41427,6 +42158,7 @@ typedef $$BudgetLimitsTableUpdateCompanionBuilder =
       Value<int> limitAmount,
       Value<int> alertPercent,
       Value<int> alertAmount,
+      Value<String> status,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<String> syncStatus,
@@ -41525,6 +42257,11 @@ class $$BudgetLimitsTableFilterComposer
 
   ColumnFilters<int> get alertAmount => $composableBuilder(
     column: $table.alertAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -41652,6 +42389,11 @@ class $$BudgetLimitsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -41769,6 +42511,9 @@ class $$BudgetLimitsTableAnnotationComposer
     column: $table.alertAmount,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -41888,6 +42633,7 @@ class $$BudgetLimitsTableTableManager
                 Value<int> limitAmount = const Value.absent(),
                 Value<int> alertPercent = const Value.absent(),
                 Value<int> alertAmount = const Value.absent(),
+                Value<String> status = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<String> syncStatus = const Value.absent(),
@@ -41902,6 +42648,7 @@ class $$BudgetLimitsTableTableManager
                 limitAmount: limitAmount,
                 alertPercent: alertPercent,
                 alertAmount: alertAmount,
+                status: status,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 syncStatus: syncStatus,
@@ -41918,6 +42665,7 @@ class $$BudgetLimitsTableTableManager
                 required int limitAmount,
                 Value<int> alertPercent = const Value.absent(),
                 Value<int> alertAmount = const Value.absent(),
+                Value<String> status = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<String> syncStatus = const Value.absent(),
@@ -41932,6 +42680,7 @@ class $$BudgetLimitsTableTableManager
                 limitAmount: limitAmount,
                 alertPercent: alertPercent,
                 alertAmount: alertAmount,
+                status: status,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 syncStatus: syncStatus,

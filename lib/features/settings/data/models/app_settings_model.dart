@@ -59,6 +59,11 @@ abstract class AppSettingsModel with _$AppSettingsModel {
     @Default(0) int recurringDetectionDismissCount,
     @Default(true) bool autoDetectRecurring,
     @Default(true) bool enableFamilyHolidayAlerts,
+    // Этап 18 (6.3.40/6.3.41): настройки пушей одним JSON + инфо-баннеры.
+    @Default('{}') String notificationSettingsJson,
+    @Default(false) bool notificationInfoDismissed,
+    @Default(false) bool digestInfoDismissed,
+    @Default(false) bool importInfoDismissed,
     required DateTime createdAt,
     required DateTime updatedAt,
     @Default('pending') String syncStatus,
