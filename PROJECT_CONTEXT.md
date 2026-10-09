@@ -277,3 +277,7 @@ Flutter: DropdownButtonFormField в Row требует ограничения ш
 - Роуты: /receipts/scan, /receipts/:id/preview, /receipts/:id/split. Вход в сканер — long-press по транзакции («Прикрепить чек»).
 - Спам-защита: offer_product_naming_count / offer_receipt_split_count (>=3 -> автооффер выкл).
 - Открытые долги: список чеков (будущий этап); загрузка фото чека в Supabase Storage (этап 25, sync_images_to_cloud); product_analytics_cache (этап 20); персист инфо-баннера сплита; вычистка осиротевших черновиков.
+
+### Этап 17 (текущий) — Admin Dashboard + Members Management
+Реализовано: AdminDashboardScreen (/admin), MembersManagementScreen (/admin/members), InviteSheet с QR-кодом, InactiveAdminCheckWorker, AcceptInvitation flow (HKDF + AES-256-GCM), 13 UseCases для админ-контура, 2 новые таблицы invitations и dmin_audit_log (schema v17).
+Долги перенесены на Этап 21 (PIN при передаче роли, member_colors) и Этап 25 (Email-инвайты через Supabase Edge Functions, cross-device приём инвайта).

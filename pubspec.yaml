@@ -5,6 +5,7 @@ version: 1.0.0+1
 environment:
   sdk: '>=3.10.0 <4.0.0'
 dependencies:
+  rxdart: ^0.28.0
   flutter:
     sdk: flutter
   local_auth: ^2.3.0
@@ -44,6 +45,7 @@ dependencies:
   syncfusion_flutter_core: 28.2.12
   mobile_scanner: ^7.4.2
   image_picker: ^1.2.4
+  qr_flutter: ^4.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

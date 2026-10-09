@@ -224,3 +224,15 @@
 - Чеки только в связке с транзакцией (решение владельца): вход в сканер только из long-press операции; FAB-скан убран; confirm требует привязки (preselect из маршрута / матчинг). Кнопка в CreateTransactionScreen не делается.
 - Split: reorder стрелками (onReorder deprecated); инфо-баннер без персиста (нет колонки в app_settings); ручная кнопка «Разделить чек» в превью не добавляется (вход — автооффер после confirm).
 - Деньги IntColumn (копейки); алиасы товаров — SHA-256(lowercase) для поиска без расшифровки; E2E-шифрование полей чека — только при sync (этап 25), локально открыто.
+
+## Этап 17 — Admin Dashboard + Members Management
+
+- **D17-1**: вкладка Email в InviteSheet — disabled + тултип «Доступно после Этапа 25» (Supabase Edge Functions на синк-этапе).
+- **D17-2**: «Отправить напоминание» — запись в 
+otifications с 	ype=admin_reminder, доставка при синке Этапа 25.
+- **D17-3**: цвета аватаров детерминированы userId.hashCode % 12; override через member_colors — долг Этапа 21.
+- **D17-4**: QR-инвайты через qr_flutter: ^4.1.0 (добавлен в dependencies).
+- **D17-5**: MemberStatus расширен значением suspended; schema v17 — только новые таблицы invitations/dmin_audit_log + last_active_at на memberships.
+- **D17-6**: передача роли админа через confirm-диалог с вводом «ПЕРЕДАТЬ»; PIN-подтверждение — долг Этапа 21 (после создания PinCodeRepository).
+- **D17-7**: инвайт-ссылка = udgetassistant://join?token=base64url(json{t,s,e,r,x}); один параметр, существующий deep-link роут не тронут.
+- **D17-8**: WorkManager-heartbeat (раз в сутки) регистрируется в main.dart; реальная логика алертов — в GetCriticalAlertsUseCase (reactive stream).

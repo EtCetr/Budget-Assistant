@@ -27,6 +27,8 @@ import 'daos/budget_limits_dao.dart';
 import 'package:budget_assistant/core/logger.dart';
 import 'seeds/default_holidays_seed.dart';
 import 'package:budget_assistant/features/import/data/seeds/default_parser_configs_seed.dart';
+import 'tables/invitations.dart';
+import 'tables/admin_audit_log.dart';
 part 'app_database.g.dart';
 
 // Этап 5: Счета, Ипотеки, Категории
@@ -546,6 +548,7 @@ class ReceiptDrafts extends Table {
 }
 @DriftDatabase(
   tables: [
+    Invitations, AdminAuditLog,
     Users,
     Spaces,
     Memberships,
@@ -603,7 +606,7 @@ class AppDatabase extends _$AppDatabase {
   /// v13: Этап 14 — reminders, holidays, recurring_transactions,
   /// forecast_cache, reminder_drafts + 5 колонок app_settings + сиды РФ.
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   Future<void> _createSavingsIndexes() async {
     await customStatement('''
@@ -871,6 +874,11 @@ await _createReceiptsIndexes();
 await DefaultParserConfigsSeed.seedIfEmpty(this);
         },
         onUpgrade: (Migrator m, int from, int to) async {
+    if (from < 17) {
+      await m.createTable(invitations);
+      await m.createTable(adminAuditLog);
+      try { await m.database.customStatement('ALTER TABLE memberships ADD COLUMN last_active_at INTEGER'); } catch (_) {}
+    }
           if (from < 9) {
             await m.createTable(savingsGoals);
             await m.createTable(savingsGoalDrafts);

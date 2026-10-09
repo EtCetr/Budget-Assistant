@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:workmanager/workmanager.dart';
+import 'package:budget_assistant/features/admin/workers/inactive_admin_check_worker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
@@ -79,7 +81,9 @@ Future<void> main() async {
 
     final logger = Logger();
 
-    runApp(
+    await Workmanager().initialize(inactiveAdminCheckCallback, isInDebugMode: false);
+  await InactiveAdminCheckWorker.register();
+  runApp(
       ProviderScope(
         overrides: [
           syncDatabaseProvider.overrideWithValue(db),

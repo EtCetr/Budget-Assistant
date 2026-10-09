@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:budget_assistant/core/providers/transfer_profile_provider.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
+import 'package:budget_assistant/features/admin/presentation/providers/admin_providers.dart';
 import 'package:budget_assistant/features/auth/domain/notifiers/auth_notifier.dart';
 import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:budget_assistant/features/import/domain/entities/transfer_profile.dart';
@@ -48,15 +50,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         content: const Text('Локальные данные останутся на устройстве.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Отмена')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Отмена')),
           FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Выйти')),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Выйти')),
         ],
       ),
     );
-    if (confirm != true || !mounted) return;
+    if (confirm != true || !mounted) {
+      return;
+    }
     await ref.read(authProvider.notifier).signOut();
   }
 
@@ -65,6 +69,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final email = Supabase.instance.client.auth.currentUser?.email ?? '—';
     final spaces = ref.watch(userSpacesProvider).value ?? const [];
     final profile = ref.watch(transferProfileProvider);
+    // Этап 17: видимость кнопки админки (только активный админ текущего пространства).
+    final scope = ref.watch(adminScopeProvider);
+    final isAdmin = scope == null
+        ? false
+        : (ref.watch(adminAccessProvider(scope)).value ?? false);
     return Scaffold(
       drawer: const AppDrawer(currentRoute: '/profile'),
       backgroundColor: AppColors.surfaceBackground,
@@ -101,12 +110,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             OutlinedButton.icon(
               onPressed: () async {
                 await CreateSpaceDialog.show(context);
-                if (mounted) ref.invalidate(userSpacesProvider);
+                if (mounted) {
+                  ref.invalidate(userSpacesProvider);
+                }
               },
               icon: const Icon(Icons.group_add),
               label: const Text('Создать семейную группу'),
             ),
           ]),
+          if (isAdmin) ...[
+            const SizedBox(height: 16),
+            _card('Администрирование', [
+              TextButton.icon(
+                onPressed: () => context.push('/admin'),
+                icon: const Icon(Icons.admin_panel_settings,
+                    color: AppColors.colorFAB),
+                label: const Text('Управление участниками и настройками',
+                    style: TextStyle(color: AppColors.textPrimary)),
+              ),
+            ]),
+          ],
           const SizedBox(height: 16),
           _card('Детекция переводов', [
             const Text(
@@ -179,7 +202,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         border: Border.all(color: AppColors.borderDivider),
       ),
       child: Column(
@@ -236,7 +259,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         border: Border.all(color: AppColors.borderDivider),
       ),
       child: Column(
