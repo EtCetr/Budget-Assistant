@@ -181,6 +181,10 @@ class AdminRepositoryImpl implements AdminRepository {
       }
       final salt = await _crypto.unpackSpaceSalt(bundle);
       await _crypto.writeSpaceKey(bundle.s, salt);
+      final existing = await _dao.watchMembers(bundle.s).first;
+      if (existing.any((e) => e.userId == userId && e.status != MemberStatus.left)) {
+        throw const AdminFailure('Вы уже участник этого пространства');
+      }
       await _dao.joinSpace(
         spaceId: bundle.s, userId: userId,
         role: MemberRole.fromDb(bundle.r), membershipId: _uuid.v4(),

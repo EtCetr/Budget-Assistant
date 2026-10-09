@@ -272,7 +272,7 @@ class _MembersManagementScreenState
                     _remove(m, scope);
                   },
                 ),
-                if (isSelf && isAdmin) ...[
+                if (m.status == MemberStatus.active && m.role != MemberRole.admin) ...[
                   const Divider(),
                   ListTile(
                     leading: const Icon(Icons.admin_panel_settings, color: AppColors.colorWarning),
