@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -91,6 +92,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          if (kDebugMode && scope != null) ...[
+            _card('DEBUG: админ-диагностика', [
+              Text('space=${scope.spaceId} user=${scope.userId} isAdmin=$isAdmin',
+                  style: const TextStyle(fontSize: 12)),
+              ...ref.watch(membersStreamProvider(scope.spaceId)).when(
+                    loading: () => const [Text('members: loading…')],
+                    error: (e, _) => [Text('members error: $e')],
+                    data: (ms) => ms.isEmpty
+                        ? const [Text('members: СТРОК НЕТ — membership не создаётся при создании пространства')]
+                        : [
+                            for (final m in ms)
+                              Text(
+                                  '${m.userId == scope.userId ? 'ME' : 'other'} role=${m.role.dbValue} status=${m.status.dbValue}',
+                                  style: const TextStyle(fontSize: 12)),
+                          ],
+                  ),
+            ]),
+            const SizedBox(height: 16),
+          ],
           _card('Аккаунт', [
             Text(email, style: const TextStyle(color: AppColors.textSecondary)),
           ]),

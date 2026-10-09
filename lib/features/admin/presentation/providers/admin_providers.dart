@@ -3,6 +3,7 @@ import 'package:budget_assistant/core/providers/database_providers.dart';
 import 'package:budget_assistant/core/services/secure_storage_service.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/core/router/app_router.dart';
+import 'package:budget_assistant/features/spaces/presentation/providers/space_providers.dart';
 import 'package:budget_assistant/features/admin/data/crypto/invite_crypto_service.dart';
 import 'package:budget_assistant/features/admin/data/daos/admin_dao.dart';
 import 'package:budget_assistant/features/admin/data/repositories/admin_repository_impl.dart';
@@ -20,8 +21,16 @@ class AdminScope {
 
 final adminScopeProvider = Provider<AdminScope?>((ref) {
   final userId = ref.watch(currentUserIdProvider);
-  final spaceId = ref.watch(currentSpaceIdProvider);
-  if (spaceId == null) return null;
+  var spaceId = ref.watch(currentSpaceIdProvider);
+  if (spaceId == null) {
+    final spaces = ref.watch(userSpacesProvider).value ?? const [];
+    if (spaces.isNotEmpty) {
+      spaceId = (spaces.first as dynamic).id as String?;
+    }
+  }
+  if (spaceId == null) {
+    return null;
+  }
   return AdminScope(userId: userId, spaceId: spaceId);
 });
 
