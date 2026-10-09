@@ -5,15 +5,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:budget_assistant/core/logger.dart';
-import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
-import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/features/admin/domain/entities/admin_entities.dart';
 import 'package:budget_assistant/features/admin/presentation/providers/admin_providers.dart';
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
 
 /// Bottom sheet приглашения (D17-1: Email disabled до Этапа 25).
-/// Privacy-matrix: в режиме hidden QR/ссылка скрываются.
+/// Privacy-matrix: в hidden QR/ссылка скрываются.
+/// Роль вшита в токен (поле r): смена роли сбрасывает текущий инвайт,
+/// чтобы ссылка/QR всегда соответствовали выбранной роли.
 class InviteSheet extends ConsumerStatefulWidget {
   const InviteSheet({super.key, required this.spaceId});
 
@@ -83,8 +85,7 @@ class _InviteSheetState extends ConsumerState<InviteSheet>
       if (!mounted) {
         return;
       }
-      final diff = expiresAt.difference(DateTime.now());
-      final secs = diff.inSeconds;
+      final secs = expiresAt.difference(DateTime.now()).inSeconds;
       if (secs <= 0) {
         _countdown?.cancel();
         setState(() {
@@ -111,7 +112,8 @@ class _InviteSheetState extends ConsumerState<InviteSheet>
 
   @override
   Widget build(BuildContext context) {
-    final hidden = ref.watch(privacyModeProvider) == BalanceVisibilityMode.hidden;
+    final hidden =
+        ref.watch(privacyModeProvider) == BalanceVisibilityMode.hidden;
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.75,
@@ -151,13 +153,47 @@ class _InviteSheetState extends ConsumerState<InviteSheet>
                 ButtonSegment(value: MemberRole.admin, label: Text('Админ')),
               ],
               selected: {_role},
-              onSelectionChanged: (s) => setState(() => _role = s.first),
+              onSelectionChanged: (s) {
+                _countdown?.cancel();
+                setState(() {
+                  _role = s.first;
+                  _invite = null;
+                  _secondsLeft = 0;
+                  _error = null;
+                });
+              },
             ),
             const SizedBox(height: AppSpacing.spacing16),
             if (_invite != null) ...[
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.spacing8),
+                decoration: BoxDecoration(
+                  color: AppColors.colorFAB.withValues(alpha: 0.12),
+                  borderRadius: const BorderRadius.all(Radius.circular(8)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _role == MemberRole.admin
+                          ? Icons.admin_panel_settings
+                          : Icons.person,
+                      size: 16,
+                      color: AppColors.colorFAB,
+                    ),
+                    const SizedBox(width: AppSpacing.spacing8),
+                    Text('Ссылка для роли: ${_role.label}',
+                        style: const TextStyle(
+                            color: AppColors.colorFAB, fontSize: 12)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.spacing8),
               Text('Срок действия: ${_formatCountdown(_secondsLeft)}',
                   style: TextStyle(
-                    color: _secondsLeft < 600 ? AppColors.colorExpense : AppColors.textSecondary,
+                    color: _secondsLeft < 600
+                        ? AppColors.colorExpense
+                        : AppColors.textSecondary,
                     fontWeight: FontWeight.w600,
                   )),
               const SizedBox(height: AppSpacing.spacing8),
@@ -194,7 +230,9 @@ class _InviteSheetState extends ConsumerState<InviteSheet>
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white),
                     )
-                  : Text(_invite == null ? 'Сгенерировать приглашение' : 'Обновить'),
+                  : Text(_invite == null
+                      ? 'Сгенерировать приглашение'
+                      : 'Обновить'),
             ),
           ],
         ),
