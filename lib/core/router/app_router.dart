@@ -184,6 +184,14 @@ GoRouter appRouter(Ref ref) {
         name: 'lock',
         builder: (context, state) => const AppLockScreen(),
       ),
+    GoRoute(
+      path: AppRoutes.join,
+      name: 'join',
+      builder: (context, state) {
+        final token = state.uri.queryParameters['token'];
+        return AcceptInviteScreen(token: token);
+      },
+    ),
       GoRoute(
         path: '${AppRoutes.invite}/accept',
         name: 'accept_invite',

@@ -1,18 +1,26 @@
 import 'package:flutter/widgets.dart';
+import 'package:drift/drift.dart' show Variable;
 import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:workmanager/workmanager.dart';
 
-import 'package:budget_assistant/core/logger.dart';
 import 'package:budget_assistant/core/services/secure_storage_service.dart';
+import 'package:budget_assistant/features/admin/workers/inactive_admin_check_worker.dart';
+import 'package:budget_assistant/features/import/application/clean_import_drafts_task.dart';
 import 'package:budget_assistant/features/sync/application/sync_background_database.dart';
 import 'package:budget_assistant/features/sync/application/sync_service.dart';
-import 'package:budget_assistant/features/import/application/clean_import_drafts_task.dart';
 
-/// Top-level callback для WorkManager.
+/// Entry point for WorkManager background tasks.
+///
+/// IMPORTANT: must be a top-level function with @pragma('vm:entry-point'),
+/// otherwise WorkManager cannot call it in a separate isolate.
+/// Диспетчер ОДИН: маршрутизация по taskName (sync / clean drafts / admin check).
 @pragma('vm:entry-point')
 void syncWorkManagerCallback() {
   Workmanager().executeTask((taskName, inputData) async {
+    if (taskName == InactiveAdminCheckWorker.taskName) {
+      return await handleInactiveAdminCheckTask();
+    }
     if (taskName == cleanImportDraftsTaskName) {
       return await handleCleanImportDraftsTask();
     }
@@ -21,44 +29,53 @@ void syncWorkManagerCallback() {
       return true;
     }
 
+    // Initialize bindings for background isolate.
+    WidgetsFlutterBinding.ensureInitialized();
+
+    final logger = Logger();
+    final storage = SecureStorageService();
+
+    final supabaseUrl = await storage.read('supabase_url');
+    final supabaseAnonKey = await storage.read('supabase_anon_key');
+    if (supabaseUrl == null || supabaseAnonKey == null) {
+      logger.w('SyncWorker: Supabase is not configured, skipping sync');
+      return true; // Not an error: cloud is simply not connected.
+    }
+
+    final client = SupabaseClient(supabaseUrl, supabaseAnonKey);
+    final db = await openSyncDatabaseInBackground();
+
     try {
-      WidgetsFlutterBinding.ensureInitialized();
+      final syncService = SyncService(
+        db: db,
+        client: client,
+        logger: logger,
+        storage: storage,
+      );
 
-      final storage = SecureStorageService();
-      final logger = Logger();
+      final pushed = await syncService.forceSyncNow();
 
-      final supabaseUrl = await storage.read('supabase_url');
-      final supabaseAnonKey = await storage.read('supabase_anon_key');
-
-      if (supabaseUrl == null || supabaseAnonKey == null) {
-        AppLogger.e(
-          'Sync background task failed: missing Supabase config in SecureStorage',
+      // Heartbeat (6.3.33.13 3.a): last_active_at при успешном фоновом sync.
+      final uid = await storage.read('current_user_id');
+      if (uid != null && uid.isNotEmpty) {
+        final epoch = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+        await db.customUpdate(
+          "UPDATE memberships SET last_active_at = ?, updated_at = ?, sync_status = 'pending' WHERE user_id = ? AND status = 'active'",
+          variables: [
+            Variable.withInt(epoch),
+            Variable.withInt(epoch),
+            Variable.withString(uid),
+          ],
         );
-        return false;
       }
 
-      final db = await openSyncDatabaseInBackground();
-      final client = SupabaseClient(supabaseUrl, supabaseAnonKey);
-
-      try {
-        final syncService = SyncService(
-          db: db,
-          client: client,
-          storage: storage,
-          logger: logger,
-        );
-
-        final pushed = await syncService.forceSyncNow();
-
-        AppLogger.i('Sync background task completed: pushed=$pushed');
-
-        return true;
-      } finally {
-        await db.close();
-      }
+      logger.i('SyncWorker: task=$taskName pushed=$pushed');
+      return true;
     } catch (e, st) {
-      AppLogger.e('Sync background task error', e, st);
-      return false;
+      logger.e('SyncWorker: sync error', error: e, stackTrace: st);
+      return false; // Will retry per WorkManager backoff policy.
+    } finally {
+      await db.close();
     }
   });
 }

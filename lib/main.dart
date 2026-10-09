@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:workmanager/workmanager.dart';
 import 'package:budget_assistant/features/admin/workers/inactive_admin_check_worker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -42,6 +41,10 @@ Future<void> main() async {
     final storage = SecureStorageService();
     await storage.write('supabase_url', supabaseUrl);
     await storage.write('supabase_anon_key', supabaseAnonKey);
+    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+    if (currentUserId != null) {
+      await storage.write('current_user_id', currentUserId);
+    }
 
     AppLogger.i('App bootstrap completed successfully');
     AppLogger.i('🚀 Forcing DB initialization...');
@@ -81,7 +84,6 @@ Future<void> main() async {
 
     final logger = Logger();
 
-    await Workmanager().initialize(inactiveAdminCheckCallback, isInDebugMode: false);
   await InactiveAdminCheckWorker.register();
   runApp(
       ProviderScope(
