@@ -159,8 +159,10 @@ abstract class InviteBundle with _$InviteBundle {
     } catch (_) {
       throw const AdminFailure('Некорректная ссылка приглашения');
     }
-  }
-
+  }  }
+/// Методы сериализации инвайт-пакета вынесены в extension: freezed не генерирует
+/// обычные методы внутри @freezed-класса (только factory/геттеры полей).
+extension InviteBundleX on InviteBundle {
   String toLinkToken() =>
       base64Url.encode(utf8.encode(jsonEncode({'t': t, 's': s, 'e': e, 'r': r, 'x': x})));
 }

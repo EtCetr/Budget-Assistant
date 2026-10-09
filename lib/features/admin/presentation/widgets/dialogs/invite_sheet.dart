@@ -1,15 +1,19 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:budget_assistant/core/logger.dart';
+import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/features/admin/domain/entities/admin_entities.dart';
 import 'package:budget_assistant/features/admin/presentation/providers/admin_providers.dart';
 
-/// Bottom sheet приглашения (D17-1: вкладка Email disabled до Этапа 25).
+/// Bottom sheet приглашения (D17-1: Email disabled до Этапа 25).
+/// Privacy-matrix: в режиме hidden QR/ссылка скрываются.
 class InviteSheet extends ConsumerStatefulWidget {
   const InviteSheet({super.key, required this.spaceId});
 
@@ -22,10 +26,12 @@ class InviteSheet extends ConsumerStatefulWidget {
 class _InviteSheetState extends ConsumerState<InviteSheet>
     with SingleTickerProviderStateMixin {
   late final TabController _tab;
+  Timer? _countdown;
   MemberRole _role = MemberRole.member;
   bool _busy = false;
   InvitationInfo? _invite;
   String? _error;
+  int _secondsLeft = 0;
 
   @override
   void initState() {
@@ -35,6 +41,7 @@ class _InviteSheetState extends ConsumerState<InviteSheet>
 
   @override
   void dispose() {
+    _countdown?.cancel();
     _tab.dispose();
     super.dispose();
   }
@@ -55,6 +62,7 @@ class _InviteSheetState extends ConsumerState<InviteSheet>
       if (mounted) {
         setState(() => _invite = inv);
       }
+      _startCountdown(inv);
       ref.invalidate(invitationsStreamProvider(scope.spaceId));
     } catch (e, st) {
       AppLogger.e('InviteSheet generate failed', e, st);
@@ -68,8 +76,42 @@ class _InviteSheetState extends ConsumerState<InviteSheet>
     }
   }
 
+  void _startCountdown(InvitationInfo inv) {
+    _countdown?.cancel();
+    final expiresAt = inv.expiresAt;
+    _countdown = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) {
+        return;
+      }
+      final diff = expiresAt.difference(DateTime.now());
+      final secs = diff.inSeconds;
+      if (secs <= 0) {
+        _countdown?.cancel();
+        setState(() {
+          _invite = null;
+          _secondsLeft = 0;
+        });
+        return;
+      }
+      if (secs != _secondsLeft) {
+        setState(() => _secondsLeft = secs);
+      }
+    });
+    setState(() {
+      _secondsLeft = expiresAt.difference(DateTime.now()).inSeconds;
+    });
+  }
+
+  String _formatCountdown(int secs) {
+    final h = (secs ~/ 3600).toString().padLeft(2, '0');
+    final m = ((secs % 3600) ~/ 60).toString().padLeft(2, '0');
+    final s = (secs % 60).toString().padLeft(2, '0');
+    return '$h:$m:$s';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final hidden = ref.watch(privacyModeProvider) == BalanceVisibilityMode.hidden;
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.75,
@@ -112,6 +154,14 @@ class _InviteSheetState extends ConsumerState<InviteSheet>
               onSelectionChanged: (s) => setState(() => _role = s.first),
             ),
             const SizedBox(height: AppSpacing.spacing16),
+            if (_invite != null) ...[
+              Text('Срок действия: ${_formatCountdown(_secondsLeft)}',
+                  style: TextStyle(
+                    color: _secondsLeft < 600 ? AppColors.colorExpense : AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  )),
+              const SizedBox(height: AppSpacing.spacing8),
+            ],
             TabBar(
               controller: _tab,
               labelColor: AppColors.colorFAB,
@@ -127,7 +177,7 @@ class _InviteSheetState extends ConsumerState<InviteSheet>
               height: 320,
               child: TabBarView(
                 controller: _tab,
-                children: [_qrTab(), _linkTab(), _emailTab()],
+                children: [_qrTab(hidden), _linkTab(hidden), _emailTab()],
               ),
             ),
             const SizedBox(height: AppSpacing.spacing16),
@@ -144,9 +194,7 @@ class _InviteSheetState extends ConsumerState<InviteSheet>
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white),
                     )
-                  : Text(_invite == null
-                      ? 'Сгенерировать приглашение'
-                      : 'Обновить'),
+                  : Text(_invite == null ? 'Сгенерировать приглашение' : 'Обновить'),
             ),
           ],
         ),
@@ -154,7 +202,18 @@ class _InviteSheetState extends ConsumerState<InviteSheet>
     );
   }
 
-  Widget _qrTab() {
+  Widget _qrTab(bool hidden) {
+    if (hidden) {
+      return const Center(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Icon(Icons.visibility_off, size: 48, color: AppColors.textSecondary),
+          SizedBox(height: AppSpacing.spacing12),
+          Text('QR-код скрыт (режим конфиденциальности)',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textSecondary)),
+        ]),
+      );
+    }
     if (_invite == null) {
       return const Center(
         child: Text('Сначала сгенерируйте',
@@ -177,17 +236,23 @@ class _InviteSheetState extends ConsumerState<InviteSheet>
               backgroundColor: Colors.white,
             ),
           ),
-          const SizedBox(height: AppSpacing.spacing8),
-          Text(
-              'Действительно до ${_invite!.expiresAt.toLocal().toString().split('.').first}',
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 11)),
         ],
       ),
     );
   }
 
-  Widget _linkTab() {
+  Widget _linkTab(bool hidden) {
+    if (hidden) {
+      return const Center(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Icon(Icons.visibility_off, size: 48, color: AppColors.textSecondary),
+          SizedBox(height: AppSpacing.spacing12),
+          Text('Ссылка скрыта (режим конфиденциальности)',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textSecondary)),
+        ]),
+      );
+    }
     if (_invite == null) {
       return const Center(
         child: Text('Сначала сгенерируйте',
@@ -200,7 +265,7 @@ class _InviteSheetState extends ConsumerState<InviteSheet>
           padding: const EdgeInsets.all(AppSpacing.spacing12),
           decoration: BoxDecoration(
             color: AppColors.surfaceElevated,
-            borderRadius: const BorderRadius.all(Radius.circular(AppRadius.radiusMd)),
+            borderRadius: const BorderRadius.all(Radius.circular(12)),
             border: Border.all(color: AppColors.borderDivider),
           ),
           child: Text(_invite!.deepLink,
@@ -239,7 +304,6 @@ class _InviteSheetState extends ConsumerState<InviteSheet>
     );
   }
 
-  /// D17-1: Email disabled до подключения облака (Этап 25).
   Widget _emailTab() => const Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

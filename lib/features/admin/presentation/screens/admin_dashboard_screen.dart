@@ -7,13 +7,16 @@ import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/core/widgets/skeleton_shimmer.dart';
 import 'package:budget_assistant/features/admin/domain/entities/admin_entities.dart';
 import 'package:budget_assistant/features/admin/presentation/providers/admin_providers.dart';
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+import 'package:budget_assistant/features/privacy/presentation/privacy_formatter.dart';
+import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
 
-/// Хаб администратора (ТОМ 6 §6.3.32).
+/// Хаб администратора (ТОМ 6, §6.3.32). Privacy-matrix: суммы/имена через PrivacyFormatter.
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
 
-  static String money(int kopecks) =>
-      '${(kopecks ~/ 100).toString()},${(kopecks % 100).toString().padLeft(2, '0')} ₽';
+  String _money(int kopecks, PrivacyFormatter pf, BalanceVisibilityMode mode) =>
+      pf.formatAmount(kopecks, 'RUB', mode);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,36 +38,30 @@ class AdminDashboardScreen extends ConsumerWidget {
         ],
       ),
       body: access.when(
-        loading: () => ListView(padding: const EdgeInsets.all(AppSpacing.spacing16),
-            children: List.generate(4, (_) => Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.spacing12),
-                child: SkeletonShimmer.card()))),
-        error: (e, _) => Center(child: Padding(
+        loading: () => ListView(
             padding: const EdgeInsets.all(AppSpacing.spacing16),
-            child: Text('Ошибка доступа: $e', style: const TextStyle(color: AppColors.textPrimary)))),
-        data: (isAdmin) {
-          // Обновляем heartbeat при каждом открытии
-          if (isAdmin) {
-            ref.read(updateLastActiveAtUseCaseProvider).call(scope.userId, scope.spaceId);
-          }
-          return isAdmin ? _body(context, ref, scope) : Center(
+            children: List.generate(
+                4,
+                (_) => Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.spacing12),
+                    child: SkeletonShimmer.card()))),
+        error: (e, _) => Center(
             child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.spacing16),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.lock_outline, size: 64, color: AppColors.textSecondary),
-                  const SizedBox(height: 16),
-                  const Text('У вас нет прав администратора',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: AppColors.textPrimary, fontSize: 18)),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.go('/profile'),
-                    child: const Text('Вернуться к профилю'),
-                  ),
-                ],
-              ),
+                padding: const EdgeInsets.all(AppSpacing.spacing16),
+                child: Text('Ошибка доступа: $e',
+                    style: const TextStyle(color: AppColors.textPrimary)))),
+        data: (isAdmin) {
+          if (isAdmin) {
+            WidgetsBinding.instance.addPostFrameCallback(
+                (_) => ref.read(updateLastActiveAtUseCaseProvider).call(scope.userId, scope.spaceId));
+            return _body(context, ref, scope);
+          }
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(AppSpacing.spacing16),
+              child: Text('Раздел доступен только администраторам пространства',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textPrimary)),
             ),
           );
         },
@@ -73,6 +70,8 @@ class AdminDashboardScreen extends ConsumerWidget {
   }
 
   Widget _body(BuildContext context, WidgetRef ref, AdminScope scope) {
+    final pf = ref.watch(privacyFormatterProvider);
+    final mode = ref.watch(privacyModeProvider);
     final info = ref.watch(spaceInfoProvider(scope.spaceId));
     final activity = ref.watch(activityStatsProvider(scope.spaceId));
     final alerts = ref.watch(criticalAlertsProvider(scope.spaceId));
@@ -80,49 +79,55 @@ class AdminDashboardScreen extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: () async => ref.invalidate(adminAccessProvider(scope)),
       child: ListView(padding: const EdgeInsets.all(AppSpacing.spacing16), children: [
-        // Space Info Card
-        _infoCard(context, info, scope),
+        _infoCard(context, info, pf, mode),
         const SizedBox(height: AppSpacing.spacing16),
-        // Сетка 2x2
         stats.when(
           loading: () => SkeletonShimmer.card(),
-          error: (e, _) => Text('Ошибка: $e', style: const TextStyle(color: AppColors.textPrimary)),
-          data: (st) => GridView.count(crossAxisCount: 2, shrinkWrap: true,
+          error: (e, _) => Text('Ошибка: $e',
+              style: const TextStyle(color: AppColors.textPrimary)),
+          data: (st) => GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              childAspectRatio: 1.4, mainAxisSpacing: AppSpacing.spacing12,
-              crossAxisSpacing: AppSpacing.spacing12, children: [
-            _gridCard(context, '👥 Участники', '${st.total}', 'админов: ${st.admins}',
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  context.push('/admin/members');
-                }),
-            _gridCard(context, '⏸ Приостановлены', '${st.suspended}',
-                'неактивны 30д: ${st.inactive30d}'),
-            _gridCard(context, '✉ Инвайты', '${st.pendingInvites}', 'ожидают принятия'),
-            alerts.when(
-              loading: () => SkeletonShimmer.card(),
-              error: (e, _) => _gridCard(context, 'Алерты', '—', '$e'),
-              data: (a) => _gridCard(context, '⚠ Алерты', '${a.length}',
-                  a.isEmpty ? 'всё в порядке' : 'требуют внимания',
-                  accent: a.isNotEmpty),
-            ),
-          ]),
+              childAspectRatio: 1.4,
+              mainAxisSpacing: AppSpacing.spacing12,
+              crossAxisSpacing: AppSpacing.spacing12,
+              children: [
+                _gridCard(context, 'Участники', '${st.total}', 'админов: ${st.admins}',
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      context.push('/admin/members');
+                    }),
+                _gridCard(context, 'Приостановлены', '${st.suspended}',
+                    'неактивны 30д: ${st.inactive30d}'),
+                _gridCard(context, 'Инвайты', '${st.pendingInvites}', 'ожидают принятия'),
+                alerts.when(
+                  loading: () => SkeletonShimmer.card(),
+                  error: (e, _) => _gridCard(context, 'Алерты', '—', '$e'),
+                  data: (a) => _gridCard(context, 'Алерты', '${a.length}',
+                      a.isEmpty ? 'всё в порядке' : 'требуют внимания',
+                      accent: a.isNotEmpty),
+                ),
+              ]),
         ),
         const SizedBox(height: AppSpacing.spacing16),
-        // Активность + семейный бюджет
         activity.when(
           loading: () => SkeletonShimmer.card(),
-          error: (e, _) => Text('Ошибка: $e', style: const TextStyle(color: AppColors.textPrimary)),
+          error: (e, _) => Text('Ошибка: $e',
+              style: const TextStyle(color: AppColors.textPrimary)),
           data: (a) => Container(
             padding: const EdgeInsets.all(AppSpacing.spacing16),
             decoration: BoxDecoration(
               color: AppColors.surfaceCard,
-              borderRadius: BorderRadius.circular(12.0),
+              borderRadius: const BorderRadius.all(Radius.circular(AppRadius.radiusMd)),
               border: Border.all(color: AppColors.borderDivider),
             ),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('📊 Активность', style: TextStyle(color: AppColors.textPrimary,
-                  fontSize: 16, fontWeight: FontWeight.w700)),
+              const Text('Активность',
+                  style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700)),
               const SizedBox(height: AppSpacing.spacing12),
               Text('Операций за 7 дней: ${a.tx7d}',
                   style: const TextStyle(color: AppColors.textSecondary)),
@@ -131,49 +136,55 @@ class AdminDashboardScreen extends ConsumerWidget {
               Text('Последняя: ${a.lastTxAt == null ? '—' : a.lastTxAt!.toLocal().toString().split('.').first}',
                   style: const TextStyle(color: AppColors.textSecondary)),
               const SizedBox(height: AppSpacing.spacing12),
-              Text('Расходы месяца: ${money(a.monthExpenseKopecks)}',
+              Text('Расходы месяца: ${_money(a.monthExpenseKopecks, pf, mode)}',
                   style: const TextStyle(color: AppColors.textPrimary)),
-              Text('Доходы месяца: ${money(a.monthIncomeKopecks)}',
+              Text('Доходы месяца: ${_money(a.monthIncomeKopecks, pf, mode)}',
                   style: const TextStyle(color: AppColors.textPrimary)),
             ]),
           ),
         ),
         const SizedBox(height: AppSpacing.spacing16),
-        // Critical Alerts
         alerts.when(
           loading: () => const SizedBox.shrink(),
           error: (e, _) => const SizedBox.shrink(),
           data: (a) => a.isEmpty
               ? Container(
                   padding: const EdgeInsets.all(AppSpacing.spacing16),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.surfaceElevated,
-                    borderRadius: BorderRadius.circular(12.0),
+                    borderRadius: BorderRadius.all(Radius.circular(AppRadius.radiusMd)),
                   ),
-                  child: const Text('✅ Критических алертов нет',
+                  child: const Text('Критических алертов нет',
                       style: TextStyle(color: AppColors.textSecondary)))
               : Column(children: [
-                  const Text('🔴 Критические уведомления',
-                      style: TextStyle(color: AppColors.colorExpense,
-                          fontSize: 16, fontWeight: FontWeight.w700)),
+                  const Text('Критические уведомления',
+                      style: TextStyle(
+                          color: AppColors.colorExpense,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700)),
                   const SizedBox(height: AppSpacing.spacing8),
                   ...a.map((al) => Container(
                       margin: const EdgeInsets.only(bottom: AppSpacing.spacing8),
                       padding: const EdgeInsets.all(AppSpacing.spacing12),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceElevated,
-                        borderRadius: BorderRadius.circular(12.0),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(AppRadius.radiusMd)),
                         border: Border.all(color: AppColors.colorExpense),
                       ),
                       child: Row(children: [
-                        Icon(switch (al.type) {
-                          CriticalAlertType.soloAdmin => Icons.admin_panel_settings_outlined,
-                          CriticalAlertType.inactiveMembers => Icons.snooze,
-                          CriticalAlertType.exMemberDebt => Icons.warning_amber,
-                        }, color: AppColors.colorExpense),
+                        Icon(
+                            switch (al.type) {
+                              CriticalAlertType.soloAdmin =>
+                                Icons.admin_panel_settings_outlined,
+                              CriticalAlertType.inactiveMembers => Icons.snooze,
+                              CriticalAlertType.exMemberDebt => Icons.warning_amber,
+                            },
+                            color: AppColors.colorExpense),
                         const SizedBox(width: AppSpacing.spacing12),
-                        Expanded(child: Text(al.message,
-                            style: const TextStyle(color: AppColors.textPrimary))),
+                        Expanded(
+                            child: Text(al.message,
+                                style: const TextStyle(color: AppColors.textPrimary))),
                         TextButton(
                           child: const Text('Открыть'),
                           onPressed: () {
@@ -185,7 +196,6 @@ class AdminDashboardScreen extends ConsumerWidget {
                 ]),
         ),
         const SizedBox(height: AppSpacing.spacing16),
-        // Quick Actions
         FilledButton.icon(
           onPressed: () {
             HapticFeedback.lightImpact();
@@ -207,98 +217,136 @@ class AdminDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _infoCard(BuildContext context, AsyncValue<SpaceInfo?> info, AdminScope scope) {
+  Widget _infoCard(BuildContext context, AsyncValue<SpaceInfo?> info,
+      PrivacyFormatter pf, BalanceVisibilityMode mode) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.spacing16),
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
-        borderRadius: BorderRadius.circular(12.0),
+        borderRadius: const BorderRadius.all(Radius.circular(AppRadius.radiusMd)),
         border: Border.all(color: AppColors.borderDivider),
       ),
       child: info.when(
         loading: () => SkeletonShimmer.card(),
-        error: (e, _) => Text('Ошибка: $e', style: const TextStyle(color: AppColors.textPrimary)),
-        data: (s) => s == null ? const Text('Пространство не найдено',
-            style: TextStyle(color: AppColors.textPrimary)) : Column(
-          crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              const Icon(Icons.family_restroom, color: AppColors.colorFAB, size: 32),
-              const SizedBox(width: AppSpacing.spacing12),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(s.name, style: const TextStyle(color: AppColors.textPrimary,
-                    fontSize: 18, fontWeight: FontWeight.bold)),
-                const Text('👑 Администратор',
-                    style: TextStyle(color: AppColors.colorWarning, fontSize: 12)),
-              ])),
-            ]),
-            const SizedBox(height: AppSpacing.spacing12),
-            Text('Участников: ${s.membersCount}',
-                style: const TextStyle(color: AppColors.textSecondary)),
-            Text('Создано: ${s.createdAt.toLocal().toString().split('.').first}',
-                style: const TextStyle(color: AppColors.textSecondary)),
-            Text('ID: ${s.id.length > 8 ? s.id.substring(0, 8) : s.id}…',
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-          ]),
+        error: (e, _) => Text('Ошибка: $e',
+            style: const TextStyle(color: AppColors.textPrimary)),
+        data: (s) => s == null
+            ? const Text('Пространство не найдено',
+                style: TextStyle(color: AppColors.textPrimary))
+            : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  const Icon(Icons.family_restroom, color: AppColors.colorFAB, size: 32),
+                  const SizedBox(width: AppSpacing.spacing12),
+                  Expanded(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                        Text(pf.formatSpaceName(s.name, mode),
+                            style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold)),
+                        const Text('Администратор',
+                            style: TextStyle(
+                                color: AppColors.colorWarning, fontSize: 12)),
+                      ])),
+                ]),
+                const SizedBox(height: AppSpacing.spacing12),
+                Text('Участников: ${s.membersCount}',
+                    style: const TextStyle(color: AppColors.textSecondary)),
+                Text('Создано: ${s.createdAt.toLocal().toString().split('.').first}',
+                    style: const TextStyle(color: AppColors.textSecondary)),
+                Text('ID: ${s.id.length > 8 ? s.id.substring(0, 8) : s.id}…',
+                    style: const TextStyle(
+                        color: AppColors.textSecondary, fontSize: 12)),
+              ]),
       ),
     );
   }
 
   Widget _gridCard(BuildContext context, String title, String value, String subtitle,
-      {VoidCallback? onTap, bool accent = false}) =>
-      Container(
-        decoration: BoxDecoration(
-          color: AppColors.surfaceCard,
-          borderRadius: BorderRadius.circular(12.0),
-          border: Border.all(color: AppColors.borderDivider),
-        ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12.0),
-          child: Padding(padding: const EdgeInsets.all(AppSpacing.spacing12),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center, children: [
-            Text(title, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-            Text(value, style: TextStyle(color: accent ? AppColors.colorExpense : AppColors.textPrimary,
-                fontSize: 24, fontWeight: FontWeight.bold)),
-            Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
-          ])),
-        ),
-      );
+      {VoidCallback? onTap, bool accent = false}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: const BorderRadius.all(Radius.circular(AppRadius.radiusMd)),
+        border: Border.all(color: AppColors.borderDivider),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: const BorderRadius.all(Radius.circular(AppRadius.radiusMd)),
+        child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.spacing12),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          color: AppColors.textSecondary, fontSize: 12)),
+                  Text(value,
+                      style: TextStyle(
+                          color: accent ? AppColors.colorExpense : AppColors.textPrimary,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold)),
+                  Text(subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: AppColors.textSecondary, fontSize: 11)),
+                ])),
+      ),
+    );
+  }
 
   void _showAuditSheet(BuildContext context, WidgetRef ref, String spaceId) {
     showModalBottomSheet<void>(
       context: context,
-      
+      backgroundColor: AppColors.surfaceCard,
       builder: (_) => DraggableScrollableSheet(
-        expand: false, initialChildSize: 0.6,
-        
-        builder: (ctx, controller) => Consumer(builder: (ctx, ref, _) {
-          final audit = ref.watch(auditLogProvider(spaceId));
-          return ListView(controller: controller,
-              padding: const EdgeInsets.all(AppSpacing.spacing16),
-              children: [
-            const Text('Журнал действий',
-                style: TextStyle(color: AppColors.textPrimary,
-                    fontSize: 16, fontWeight: FontWeight.w700)),
-            const SizedBox(height: AppSpacing.spacing12),
-            ...audit.when(
-              loading: () => [SkeletonShimmer.card()],
-              error: (e, _) => [Text('Ошибка: $e', style: const TextStyle(color: AppColors.textPrimary))],
-              data: (rows) => rows.isEmpty
-                  ? [const Text('Записей пока нет', style: TextStyle(color: AppColors.textSecondary))]
-                  : rows.map((e) => ListTile(
-                      dense: true,
-                      leading: const Icon(Icons.verified_user, size: 20, color: AppColors.textSecondary),
-                      title: Text(e.action.label, style: const TextStyle(color: AppColors.textPrimary)),
-                      subtitle: Text(
-                          '${e.createdAt.toLocal().toString().split('.').first} · '
-                          'актор ${e.actorUserId.length > 8 ? e.actorUserId.substring(0, 8) : e.actorUserId}…',
-                          style: const TextStyle(color: AppColors.textSecondary)),
-                    )),
-            ),
-          ]);
-        })),
+          expand: false,
+          initialChildSize: 0.6,
+          builder: (ctx, controller) => Consumer(builder: (ctx, ref, _) {
+                final audit = ref.watch(auditLogProvider(spaceId));
+                return ListView(
+                    controller: controller,
+                    padding: const EdgeInsets.all(AppSpacing.spacing16),
+                    children: [
+                      const Text('Журнал действий',
+                          style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700)),
+                      const SizedBox(height: AppSpacing.spacing12),
+                      ...audit.when(
+                        loading: () => [SkeletonShimmer.card()],
+                        error: (e, _) => [
+                          Text('Ошибка: $e',
+                              style: const TextStyle(color: AppColors.textPrimary))
+                        ],
+                        data: (rows) => rows.isEmpty
+                            ? [
+                                const Text('Записей пока нет',
+                                    style: TextStyle(color: AppColors.textSecondary))
+                              ]
+                            : rows
+                                .map((e) => ListTile(
+                                      dense: true,
+                                      leading: const Icon(Icons.verified_user,
+                                          size: 20, color: AppColors.textSecondary),
+                                      title: Text(e.action.label,
+                                          style: const TextStyle(
+                                              color: AppColors.textPrimary)),
+                                      subtitle: Text(
+                                          '${e.createdAt.toLocal().toString().split('.').first} · '
+                                          'актор ${e.actorUserId.length > 8 ? e.actorUserId.substring(0, 8) : e.actorUserId}…',
+                                          style: const TextStyle(
+                                              color: AppColors.textSecondary)),
+                                    ))
+                                .toList(),
+                      ),
+                    ]);
+              })),
     );
   }
 }

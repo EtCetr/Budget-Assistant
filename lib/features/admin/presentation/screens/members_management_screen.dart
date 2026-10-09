@@ -7,6 +7,8 @@ import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/core/widgets/skeleton_shimmer.dart';
 import 'package:budget_assistant/features/admin/domain/entities/admin_entities.dart';
 import 'package:budget_assistant/features/admin/presentation/providers/admin_providers.dart';
+import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/features/admin/presentation/widgets/dialogs/invite_sheet.dart';
 import 'package:budget_assistant/features/admin/presentation/widgets/dialogs/transfer_admin_dialog.dart';
 import 'package:budget_assistant/features/admin/presentation/widgets/member_card.dart';
@@ -34,6 +36,7 @@ class _MembersManagementScreenState
         body: Center(child: Text('Нет активного пространства')),
       );
     }
+    final hidden = ref.watch(privacyModeProvider) == BalanceVisibilityMode.hidden;
     final membersAsync = ref.watch(membersStreamProvider(scope.spaceId));
     final statsAsync = ref.watch(memberStatsProvider(scope.spaceId));
 
@@ -83,7 +86,7 @@ class _MembersManagementScreenState
             ),
             const SizedBox(height: AppSpacing.spacing12),
             MemberFilterRow(
-              selected: _filter,
+              selected: _filter, hidden: hidden,
               onChanged: (f) => setState(() => _filter = f),
             ),
             TextField(
@@ -269,6 +272,14 @@ class _MembersManagementScreenState
                     _remove(m, scope);
                   },
                 ),
+                if (isSelf && isAdmin) ...[
+                  const Divider(),
+                  ListTile(
+                    leading: const Icon(Icons.admin_panel_settings, color: AppColors.colorWarning),
+                    title: const Text('Передать роль админа', style: TextStyle(color: AppColors.textPrimary)),
+                    onTap: () { Navigator.of(ctx).pop(); _pickTransferTarget(scope); },
+                  ),
+                ],
               ] else
                 const Padding(
                   padding: EdgeInsets.all(16),
