@@ -281,3 +281,7 @@ Flutter: DropdownButtonFormField в Row требует ограничения ш
 ### Этап 17 (текущий) — Admin Dashboard + Members Management
 Реализовано: AdminDashboardScreen (/admin), MembersManagementScreen (/admin/members), InviteSheet с QR-кодом, InactiveAdminCheckWorker, AcceptInvitation flow (HKDF + AES-256-GCM), 13 UseCases для админ-контура, 2 новые таблицы invitations и dmin_audit_log (schema v17).
 Долги перенесены на Этап 21 (PIN при передаче роли, member_colors) и Этап 25 (Email-инвайты через Supabase Edge Functions, cross-device приём инвайта).
+### Этап 17 — DONE (приёмка + fix-коммиты)
+Коммиты: 0be2c04 (база), bb08dae (диспетчер/heartbeat), далее fix-коммиты: privacy-rewrite, dissolve+switcher+key-repair, impl/providers rewrite, invite-role-reset+alert-semantics, docs/polish (текущий).
+Готово: /admin (guard, space info, сетка 2x2, алерты, журнал в AppBar), /admin/members (фильтры, поиск, карточки, меню, transfer-диалог), InviteSheet (QR/ссылка/Email-disabled, таймер 24ч, роль в токене), AcceptInvitation (HKDF+AES-GCM, TODO Этап 25), invitations+admin_audit_log (schema v17), heartbeat+аварийное повышение (WorkManager), privacy-matrix на всех админ-экранах, удаление соло-группы (dissolved).
+Долги: Этап 18 — AuditLogScreen, SpaceSettingsScreen, MembersActivityScreen, push-уведомления админ-действий; Этап 21 — PIN при передаче роли (D17-6), member_colors (D17-3), унификация currentSpaceIdProvider (D17-14); Этап 25 — Email-инвайты, cross-device приём инвайта, синк invitations/admin_audit_log, маппинг action_type.

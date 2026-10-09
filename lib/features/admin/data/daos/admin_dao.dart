@@ -149,13 +149,25 @@ class AdminDao {
     return rows.first.read<int>('c');
   }
 
-  Future<void> updateLastActive(String userId, String spaceId) => _db.customUpdate(
-        'UPDATE memberships SET last_active_at = ?, sync_status = \'pending\' WHERE user_id = ? AND space_id = ?',
-        variables: [
-          Variable.withInt(DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000),
-          Variable.withString(userId), Variable.withString(spaceId),
-        ],
-      );
+  /// Heartbeat с троттлингом (D17-16): не трогаем строку чаще раза в 5 минут —
+  /// меньше pending-строк для синка.
+  Future<void> updateLastActive(String userId, String spaceId) {
+    final now = DateTime.now().toUtc();
+    final epoch = now.millisecondsSinceEpoch ~/ 1000;
+    final cutoff =
+        now.subtract(const Duration(minutes: 5)).millisecondsSinceEpoch ~/ 1000;
+    return _db.customUpdate(
+      'UPDATE memberships SET last_active_at = ?, sync_status = \'pending\' '
+      'WHERE user_id = ? AND space_id = ? '
+      'AND (last_active_at IS NULL OR last_active_at < ?)',
+      variables: [
+        Variable.withInt(epoch),
+        Variable.withString(userId),
+        Variable.withString(spaceId),
+        Variable.withInt(cutoff),
+      ],
+    );
+  }
 
   Future<void> changeRole(String membershipId, MemberRole role) => _db.customUpdate(
         "UPDATE memberships SET role = ?, updated_at = ?, sync_status = 'pending' WHERE id = ?",
