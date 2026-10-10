@@ -6,6 +6,9 @@ abstract interface class AdminRepository {
   Stream<ActivityStats> watchActivity(String spaceId);
   Stream<List<InvitationInfo>> watchInvitations(String spaceId);
   Stream<List<AuditEntry>> watchAudit(String spaceId);
+  Stream<List<AuditEntry>> watchAuditFiltered(String spaceId, {DateTime? since, List<String>? actionTypes});
+  Future<void> logAudit({required String spaceId, required String actorId,
+    required AuditAction action, String? targetId, Map<String, dynamic>? metadata});
   Stream<int> watchExMemberDebtCount(String spaceId);
   Future<bool> isAdmin(String userId, String spaceId);
   Future<void> updateLastActive(String userId, String spaceId);

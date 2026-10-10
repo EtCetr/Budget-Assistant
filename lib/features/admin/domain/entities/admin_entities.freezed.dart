@@ -1280,7 +1280,7 @@ as String,
 /// @nodoc
 mixin _$AuditEntry {
 
- String get id; AuditAction get action; String get actorUserId; String? get targetId; String get metadataJson; DateTime get createdAt;
+ String get id; AuditAction get action; String get actorUserId; String? get targetId; String get metadataJson; DateTime get createdAt; String get syncStatus;
 /// Create a copy of AuditEntry
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1291,16 +1291,16 @@ $AuditEntryCopyWith<AuditEntry> get copyWith => _$AuditEntryCopyWithImpl<AuditEn
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuditEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.action, action) || other.action == action)&&(identical(other.actorUserId, actorUserId) || other.actorUserId == actorUserId)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.metadataJson, metadataJson) || other.metadataJson == metadataJson)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuditEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.action, action) || other.action == action)&&(identical(other.actorUserId, actorUserId) || other.actorUserId == actorUserId)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.metadataJson, metadataJson) || other.metadataJson == metadataJson)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,action,actorUserId,targetId,metadataJson,createdAt);
+int get hashCode => Object.hash(runtimeType,id,action,actorUserId,targetId,metadataJson,createdAt,syncStatus);
 
 @override
 String toString() {
-  return 'AuditEntry(id: $id, action: $action, actorUserId: $actorUserId, targetId: $targetId, metadataJson: $metadataJson, createdAt: $createdAt)';
+  return 'AuditEntry(id: $id, action: $action, actorUserId: $actorUserId, targetId: $targetId, metadataJson: $metadataJson, createdAt: $createdAt, syncStatus: $syncStatus)';
 }
 
 
@@ -1311,7 +1311,7 @@ abstract mixin class $AuditEntryCopyWith<$Res>  {
   factory $AuditEntryCopyWith(AuditEntry value, $Res Function(AuditEntry) _then) = _$AuditEntryCopyWithImpl;
 @useResult
 $Res call({
- String id, AuditAction action, String actorUserId, String? targetId, String metadataJson, DateTime createdAt
+ String id, AuditAction action, String actorUserId, String? targetId, String metadataJson, DateTime createdAt, String syncStatus
 });
 
 
@@ -1328,7 +1328,7 @@ class _$AuditEntryCopyWithImpl<$Res>
 
 /// Create a copy of AuditEntry
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? action = null,Object? actorUserId = null,Object? targetId = freezed,Object? metadataJson = null,Object? createdAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? action = null,Object? actorUserId = null,Object? targetId = freezed,Object? metadataJson = null,Object? createdAt = null,Object? syncStatus = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,action: null == action ? _self.action : action // ignore: cast_nullable_to_non_nullable
@@ -1336,7 +1336,8 @@ as AuditAction,actorUserId: null == actorUserId ? _self.actorUserId : actorUserI
 as String,targetId: freezed == targetId ? _self.targetId : targetId // ignore: cast_nullable_to_non_nullable
 as String?,metadataJson: null == metadataJson ? _self.metadataJson : metadataJson // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 
@@ -1416,7 +1417,7 @@ return $default(_that);case _:
 
 
 class _AuditEntry implements AuditEntry {
-  const _AuditEntry({required this.id, required this.action, required this.actorUserId, this.targetId, required this.metadataJson, required this.createdAt});
+  const _AuditEntry({required this.id, required this.action, required this.actorUserId, this.targetId, required this.metadataJson, required this.createdAt, required this.syncStatus});
   
 
 @override final  String id;
@@ -1425,6 +1426,7 @@ class _AuditEntry implements AuditEntry {
 @override final  String? targetId;
 @override final  String metadataJson;
 @override final  DateTime createdAt;
+@override final  String syncStatus;
 
 /// Create a copy of AuditEntry
 /// with the given fields replaced by the non-null parameter values.
@@ -1436,16 +1438,16 @@ _$AuditEntryCopyWith<_AuditEntry> get copyWith => __$AuditEntryCopyWithImpl<_Aud
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuditEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.action, action) || other.action == action)&&(identical(other.actorUserId, actorUserId) || other.actorUserId == actorUserId)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.metadataJson, metadataJson) || other.metadataJson == metadataJson)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuditEntry&&(identical(other.id, id) || other.id == id)&&(identical(other.action, action) || other.action == action)&&(identical(other.actorUserId, actorUserId) || other.actorUserId == actorUserId)&&(identical(other.targetId, targetId) || other.targetId == targetId)&&(identical(other.metadataJson, metadataJson) || other.metadataJson == metadataJson)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,action,actorUserId,targetId,metadataJson,createdAt);
+int get hashCode => Object.hash(runtimeType,id,action,actorUserId,targetId,metadataJson,createdAt,syncStatus);
 
 @override
 String toString() {
-  return 'AuditEntry(id: $id, action: $action, actorUserId: $actorUserId, targetId: $targetId, metadataJson: $metadataJson, createdAt: $createdAt)';
+  return 'AuditEntry(id: $id, action: $action, actorUserId: $actorUserId, targetId: $targetId, metadataJson: $metadataJson, createdAt: $createdAt, syncStatus: $syncStatus)';
 }
 
 
@@ -1456,7 +1458,7 @@ abstract mixin class _$AuditEntryCopyWith<$Res> implements $AuditEntryCopyWith<$
   factory _$AuditEntryCopyWith(_AuditEntry value, $Res Function(_AuditEntry) _then) = __$AuditEntryCopyWithImpl;
 @override @useResult
 $Res call({
- String id, AuditAction action, String actorUserId, String? targetId, String metadataJson, DateTime createdAt
+ String id, AuditAction action, String actorUserId, String? targetId, String metadataJson, DateTime createdAt, String syncStatus
 });
 
 
@@ -1473,7 +1475,7 @@ class __$AuditEntryCopyWithImpl<$Res>
 
 /// Create a copy of AuditEntry
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? action = null,Object? actorUserId = null,Object? targetId = freezed,Object? metadataJson = null,Object? createdAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? action = null,Object? actorUserId = null,Object? targetId = freezed,Object? metadataJson = null,Object? createdAt = null,Object? syncStatus = null,}) {
   return _then(_AuditEntry(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,action: null == action ? _self.action : action // ignore: cast_nullable_to_non_nullable
@@ -1481,7 +1483,8 @@ as AuditAction,actorUserId: null == actorUserId ? _self.actorUserId : actorUserI
 as String,targetId: freezed == targetId ? _self.targetId : targetId // ignore: cast_nullable_to_non_nullable
 as String?,metadataJson: null == metadataJson ? _self.metadataJson : metadataJson // ignore: cast_nullable_to_non_nullable
 as String,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

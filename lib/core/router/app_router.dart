@@ -1,5 +1,6 @@
 import 'package:budget_assistant/features/admin/presentation/screens/admin_dashboard_screen.dart';
 import 'package:budget_assistant/features/admin/presentation/screens/members_management_screen.dart';
+import 'package:budget_assistant/features/admin/presentation/screens/audit_log_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -134,6 +135,7 @@ GoRouter appRouter(Ref ref) {
     refreshListenable: refreshNotifier,
     routes: [
     GoRoute(path: '/admin/members', name: 'admin-members', builder: (context, state) => const MembersManagementScreen()),
+    GoRoute(path: '/admin/audit-log', name: 'admin-audit-log', builder: (context, state) => const AuditLogScreen()),
     GoRoute(path: '/admin', name: 'admin', builder: (context, state) => const AdminDashboardScreen()),
       GoRoute(
         path: '/debts',
@@ -208,7 +210,7 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: '/security/pin-entry',
         name: 'pin_entry',
-        builder: (context, state) => const PinEntryScreen(),
+        builder: (context, state) => PinEntryScreen(mode: state.uri.queryParameters['mode'] ?? 'unlock'),
       ),
       GoRoute(
         path: '/security/biometric-onboarding',

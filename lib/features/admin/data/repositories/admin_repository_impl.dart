@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:budget_assistant/core/logger.dart';
 import 'package:budget_assistant/features/admin/data/crypto/invite_crypto_service.dart';
 import 'package:budget_assistant/features/admin/data/daos/admin_dao.dart';
@@ -25,6 +26,22 @@ class AdminRepositoryImpl implements AdminRepository {
       _dao.watchInvitations(spaceId);
   @override
   Stream<List<AuditEntry>> watchAudit(String spaceId) => _dao.watchAudit(spaceId);
+
+  @override
+  Stream<List<AuditEntry>> watchAuditFiltered(String spaceId, {DateTime? since, List<String>? actionTypes}) =>
+      _dao.watchAuditFiltered(spaceId, since: since, actionTypes: actionTypes);
+
+  @override
+  Future<void> logAudit({required String spaceId, required String actorId,
+    required AuditAction action, String? targetId, Map<String, dynamic>? metadata}) {
+    try {
+      return _audit(spaceId, actorId, action, targetId,
+          metadata == null ? '{}' : jsonEncode(metadata));
+    } catch (e, st) {
+      AppLogger.e('logAudit failed', e, st);
+      rethrow;
+    }
+  }
   @override
   Stream<int> watchExMemberDebtCount(String spaceId) =>
       _dao.watchExMemberDebtCount(spaceId);

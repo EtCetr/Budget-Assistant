@@ -46,7 +46,10 @@ class AdminDashboardScreen extends ConsumerWidget {
           IconButton(
             tooltip: 'Журнал действий',
             icon: const Icon(Icons.history),
-            onPressed: () => _showAuditSheet(context, ref, scope.spaceId),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              context.push('/admin/audit-log');
+            },
           ),
         ],
       ),
@@ -72,12 +75,11 @@ class AdminDashboardScreen extends ConsumerWidget {
           }
           return const Center(
             child: Padding(
-              padding: EdgeInsets.all(AppSpacing.spacing16),
-              child: Text('Раздел доступен только администраторам пространства',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.textPrimary)),
-            ),
-          );
+                padding: EdgeInsets.all(AppSpacing.spacing16),
+                child: Text('Раздел доступен только администраторам пространства',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppColors.textPrimary)),
+          ));
         },
       ),
     );
@@ -201,35 +203,35 @@ class AdminDashboardScreen extends ConsumerWidget {
                           fontWeight: FontWeight.w700)),
                   const SizedBox(height: AppSpacing.spacing8),
                   ...a.map((al) => Container(
-                      margin: const EdgeInsets.only(bottom: AppSpacing.spacing8),
-                      padding: const EdgeInsets.all(AppSpacing.spacing12),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceElevated,
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(AppRadius.radiusMd)),
-                        border: Border.all(color: AppColors.colorExpense),
-                      ),
-                      child: Row(children: [
-                        Icon(
-                            switch (al.type) {
-                              CriticalAlertType.soloAdmin =>
-                                Icons.admin_panel_settings_outlined,
-                              CriticalAlertType.inactiveMembers => Icons.snooze,
-                              CriticalAlertType.exMemberDebt => Icons.warning_amber,
-                            },
-                            color: AppColors.colorExpense),
-                        const SizedBox(width: AppSpacing.spacing12),
-                        Expanded(
-                            child: Text(al.message,
-                                style: const TextStyle(color: AppColors.textPrimary))),
-                        TextButton(
-                          child: const Text('Открыть'),
-                          onPressed: () {
-                            HapticFeedback.mediumImpact();
-                            context.push('/admin/members');
-                          },
+                        margin: const EdgeInsets.only(bottom: AppSpacing.spacing8),
+                        padding: const EdgeInsets.all(AppSpacing.spacing12),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceElevated,
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(AppRadius.radiusMd)),
+                          border: Border.all(color: AppColors.colorExpense),
                         ),
-                      ]))),
+                        child: Row(children: [
+                          Icon(
+                              switch (al.type) {
+                                CriticalAlertType.soloAdmin =>
+                                  Icons.admin_panel_settings_outlined,
+                                CriticalAlertType.inactiveMembers => Icons.snooze,
+                                CriticalAlertType.exMemberDebt => Icons.warning_amber,
+                              },
+                              color: AppColors.colorExpense),
+                          const SizedBox(width: AppSpacing.spacing12),
+                          Expanded(
+                              child: Text(al.message,
+                                  style: const TextStyle(color: AppColors.textPrimary))),
+                          TextButton(
+                              child: const Text('Открыть'),
+                              onPressed: () {
+                                HapticFeedback.mediumImpact();
+                                context.push('/admin/members');
+                              }),
+                        ]),
+                      )),
                 ]),
         ),
       ]),
@@ -348,77 +350,27 @@ class AdminDashboardScreen extends ConsumerWidget {
         onTap: onTap,
         borderRadius: const BorderRadius.all(Radius.circular(AppRadius.radiusMd)),
         child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.spacing12),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(title,
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 12)),
-                  Text(value,
-                      style: TextStyle(
-                          color: accent ? AppColors.colorExpense : AppColors.textPrimary,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold)),
-                  Text(subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 11)),
-                ])),
+          padding: const EdgeInsets.all(AppSpacing.spacing12),
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(title,
+                    style: const TextStyle(
+                        color: AppColors.textSecondary, fontSize: 12)),
+                Text(value,
+                    style: TextStyle(
+                        color: accent ? AppColors.colorExpense : AppColors.textPrimary,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold)),
+                Text(subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        color: AppColors.textSecondary, fontSize: 11)),
+              ]),
+        ),
       ),
-    );
-  }
-
-  void _showAuditSheet(BuildContext context, WidgetRef ref, String spaceId) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.surfaceCard,
-      builder: (_) => DraggableScrollableSheet(
-          expand: false,
-          initialChildSize: 0.6,
-          builder: (ctx, controller) => Consumer(builder: (ctx, ref, _) {
-                final audit = ref.watch(auditLogProvider(spaceId));
-                return ListView(
-                    controller: controller,
-                    padding: const EdgeInsets.all(AppSpacing.spacing16),
-                    children: [
-                      const Text('Журнал действий',
-                          style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700)),
-                      const SizedBox(height: AppSpacing.spacing12),
-                      ...audit.when(
-                        loading: () => [SkeletonShimmer.card()],
-                        error: (e, _) => [
-                          Text('Ошибка: $e',
-                              style: const TextStyle(color: AppColors.textPrimary))
-                        ],
-                        data: (rows) => rows.isEmpty
-                            ? [
-                                const Text('Записей пока нет',
-                                    style: TextStyle(color: AppColors.textSecondary))
-                              ]
-                            : rows
-                                .map((e) => ListTile(
-                                      dense: true,
-                                      leading: const Icon(Icons.verified_user,
-                                          size: 20, color: AppColors.textSecondary),
-                                      title: Text(e.action.label,
-                                          style: const TextStyle(
-                                              color: AppColors.textPrimary)),
-                                      subtitle: Text(
-                                          '${e.createdAt.toLocal().toString().split('.').first} · '
-                                          'актор ${e.actorUserId.length > 8 ? e.actorUserId.substring(0, 8) : e.actorUserId}…',
-                                          style: const TextStyle(
-                                              color: AppColors.textSecondary)),
-                                    ))
-                                .toList(),
-                      ),
-                    ]);
-              })),
     );
   }
 }

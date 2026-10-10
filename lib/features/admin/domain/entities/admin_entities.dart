@@ -173,6 +173,7 @@ abstract class AuditEntry with _$AuditEntry {
     String? targetId,
     required String metadataJson,
     required DateTime createdAt,
+    required String syncStatus,
   }) = _AuditEntry;
 }
 

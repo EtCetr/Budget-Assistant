@@ -117,8 +117,32 @@ class AdminDao {
                     id: r.id, action: AuditAction.fromDb(r.actionType),
                     actorUserId: r.actorUserId, targetId: r.targetId,
                     metadataJson: r.metadataJson, createdAt: r.createdAt,
+        syncStatus: r.syncStatus,
                   ))
               .toList());
+
+  /// Этап 18 (6.3.35): период и фильтр действий уходят в SQL WHERE (фильтры только в SQL).
+  Stream<List<AuditEntry>> watchAuditFiltered(String spaceId, {DateTime? since, List<String>? actionTypes}) {
+    final q = _db.select(_db.adminAuditLog)..where((t) => t.spaceId.equals(spaceId));
+    if (since != null) q.where((t) => t.createdAt.isBiggerOrEqualValue(since));
+    if (actionTypes != null && actionTypes.isNotEmpty) q.where((t) => t.actionType.isIn(actionTypes));
+    q.orderBy([(t) => OrderingTerm.desc(t.createdAt)]);
+    return q.watch().map((rows) => rows.map((r) => AuditEntry(
+      id: r.id, action: AuditAction.fromDb(r.actionType),
+      actorUserId: r.actorUserId, targetId: r.targetId,
+      metadataJson: r.metadataJson, createdAt: r.createdAt,
+      syncStatus: r.syncStatus,
+    )).toList());
+  }
+
+  /// Имя пользователя для рендера аудита (имена НЕ хранятся в metadata_json).
+  Future<String?> userNameById(String userId) async {
+    final rows = await _db.customSelect(
+      'SELECT display_name AS n FROM users WHERE id = ?',
+      variables: [Variable.withString(userId)],
+    ).get();
+    return rows.isEmpty ? null : rows.first.readNullable<String>('n');
+  }
 
   Future<void> insertInvitation(InvitationInfo inv, String token, String encryptedSalt, String actorId) =>
       _db.into(_db.invitations).insert(InvitationsCompanion.insert(
