@@ -138,10 +138,15 @@ class AdminDao {
   /// Имя пользователя для рендера аудита (имена НЕ хранятся в metadata_json).
   Future<String?> userNameById(String userId) async {
     final rows = await _db.customSelect(
-      'SELECT display_name AS n FROM users WHERE id = ?',
+      'SELECT display_name AS n, email AS e FROM users WHERE id = ?',
       variables: [Variable.withString(userId)],
     ).get();
-    return rows.isEmpty ? null : rows.first.readNullable<String>('n');
+    if (rows.isEmpty) return null;
+    final n = rows.first.readNullable<String>('n');
+    if (n != null && n.trim().isNotEmpty) return n;
+    final e = rows.first.readNullable<String>('e');
+    if (e != null && e.trim().isNotEmpty) return e;
+    return null;
   }
 
   Future<void> insertInvitation(InvitationInfo inv, String token, String encryptedSalt, String actorId) =>

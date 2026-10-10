@@ -33,7 +33,7 @@ class AuditLogFilterRow extends StatelessWidget {
                 selected: f == selected,
                 onSelected: (_) {
                   HapticFeedback.selectionClick();
-                  onChanged(f);
+                  onChanged(f == selected ? AuditLogFilter.all : f);
                 },
                 selectedColor: _chipColor(f).withValues(alpha: 0.2),
                 labelStyle: TextStyle(

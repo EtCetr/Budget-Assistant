@@ -44,7 +44,7 @@ class CalculateAuditStatsUseCase {
         logs.where((e) => p(e.action)).length;
     return AuditStats(
       invitations: count(
-          (a) => a == AuditAction.memberInvited || a == AuditAction.memberJoined),
+          (a) => a == AuditAction.memberInvited || a == AuditAction.memberJoined || a == AuditAction.inviteGenerated),
       removals: count(
           (a) => a == AuditAction.memberRemoved || a == AuditAction.memberLeft),
       roleChanges: count((a) => a == AuditAction.roleChanged),

@@ -14,7 +14,7 @@ class AuditLogPeriodSelector extends ConsumerWidget {
         ButtonSegment(value: AuditLogPeriod.week, label: Text('Неделя')),
         ButtonSegment(value: AuditLogPeriod.month, label: Text('Месяц')),
         ButtonSegment(value: AuditLogPeriod.quarter, label: Text('Квартал')),
-        ButtonSegment(value: AuditLogPeriod.all, label: Text('Всё время')),
+        ButtonSegment(value: AuditLogPeriod.all, label: Text('Всё')),
       ],
       selected: {period},
       onSelectionChanged: (s) {

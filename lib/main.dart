@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:drift/drift.dart' show Variable;
 import 'package:budget_assistant/features/admin/workers/inactive_admin_check_worker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -51,6 +52,37 @@ Future<void> main() async {
 
     final db = AppDatabase();
     await db.customSelect('SELECT 1').get();
+    // Этап 18 (фикс «Неизвестный пользователь» в журнале аудита): локальная
+    // копия профиля с email из Supabase Auth. Идемпотентно: INSERT OR IGNORE
+    // + UPDATE только пустого email. display_name приедет с синком (Этап 25).
+    if (currentUserId != null) {
+      try {
+        final email = Supabase.instance.client.auth.currentUser?.email ?? '';
+        final epoch = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+        await db.customInsert(
+          'INSERT OR IGNORE INTO users '
+          '(id, email, display_name, created_at, updated_at, sync_status) '
+          "VALUES (?, ?, '', ?, ?, 'pending')",
+          variables: [
+            Variable.withString(currentUserId),
+            Variable.withString(email),
+            Variable.withInt(epoch),
+            Variable.withInt(epoch),
+          ],
+        );
+        await db.customUpdate(
+          'UPDATE users SET email = ?, updated_at = ? '
+          "WHERE id = ? AND (email = '' OR email IS NULL)",
+          variables: [
+            Variable.withString(email),
+            Variable.withInt(epoch),
+            Variable.withString(currentUserId),
+          ],
+        );
+      } catch (e, st) {
+        AppLogger.e('Failed to backfill local user email', e, st);
+      }
+    }
     AppLogger.i('✅ DB initialized successfully');
 
     // Флаг онбординга

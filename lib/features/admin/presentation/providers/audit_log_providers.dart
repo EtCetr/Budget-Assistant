@@ -43,6 +43,7 @@ enum AuditLogFilter {
         AuditLogFilter.invitations => [
             AuditAction.memberInvited.dbValue,
             AuditAction.memberJoined.dbValue,
+            AuditAction.inviteGenerated.dbValue,
           ],
         AuditLogFilter.removals => [
             AuditAction.memberRemoved.dbValue,
