@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/features/admin/domain/entities/admin_entities.dart';
+import 'package:budget_assistant/features/admin/domain/usecases/members_activity_usecases.dart';
 
 /// DAO админ-контура. Свои таблицы — type-safe Drift; чужие — customSelect
 /// (Drift парсит таблицы из SQL сам для реактивности watch()).
@@ -13,13 +14,15 @@ class AdminDao {
            COALESCE(u.display_name, 'Без имени') AS display_name, u.email AS email,
            m.role AS role, m.status AS status, m.joined_at AS joined_at,
            m.last_active_at AS last_active_at,
-           (SELECT COUNT(*) FROM debts d
+           m.left_at AS left_at,           (SELECT COUNT(*) FROM debts d
              WHERE d.debtor_id = m.user_id AND d.space_id = m.space_id AND d.resolution_status = 'active') AS open_debts_count,
            (SELECT COALESCE(SUM(d.amount), 0) FROM debts d
              WHERE d.debtor_id = m.user_id AND d.space_id = m.space_id AND d.resolution_status = 'active') AS open_debts_amount,
            (SELECT COUNT(*) FROM transactions t
              WHERE t.user_id = m.user_id AND t.space_id = m.space_id AND t.date > ?) AS tx30d
-    FROM memberships m LEFT JOIN users u ON u.id = m.user_id
+             (SELECT COUNT(*) FROM transactions t
+               WHERE t.user_id = m.user_id AND t.space_id = m.space_id
+                 AND (m.left_at IS NULL OR t.date < m.left_at)) AS tx_before_left    FROM memberships m LEFT JOIN users u ON u.id = m.user_id
     WHERE m.space_id = ?
     ORDER BY CASE m.role WHEN 'admin' THEN 0 ELSE 1 END, m.joined_at ASC
   ''';
@@ -42,7 +45,8 @@ class AdminDao {
           openDebtsCount: r.read<int>('open_debts_count'),
           openDebtsAmountKopecks: r.read<int>('open_debts_amount'),
           tx30d: r.read<int>('tx30d'),
-        )).toList());
+          leftAt: r.readNullable<DateTime>('left_at'),
+          txBeforeLeft: r.read<int>('tx_before_left'),        )).toList());
   }
 
   Stream<SpaceInfo?> watchSpaceInfo(String spaceId) => _db.customSelect(
@@ -148,6 +152,50 @@ class AdminDao {
     if (e != null && e.trim().isNotEmpty) return e;
     return null;
   }
+
+  /// Этап 18 (6.3.34): операции по дням и участникам (стек-бар) — фильтры в SQL.
+  Stream<List<DayUserCountRow>> watchDayUserCounts(String spaceId, int sinceEpoch) =>
+      _db
+          .customSelect(
+            'SELECT strftime(\'%Y-%m-%d\', date, \'unixepoch\', \'localtime\') AS day, '
+            'user_id, COUNT(*) AS c FROM transactions '
+            'WHERE space_id = ? AND date >= ? GROUP BY day, user_id',
+            variables: [
+              Variable.withString(spaceId),
+              Variable.withInt(sinceEpoch),
+            ],
+            readsFrom: {_db.transactions},
+          )
+          .watch()
+          .map((rows) => [
+                for (final r in rows)
+                  DayUserCountRow(
+                    day: r.read<String>('day'),
+                    userId: r.read<String>('user_id'),
+                    count: r.read<int>('c'),
+                  ),
+              ]);
+
+  /// Этап 18 (6.3.34): сколько операций сделал каждый участник за период.
+  Stream<List<UserCountRow>> watchUserCounts(String spaceId, int sinceEpoch) =>
+      _db
+          .customSelect(
+            'SELECT user_id, COUNT(*) AS c FROM transactions '
+            'WHERE space_id = ? AND date >= ? GROUP BY user_id',
+            variables: [
+              Variable.withString(spaceId),
+              Variable.withInt(sinceEpoch),
+            ],
+            readsFrom: {_db.transactions},
+          )
+          .watch()
+          .map((rows) => [
+                for (final r in rows)
+                  UserCountRow(
+                    userId: r.read<String>('user_id'),
+                    count: r.read<int>('c'),
+                  ),
+              ]);
 
   Future<void> insertInvitation(InvitationInfo inv, String token, String encryptedSalt, String actorId) =>
       _db.into(_db.invitations).insert(InvitationsCompanion.insert(

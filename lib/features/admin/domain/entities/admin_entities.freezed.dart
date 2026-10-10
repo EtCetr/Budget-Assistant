@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$MemberInfo {
 
- String get id; String get spaceId; String get userId; String get displayName; String? get email; MemberRole get role; MemberStatus get status; DateTime get joinedAt; DateTime? get lastActiveAt; int get openDebtsCount; int get openDebtsAmountKopecks; int get tx30d;
+ String get id; String get spaceId; String get userId; String get displayName; String? get email; MemberRole get role; MemberStatus get status; DateTime get joinedAt; DateTime? get lastActiveAt; int get openDebtsCount; int get openDebtsAmountKopecks; int get tx30d; DateTime? get leftAt; int get txBeforeLeft;
 /// Create a copy of MemberInfo
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $MemberInfoCopyWith<MemberInfo> get copyWith => _$MemberInfoCopyWithImpl<MemberI
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is MemberInfo&&(identical(other.id, id) || other.id == id)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.email, email) || other.email == email)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.lastActiveAt, lastActiveAt) || other.lastActiveAt == lastActiveAt)&&(identical(other.openDebtsCount, openDebtsCount) || other.openDebtsCount == openDebtsCount)&&(identical(other.openDebtsAmountKopecks, openDebtsAmountKopecks) || other.openDebtsAmountKopecks == openDebtsAmountKopecks)&&(identical(other.tx30d, tx30d) || other.tx30d == tx30d));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is MemberInfo&&(identical(other.id, id) || other.id == id)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.email, email) || other.email == email)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.lastActiveAt, lastActiveAt) || other.lastActiveAt == lastActiveAt)&&(identical(other.openDebtsCount, openDebtsCount) || other.openDebtsCount == openDebtsCount)&&(identical(other.openDebtsAmountKopecks, openDebtsAmountKopecks) || other.openDebtsAmountKopecks == openDebtsAmountKopecks)&&(identical(other.tx30d, tx30d) || other.tx30d == tx30d)&&(identical(other.leftAt, leftAt) || other.leftAt == leftAt)&&(identical(other.txBeforeLeft, txBeforeLeft) || other.txBeforeLeft == txBeforeLeft));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,spaceId,userId,displayName,email,role,status,joinedAt,lastActiveAt,openDebtsCount,openDebtsAmountKopecks,tx30d);
+int get hashCode => Object.hash(runtimeType,id,spaceId,userId,displayName,email,role,status,joinedAt,lastActiveAt,openDebtsCount,openDebtsAmountKopecks,tx30d,leftAt,txBeforeLeft);
 
 @override
 String toString() {
-  return 'MemberInfo(id: $id, spaceId: $spaceId, userId: $userId, displayName: $displayName, email: $email, role: $role, status: $status, joinedAt: $joinedAt, lastActiveAt: $lastActiveAt, openDebtsCount: $openDebtsCount, openDebtsAmountKopecks: $openDebtsAmountKopecks, tx30d: $tx30d)';
+  return 'MemberInfo(id: $id, spaceId: $spaceId, userId: $userId, displayName: $displayName, email: $email, role: $role, status: $status, joinedAt: $joinedAt, lastActiveAt: $lastActiveAt, openDebtsCount: $openDebtsCount, openDebtsAmountKopecks: $openDebtsAmountKopecks, tx30d: $tx30d, leftAt: $leftAt, txBeforeLeft: $txBeforeLeft)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $MemberInfoCopyWith<$Res>  {
   factory $MemberInfoCopyWith(MemberInfo value, $Res Function(MemberInfo) _then) = _$MemberInfoCopyWithImpl;
 @useResult
 $Res call({
- String id, String spaceId, String userId, String displayName, String? email, MemberRole role, MemberStatus status, DateTime joinedAt, DateTime? lastActiveAt, int openDebtsCount, int openDebtsAmountKopecks, int tx30d
+ String id, String spaceId, String userId, String displayName, String? email, MemberRole role, MemberStatus status, DateTime joinedAt, DateTime? lastActiveAt, int openDebtsCount, int openDebtsAmountKopecks, int tx30d, DateTime? leftAt, int txBeforeLeft
 });
 
 
@@ -62,7 +62,7 @@ class _$MemberInfoCopyWithImpl<$Res>
 
 /// Create a copy of MemberInfo
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? spaceId = null,Object? userId = null,Object? displayName = null,Object? email = freezed,Object? role = null,Object? status = null,Object? joinedAt = null,Object? lastActiveAt = freezed,Object? openDebtsCount = null,Object? openDebtsAmountKopecks = null,Object? tx30d = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? spaceId = null,Object? userId = null,Object? displayName = null,Object? email = freezed,Object? role = null,Object? status = null,Object? joinedAt = null,Object? lastActiveAt = freezed,Object? openDebtsCount = null,Object? openDebtsAmountKopecks = null,Object? tx30d = null,Object? leftAt = freezed,Object? txBeforeLeft = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,spaceId: null == spaceId ? _self.spaceId : spaceId // ignore: cast_nullable_to_non_nullable
@@ -76,6 +76,8 @@ as DateTime,lastActiveAt: freezed == lastActiveAt ? _self.lastActiveAt : lastAct
 as DateTime?,openDebtsCount: null == openDebtsCount ? _self.openDebtsCount : openDebtsCount // ignore: cast_nullable_to_non_nullable
 as int,openDebtsAmountKopecks: null == openDebtsAmountKopecks ? _self.openDebtsAmountKopecks : openDebtsAmountKopecks // ignore: cast_nullable_to_non_nullable
 as int,tx30d: null == tx30d ? _self.tx30d : tx30d // ignore: cast_nullable_to_non_nullable
+as int,leftAt: freezed == leftAt ? _self.leftAt : leftAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,txBeforeLeft: null == txBeforeLeft ? _self.txBeforeLeft : txBeforeLeft // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }
@@ -156,7 +158,7 @@ return $default(_that);case _:
 
 
 class _MemberInfo implements MemberInfo {
-  const _MemberInfo({required this.id, required this.spaceId, required this.userId, required this.displayName, this.email, required this.role, required this.status, required this.joinedAt, this.lastActiveAt, required this.openDebtsCount, required this.openDebtsAmountKopecks, required this.tx30d});
+  const _MemberInfo({required this.id, required this.spaceId, required this.userId, required this.displayName, this.email, required this.role, required this.status, required this.joinedAt, this.lastActiveAt, required this.openDebtsCount, required this.openDebtsAmountKopecks, required this.tx30d, this.leftAt, required this.txBeforeLeft});
   
 
 @override final  String id;
@@ -171,6 +173,8 @@ class _MemberInfo implements MemberInfo {
 @override final  int openDebtsCount;
 @override final  int openDebtsAmountKopecks;
 @override final  int tx30d;
+@override final  DateTime? leftAt;
+@override final  int txBeforeLeft;
 
 /// Create a copy of MemberInfo
 /// with the given fields replaced by the non-null parameter values.
@@ -182,16 +186,16 @@ _$MemberInfoCopyWith<_MemberInfo> get copyWith => __$MemberInfoCopyWithImpl<_Mem
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MemberInfo&&(identical(other.id, id) || other.id == id)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.email, email) || other.email == email)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.lastActiveAt, lastActiveAt) || other.lastActiveAt == lastActiveAt)&&(identical(other.openDebtsCount, openDebtsCount) || other.openDebtsCount == openDebtsCount)&&(identical(other.openDebtsAmountKopecks, openDebtsAmountKopecks) || other.openDebtsAmountKopecks == openDebtsAmountKopecks)&&(identical(other.tx30d, tx30d) || other.tx30d == tx30d));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _MemberInfo&&(identical(other.id, id) || other.id == id)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.email, email) || other.email == email)&&(identical(other.role, role) || other.role == role)&&(identical(other.status, status) || other.status == status)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.lastActiveAt, lastActiveAt) || other.lastActiveAt == lastActiveAt)&&(identical(other.openDebtsCount, openDebtsCount) || other.openDebtsCount == openDebtsCount)&&(identical(other.openDebtsAmountKopecks, openDebtsAmountKopecks) || other.openDebtsAmountKopecks == openDebtsAmountKopecks)&&(identical(other.tx30d, tx30d) || other.tx30d == tx30d)&&(identical(other.leftAt, leftAt) || other.leftAt == leftAt)&&(identical(other.txBeforeLeft, txBeforeLeft) || other.txBeforeLeft == txBeforeLeft));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,spaceId,userId,displayName,email,role,status,joinedAt,lastActiveAt,openDebtsCount,openDebtsAmountKopecks,tx30d);
+int get hashCode => Object.hash(runtimeType,id,spaceId,userId,displayName,email,role,status,joinedAt,lastActiveAt,openDebtsCount,openDebtsAmountKopecks,tx30d,leftAt,txBeforeLeft);
 
 @override
 String toString() {
-  return 'MemberInfo(id: $id, spaceId: $spaceId, userId: $userId, displayName: $displayName, email: $email, role: $role, status: $status, joinedAt: $joinedAt, lastActiveAt: $lastActiveAt, openDebtsCount: $openDebtsCount, openDebtsAmountKopecks: $openDebtsAmountKopecks, tx30d: $tx30d)';
+  return 'MemberInfo(id: $id, spaceId: $spaceId, userId: $userId, displayName: $displayName, email: $email, role: $role, status: $status, joinedAt: $joinedAt, lastActiveAt: $lastActiveAt, openDebtsCount: $openDebtsCount, openDebtsAmountKopecks: $openDebtsAmountKopecks, tx30d: $tx30d, leftAt: $leftAt, txBeforeLeft: $txBeforeLeft)';
 }
 
 
@@ -202,7 +206,7 @@ abstract mixin class _$MemberInfoCopyWith<$Res> implements $MemberInfoCopyWith<$
   factory _$MemberInfoCopyWith(_MemberInfo value, $Res Function(_MemberInfo) _then) = __$MemberInfoCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String spaceId, String userId, String displayName, String? email, MemberRole role, MemberStatus status, DateTime joinedAt, DateTime? lastActiveAt, int openDebtsCount, int openDebtsAmountKopecks, int tx30d
+ String id, String spaceId, String userId, String displayName, String? email, MemberRole role, MemberStatus status, DateTime joinedAt, DateTime? lastActiveAt, int openDebtsCount, int openDebtsAmountKopecks, int tx30d, DateTime? leftAt, int txBeforeLeft
 });
 
 
@@ -219,7 +223,7 @@ class __$MemberInfoCopyWithImpl<$Res>
 
 /// Create a copy of MemberInfo
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? spaceId = null,Object? userId = null,Object? displayName = null,Object? email = freezed,Object? role = null,Object? status = null,Object? joinedAt = null,Object? lastActiveAt = freezed,Object? openDebtsCount = null,Object? openDebtsAmountKopecks = null,Object? tx30d = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? spaceId = null,Object? userId = null,Object? displayName = null,Object? email = freezed,Object? role = null,Object? status = null,Object? joinedAt = null,Object? lastActiveAt = freezed,Object? openDebtsCount = null,Object? openDebtsAmountKopecks = null,Object? tx30d = null,Object? leftAt = freezed,Object? txBeforeLeft = null,}) {
   return _then(_MemberInfo(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,spaceId: null == spaceId ? _self.spaceId : spaceId // ignore: cast_nullable_to_non_nullable
@@ -233,6 +237,8 @@ as DateTime,lastActiveAt: freezed == lastActiveAt ? _self.lastActiveAt : lastAct
 as DateTime?,openDebtsCount: null == openDebtsCount ? _self.openDebtsCount : openDebtsCount // ignore: cast_nullable_to_non_nullable
 as int,openDebtsAmountKopecks: null == openDebtsAmountKopecks ? _self.openDebtsAmountKopecks : openDebtsAmountKopecks // ignore: cast_nullable_to_non_nullable
 as int,tx30d: null == tx30d ? _self.tx30d : tx30d // ignore: cast_nullable_to_non_nullable
+as int,leftAt: freezed == leftAt ? _self.leftAt : leftAt // ignore: cast_nullable_to_non_nullable
+as DateTime?,txBeforeLeft: null == txBeforeLeft ? _self.txBeforeLeft : txBeforeLeft // ignore: cast_nullable_to_non_nullable
 as int,
   ));
 }

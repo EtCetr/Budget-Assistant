@@ -107,6 +107,8 @@ abstract class MemberInfo with _$MemberInfo {
     required int openDebtsCount,
     required int openDebtsAmountKopecks,
     required int tx30d,
+    DateTime? leftAt,
+    required int txBeforeLeft,
   }) = _MemberInfo;
 }
 

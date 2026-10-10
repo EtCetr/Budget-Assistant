@@ -1,6 +1,7 @@
 import 'package:budget_assistant/features/admin/presentation/screens/admin_dashboard_screen.dart';
 import 'package:budget_assistant/features/admin/presentation/screens/members_management_screen.dart';
 import 'package:budget_assistant/features/admin/presentation/screens/audit_log_screen.dart';
+import 'package:budget_assistant/features/admin/presentation/screens/members_activity_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -136,6 +137,7 @@ GoRouter appRouter(Ref ref) {
     routes: [
     GoRoute(path: '/admin/members', name: 'admin-members', builder: (context, state) => const MembersManagementScreen()),
     GoRoute(path: '/admin/audit-log', name: 'admin-audit-log', builder: (context, state) => const AuditLogScreen()),
+    GoRoute(path: '/admin/activity', name: 'admin-activity', builder: (context, state) => const MembersActivityScreen()),
     GoRoute(path: '/admin', name: 'admin', builder: (context, state) => const AdminDashboardScreen()),
       GoRoute(
         path: '/debts',

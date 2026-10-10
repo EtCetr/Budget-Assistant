@@ -150,7 +150,12 @@ class AdminDashboardScreen extends ConsumerWidget {
               ]),
         ),
         const SizedBox(height: AppSpacing.spacing16),
-        activity.when(
+        GestureDetector(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            context.push('/admin/activity');
+          },
+          child: activity.when(
           loading: () => SkeletonShimmer.card(),
           error: (e, _) => Text('Ошибка: $e',
               style: const TextStyle(color: AppColors.textPrimary)),
@@ -181,7 +186,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                   style: const TextStyle(color: AppColors.textPrimary)),
             ]),
           ),
-        ),
+        )),
         const SizedBox(height: AppSpacing.spacing16),
         alerts.when(
           loading: () => const SizedBox.shrink(),
