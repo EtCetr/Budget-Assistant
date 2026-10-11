@@ -19,7 +19,7 @@ class AdminDao {
            (SELECT COALESCE(SUM(d.amount), 0) FROM debts d
              WHERE d.debtor_id = m.user_id AND d.space_id = m.space_id AND d.resolution_status = 'active') AS open_debts_amount,
            (SELECT COUNT(*) FROM transactions t
-             WHERE t.user_id = m.user_id AND t.space_id = m.space_id AND t.date > ?) AS tx30d
+             WHERE t.user_id = m.user_id AND t.space_id = m.space_id AND t.date > ?) AS tx30d,
              (SELECT COUNT(*) FROM transactions t
                WHERE t.user_id = m.user_id AND t.space_id = m.space_id
                  AND (m.left_at IS NULL OR t.date < m.left_at)) AS tx_before_left    FROM memberships m LEFT JOIN users u ON u.id = m.user_id
