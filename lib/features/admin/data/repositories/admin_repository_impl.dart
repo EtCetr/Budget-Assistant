@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:budget_assistant/core/logger.dart';
+import 'package:crypto/crypto.dart';
+import 'package:budget_assistant/features/admin/domain/usecases/space_settings_usecases.dart';
 import 'package:budget_assistant/features/admin/data/crypto/invite_crypto_service.dart';
 import 'package:budget_assistant/features/admin/data/daos/admin_dao.dart';
 import 'package:budget_assistant/features/admin/domain/entities/admin_entities.dart';
@@ -254,11 +256,31 @@ class AdminRepositoryImpl implements AdminRepository {
     try {
       await _guardAdmin(spaceId, actorId);
       final members = await _dao.watchMembers(spaceId).first;
-      final active = members.where((m) => m.status == MemberStatus.active).length;
-      if (active != 1) {
-        throw const AdminFailure('Удалить группу можно только при единственном участнике');
+      final txCount = await _dao.countSpaceTransactions(spaceId);
+      await _dao.dissolveSpace(
+        spaceId,
+        _uuid.v4(),
+        actorId,
+        metadataJson: jsonEncode({
+          'members_count': members.length,
+          'transactions_count': txCount,
+        }),
+      );
+      for (final m in members) {
+        await _dao.insertNotificationFull(
+          id: _uuid.v4(),
+          userId: m.userId,
+          spaceId: spaceId,
+          type: 'space_dissolved',
+          title: '🗑 Пространство расформировано',
+          body: 'Администратор расформировал пространство. Ваши личные данные сохранены.',
+        );
       }
-      await _dao.dissolveSpace(spaceId, _uuid.v4(), actorId);
+      try {
+        await _crypto.deleteSpaceKey(spaceId);
+      } catch (e) {
+        AppLogger.w('deleteSpaceKey failed: $e');
+      }
     } catch (e, st) {
       AppLogger.e('dissolveSpace failed', e, st);
       rethrow;
@@ -289,6 +311,55 @@ class AdminRepositoryImpl implements AdminRepository {
       return bundle.s;
     } catch (e, st) {
       AppLogger.e('acceptInvitation failed', e, st);
+      rethrow;
+    }
+  }
+
+  @override
+  Stream<SpaceSettingsRow?> watchSpaceSettings(String spaceId) =>
+      _dao.watchSpaceSettings(spaceId);
+
+  @override
+  Stream<SpaceStatsRow> watchSpaceStats(String spaceId) =>
+      _dao.watchSpaceStats(spaceId);
+
+  @override
+  Future<SpaceExportBundle> fetchSpaceExportBundle(String spaceId) =>
+      _dao.fetchSpaceExportBundle(spaceId);
+
+  @override
+  Future<void> updateSpaceIdentity({required String spaceId, required String actorId,
+    required String name, required String iconEmoji, required String iconColor,
+    required String oldName}) async {
+    try {
+      await _guardAdmin(spaceId, actorId);
+      await _dao.updateSpaceSettingsIdentity(spaceId, name, iconEmoji, iconColor);
+      if (name != oldName) {
+        await _audit(spaceId, actorId, AuditAction.spaceRenamed, spaceId,
+            jsonEncode({
+              'old_name_hash': sha256.convert(utf8.encode(oldName)).toString(),
+              'new_name_hash': sha256.convert(utf8.encode(name)).toString(),
+            }));
+      }
+    } catch (e, st) {
+      AppLogger.e('updateSpaceIdentity failed', e, st);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateSpaceBudgetLimit({required String spaceId, required String actorId,
+    required int? limitKopecks, required int? oldLimitKopecks}) async {
+    try {
+      await _guardAdmin(spaceId, actorId);
+      await _dao.updateSpaceBudgetLimit(spaceId, limitKopecks);
+      await _audit(spaceId, actorId, AuditAction.spaceBudgetChanged, spaceId,
+          jsonEncode({
+            'old_hash': sha256.convert(utf8.encode('${oldLimitKopecks ?? 0}')).toString(),
+            'new_hash': sha256.convert(utf8.encode('${limitKopecks ?? 0}')).toString(),
+          }));
+    } catch (e, st) {
+      AppLogger.e('updateSpaceBudgetLimit failed', e, st);
       rethrow;
     }
   }

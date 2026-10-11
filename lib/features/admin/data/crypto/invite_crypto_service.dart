@@ -63,6 +63,16 @@ class InviteCryptoService {
     }
   }
 
+  /// Этап 18 (6.3.36.8): ключ пространства больше не нужен после расформирования.
+  Future<void> deleteSpaceKey(String spaceId) async {
+    try {
+      await _storage.delete('enc_key_$spaceId');
+    } catch (e, st) {
+      AppLogger.e('deleteSpaceKey failed', e, st);
+      rethrow;
+    }
+  }
+
   /// Repair (D17-13): пространства Этапа 3 не писали enc_key_{spaceId}.
   /// Нет ключа -> генерируем 32 байта и пишем в формат ТОМ 3 §2.1.
   Future<String> _ensureSpaceKey(String spaceId) async {

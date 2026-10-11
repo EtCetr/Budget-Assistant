@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/features/admin/domain/entities/admin_entities.dart';
 import 'package:budget_assistant/features/admin/domain/usecases/members_activity_usecases.dart';
+import 'package:budget_assistant/features/admin/domain/usecases/space_settings_usecases.dart';
 
 /// DAO админ-контура. Свои таблицы — type-safe Drift; чужие — customSelect
 /// (Drift парсит таблицы из SQL сам для реактивности watch()).
@@ -197,6 +198,172 @@ class AdminDao {
                   ),
               ]);
 
+  /// Этап 18 (6.3.36): identity пространства + семейный лимит.
+  Stream<SpaceSettingsRow?> watchSpaceSettings(String spaceId) =>
+      (_db.select(_db.spaces)..where((t) => t.id.equals(spaceId)))
+          .watchSingleOrNull()
+          .map((r) => r == null
+              ? null
+              : SpaceSettingsRow(
+                  id: r.id,
+                  name: r.name,
+                  iconEmoji: r.iconEmoji,
+                  iconColor: r.iconColor,
+                  monthlyBudgetLimit: r.monthlyBudgetLimit,
+                  createdAt: r.createdAt,
+                  syncStatus: r.syncStatus,
+                ));
+
+  Stream<SpaceStatsRow> watchSpaceStats(String spaceId) => _db.customSelect(
+        'SELECT (SELECT COUNT(*) FROM accounts a WHERE a.space_id = ? AND a.is_archived = 0) AS acc, '
+        '(SELECT COUNT(*) FROM transactions t WHERE t.space_id = ?) AS tx, '
+        '(SELECT COALESCE(SUM(a.current_balance), 0) FROM accounts a '
+        ' WHERE a.space_id = ? AND a.include_in_family_balance = 1) AS bal',
+        variables: [
+          Variable.withString(spaceId),
+          Variable.withString(spaceId),
+          Variable.withString(spaceId),
+        ],
+        readsFrom: {_db.accounts, _db.transactions},
+      ).watch().map((rows) {
+        final r = rows.first;
+        return SpaceStatsRow(
+          accountsCount: r.read<int>('acc'),
+          transactionsCount: r.read<int>('tx'),
+          familyBalanceKopecks: r.read<int>('bal'),
+        );
+      });
+
+  Future<int> countSpaceTransactions(String spaceId) async {
+    final rows = await _db.customSelect(
+      'SELECT COUNT(*) AS c FROM transactions WHERE space_id = ?',
+      variables: [Variable.withString(spaceId)],
+      readsFrom: {_db.transactions},
+    ).get();
+    return rows.first.read<int>('c');
+  }
+
+  Future<void> updateSpaceSettingsIdentity(
+          String spaceId, String name, String iconEmoji, String iconColor) =>
+      (_db.update(_db.spaces)..where((t) => t.id.equals(spaceId))).write(
+            SpacesCompanion(
+              name: Value(name),
+              iconEmoji: Value<String?>(iconEmoji),
+              iconColor: Value<String?>(iconColor),
+              updatedAt: Value(DateTime.now().toUtc()),
+              syncStatus: const Value('pending'),
+            ),
+          );
+
+  Future<void> updateSpaceBudgetLimit(String spaceId, int? limitKopecks) =>
+      (_db.update(_db.spaces)..where((t) => t.id.equals(spaceId))).write(
+            SpacesCompanion(
+              monthlyBudgetLimit: Value<int?>(limitKopecks),
+              updatedAt: Value(DateTime.now().toUtc()),
+              syncStatus: const Value('pending'),
+            ),
+          );
+
+  Future<void> insertNotificationFull({required String id, required String userId,
+      required String spaceId, required String type, required String title,
+      required String body}) =>
+      _db.customInsert(
+        "INSERT INTO notifications (id, user_id, space_id, type, title, body, is_read, created_at, updated_at, sync_status) "
+        "VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, 'pending')",
+        variables: [
+          Variable.withString(id), Variable.withString(userId),
+          Variable.withString(spaceId), Variable.withString(type),
+          Variable.withString(title), Variable.withString(body),
+          Variable.withInt(DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000),
+          Variable.withInt(DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000),
+        ],
+      );
+
+  /// Этап 18 (6.3.36.7): данные для XLSX-экспорта (5 листов).
+  Future<SpaceExportBundle> fetchSpaceExportBundle(String spaceId) async {
+    final members = await _db.customSelect(
+      "SELECT COALESCE(u.display_name, 'Без имени') AS name, m.role AS role, m.status AS status, m.joined_at AS joined "
+      'FROM memberships m LEFT JOIN users u ON u.id = m.user_id WHERE m.space_id = ? '
+      'ORDER BY m.joined_at ASC',
+      variables: [Variable.withString(spaceId)],
+      readsFrom: {_db.memberships, _db.users},
+    ).get();
+    final accounts = await _db.customSelect(
+      'SELECT bank_name AS bank, account_type AS type, current_balance AS bal, currency AS cur '
+      'FROM accounts WHERE space_id = ? AND is_archived = 0 ORDER BY bank_name ASC',
+      variables: [Variable.withString(spaceId)],
+      readsFrom: {_db.accounts},
+    ).get();
+    final txs = await _db.customSelect(
+      'SELECT date AS d, type AS type, amount AS amount, merchant_name AS merchant, comment AS comment '
+      'FROM transactions WHERE space_id = ? ORDER BY date DESC LIMIT 5000',
+      variables: [Variable.withString(spaceId)],
+      readsFrom: {_db.transactions},
+    ).get();
+    final goals = await _db.customSelect(
+      'SELECT name AS name, target_amount AS target, current_amount AS cur, status AS status '
+      'FROM savings_goals WHERE space_id = ? ORDER BY created_at DESC',
+      variables: [Variable.withString(spaceId)],
+      readsFrom: {_db.savingsGoals},
+    ).get();
+    final debts = await _db.customSelect(
+      "SELECT COALESCE(cu.display_name, 'Внешний контрагент') AS creditor, "
+      "COALESCE(du.display_name, 'Внешний контрагент') AS debtor, d.amount AS amount, d.resolution_status AS status "
+      'FROM debts d LEFT JOIN users cu ON cu.id = d.creditor_id LEFT JOIN users du ON du.id = d.debtor_id '
+      'WHERE d.space_id = ? ORDER BY d.created_at DESC',
+      variables: [Variable.withString(spaceId)],
+      readsFrom: {_db.debts, _db.users},
+    ).get();
+    return SpaceExportBundle(
+      members: [
+        for (final r in members)
+          ExportMemberRow(
+            name: r.read<String>('name'),
+            role: r.read<String>('role'),
+            status: r.read<String>('status'),
+            joinedAt: r.read<DateTime>('joined'),
+          ),
+      ],
+      accounts: [
+        for (final r in accounts)
+          ExportAccountRow(
+            bank: r.read<String>('bank'),
+            type: r.read<String>('type'),
+            balanceKopecks: r.read<int>('bal'),
+            currency: r.read<String>('cur'),
+          ),
+      ],
+      transactions: [
+        for (final r in txs)
+          ExportTxRow(
+            date: r.read<DateTime>('d'),
+            type: r.read<String>('type'),
+            amountKopecks: r.read<int>('amount'),
+            merchant: r.readNullable<String>('merchant'),
+            comment: r.readNullable<String>('comment'),
+          ),
+      ],
+      goals: [
+        for (final r in goals)
+          ExportGoalRow(
+            name: r.read<String>('name'),
+            targetKopecks: r.read<int>('target'),
+            currentKopecks: r.read<int>('cur'),
+            status: r.read<String>('status'),
+          ),
+      ],
+      debts: [
+        for (final r in debts)
+          ExportDebtRow(
+            creditor: r.read<String>('creditor'),
+            debtor: r.read<String>('debtor'),
+            amountKopecks: r.read<int>('amount'),
+            status: r.read<String>('status'),
+          ),
+      ],
+    );
+  }
+
   Future<void> insertInvitation(InvitationInfo inv, String token, String encryptedSalt, String actorId) =>
       _db.into(_db.invitations).insert(InvitationsCompanion.insert(
             id: inv.id, spaceId: inv.spaceId, token: token, encryptedSalt: encryptedSalt,
@@ -290,13 +457,17 @@ class AdminDao {
         ],
       );
 
-  /// D17-12: soft-delete группы (status='dissolved'), только при 1 участнике (guard в repo).
-  Future<void> dissolveSpace(String spaceId, String auditId, String actorId) =>
+  /// Этап 18 (6.3.36.8, D18-7): полное атомарное расформирование пространства.
+  Future<void> dissolveSpace(String spaceId, String auditId, String actorId,
+          {String metadataJson = '{}'}) =>
       _db.transaction(() async {
         final now = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
         await _db.customUpdate(
-          "UPDATE spaces SET status = 'dissolved', updated_at = ?, sync_status = 'pending' WHERE id = ?",
-          variables: [Variable.withInt(now), Variable.withString(spaceId)],
+          "UPDATE spaces SET status = 'dissolved', dissolved_at = ?, dissolved_by = ?, updated_at = ?, sync_status = 'pending' WHERE id = ?",
+          variables: [
+            Variable.withInt(now), Variable.withString(actorId),
+            Variable.withInt(now), Variable.withString(spaceId),
+          ],
         );
         await _db.customUpdate(
           "UPDATE memberships SET status = 'left', left_at = ?, updated_at = ?, sync_status = 'pending' WHERE space_id = ? AND status = 'active'",
@@ -304,9 +475,22 @@ class AdminDao {
             Variable.withInt(now), Variable.withInt(now), Variable.withString(spaceId),
           ],
         );
+        await _db.customUpdate(
+          "UPDATE debts SET is_ex_member_debt = 1, sync_status = 'pending' WHERE space_id = ? AND resolution_status = 'active'",
+          variables: [Variable.withString(spaceId)],
+        );
+        await _db.customUpdate(
+          "UPDATE budget_limits SET status = 'cancelled', sync_status = 'pending' WHERE space_id = ?",
+          variables: [Variable.withString(spaceId)],
+        );
+        await _db.customUpdate(
+          "UPDATE invitations SET status = 'revoked', updated_at = ?, sync_status = 'pending' WHERE space_id = ? AND used_at IS NULL",
+          variables: [Variable.withInt(now), Variable.withString(spaceId)],
+        );
         await insertAuditFull(
           id: auditId, spaceId: spaceId, actorId: actorId,
           action: AuditAction.spaceDissolved, targetId: spaceId,
+          metadataJson: metadataJson,
         );
       });
 

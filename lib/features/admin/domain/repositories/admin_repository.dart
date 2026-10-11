@@ -1,4 +1,5 @@
 import 'package:budget_assistant/features/admin/domain/entities/admin_entities.dart';
+import 'package:budget_assistant/features/admin/domain/usecases/space_settings_usecases.dart';
 
 abstract interface class AdminRepository {
   Stream<List<MemberInfo>> watchMembers(String spaceId);
@@ -23,5 +24,13 @@ abstract interface class AdminRepository {
   Future<void> revokeInvite({required String spaceId, required String actorId, required String inviteId});
   Future<void> sendReminder({required String spaceId, required String actorId, required MemberInfo target});
   Future<void> dissolveSpace({required String spaceId, required String actorId});
+  Stream<SpaceSettingsRow?> watchSpaceSettings(String spaceId);
+  Stream<SpaceStatsRow> watchSpaceStats(String spaceId);
+  Future<SpaceExportBundle> fetchSpaceExportBundle(String spaceId);
+  Future<void> updateSpaceIdentity({required String spaceId, required String actorId,
+    required String name, required String iconEmoji, required String iconColor,
+    required String oldName});
+  Future<void> updateSpaceBudgetLimit({required String spaceId, required String actorId,
+    required int? limitKopecks, required int? oldLimitKopecks});
   Future<String> acceptInvitation({required InviteBundle bundle, required String userId});
 }

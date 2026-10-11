@@ -285,62 +285,19 @@ class AdminDashboardScreen extends ConsumerWidget {
                 Text('ID: ${s.id.length > 8 ? s.id.substring(0, 8) : s.id}…',
                     style: const TextStyle(
                         color: AppColors.textSecondary, fontSize: 12)),
-                if (s.membersCount == 1) ...[
-                  const Divider(height: 24),
-                  TextButton.icon(
-                    onPressed: () => _confirmDissolve(context, ref, scope, pf.formatSpaceName(s.name, mode)),
-                    icon: const Icon(Icons.delete_forever, color: AppColors.colorExpense),
-                    label: const Text('Удалить группу',
-                        style: TextStyle(color: AppColors.colorExpense)),
-                  ),
-                ],
+                const Divider(height: 24),
+                TextButton.icon(
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    context.push('/admin/space-settings');
+                  },
+                  icon: const Icon(Icons.settings_outlined, color: AppColors.colorTransfer),
+                  label: const Text('Настройки пространства',
+                      style: TextStyle(color: AppColors.colorTransfer)),
+                ),
               ]),
       ),
     );
-  }
-
-  Future<void> _confirmDissolve(BuildContext context, WidgetRef ref,
-      AdminScope scope, String spaceName) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surfaceCard,
-        title: const Text('Удалить группу?',
-            style: TextStyle(color: AppColors.textPrimary)),
-        content: Text(
-            'Группа «$spaceName» будет расформирована (в ней только вы). '
-            'История операций сохранится локально и будет помечена к синхронизации.',
-            style: const TextStyle(color: AppColors.textSecondary)),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('Отмена')),
-          FilledButton(
-              style: FilledButton.styleFrom(backgroundColor: AppColors.colorExpense),
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('Удалить')),
-        ],
-      ),
-    );
-    if (ok != true) {
-      return;
-    }
-    try {
-      await ref.read(dissolveSpaceUseCaseProvider).call(
-          spaceId: scope.spaceId, actorId: scope.userId);
-      ref.read(currentSpaceIdProvider.notifier).setSpaceId(null);
-      ref.read(sec.currentSpaceIdProvider.notifier).set(null);
-      ref.invalidate(userSpacesProvider);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Группа расформирована')));
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Ошибка: $e')));
-      }
-    }
   }
 
   Widget _gridCard(BuildContext context, String title, String value, String subtitle,
