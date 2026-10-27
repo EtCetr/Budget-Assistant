@@ -6,6 +6,7 @@ import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/core/widgets/empty_state_widget.dart';
 import 'package:budget_assistant/core/widgets/skeleton_shimmer.dart';
+import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import '../../domain/models/notification_type.dart';
 import '../providers/notifications_providers.dart';
 import '../widgets/notification_card.dart';
@@ -19,6 +20,7 @@ class NotificationCenterScreen extends ConsumerWidget {
     final async = ref.watch(notificationsStreamProvider);
     return Scaffold(
       backgroundColor: AppColors.surfaceBackground,
+      drawer: const AppDrawer(currentRoute: '/notifications'),
       appBar: AppBar(
         title: const Text('Уведомления'),
         actions: [
@@ -120,7 +122,7 @@ class NotificationCenterScreen extends ConsumerWidget {
               onSelected: (_) {
                 HapticFeedback.selectionClick();
                 ref.read(notificationsFilterProvider.notifier).set(
-                    const NotificationsFilter(showOnlyUnread: true));
+                    filter.showOnlyUnread ? const NotificationsFilter() : const NotificationsFilter(showOnlyUnread: true));
               },
             ),
             const SizedBox(width: AppSpacing.spacing16),
@@ -138,7 +140,7 @@ class NotificationCenterScreen extends ConsumerWidget {
                   onSelected: (_) {
                     HapticFeedback.selectionClick();
                     ref.read(notificationsFilterProvider.notifier).set(
-                        NotificationsFilter(typeFilter: t));
+                        filter.typeFilter == t ? const NotificationsFilter() : NotificationsFilter(typeFilter: t));
                   },
                 ),
               ),
