@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../dashboard_strings.dart';
 import 'package:budget_assistant/features/debts/presentation/debts_strings.dart';
@@ -47,7 +47,8 @@ class AppDrawer extends StatelessWidget {
             _item(context, '/debts', Icons.handshake_outlined, DebtsStrings.screenTitle),
             _item(context, '/reminders', Icons.notifications_outlined, RemindersStrings.screenTitle),
             _item(context, '/calendar', Icons.calendar_month_outlined, CalendarStrings.navCalendar),
-            _item(context, '/profile', Icons.person_outline, DashboardStrings.navProfile),
+            _item(context, '/notifications', Icons.notifications_outlined, 'Уведомления'),
+_item(context, '/profile', Icons.person_outline, DashboardStrings.navProfile),
           ],
         ),
       ),

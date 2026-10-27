@@ -43,8 +43,8 @@ class _EditSpaceIdentitySheet extends StatefulWidget {
 
 class _EditSpaceIdentitySheetState extends State<_EditSpaceIdentitySheet> {
   static const List<String> _emojis = [
-    '👨‍👩‍👧', '💼', '', '', '🎮', '✈️',
-    '🛒', '', '👕', '🎂', '', '🎁',
+    '\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}', '\u{1F4BC}', '\u{1F3E0}', '\u{1F393}', '\u{1F3AE}', '\u{2708}\u{FE0F}',
+    '\u{1F6D2}', '\u{1F48A}', '\u{1F455}', '\u{1F382}', '\u{1F48D}', '\u{1F381}',
   ];
   late final TextEditingController _name =
       TextEditingController(text: widget.initialName);

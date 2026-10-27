@@ -1,8 +1,8 @@
-﻿enum OnboardingStep {
+enum OnboardingStep {
   welcome,
   baseCurrency,
   securitySetup,
   spaceDecision,
-  firstAccount,
+  transferProfile,
   completed,
 }

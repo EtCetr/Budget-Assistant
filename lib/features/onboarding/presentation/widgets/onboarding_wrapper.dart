@@ -1,4 +1,3 @@
-﻿// lib/features/onboarding/presentation/widgets/onboarding_wrapper.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/features/onboarding/domain/enums/onboarding_step.dart';
@@ -7,19 +6,16 @@ import 'package:budget_assistant/features/onboarding/presentation/screens/welcom
 import 'package:budget_assistant/features/onboarding/presentation/screens/base_currency_screen.dart';
 import 'package:budget_assistant/features/onboarding/presentation/screens/security_setup_screen.dart';
 import 'package:budget_assistant/features/onboarding/presentation/screens/space_decision_screen.dart';
-import 'package:budget_assistant/features/onboarding/presentation/screens/first_account_screen.dart';
+import 'package:budget_assistant/features/onboarding/presentation/screens/transfer_profile_screen.dart';
 
 class OnboardingWrapper extends ConsumerWidget {
   const OnboardingWrapper({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ref.watch возвращает OnboardingState, а не Enum
     final state = ref.watch(onboardingProvider);
     final currentStep = state.currentStep;
-
     Widget currentScreen = const SizedBox.shrink();
-
     switch (currentStep) {
       case OnboardingStep.welcome:
         currentScreen = const WelcomeScreen();
@@ -33,8 +29,8 @@ class OnboardingWrapper extends ConsumerWidget {
       case OnboardingStep.spaceDecision:
         currentScreen = const SpaceDecisionScreen();
         break;
-      case OnboardingStep.firstAccount:
-        currentScreen = const FirstAccountScreen();
+      case OnboardingStep.transferProfile:
+        currentScreen = const TransferProfileScreen();
         break;
       case OnboardingStep.completed:
         currentScreen = const Scaffold(
@@ -42,7 +38,6 @@ class OnboardingWrapper extends ConsumerWidget {
         );
         break;
     }
-
     return currentScreen;
   }
 }

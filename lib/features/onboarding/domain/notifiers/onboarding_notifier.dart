@@ -1,8 +1,7 @@
-﻿import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:budget_assistant/features/onboarding/domain/state/onboarding_state.dart';
 import 'package:budget_assistant/features/onboarding/domain/enums/onboarding_step.dart';
 
-// КРИТИЧНО: Эта строка связывает файл с генератором riverpod
 part 'onboarding_notifier.g.dart';
 
 @riverpod
@@ -17,8 +16,8 @@ class OnboardingNotifier extends _$OnboardingNotifier {
       OnboardingStep.welcome => OnboardingStep.baseCurrency,
       OnboardingStep.baseCurrency => OnboardingStep.securitySetup,
       OnboardingStep.securitySetup => OnboardingStep.spaceDecision,
-      OnboardingStep.spaceDecision => OnboardingStep.firstAccount,
-      OnboardingStep.firstAccount ||
+      OnboardingStep.spaceDecision => OnboardingStep.transferProfile,
+      OnboardingStep.transferProfile ||
       OnboardingStep.completed => OnboardingStep.completed,
     };
     state = state.copyWith(currentStep: nextStep);
@@ -28,12 +27,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     state = state.copyWith(baseCurrency: currencyCode);
   }
 
-  void setInitialBalance(int kopecks) {
-    state = state.copyWith(initialBalanceKopecks: kopecks);
-  }
-
   void completeOnboarding() {
     state = state.copyWith(currentStep: OnboardingStep.completed);
   }
 }
- 
