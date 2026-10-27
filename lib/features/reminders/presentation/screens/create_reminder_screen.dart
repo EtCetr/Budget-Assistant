@@ -466,27 +466,7 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
                   .read(createReminderFormProvider.notifier)
                   .setDescription(v),
             ),
-            Text(RemindersStrings.formPriority,
-                style: Theme.of(context).textTheme.labelLarge),
-            SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(
-                    value: 'low', label: Text(RemindersStrings.priorityLow)),
-                ButtonSegment(
-                    value: 'normal',
-                    label: Text(RemindersStrings.priorityNormal)),
-                ButtonSegment(
-                    value: 'high',
-                    label: Text(RemindersStrings.priorityHigh)),
-              ],
-              selected: {draft.priority},
-              onSelectionChanged: (v) {
-                MotionTokens.selection();
-                ref
-                    .read(createReminderFormProvider.notifier)
-                    .setPriority(v.first);
-              },
-            ),
+
             const SizedBox(height: AppSpacing.spacing24),
             Text(RemindersStrings.formWhen,
                 style: Theme.of(context).textTheme.titleMedium),
