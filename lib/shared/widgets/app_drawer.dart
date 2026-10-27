@@ -60,6 +60,7 @@ class AppDrawer extends StatelessWidget {
                 RemindersStrings.screenTitle),
             _item(context, '/calendar', Icons.calendar_month_outlined,
                 CalendarStrings.navCalendar),
+            _item(context, '/notifications', Icons.notifications_outlined, 'Уведомления'),
             _item(context, '/profile', Icons.person_outline,
                 DashboardStrings.navProfile),
           ],
