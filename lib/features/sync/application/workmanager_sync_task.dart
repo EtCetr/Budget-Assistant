@@ -7,6 +7,7 @@ import 'package:workmanager/workmanager.dart';
 import 'package:budget_assistant/core/services/secure_storage_service.dart';
 import 'package:budget_assistant/features/admin/workers/inactive_admin_check_worker.dart';
 import 'package:budget_assistant/features/import/application/clean_import_drafts_task.dart';
+import 'package:budget_assistant/features/notifications/application/notification_triggers_task.dart';
 import 'package:budget_assistant/features/sync/application/sync_background_database.dart';
 import 'package:budget_assistant/features/sync/application/sync_service.dart';
 
@@ -23,6 +24,9 @@ void syncWorkManagerCallback() {
     }
     if (taskName == cleanImportDraftsTaskName) {
       return await handleCleanImportDraftsTask();
+    }
+    if (taskName == notificationTriggersTaskName) {
+      return await handleNotificationTriggersTask();
     }
     if (taskName != 'budget_assistant_periodic_sync' &&
         taskName != 'budget_assistant_one_off_sync') {

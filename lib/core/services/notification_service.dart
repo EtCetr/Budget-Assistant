@@ -60,6 +60,7 @@ class NotificationService {
         channelDescription: type.channel.description,
         importance: Importance.high,
         priority: Priority.high,
+        visibility: NotificationVisibility.private,
         actions: const [
           AndroidNotificationAction(actionConfirm, 'Подтвердить'),
           AndroidNotificationAction(actionDismiss, 'Отклонить'),

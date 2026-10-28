@@ -40,7 +40,10 @@ enum NotificationType {
   adminHeartbeatWarning(NotificationChannel.systemSync),
   memberActivity(NotificationChannel.systemSync),
   syncConflictManual(NotificationChannel.systemSync, alwaysOn: true, critical: true),
-  yearReviewReady(NotificationChannel.systemSync);
+  yearReviewReady(NotificationChannel.systemSync),
+  dailyDigest(NotificationChannel.reminders),
+  weeklyDigest(NotificationChannel.reminders),
+  monthlyDigest(NotificationChannel.reminders);
 
   const NotificationType(
     this.channel, {
@@ -83,6 +86,9 @@ enum NotificationType {
     NotificationType.memberActivity => 'Активность участников',
     NotificationType.syncConflictManual => 'Конфликт синхронизации',
     NotificationType.yearReviewReady => 'Годовой отчёт готов',
+    NotificationType.dailyDigest => 'Дайджест за день',
+    NotificationType.weeklyDigest => 'Дайджест за неделю',
+    NotificationType.monthlyDigest => 'Дайджест за месяц',
   };
 
   static NotificationType fromDb(String? v) => NotificationType.values

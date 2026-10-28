@@ -182,6 +182,10 @@ class NotificationCard extends ConsumerWidget {
         NotificationType.goalDeadlineApproaching ||
         NotificationType.yearReviewReady =>
           AppColors.colorFAB,
+        NotificationType.dailyDigest ||
+        NotificationType.weeklyDigest ||
+        NotificationType.monthlyDigest =>
+          AppColors.colorTransfer,
       };
 
   IconData _icon(NotificationType t) => switch (t) {
@@ -214,5 +218,9 @@ class NotificationCard extends ConsumerWidget {
         NotificationType.memberActivity => Icons.group_outlined,
         NotificationType.syncConflictManual => Icons.sync_problem,
         NotificationType.yearReviewReady => Icons.auto_awesome,
+        NotificationType.dailyDigest ||
+        NotificationType.weeklyDigest ||
+        NotificationType.monthlyDigest =>
+          Icons.summarize_outlined,
       };
 }

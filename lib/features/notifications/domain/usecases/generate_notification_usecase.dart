@@ -17,11 +17,12 @@ class GenerateNotificationUseCase {
     required String body,
     String? spaceId,
     String? relatedEntityId,
+    Duration dedupWindow = const Duration(hours: 24),
   }) async {
     try {
       if (!type.critical) {
         final cutoff =
-            DateTime.now().toUtc().subtract(const Duration(hours: 24));
+            DateTime.now().toUtc().subtract(dedupWindow);
         final q = _db.select(_db.notifications)
           ..where((n) =>
               n.userId.equals(userId) &

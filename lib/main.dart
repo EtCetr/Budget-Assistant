@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' show Variable;
 import 'package:budget_assistant/features/admin/workers/inactive_admin_check_worker.dart';
+import 'package:budget_assistant/features/notifications/application/notification_triggers_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
@@ -49,9 +50,9 @@ Future<void> main() async {
 
     AppLogger.i('App bootstrap completed successfully');
     AppLogger.i('🚀 Forcing DB initialization...');
-
     final db = AppDatabase();
     await db.customSelect('SELECT 1').get();
+
     // Этап 18 (фикс «Неизвестный пользователь» в журнале аудита): локальная
     // копия профиля с email из Supabase Auth. Идемпотентно: INSERT OR IGNORE
     // + UPDATE только пустого email. display_name приедет с синком (Этап 25).
@@ -88,7 +89,6 @@ Future<void> main() async {
     // Флаг онбординга
     try {
       final flag = await storage.read('onboarding_completed');
-
       String status = 'not_started';
       if (flag == 'true') {
         status = 'completed';
@@ -98,7 +98,6 @@ Future<void> main() async {
             .getSingle();
         if (row.read<int>('c') > 0) status = 'completed';
       }
-
       AppBootstrapFlags.onboardingStatus = status;
       AppLogger.i('🚦 Onboarding status at boot: $status');
     } catch (e, st) {
@@ -115,9 +114,10 @@ Future<void> main() async {
     }
 
     final logger = Logger();
-
-  await InactiveAdminCheckWorker.register();
-  runApp(
+    await InactiveAdminCheckWorker.register();
+    await NotificationTriggersWorker.register();
+    
+    runApp(
       ProviderScope(
         overrides: [
           syncDatabaseProvider.overrideWithValue(db),
