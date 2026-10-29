@@ -3,6 +3,7 @@ import 'package:workmanager/workmanager.dart';
 import 'package:budget_assistant/core/logger.dart';
 import 'package:budget_assistant/core/services/notification_service.dart';
 import 'package:budget_assistant/core/services/secure_storage_service.dart';
+import 'package:budget_assistant/features/notifications/domain/models/notification_type.dart';
 import 'package:budget_assistant/features/notifications/domain/usecases/generate_daily_digest_usecase.dart';
 import 'package:budget_assistant/features/notifications/domain/usecases/generate_notification_usecase.dart';
 import 'package:budget_assistant/features/notifications/domain/usecases/notification_triggers_usecase.dart';
@@ -10,10 +11,51 @@ import 'package:budget_assistant/features/sync/application/sync_background_datab
 
 const String notificationTriggersTaskName = 'budget_assistant_notification_triggers';
 
+/// Маршрут deep-link для тапа по пушу (ТОМ 5 §3.1 action_route).
+String routeForType(NotificationType t) => switch (t) {
+      NotificationType.limitGlobalPercent ||
+      NotificationType.limitGlobalAmount ||
+      NotificationType.limitIndividual =>
+        '/budget',
+      NotificationType.deficitForecastWarning => '/calendar/forecast',
+      NotificationType.savingsRateDrop => '/budget',
+      NotificationType.debtCreated ||
+      NotificationType.debtClosed ||
+      NotificationType.debtForgiven ||
+      NotificationType.debtOverdue =>
+        '/debts',
+      NotificationType.unmatchedReceipt ||
+      NotificationType.duplicateReceipt ||
+      NotificationType.duplicateDetected ||
+      NotificationType.transferDetected ||
+      NotificationType.holdConfirmed =>
+        '/transactions',
+      NotificationType.bankStatementReminder => '/transactions',
+      NotificationType.reminderDue ||
+      NotificationType.reminderSnoozeWarning =>
+        '/reminders',
+      NotificationType.recurringDetected => '/recurring-payments-detection',
+      NotificationType.holidaySecrecyStart ||
+      NotificationType.giftPurchaseAlert =>
+        '/calendar',
+      NotificationType.goalMilestone ||
+      NotificationType.goalDeadlineApproaching ||
+      NotificationType.investmentYieldReceived =>
+        '/savings-goals',
+      NotificationType.adminHeartbeatWarning ||
+      NotificationType.memberActivity =>
+        '/admin/members',
+      NotificationType.syncConflictManual => '/profile',
+      NotificationType.yearReviewReady ||
+      NotificationType.dailyDigest ||
+      NotificationType.weeklyDigest ||
+      NotificationType.monthlyDigest =>
+        '/notifications',
+    };
+
 /// Фоновая задача: оценка всех триггеров пушей + дайджесты (ТОМ 5).
-/// Запускается при старте (one-off через 20с) и каждые 6 часов (periodic).
-/// TODO(18.7): deep-link по тапу на пуш — открытие экранов (календарь, цель, долг).
-/// TODO(18.7): обработка action-кнопок confirm/dismiss из пуша (долги, цели).
+/// TODO(25): пуши-события импорта (duplicate_receipt, duplicate_detected,
+///   transfer_detected, hold_confirmed) — вшить в конвейер импорта.
 @pragma('vm:entry-point')
 Future<bool> handleNotificationTriggersTask() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +64,7 @@ Future<bool> handleNotificationTriggersTask() async {
   if (uid == null || uid.isEmpty) {
     return true;
   }
-  final db = await openSyncDatabaseInBackground() ;
+  final db = await openSyncDatabaseInBackground();
   try {
     final now = DateTime.now();
     final gen = GenerateNotificationUseCase(db);
@@ -46,6 +88,7 @@ Future<bool> handleNotificationTriggersTask() async {
           type: r.type,
           title: r.title,
           body: r.body,
+          route: routeForType(r.type),
         );
         shown++;
       }
@@ -67,6 +110,7 @@ Future<bool> handleNotificationTriggersTask() async {
             type: digest.type,
             title: digest.title,
             body: digest.body,
+            route: routeForType(digest.type),
           );
           shown++;
         }

@@ -131,6 +131,16 @@ _card('Аккаунт', [
             ]),
           ],
           const SizedBox(height: 16),
+          _card('Уведомления', [
+            TextButton.icon(
+              onPressed: () => context.push('/settings/notifications'),
+              icon: const Icon(Icons.notifications_outlined,
+                  color: AppColors.colorTransfer),
+              label: const Text('Настройки уведомлений и дайджестов',
+                  style: TextStyle(color: AppColors.textPrimary)),
+            ),
+          ]),
+          const SizedBox(height: 16),
           _card('Детекция переводов', [
             const Text(
               'Телефоны и ФИО используются только для автоматической пометки переводов между вашими счетами при импорте выписок. Можно не указывать.',

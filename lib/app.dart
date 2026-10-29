@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:budget_assistant/core/bootstrap/app_bootstrap_flags.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/core/router/app_router.dart';
 import 'package:budget_assistant/core/theme/app_theme.dart';
@@ -9,6 +10,13 @@ class BudgetAssistantApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final link = AppBootstrapFlags.pendingDeepLink;
+      if (link != null && link.isNotEmpty) {
+        AppBootstrapFlags.pendingDeepLink = null;
+        router.go(link);
+      }
+    });
     return MaterialApp.router(
       title: 'Budget Assistant',
       theme: AppTheme.lightTheme,

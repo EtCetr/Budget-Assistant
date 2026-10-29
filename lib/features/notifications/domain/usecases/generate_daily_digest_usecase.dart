@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:drift/drift.dart' show Variable;
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/logger.dart';
@@ -18,7 +19,7 @@ class DigestResult {
 
 /// Дайджесты (ТОМ 5 §4.2): дневной/недельный/месячный в 19:00.
 /// Условная генерация (§4.3): нулевые блоки физически исключаются.
-/// TODO(18.7): расширить блоки дайджеста (долги, цели, активность) —
+/// TODO(25): расширить блоки дайджеста (долги, цели, активность) —
 ///   сейчас агрегирует только непрочитанные системные пуши периода.
 class GenerateDailyDigestUseCase {
   GenerateDailyDigestUseCase(this._db);
@@ -28,22 +29,44 @@ class GenerateDailyDigestUseCase {
 
   Future<DigestResult?> maybeGenerate(String userId, DateTime now) async {
     try {
+      final cfgRows = await _db.customSelect(
+        'SELECT digest_config FROM app_settings WHERE user_id = ?',
+        variables: [Variable.withString(userId)],
+      ).get();
+      var cfg = <String, dynamic>{};
+      if (cfgRows.isNotEmpty) {
+        try {
+          cfg = jsonDecode(cfgRows.first.read<String>('digest_config'))
+              as Map<String, dynamic>;
+        } catch (_) {}
+      }
+      final String kind;
       final NotificationType type;
       final DateTime since;
       final String title;
       if (now.day == 1) {
+        kind = 'monthly';
         type = NotificationType.monthlyDigest;
         since = DateTime(now.year, now.month - 1, 1);
         title = '📊 Итоги месяца';
       } else if (now.weekday == 7) {
+        kind = 'weekly';
         type = NotificationType.weeklyDigest;
         since = now.subtract(const Duration(days: 7));
         title = '📆 Итоги недели';
       } else {
+        kind = 'daily';
         type = NotificationType.dailyDigest;
         since = DateTime(now.year, now.month, now.day);
         title = '📅 Итоги дня';
       }
+      final kindCfg = (cfg[kind] as Map<String, dynamic>?) ?? const {};
+      final on = kindCfg['on'] is bool ? kindCfg['on'] as bool : true;
+      final time =
+          kindCfg['time'] is String ? kindCfg['time'] as String : '19:00';
+      if (!on) return null;
+      final hour = int.tryParse(time.split(':').first) ?? 19;
+      if (now.hour < hour) return null;
       final key = '${type.dbValue}:${since.year}-${since.month}-${since.day}';
 
       final blocks = <String>[];

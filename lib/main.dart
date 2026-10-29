@@ -41,6 +41,11 @@ Future<void> main() async {
 
     // Сохраняем ключи Supabase в SecureStorage для WorkManager
     final storage = SecureStorageService();
+    final pendingRoute = await storage.read('pending_deep_link');
+    if (pendingRoute != null && pendingRoute.isNotEmpty) {
+      await storage.delete('pending_deep_link');
+      AppBootstrapFlags.pendingDeepLink = pendingRoute;
+    }
     await storage.write('supabase_url', supabaseUrl);
     await storage.write('supabase_anon_key', supabaseAnonKey);
     final currentUserId = Supabase.instance.client.auth.currentUser?.id;

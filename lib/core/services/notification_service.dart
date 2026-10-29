@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
+import 'package:budget_assistant/core/services/secure_storage_service.dart';
 import 'package:budget_assistant/core/logger.dart';
 import 'package:budget_assistant/features/notifications/domain/models/notification_type.dart';
 import 'package:budget_assistant/features/notifications/domain/usecases/handle_notification_action_usecase.dart';
@@ -51,6 +52,7 @@ class NotificationService {
     required NotificationType type,
     required String title,
     required String body,
+    String? route,
   }) async {
     try {
       await ensureReady();
@@ -74,6 +76,7 @@ class NotificationService {
         payload: jsonEncode({
           'notificationId': notificationId,
           'type': type.dbValue,
+          'route': route,
         }),
       );
     } catch (e, st) {
@@ -90,11 +93,26 @@ class NotificationService {
     try {
       final payload = jsonDecode(response.payload!) as Map<String, dynamic>;
       final id = payload['notificationId'] as String?;
+      final type = payload['type'] as String?;
+      final route = payload['route'] as String?;
       final actionId = response.actionId;
-      if (id == null || actionId == null) return;
+      if (id == null) return;
+      if (actionId == null) {
+        // Тап по пушу: deep-link откроется при следующем холодном старте
+        // (ТОМ 5 §3.2.2.c). TODO(21): навигация в тёплом старте.
+        if (route != null && route.isNotEmpty) {
+          await SecureStorageService().write('pending_deep_link', route);
+        }
+        return;
+      }
       final useCase = HandleNotificationActionUseCase(_db);
       final action = actionId == actionConfirm ? 'confirmed' : 'dismissed';
-      await useCase.call(notificationId: id, action: action);
+      await useCase.call(
+        notificationId: id,
+        action: action,
+        type: type,
+        entityId: id,
+      );
     } catch (e, st) {
       AppLogger.e('Handle action failed', e, st);
     }

@@ -24,7 +24,7 @@ class NotificationTriggerResult {
 
 /// Оценка всех триггеров пушей (ТОМ 5 §2) из локальной БД.
 /// Каждый блок обёрнут в try/catch: падение одного не ломает остальные.
-/// TODO(18.7): добавить триггеры импорта (duplicate_receipt, duplicate_detected,
+/// TODO(25): добавить триггеры импорта (duplicate_receipt, duplicate_detected,
 ///   transfer_detected, hold_confirmed) — вшиваются прямо в флоу импорта.
 /// TODO(19): year_review_ready — появится после таблицы yearly_aggregates.
 class NotificationTriggersUseCase {
