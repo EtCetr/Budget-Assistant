@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
-import 'package:budget_assistant/core/services/secure_storage_service.dart';
 import 'package:budget_assistant/core/logger.dart';
+import 'package:budget_assistant/core/services/deep_link_bus.dart';
+import 'package:budget_assistant/core/services/secure_storage_service.dart';
 import 'package:budget_assistant/features/notifications/domain/models/notification_type.dart';
 import 'package:budget_assistant/features/notifications/domain/usecases/handle_notification_action_usecase.dart';
 
-/// Сервис локальных уведомлений (Zero FCM Dependency).
+/// Сервис локальных уведомлений (Zero FCM Dependency, ТОМ 5).
 class NotificationService {
   NotificationService(this._db);
   final AppDatabase _db;
@@ -98,9 +99,10 @@ class NotificationService {
       final actionId = response.actionId;
       if (id == null) return;
       if (actionId == null) {
-        // Тап по пушу: deep-link откроется при следующем холодном старте
-        // (ТОМ 5 §3.2.2.c). TODO(21): навигация в тёплом старте.
+        // Тап по пушу: мгновенный переход через DeepLinkBus (тёплый старт),
+        // плюс SecureStorage как fallback для холодного старта (ТОМ 5 §3.2.2.c).
         if (route != null && route.isNotEmpty) {
+          DeepLinkBus.instance.send(route);
           await SecureStorageService().write('pending_deep_link', route);
         }
         return;
@@ -119,19 +121,26 @@ class NotificationService {
   }
 }
 
+/// Background-изолят: действия из пуша при свёрнутом/живом приложении.
 @pragma('vm:entry-point')
 void onBackgroundResponse(NotificationResponse response) async {
   if (response.payload == null || response.actionId == null) return;
   try {
     final payload = jsonDecode(response.payload!) as Map<String, dynamic>;
     final id = payload['notificationId'] as String?;
+    final type = payload['type'] as String?;
     if (id == null) return;
     final db = AppDatabase();
     final useCase = HandleNotificationActionUseCase(db);
     final action = response.actionId == NotificationService.actionConfirm
         ? 'confirmed'
         : 'dismissed';
-    await useCase.call(notificationId: id, action: action);
+    await useCase.call(
+      notificationId: id,
+      action: action,
+      type: type,
+      entityId: id,
+    );
     await db.close();
   } catch (e) {
     AppLogger.e('Background action failed: $e');

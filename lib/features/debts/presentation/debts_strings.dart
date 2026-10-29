@@ -113,8 +113,9 @@ abstract final class DebtsStrings {
   static const externalLabel = 'Имя в дательном падеже*';
   static const externalHint = 'Например, "Ивану" или "Анне Петровне"';
   static const externalSavedAs = 'Сохранится как';
-  static const externalDeclineFail =
-      'Не удалось автоматически склонить имя. Проверьте форму «кому?»';
+  // D18-13: пользователь сам пишет имя в дательном падеже, автосклонение не нужно
+  static const String externalDeclineFail = '';
+  static const String declineNameFailure = '';
   static const formSectionDetails = 'Детали';
   static const amountLabel = 'Сумма*';
   static const currencyLabel = 'Валюта';

@@ -285,3 +285,31 @@ Flutter: DropdownButtonFormField в Row требует ограничения ш
 Коммиты: 0be2c04 (база), bb08dae (диспетчер/heartbeat), далее fix-коммиты: privacy-rewrite, dissolve+switcher+key-repair, impl/providers rewrite, invite-role-reset+alert-semantics, docs/polish (текущий).
 Готово: /admin (guard, space info, сетка 2x2, алерты, журнал в AppBar), /admin/members (фильтры, поиск, карточки, меню, transfer-диалог), InviteSheet (QR/ссылка/Email-disabled, таймер 24ч, роль в токене), AcceptInvitation (HKDF+AES-GCM, TODO Этап 25), invitations+admin_audit_log (schema v17), heartbeat+аварийное повышение (WorkManager), privacy-matrix на всех админ-экранах, удаление соло-группы (dissolved).
 Долги: Этап 18 — AuditLogScreen, SpaceSettingsScreen, MembersActivityScreen, push-уведомления админ-действий; Этап 21 — PIN при передаче роли (D17-6), member_colors (D17-3), унификация currentSpaceIdProvider (D17-14); Этап 25 — Email-инвайты, cross-device приём инвайта, синк invitations/admin_audit_log, маппинг action_type.
+
+---
+
+## Этап 18 завершён (18.1–18.7), 29.10.2026
+
+### Что сделано
+- **18.1** Миграция БД v2: таблица audit_log; spaces.icon_emoji/icon_color/monthly_budget_limit/dissolved_at/dissolved_by; budget_limits.status; app_settings.notification_settings_json и digest_config.
+- **18.2** Журнал аудита `/admin/audit-log`: фильтры по типу действия и периоду, имена актёров из users.
+- **18.3** Статистика активности `/admin/activity`: периоды, сводка с прогресс-баром, стек-бар 30 дней (fl_chart), топ-3 с медалями, карточки участников со статусами 🟢🟡 и кнопкой напоминания.
+- **18.4** Настройки пространства `/admin/space-settings`: identity (12 эмодзи × 12 цветов), статистика 2×2, месячный лимит, XLSX-экспорт 5 листов (OOXML вручную), расформирование (2 диалога + PIN + кодовое слово).
+- **18.5** Центр уведомлений `/notifications`: фильтры-чипы (сброс повторным тапом — Правило 20), карточки 27 типов, 4 канала Android, приватность на локскрине.
+- **18.6** Воркер пушей (WorkManager: каждые 6 ч + при старте): 20+ триггеров из локальной БД (лимиты, долги, цели, напоминания, прогноз дефицита, админ-heartbeat, конфликты синка), дедупликация, дайджесты день/неделя/месяца с условной генерацией.
+- **18.7** Настройки уведомлений `/settings/notifications` (глобальные тумблеры + 27 типов, alwaysOn без тумблера) и дайджестов `/settings/digest` (вкл + время); deep-link по тапу на пуш; action-кнопки: «Подтвердить» у подарка скрывает покупку, у напоминания — завершает его.
+
+### Точки входа
+- Профиль → карточка «Уведомления».
+- Боковое меню → «Уведомления» (иконка-колокольчик; у «Напоминаний» — будильник).
+- Админ-дашборд → «⚙️ Настройки пространства» и тап по блоку «Активность».
+
+### Онбординг (изменён в фикс-паке 18.5+)
+- Шаг «Создание счёта» убран (счета создаются позже из экрана «Счета»).
+- Новый шаг «Данные для детекции переводов»: ФИО + телефоны карт, пропускаем, хранится локально (transfer_profile), редактируется в Профиле.
+
+### Техдолг и TODO
+- **TODO(19)**: пуш `year_review_ready` — после появления таблицы yearly_aggregates (файл notification_triggers_usecase.dart, комментарий в конце evaluate).
+- **ГОТОВО (18.8)**: тёплый deep-link — мгновенный переход через DeepLinkBus; холодный старт — fallback SecureStorage.
+- **TODO(25)**: пуши-события импорта (duplicate_receipt, duplicate_detected, transfer_detected, hold_confirmed) — вшить в конвейер импорта; там же серверные таблицы Supabase (ошибка PGRST205: на сервере только 4 таблицы).
+- Мёртвый файл бокового меню shared/widgets/app_drawer.dart удалён; живое меню — dashboard/presentation/widgets/app_drawer.dart.

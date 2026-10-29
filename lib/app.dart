@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:budget_assistant/core/services/deep_link_bus.dart';
 import 'package:budget_assistant/core/bootstrap/app_bootstrap_flags.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/core/router/app_router.dart';
@@ -16,6 +17,11 @@ class BudgetAssistantApp extends ConsumerWidget {
         AppBootstrapFlags.pendingDeepLink = null;
         router.go(link);
       }
+    });
+
+    // Тёплый deep-link: мгновенный переход при тапе на пуш (D18-9).
+    DeepLinkBus.instance.stream.listen((route) {
+      router.go(route);
     });
     return MaterialApp.router(
       title: 'Budget Assistant',
