@@ -106,6 +106,12 @@ class AppSettings extends Table with SyncableTable {
   BoolColumn get enableYearInReviewAlerts => boolean()
       .named('enable_year_in_review_alerts')
       .withDefault(const Constant(true))();
+
+  // Этап 19 (6.9): PIN перед чувствительным экспортом/шерингом.
+  // Тумблер появится в SecuritySettingsScreen (Этап 21).
+  BoolColumn get requirePinForSensitive => boolean()
+      .named('require_pin_for_sensitive')
+      .withDefault(const Constant(false))();
   BoolColumn get enableDebtAlerts =>
       boolean().named('enable_debt_alerts').withDefault(const Constant(true))();
   BoolColumn get enableReminderNotifications => boolean()

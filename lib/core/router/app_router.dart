@@ -58,6 +58,8 @@ import 'package:budget_assistant/features/recurring_payments/presentation/screen
 import 'package:budget_assistant/features/receipts/presentation/screens/scan_receipt_screen.dart';
 import 'package:budget_assistant/features/receipts/presentation/screens/receipt_preview_screen.dart';
 import 'package:budget_assistant/features/receipts/presentation/screens/split_receipt_screen.dart';
+import 'package:budget_assistant/features/year_in_review/presentation/screens/year_in_review_screen.dart';
+import 'package:budget_assistant/features/year_in_review/presentation/screens/year_in_review_select_screen.dart';
 part 'app_router.g.dart';
 
 @riverpod
@@ -432,6 +434,20 @@ name: 'receipt-split',
 builder: (context, state) =>
 SplitReceiptScreen(receiptId: state.pathParameters['id']!),
 ),
+      GoRoute(
+        path: '/year-in-review',
+        name: 'year-in-review-select',
+        builder: (context, state) => const YearInReviewSelectScreen(),
+      ),
+      GoRoute(
+        path: '/year-in-review/:year',
+        name: 'year-in-review',
+        builder: (context, state) {
+          final yearStr = state.pathParameters['year'] ?? '';
+          final parsedYear = int.tryParse(yearStr) ?? DateTime.now().year;
+          return YearInReviewScreen(year: parsedYear);
+        },
+      ),
     ],
     redirect: (context, state) {
       final location = state.uri.toString();

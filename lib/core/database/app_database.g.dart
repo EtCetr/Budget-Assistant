@@ -2622,6 +2622,531 @@ class SpacesCompanion extends UpdateCompanion<Space> {
   }
 }
 
+class $YearlyAggregatesTable extends YearlyAggregates
+    with TableInfo<$YearlyAggregatesTable, YearlyAggregateDb> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $YearlyAggregatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _spaceIdMeta = const VerificationMeta(
+    'spaceId',
+  );
+  @override
+  late final GeneratedColumn<String> spaceId = GeneratedColumn<String>(
+    'space_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES spaces (id)',
+    ),
+  );
+  static const VerificationMeta _yearMeta = const VerificationMeta('year');
+  @override
+  late final GeneratedColumn<int> year = GeneratedColumn<int>(
+    'year',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dataJsonMeta = const VerificationMeta(
+    'dataJson',
+  );
+  @override
+  late final GeneratedColumn<String> dataJson = GeneratedColumn<String>(
+    'data_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isViewedMeta = const VerificationMeta(
+    'isViewed',
+  );
+  @override
+  late final GeneratedColumn<bool> isViewed = GeneratedColumn<bool>(
+    'is_viewed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_viewed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _lastCalculatedAtMeta = const VerificationMeta(
+    'lastCalculatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastCalculatedAt =
+      GeneratedColumn<DateTime>(
+        'last_calculated_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    spaceId,
+    year,
+    dataJson,
+    isViewed,
+    lastCalculatedAt,
+    syncStatus,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'yearly_aggregates';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<YearlyAggregateDb> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('space_id')) {
+      context.handle(
+        _spaceIdMeta,
+        spaceId.isAcceptableOrUnknown(data['space_id']!, _spaceIdMeta),
+      );
+    }
+    if (data.containsKey('year')) {
+      context.handle(
+        _yearMeta,
+        year.isAcceptableOrUnknown(data['year']!, _yearMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_yearMeta);
+    }
+    if (data.containsKey('data_json')) {
+      context.handle(
+        _dataJsonMeta,
+        dataJson.isAcceptableOrUnknown(data['data_json']!, _dataJsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dataJsonMeta);
+    }
+    if (data.containsKey('is_viewed')) {
+      context.handle(
+        _isViewedMeta,
+        isViewed.isAcceptableOrUnknown(data['is_viewed']!, _isViewedMeta),
+      );
+    }
+    if (data.containsKey('last_calculated_at')) {
+      context.handle(
+        _lastCalculatedAtMeta,
+        lastCalculatedAt.isAcceptableOrUnknown(
+          data['last_calculated_at']!,
+          _lastCalculatedAtMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_lastCalculatedAtMeta);
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  YearlyAggregateDb map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return YearlyAggregateDb(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      spaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}space_id'],
+      ),
+      year: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}year'],
+      )!,
+      dataJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}data_json'],
+      )!,
+      isViewed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_viewed'],
+      )!,
+      lastCalculatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_calculated_at'],
+      )!,
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+    );
+  }
+
+  @override
+  $YearlyAggregatesTable createAlias(String alias) {
+    return $YearlyAggregatesTable(attachedDatabase, alias);
+  }
+}
+
+class YearlyAggregateDb extends DataClass
+    implements Insertable<YearlyAggregateDb> {
+  final String id;
+  final String userId;
+
+  /// NULL = личная статистика (спека 6.3.37.7).
+  final String? spaceId;
+  final int year;
+  final String dataJson;
+  final bool isViewed;
+  final DateTime lastCalculatedAt;
+  final String syncStatus;
+  const YearlyAggregateDb({
+    required this.id,
+    required this.userId,
+    this.spaceId,
+    required this.year,
+    required this.dataJson,
+    required this.isViewed,
+    required this.lastCalculatedAt,
+    required this.syncStatus,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || spaceId != null) {
+      map['space_id'] = Variable<String>(spaceId);
+    }
+    map['year'] = Variable<int>(year);
+    map['data_json'] = Variable<String>(dataJson);
+    map['is_viewed'] = Variable<bool>(isViewed);
+    map['last_calculated_at'] = Variable<DateTime>(lastCalculatedAt);
+    map['sync_status'] = Variable<String>(syncStatus);
+    return map;
+  }
+
+  YearlyAggregatesCompanion toCompanion(bool nullToAbsent) {
+    return YearlyAggregatesCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      spaceId: spaceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(spaceId),
+      year: Value(year),
+      dataJson: Value(dataJson),
+      isViewed: Value(isViewed),
+      lastCalculatedAt: Value(lastCalculatedAt),
+      syncStatus: Value(syncStatus),
+    );
+  }
+
+  factory YearlyAggregateDb.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return YearlyAggregateDb(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      spaceId: serializer.fromJson<String?>(json['spaceId']),
+      year: serializer.fromJson<int>(json['year']),
+      dataJson: serializer.fromJson<String>(json['dataJson']),
+      isViewed: serializer.fromJson<bool>(json['isViewed']),
+      lastCalculatedAt: serializer.fromJson<DateTime>(json['lastCalculatedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'spaceId': serializer.toJson<String?>(spaceId),
+      'year': serializer.toJson<int>(year),
+      'dataJson': serializer.toJson<String>(dataJson),
+      'isViewed': serializer.toJson<bool>(isViewed),
+      'lastCalculatedAt': serializer.toJson<DateTime>(lastCalculatedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+    };
+  }
+
+  YearlyAggregateDb copyWith({
+    String? id,
+    String? userId,
+    Value<String?> spaceId = const Value.absent(),
+    int? year,
+    String? dataJson,
+    bool? isViewed,
+    DateTime? lastCalculatedAt,
+    String? syncStatus,
+  }) => YearlyAggregateDb(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    spaceId: spaceId.present ? spaceId.value : this.spaceId,
+    year: year ?? this.year,
+    dataJson: dataJson ?? this.dataJson,
+    isViewed: isViewed ?? this.isViewed,
+    lastCalculatedAt: lastCalculatedAt ?? this.lastCalculatedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+  );
+  YearlyAggregateDb copyWithCompanion(YearlyAggregatesCompanion data) {
+    return YearlyAggregateDb(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
+      year: data.year.present ? data.year.value : this.year,
+      dataJson: data.dataJson.present ? data.dataJson.value : this.dataJson,
+      isViewed: data.isViewed.present ? data.isViewed.value : this.isViewed,
+      lastCalculatedAt: data.lastCalculatedAt.present
+          ? data.lastCalculatedAt.value
+          : this.lastCalculatedAt,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('YearlyAggregateDb(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('year: $year, ')
+          ..write('dataJson: $dataJson, ')
+          ..write('isViewed: $isViewed, ')
+          ..write('lastCalculatedAt: $lastCalculatedAt, ')
+          ..write('syncStatus: $syncStatus')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    spaceId,
+    year,
+    dataJson,
+    isViewed,
+    lastCalculatedAt,
+    syncStatus,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is YearlyAggregateDb &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.spaceId == this.spaceId &&
+          other.year == this.year &&
+          other.dataJson == this.dataJson &&
+          other.isViewed == this.isViewed &&
+          other.lastCalculatedAt == this.lastCalculatedAt &&
+          other.syncStatus == this.syncStatus);
+}
+
+class YearlyAggregatesCompanion extends UpdateCompanion<YearlyAggregateDb> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String?> spaceId;
+  final Value<int> year;
+  final Value<String> dataJson;
+  final Value<bool> isViewed;
+  final Value<DateTime> lastCalculatedAt;
+  final Value<String> syncStatus;
+  final Value<int> rowid;
+  const YearlyAggregatesCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.spaceId = const Value.absent(),
+    this.year = const Value.absent(),
+    this.dataJson = const Value.absent(),
+    this.isViewed = const Value.absent(),
+    this.lastCalculatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  YearlyAggregatesCompanion.insert({
+    required String id,
+    required String userId,
+    this.spaceId = const Value.absent(),
+    required int year,
+    required String dataJson,
+    this.isViewed = const Value.absent(),
+    required DateTime lastCalculatedAt,
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       year = Value(year),
+       dataJson = Value(dataJson),
+       lastCalculatedAt = Value(lastCalculatedAt);
+  static Insertable<YearlyAggregateDb> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? spaceId,
+    Expression<int>? year,
+    Expression<String>? dataJson,
+    Expression<bool>? isViewed,
+    Expression<DateTime>? lastCalculatedAt,
+    Expression<String>? syncStatus,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (spaceId != null) 'space_id': spaceId,
+      if (year != null) 'year': year,
+      if (dataJson != null) 'data_json': dataJson,
+      if (isViewed != null) 'is_viewed': isViewed,
+      if (lastCalculatedAt != null) 'last_calculated_at': lastCalculatedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  YearlyAggregatesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String?>? spaceId,
+    Value<int>? year,
+    Value<String>? dataJson,
+    Value<bool>? isViewed,
+    Value<DateTime>? lastCalculatedAt,
+    Value<String>? syncStatus,
+    Value<int>? rowid,
+  }) {
+    return YearlyAggregatesCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      spaceId: spaceId ?? this.spaceId,
+      year: year ?? this.year,
+      dataJson: dataJson ?? this.dataJson,
+      isViewed: isViewed ?? this.isViewed,
+      lastCalculatedAt: lastCalculatedAt ?? this.lastCalculatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (spaceId.present) {
+      map['space_id'] = Variable<String>(spaceId.value);
+    }
+    if (year.present) {
+      map['year'] = Variable<int>(year.value);
+    }
+    if (dataJson.present) {
+      map['data_json'] = Variable<String>(dataJson.value);
+    }
+    if (isViewed.present) {
+      map['is_viewed'] = Variable<bool>(isViewed.value);
+    }
+    if (lastCalculatedAt.present) {
+      map['last_calculated_at'] = Variable<DateTime>(lastCalculatedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('YearlyAggregatesCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('year: $year, ')
+          ..write('dataJson: $dataJson, ')
+          ..write('isViewed: $isViewed, ')
+          ..write('lastCalculatedAt: $lastCalculatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $MembershipsTable extends Memberships
     with TableInfo<$MembershipsTable, Membership> {
   @override
@@ -3795,6 +4320,21 @@ class $AppSettingsTable extends AppSettings
         ),
         defaultValue: const Constant(true),
       );
+  static const VerificationMeta _requirePinForSensitiveMeta =
+      const VerificationMeta('requirePinForSensitive');
+  @override
+  late final GeneratedColumn<bool> requirePinForSensitive =
+      GeneratedColumn<bool>(
+        'require_pin_for_sensitive',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("require_pin_for_sensitive" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
   static const VerificationMeta _enableDebtAlertsMeta = const VerificationMeta(
     'enableDebtAlerts',
   );
@@ -4042,6 +4582,7 @@ class $AppSettingsTable extends AppSettings
     enableGroupActivityAlerts,
     enableDeficitForecastAlerts,
     enableYearInReviewAlerts,
+    requirePinForSensitive,
     enableDebtAlerts,
     enableReminderNotifications,
     reminderAdvanceDays,
@@ -4398,6 +4939,15 @@ class $AppSettingsTable extends AppSettings
         ),
       );
     }
+    if (data.containsKey('require_pin_for_sensitive')) {
+      context.handle(
+        _requirePinForSensitiveMeta,
+        requirePinForSensitive.isAcceptableOrUnknown(
+          data['require_pin_for_sensitive']!,
+          _requirePinForSensitiveMeta,
+        ),
+      );
+    }
     if (data.containsKey('enable_debt_alerts')) {
       context.handle(
         _enableDebtAlertsMeta,
@@ -4694,6 +5244,10 @@ class $AppSettingsTable extends AppSettings
         DriftSqlType.bool,
         data['${effectivePrefix}enable_year_in_review_alerts'],
       )!,
+      requirePinForSensitive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}require_pin_for_sensitive'],
+      )!,
       enableDebtAlerts: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}enable_debt_alerts'],
@@ -4802,6 +5356,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
   final bool enableGroupActivityAlerts;
   final bool enableDeficitForecastAlerts;
   final bool enableYearInReviewAlerts;
+  final bool requirePinForSensitive;
   final bool enableDebtAlerts;
   final bool enableReminderNotifications;
   final int reminderAdvanceDays;
@@ -4856,6 +5411,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     required this.enableGroupActivityAlerts,
     required this.enableDeficitForecastAlerts,
     required this.enableYearInReviewAlerts,
+    required this.requirePinForSensitive,
     required this.enableDebtAlerts,
     required this.enableReminderNotifications,
     required this.reminderAdvanceDays,
@@ -4941,6 +5497,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     map['enable_year_in_review_alerts'] = Variable<bool>(
       enableYearInReviewAlerts,
     );
+    map['require_pin_for_sensitive'] = Variable<bool>(requirePinForSensitive);
     map['enable_debt_alerts'] = Variable<bool>(enableDebtAlerts);
     map['enable_reminder_notifications'] = Variable<bool>(
       enableReminderNotifications,
@@ -5013,6 +5570,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       enableGroupActivityAlerts: Value(enableGroupActivityAlerts),
       enableDeficitForecastAlerts: Value(enableDeficitForecastAlerts),
       enableYearInReviewAlerts: Value(enableYearInReviewAlerts),
+      requirePinForSensitive: Value(requirePinForSensitive),
       enableDebtAlerts: Value(enableDebtAlerts),
       enableReminderNotifications: Value(enableReminderNotifications),
       reminderAdvanceDays: Value(reminderAdvanceDays),
@@ -5120,6 +5678,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       ),
       enableYearInReviewAlerts: serializer.fromJson<bool>(
         json['enableYearInReviewAlerts'],
+      ),
+      requirePinForSensitive: serializer.fromJson<bool>(
+        json['requirePinForSensitive'],
       ),
       enableDebtAlerts: serializer.fromJson<bool>(json['enableDebtAlerts']),
       enableReminderNotifications: serializer.fromJson<bool>(
@@ -5234,6 +5795,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       'enableYearInReviewAlerts': serializer.toJson<bool>(
         enableYearInReviewAlerts,
       ),
+      'requirePinForSensitive': serializer.toJson<bool>(requirePinForSensitive),
       'enableDebtAlerts': serializer.toJson<bool>(enableDebtAlerts),
       'enableReminderNotifications': serializer.toJson<bool>(
         enableReminderNotifications,
@@ -5305,6 +5867,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     bool? enableGroupActivityAlerts,
     bool? enableDeficitForecastAlerts,
     bool? enableYearInReviewAlerts,
+    bool? requirePinForSensitive,
     bool? enableDebtAlerts,
     bool? enableReminderNotifications,
     int? reminderAdvanceDays,
@@ -5376,6 +5939,8 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
         enableDeficitForecastAlerts ?? this.enableDeficitForecastAlerts,
     enableYearInReviewAlerts:
         enableYearInReviewAlerts ?? this.enableYearInReviewAlerts,
+    requirePinForSensitive:
+        requirePinForSensitive ?? this.requirePinForSensitive,
     enableDebtAlerts: enableDebtAlerts ?? this.enableDebtAlerts,
     enableReminderNotifications:
         enableReminderNotifications ?? this.enableReminderNotifications,
@@ -5507,6 +6072,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       enableYearInReviewAlerts: data.enableYearInReviewAlerts.present
           ? data.enableYearInReviewAlerts.value
           : this.enableYearInReviewAlerts,
+      requirePinForSensitive: data.requirePinForSensitive.present
+          ? data.requirePinForSensitive.value
+          : this.requirePinForSensitive,
       enableDebtAlerts: data.enableDebtAlerts.present
           ? data.enableDebtAlerts.value
           : this.enableDebtAlerts,
@@ -5605,6 +6173,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
           ..write('enableGroupActivityAlerts: $enableGroupActivityAlerts, ')
           ..write('enableDeficitForecastAlerts: $enableDeficitForecastAlerts, ')
           ..write('enableYearInReviewAlerts: $enableYearInReviewAlerts, ')
+          ..write('requirePinForSensitive: $requirePinForSensitive, ')
           ..write('enableDebtAlerts: $enableDebtAlerts, ')
           ..write('enableReminderNotifications: $enableReminderNotifications, ')
           ..write('reminderAdvanceDays: $reminderAdvanceDays, ')
@@ -5670,6 +6239,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     enableGroupActivityAlerts,
     enableDeficitForecastAlerts,
     enableYearInReviewAlerts,
+    requirePinForSensitive,
     enableDebtAlerts,
     enableReminderNotifications,
     reminderAdvanceDays,
@@ -5733,6 +6303,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
           other.enableDeficitForecastAlerts ==
               this.enableDeficitForecastAlerts &&
           other.enableYearInReviewAlerts == this.enableYearInReviewAlerts &&
+          other.requirePinForSensitive == this.requirePinForSensitive &&
           other.enableDebtAlerts == this.enableDebtAlerts &&
           other.enableReminderNotifications ==
               this.enableReminderNotifications &&
@@ -5793,6 +6364,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   final Value<bool> enableGroupActivityAlerts;
   final Value<bool> enableDeficitForecastAlerts;
   final Value<bool> enableYearInReviewAlerts;
+  final Value<bool> requirePinForSensitive;
   final Value<bool> enableDebtAlerts;
   final Value<bool> enableReminderNotifications;
   final Value<int> reminderAdvanceDays;
@@ -5848,6 +6420,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     this.enableGroupActivityAlerts = const Value.absent(),
     this.enableDeficitForecastAlerts = const Value.absent(),
     this.enableYearInReviewAlerts = const Value.absent(),
+    this.requirePinForSensitive = const Value.absent(),
     this.enableDebtAlerts = const Value.absent(),
     this.enableReminderNotifications = const Value.absent(),
     this.reminderAdvanceDays = const Value.absent(),
@@ -5904,6 +6477,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     this.enableGroupActivityAlerts = const Value.absent(),
     this.enableDeficitForecastAlerts = const Value.absent(),
     this.enableYearInReviewAlerts = const Value.absent(),
+    this.requirePinForSensitive = const Value.absent(),
     this.enableDebtAlerts = const Value.absent(),
     this.enableReminderNotifications = const Value.absent(),
     this.reminderAdvanceDays = const Value.absent(),
@@ -5961,6 +6535,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     Expression<bool>? enableGroupActivityAlerts,
     Expression<bool>? enableDeficitForecastAlerts,
     Expression<bool>? enableYearInReviewAlerts,
+    Expression<bool>? requirePinForSensitive,
     Expression<bool>? enableDebtAlerts,
     Expression<bool>? enableReminderNotifications,
     Expression<int>? reminderAdvanceDays,
@@ -6042,6 +6617,8 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
         'enable_deficit_forecast_alerts': enableDeficitForecastAlerts,
       if (enableYearInReviewAlerts != null)
         'enable_year_in_review_alerts': enableYearInReviewAlerts,
+      if (requirePinForSensitive != null)
+        'require_pin_for_sensitive': requirePinForSensitive,
       if (enableDebtAlerts != null) 'enable_debt_alerts': enableDebtAlerts,
       if (enableReminderNotifications != null)
         'enable_reminder_notifications': enableReminderNotifications,
@@ -6112,6 +6689,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     Value<bool>? enableGroupActivityAlerts,
     Value<bool>? enableDeficitForecastAlerts,
     Value<bool>? enableYearInReviewAlerts,
+    Value<bool>? requirePinForSensitive,
     Value<bool>? enableDebtAlerts,
     Value<bool>? enableReminderNotifications,
     Value<int>? reminderAdvanceDays,
@@ -6189,6 +6767,8 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
           enableDeficitForecastAlerts ?? this.enableDeficitForecastAlerts,
       enableYearInReviewAlerts:
           enableYearInReviewAlerts ?? this.enableYearInReviewAlerts,
+      requirePinForSensitive:
+          requirePinForSensitive ?? this.requirePinForSensitive,
       enableDebtAlerts: enableDebtAlerts ?? this.enableDebtAlerts,
       enableReminderNotifications:
           enableReminderNotifications ?? this.enableReminderNotifications,
@@ -6381,6 +6961,11 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
         enableYearInReviewAlerts.value,
       );
     }
+    if (requirePinForSensitive.present) {
+      map['require_pin_for_sensitive'] = Variable<bool>(
+        requirePinForSensitive.value,
+      );
+    }
     if (enableDebtAlerts.present) {
       map['enable_debt_alerts'] = Variable<bool>(enableDebtAlerts.value);
     }
@@ -6495,6 +7080,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
           ..write('enableGroupActivityAlerts: $enableGroupActivityAlerts, ')
           ..write('enableDeficitForecastAlerts: $enableDeficitForecastAlerts, ')
           ..write('enableYearInReviewAlerts: $enableYearInReviewAlerts, ')
+          ..write('requirePinForSensitive: $requirePinForSensitive, ')
           ..write('enableDebtAlerts: $enableDebtAlerts, ')
           ..write('enableReminderNotifications: $enableReminderNotifications, ')
           ..write('reminderAdvanceDays: $reminderAdvanceDays, ')
@@ -28003,6 +28589,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $AdminAuditLogTable adminAuditLog = $AdminAuditLogTable(this);
   late final $UsersTable users = $UsersTable(this);
   late final $SpacesTable spaces = $SpacesTable(this);
+  late final $YearlyAggregatesTable yearlyAggregates = $YearlyAggregatesTable(
+    this,
+  );
   late final $MembershipsTable memberships = $MembershipsTable(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
   late final $NotificationsTable notifications = $NotificationsTable(this);
@@ -28078,6 +28667,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     adminAuditLog,
     users,
     spaces,
+    yearlyAggregates,
     memberships,
     appSettings,
     notifications,
@@ -28794,6 +29384,26 @@ final class $$UsersTableReferences
     extends BaseReferences<_$AppDatabase, $UsersTable, User> {
   $$UsersTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
+  static MultiTypedResultKey<$YearlyAggregatesTable, List<YearlyAggregateDb>>
+  _yearlyAggregatesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.yearlyAggregates,
+    aliasName: 'users__id__yearly_aggregates__user_id',
+  );
+
+  $$YearlyAggregatesTableProcessedTableManager get yearlyAggregatesRefs {
+    final manager = $$YearlyAggregatesTableTableManager(
+      $_db,
+      $_db.yearlyAggregates,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _yearlyAggregatesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$MembershipsTable, List<Membership>>
   _membershipsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.memberships,
@@ -29252,6 +29862,31 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
     column: $table.avatarUrl,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> yearlyAggregatesRefs(
+    Expression<bool> Function($$YearlyAggregatesTableFilterComposer f) f,
+  ) {
+    final $$YearlyAggregatesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.yearlyAggregates,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$YearlyAggregatesTableFilterComposer(
+            $db: $db,
+            $table: $db.yearlyAggregates,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<bool> membershipsRefs(
     Expression<bool> Function($$MembershipsTableFilterComposer f) f,
@@ -29894,6 +30529,31 @@ class $$UsersTableAnnotationComposer
   GeneratedColumn<String> get avatarUrl =>
       $composableBuilder(column: $table.avatarUrl, builder: (column) => column);
 
+  Expression<T> yearlyAggregatesRefs<T extends Object>(
+    Expression<T> Function($$YearlyAggregatesTableAnnotationComposer a) f,
+  ) {
+    final $$YearlyAggregatesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.yearlyAggregates,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$YearlyAggregatesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.yearlyAggregates,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> membershipsRefs<T extends Object>(
     Expression<T> Function($$MembershipsTableAnnotationComposer a) f,
   ) {
@@ -30461,6 +31121,7 @@ class $$UsersTableTableManager
           (User, $$UsersTableReferences),
           User,
           PrefetchHooks Function({
+            bool yearlyAggregatesRefs,
             bool membershipsRefs,
             bool appSettingsRefs,
             bool notificationsRefs,
@@ -30548,6 +31209,7 @@ class $$UsersTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
+                yearlyAggregatesRefs = false,
                 membershipsRefs = false,
                 appSettingsRefs = false,
                 notificationsRefs = false,
@@ -30574,6 +31236,7 @@ class $$UsersTableTableManager
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (yearlyAggregatesRefs) db.yearlyAggregates,
                     if (membershipsRefs) db.memberships,
                     if (appSettingsRefs) db.appSettings,
                     if (notificationsRefs) db.notifications,
@@ -30600,6 +31263,27 @@ class $$UsersTableTableManager
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (yearlyAggregatesRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          YearlyAggregateDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._yearlyAggregatesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).yearlyAggregatesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (membershipsRefs)
                         await $_getPrefetchedData<
                           User,
@@ -31063,6 +31747,7 @@ typedef $$UsersTableProcessedTableManager =
       (User, $$UsersTableReferences),
       User,
       PrefetchHooks Function({
+        bool yearlyAggregatesRefs,
         bool membershipsRefs,
         bool appSettingsRefs,
         bool notificationsRefs,
@@ -31125,6 +31810,26 @@ typedef $$SpacesTableUpdateCompanionBuilder =
 final class $$SpacesTableReferences
     extends BaseReferences<_$AppDatabase, $SpacesTable, Space> {
   $$SpacesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$YearlyAggregatesTable, List<YearlyAggregateDb>>
+  _yearlyAggregatesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.yearlyAggregates,
+    aliasName: 'spaces__id__yearly_aggregates__space_id',
+  );
+
+  $$YearlyAggregatesTableProcessedTableManager get yearlyAggregatesRefs {
+    final manager = $$YearlyAggregatesTableTableManager(
+      $_db,
+      $_db.yearlyAggregates,
+    ).filter((f) => f.spaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _yearlyAggregatesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 
   static MultiTypedResultKey<$MembershipsTable, List<Membership>>
   _membershipsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
@@ -31461,6 +32166,31 @@ class $$SpacesTableFilterComposer
     column: $table.dissolvedBy,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> yearlyAggregatesRefs(
+    Expression<bool> Function($$YearlyAggregatesTableFilterComposer f) f,
+  ) {
+    final $$YearlyAggregatesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.yearlyAggregates,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$YearlyAggregatesTableFilterComposer(
+            $db: $db,
+            $table: $db.yearlyAggregates,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 
   Expression<bool> membershipsRefs(
     Expression<bool> Function($$MembershipsTableFilterComposer f) f,
@@ -31949,6 +32679,31 @@ class $$SpacesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  Expression<T> yearlyAggregatesRefs<T extends Object>(
+    Expression<T> Function($$YearlyAggregatesTableAnnotationComposer a) f,
+  ) {
+    final $$YearlyAggregatesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.yearlyAggregates,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$YearlyAggregatesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.yearlyAggregates,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> membershipsRefs<T extends Object>(
     Expression<T> Function($$MembershipsTableAnnotationComposer a) f,
   ) {
@@ -32315,6 +33070,7 @@ class $$SpacesTableTableManager
           (Space, $$SpacesTableReferences),
           Space,
           PrefetchHooks Function({
+            bool yearlyAggregatesRefs,
             bool membershipsRefs,
             bool notificationsRefs,
             bool accountsRefs,
@@ -32414,6 +33170,7 @@ class $$SpacesTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
+                yearlyAggregatesRefs = false,
                 membershipsRefs = false,
                 notificationsRefs = false,
                 accountsRefs = false,
@@ -32432,6 +33189,7 @@ class $$SpacesTableTableManager
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
+                    if (yearlyAggregatesRefs) db.yearlyAggregates,
                     if (membershipsRefs) db.memberships,
                     if (notificationsRefs) db.notifications,
                     if (accountsRefs) db.accounts,
@@ -32450,6 +33208,27 @@ class $$SpacesTableTableManager
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (yearlyAggregatesRefs)
+                        await $_getPrefetchedData<
+                          Space,
+                          $SpacesTable,
+                          YearlyAggregateDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SpacesTableReferences
+                              ._yearlyAggregatesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SpacesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).yearlyAggregatesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.spaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (membershipsRefs)
                         await $_getPrefetchedData<
                           Space,
@@ -32753,6 +33532,7 @@ typedef $$SpacesTableProcessedTableManager =
       (Space, $$SpacesTableReferences),
       Space,
       PrefetchHooks Function({
+        bool yearlyAggregatesRefs,
         bool membershipsRefs,
         bool notificationsRefs,
         bool accountsRefs,
@@ -32768,6 +33548,485 @@ typedef $$SpacesTableProcessedTableManager =
         bool receiptsRefs,
         bool productAliasesRefs,
       })
+    >;
+typedef $$YearlyAggregatesTableCreateCompanionBuilder =
+    YearlyAggregatesCompanion Function({
+      required String id,
+      required String userId,
+      Value<String?> spaceId,
+      required int year,
+      required String dataJson,
+      Value<bool> isViewed,
+      required DateTime lastCalculatedAt,
+      Value<String> syncStatus,
+      Value<int> rowid,
+    });
+typedef $$YearlyAggregatesTableUpdateCompanionBuilder =
+    YearlyAggregatesCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String?> spaceId,
+      Value<int> year,
+      Value<String> dataJson,
+      Value<bool> isViewed,
+      Value<DateTime> lastCalculatedAt,
+      Value<String> syncStatus,
+      Value<int> rowid,
+    });
+
+final class $$YearlyAggregatesTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $YearlyAggregatesTable,
+          YearlyAggregateDb
+        > {
+  $$YearlyAggregatesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('yearly_aggregates__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SpacesTable _spaceIdTable(_$AppDatabase db) =>
+      db.spaces.createAlias('yearly_aggregates__space_id__spaces__id');
+
+  $$SpacesTableProcessedTableManager? get spaceId {
+    final $_column = $_itemColumn<String>('space_id');
+    if ($_column == null) return null;
+    final manager = $$SpacesTableTableManager(
+      $_db,
+      $_db.spaces,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_spaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$YearlyAggregatesTableFilterComposer
+    extends Composer<_$AppDatabase, $YearlyAggregatesTable> {
+  $$YearlyAggregatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get year => $composableBuilder(
+    column: $table.year,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dataJson => $composableBuilder(
+    column: $table.dataJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isViewed => $composableBuilder(
+    column: $table.isViewed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastCalculatedAt => $composableBuilder(
+    column: $table.lastCalculatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableFilterComposer get spaceId {
+    final $$SpacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableFilterComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$YearlyAggregatesTableOrderingComposer
+    extends Composer<_$AppDatabase, $YearlyAggregatesTable> {
+  $$YearlyAggregatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get year => $composableBuilder(
+    column: $table.year,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dataJson => $composableBuilder(
+    column: $table.dataJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isViewed => $composableBuilder(
+    column: $table.isViewed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastCalculatedAt => $composableBuilder(
+    column: $table.lastCalculatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableOrderingComposer get spaceId {
+    final $$SpacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$YearlyAggregatesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $YearlyAggregatesTable> {
+  $$YearlyAggregatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get year =>
+      $composableBuilder(column: $table.year, builder: (column) => column);
+
+  GeneratedColumn<String> get dataJson =>
+      $composableBuilder(column: $table.dataJson, builder: (column) => column);
+
+  GeneratedColumn<bool> get isViewed =>
+      $composableBuilder(column: $table.isViewed, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastCalculatedAt => $composableBuilder(
+    column: $table.lastCalculatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableAnnotationComposer get spaceId {
+    final $$SpacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$YearlyAggregatesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $YearlyAggregatesTable,
+          YearlyAggregateDb,
+          $$YearlyAggregatesTableFilterComposer,
+          $$YearlyAggregatesTableOrderingComposer,
+          $$YearlyAggregatesTableAnnotationComposer,
+          $$YearlyAggregatesTableCreateCompanionBuilder,
+          $$YearlyAggregatesTableUpdateCompanionBuilder,
+          (YearlyAggregateDb, $$YearlyAggregatesTableReferences),
+          YearlyAggregateDb,
+          PrefetchHooks Function({bool userId, bool spaceId})
+        > {
+  $$YearlyAggregatesTableTableManager(
+    _$AppDatabase db,
+    $YearlyAggregatesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$YearlyAggregatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$YearlyAggregatesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$YearlyAggregatesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String?> spaceId = const Value.absent(),
+                Value<int> year = const Value.absent(),
+                Value<String> dataJson = const Value.absent(),
+                Value<bool> isViewed = const Value.absent(),
+                Value<DateTime> lastCalculatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => YearlyAggregatesCompanion(
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                year: year,
+                dataJson: dataJson,
+                isViewed: isViewed,
+                lastCalculatedAt: lastCalculatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                Value<String?> spaceId = const Value.absent(),
+                required int year,
+                required String dataJson,
+                Value<bool> isViewed = const Value.absent(),
+                required DateTime lastCalculatedAt,
+                Value<String> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => YearlyAggregatesCompanion.insert(
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                year: year,
+                dataJson: dataJson,
+                isViewed: isViewed,
+                lastCalculatedAt: lastCalculatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$YearlyAggregatesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false, spaceId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.userId,
+                                referencedTable:
+                                    $$YearlyAggregatesTableReferences
+                                        ._userIdTable(db),
+                                referencedColumn:
+                                    $$YearlyAggregatesTableReferences
+                                        ._userIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+                    if (spaceId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.spaceId,
+                                referencedTable:
+                                    $$YearlyAggregatesTableReferences
+                                        ._spaceIdTable(db),
+                                referencedColumn:
+                                    $$YearlyAggregatesTableReferences
+                                        ._spaceIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$YearlyAggregatesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $YearlyAggregatesTable,
+      YearlyAggregateDb,
+      $$YearlyAggregatesTableFilterComposer,
+      $$YearlyAggregatesTableOrderingComposer,
+      $$YearlyAggregatesTableAnnotationComposer,
+      $$YearlyAggregatesTableCreateCompanionBuilder,
+      $$YearlyAggregatesTableUpdateCompanionBuilder,
+      (YearlyAggregateDb, $$YearlyAggregatesTableReferences),
+      YearlyAggregateDb,
+      PrefetchHooks Function({bool userId, bool spaceId})
     >;
 typedef $$MembershipsTableCreateCompanionBuilder =
     MembershipsCompanion Function({
@@ -33429,6 +34688,7 @@ typedef $$AppSettingsTableCreateCompanionBuilder =
       Value<bool> enableGroupActivityAlerts,
       Value<bool> enableDeficitForecastAlerts,
       Value<bool> enableYearInReviewAlerts,
+      Value<bool> requirePinForSensitive,
       Value<bool> enableDebtAlerts,
       Value<bool> enableReminderNotifications,
       Value<int> reminderAdvanceDays,
@@ -33486,6 +34746,7 @@ typedef $$AppSettingsTableUpdateCompanionBuilder =
       Value<bool> enableGroupActivityAlerts,
       Value<bool> enableDeficitForecastAlerts,
       Value<bool> enableYearInReviewAlerts,
+      Value<bool> requirePinForSensitive,
       Value<bool> enableDebtAlerts,
       Value<bool> enableReminderNotifications,
       Value<int> reminderAdvanceDays,
@@ -33717,6 +34978,11 @@ class $$AppSettingsTableFilterComposer
 
   ColumnFilters<bool> get enableYearInReviewAlerts => $composableBuilder(
     column: $table.enableYearInReviewAlerts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get requirePinForSensitive => $composableBuilder(
+    column: $table.requirePinForSensitive,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -34013,6 +35279,11 @@ class $$AppSettingsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get requirePinForSensitive => $composableBuilder(
+    column: $table.requirePinForSensitive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get enableDebtAlerts => $composableBuilder(
     column: $table.enableDebtAlerts,
     builder: (column) => ColumnOrderings(column),
@@ -34302,6 +35573,11 @@ class $$AppSettingsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get requirePinForSensitive => $composableBuilder(
+    column: $table.requirePinForSensitive,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get enableDebtAlerts => $composableBuilder(
     column: $table.enableDebtAlerts,
     builder: (column) => column,
@@ -34471,6 +35747,7 @@ class $$AppSettingsTableTableManager
                 Value<bool> enableGroupActivityAlerts = const Value.absent(),
                 Value<bool> enableDeficitForecastAlerts = const Value.absent(),
                 Value<bool> enableYearInReviewAlerts = const Value.absent(),
+                Value<bool> requirePinForSensitive = const Value.absent(),
                 Value<bool> enableDebtAlerts = const Value.absent(),
                 Value<bool> enableReminderNotifications = const Value.absent(),
                 Value<int> reminderAdvanceDays = const Value.absent(),
@@ -34529,6 +35806,7 @@ class $$AppSettingsTableTableManager
                 enableGroupActivityAlerts: enableGroupActivityAlerts,
                 enableDeficitForecastAlerts: enableDeficitForecastAlerts,
                 enableYearInReviewAlerts: enableYearInReviewAlerts,
+                requirePinForSensitive: requirePinForSensitive,
                 enableDebtAlerts: enableDebtAlerts,
                 enableReminderNotifications: enableReminderNotifications,
                 reminderAdvanceDays: reminderAdvanceDays,
@@ -34590,6 +35868,7 @@ class $$AppSettingsTableTableManager
                 Value<bool> enableGroupActivityAlerts = const Value.absent(),
                 Value<bool> enableDeficitForecastAlerts = const Value.absent(),
                 Value<bool> enableYearInReviewAlerts = const Value.absent(),
+                Value<bool> requirePinForSensitive = const Value.absent(),
                 Value<bool> enableDebtAlerts = const Value.absent(),
                 Value<bool> enableReminderNotifications = const Value.absent(),
                 Value<int> reminderAdvanceDays = const Value.absent(),
@@ -34648,6 +35927,7 @@ class $$AppSettingsTableTableManager
                 enableGroupActivityAlerts: enableGroupActivityAlerts,
                 enableDeficitForecastAlerts: enableDeficitForecastAlerts,
                 enableYearInReviewAlerts: enableYearInReviewAlerts,
+                requirePinForSensitive: requirePinForSensitive,
                 enableDebtAlerts: enableDebtAlerts,
                 enableReminderNotifications: enableReminderNotifications,
                 reminderAdvanceDays: reminderAdvanceDays,
@@ -53239,6 +54519,8 @@ class $AppDatabaseManager {
       $$UsersTableTableManager(_db, _db.users);
   $$SpacesTableTableManager get spaces =>
       $$SpacesTableTableManager(_db, _db.spaces);
+  $$YearlyAggregatesTableTableManager get yearlyAggregates =>
+      $$YearlyAggregatesTableTableManager(_db, _db.yearlyAggregates);
   $$MembershipsTableTableManager get memberships =>
       $$MembershipsTableTableManager(_db, _db.memberships);
   $$AppSettingsTableTableManager get appSettings =>

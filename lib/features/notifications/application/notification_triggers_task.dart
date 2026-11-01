@@ -46,7 +46,8 @@ String routeForType(NotificationType t) => switch (t) {
       NotificationType.memberActivity =>
         '/admin/members',
       NotificationType.syncConflictManual => '/profile',
-      NotificationType.yearReviewReady ||
+      NotificationType.yearReviewReady =>
+          '/year-in-review/${DateTime.now().year}',
       NotificationType.dailyDigest ||
       NotificationType.weeklyDigest ||
       NotificationType.monthlyDigest =>

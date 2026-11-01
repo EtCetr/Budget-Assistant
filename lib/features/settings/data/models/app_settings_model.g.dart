@@ -138,6 +138,10 @@ _AppSettingsModel _$AppSettingsModelFromJson(
       'enableYearInReviewAlerts',
       (v) => v as bool? ?? true,
     ),
+    requirePinForSensitive: $checkedConvert(
+      'requirePinForSensitive',
+      (v) => v as bool? ?? false,
+    ),
     enableDebtAlerts: $checkedConvert(
       'enableDebtAlerts',
       (v) => v as bool? ?? true,
@@ -240,6 +244,7 @@ Map<String, dynamic> _$AppSettingsModelToJson(
   'enableGroupActivityAlerts': instance.enableGroupActivityAlerts,
   'enableDeficitForecastAlerts': instance.enableDeficitForecastAlerts,
   'enableYearInReviewAlerts': instance.enableYearInReviewAlerts,
+  'requirePinForSensitive': instance.requirePinForSensitive,
   'enableDebtAlerts': instance.enableDebtAlerts,
   'enableReminderNotifications': instance.enableReminderNotifications,
   'reminderAdvanceDays': instance.reminderAdvanceDays,

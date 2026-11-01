@@ -26,7 +26,7 @@ class NotificationTriggerResult {
 /// Каждый блок обёрнут в try/catch: падение одного не ломает остальные.
 /// TODO(25): добавить триггеры импорта (duplicate_receipt, duplicate_detected,
 ///   transfer_detected, hold_confirmed) — вшиваются прямо в флоу импорта.
-/// TODO(19): year_review_ready — появится после таблицы yearly_aggregates.
+
 class NotificationTriggersUseCase {
   NotificationTriggersUseCase(this._db);
   final AppDatabase _db;
@@ -59,6 +59,7 @@ class NotificationTriggersUseCase {
     var enableReminders = true;
     var enableGroup = true;
     var enableBank = true;
+    var enableYearReview = true;
     final perType = <String, dynamic>{};
     try {
       final s = await _db.customSelect(
@@ -77,6 +78,7 @@ class NotificationTriggersUseCase {
         enableReminders = r.read<bool>('enable_reminder_notifications');
         enableGroup = r.read<bool>('enable_group_activity_alerts');
         enableBank = r.read<bool>('enable_bank_statement_reminder');
+        enableYearReview = r.read<bool>('enable_year_in_review_alerts');
         try {
           perType.addAll(jsonDecode(r.read<String>('notification_settings_json'))
               as Map<String, dynamic>);
@@ -548,7 +550,29 @@ class NotificationTriggersUseCase {
       }
     }
 
-    // TODO(19): year_review_ready — появится после yearly_aggregates
+
+    // Этап 19 (6.3.37.13): пуш «Годовой отчёт готов» после 27 декабря.
+    // Локальная генерация: сервер не видит расшифрованные итоги.
+    if (enableYearReview && now.month == 12 && now.day >= 27) {
+      try {
+        final yr = await _db.customSelect(
+          'SELECT is_viewed AS v FROM yearly_aggregates '
+          'WHERE user_id = ? AND space_id IS NULL AND year = ?',
+          variables: [Variable.withString(userId), Variable.withInt(now.year)],
+        ).get();
+        if (yr.isNotEmpty && !yr.first.read<bool>('v')) {
+          out.add(NotificationTriggerResult(
+            type: NotificationType.yearReviewReady,
+            title: '🎉 Твоя статистика за год готова!',
+            body: 'Посмотри свои финансовые итоги ${now.year} года.',
+            entityId: 'year_review:${now.year}',
+            dedupDays: 300,
+          ));
+        }
+      } catch (e) {
+        AppLogger.w('triggers: year review skipped: $e');
+      }
+    }
     return out;
   }
 }

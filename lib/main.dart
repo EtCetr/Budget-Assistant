@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' show Variable;
 import 'package:budget_assistant/features/admin/workers/inactive_admin_check_worker.dart';
 import 'package:budget_assistant/features/notifications/application/notification_triggers_task.dart';
+import 'package:budget_assistant/features/year_in_review/application/yearly_aggregates_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
@@ -121,6 +122,7 @@ Future<void> main() async {
     final logger = Logger();
     await InactiveAdminCheckWorker.register();
     await NotificationTriggersWorker.register();
+  await YearlyAggregatesWorker.register();
     
     runApp(
       ProviderScope(

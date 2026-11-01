@@ -47,6 +47,7 @@ abstract class AppSettingsModel with _$AppSettingsModel {
     @Default(true) bool enableGroupActivityAlerts,
     @Default(true) bool enableDeficitForecastAlerts,
     @Default(true) bool enableYearInReviewAlerts,
+  @Default(false) bool requirePinForSensitive,
     @Default(true) bool enableDebtAlerts,
     @Default(true) bool enableReminderNotifications,
     @Default(1) int reminderAdvanceDays,

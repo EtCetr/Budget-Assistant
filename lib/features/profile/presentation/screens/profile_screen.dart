@@ -141,6 +141,17 @@ _card('Аккаунт', [
             ),
           ]),
           const SizedBox(height: 16),
+          _card('Статистика года', [
+            TextButton.icon(
+              onPressed: () =>
+                  context.push('/year-in-review'),
+              icon: const Icon(Icons.insights_outlined,
+                  color: AppColors.colorIncome),
+              label: const Text('📊 Моя статистика',
+                  style:  TextStyle(color: AppColors.textPrimary)),
+            ),
+          ]),
+          const SizedBox(height: 16),
           _card('Детекция переводов', [
             const Text(
               'Телефоны и ФИО используются только для автоматической пометки переводов между вашими счетами при импорте выписок. Можно не указывать.',

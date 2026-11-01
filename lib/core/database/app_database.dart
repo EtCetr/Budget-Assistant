@@ -29,6 +29,7 @@ import 'seeds/default_holidays_seed.dart';
 import 'package:budget_assistant/features/import/data/seeds/default_parser_configs_seed.dart';
 import 'tables/invitations.dart';
 import 'tables/admin_audit_log.dart';
+import 'tables/yearly_aggregates.dart';
 part 'app_database.g.dart';
 
 // Этап 5: Счета, Ипотеки, Категории
@@ -551,6 +552,7 @@ class ReceiptDrafts extends Table {
 @DriftDatabase(
   tables: [
     Invitations, AdminAuditLog,
+    YearlyAggregates,
     Users,
     Spaces,
     Memberships,
@@ -608,7 +610,7 @@ class AppDatabase extends _$AppDatabase {
   /// v13: Этап 14 — reminders, holidays, recurring_transactions,
   /// forecast_cache, reminder_drafts + 5 колонок app_settings + сиды РФ.
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 
   Future<void> _createSavingsIndexes() async {
     await customStatement('''
@@ -1031,6 +1033,19 @@ await _createReceiptsIndexes();
           await m.addColumn(appSettings, appSettings.digestInfoDismissed);
           await m.addColumn(appSettings, appSettings.importInfoDismissed);
         }
+          if (from < 19) {
+            // Этап 19: кэш годовых итогов + PIN для чувствительных операций.
+            await m.createTable(yearlyAggregates);
+            await m.addColumn(appSettings, appSettings.requirePinForSensitive);
+            await customStatement('''
+              CREATE INDEX IF NOT EXISTS idx_yearly_aggregates_lookup
+              ON yearly_aggregates(user_id, space_id, year)
+            ''');
+            await customStatement('''
+              CREATE INDEX IF NOT EXISTS idx_yearly_aggregates_sync_status
+              ON yearly_aggregates(sync_status)
+            ''');
+          }
         },
         beforeOpen: (details) async {
           AppLogger.i(
@@ -1047,6 +1062,10 @@ await _createReceiptsIndexes();
             'CREATE INDEX IF NOT EXISTS idx_notifications_dedup ON notifications(user_id, type, related_entity_id, created_at)');
         await customStatement(
             'CREATE INDEX IF NOT EXISTS idx_budget_limits_space_status ON budget_limits(space_id, status)');
+        await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_yearly_aggregates_lookup ON yearly_aggregates(user_id, space_id, year)');
+        await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_yearly_aggregates_sync_status ON yearly_aggregates(sync_status)');
           await customStatement('PRAGMA journal_mode = WAL');
           await customStatement('PRAGMA synchronous = NORMAL');
           final tables = await customSelect(

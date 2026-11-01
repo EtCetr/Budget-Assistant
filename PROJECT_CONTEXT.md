@@ -313,3 +313,15 @@ Flutter: DropdownButtonFormField в Row требует ограничения ш
 - **ГОТОВО (18.8)**: тёплый deep-link — мгновенный переход через DeepLinkBus; холодный старт — fallback SecureStorage.
 - **TODO(25)**: пуши-события импорта (duplicate_receipt, duplicate_detected, transfer_detected, hold_confirmed) — вшить в конвейер импорта; там же серверные таблицы Supabase (ошибка PGRST205: на сервере только 4 таблицы).
 - Мёртвый файл бокового меню shared/widgets/app_drawer.dart удалён; живое меню — dashboard/presentation/widgets/app_drawer.dart.
+Этап 19 «Year in Review»: ЗАВЕРШЁН (2026-11-01)
+[x] 19.1 Data: таблица yearly_aggregates (schemaVersion 19), Freezed DTO YearInReviewData / YearlyAggregate / YearInReviewYearInfo, DAO, репозиторий.
+[x] 19.2 Domain: RecalculateYearlyAggregatesUseCase (isolate, конвертация валют по курсу на дату), CalculateYearInReviewUseCase (кэш или пересчёт на лету), MarkYearInReviewAsViewedUseCase, CheckYearInReviewAvailabilityUseCase, ShareYearInReviewSlideUseCase (PNG + FLAG_SECURE + PIN + аудит), GetAvailableYearsUseCase.
+[x] 19.3 WorkManager: YearlyAggregatesWorker (пересчёт 1-го числа + 27 декабря, личная + все активные пространства), пуш year_review_ready (TODO(19) из Этапа 18 закрыт).
+[x] 19.4 UI: YearInReviewScreen (12 слайдов, автоплей 7 сек, тапы влево/вправо, пауза long-press, privacy-матрица, селектор пространства на Welcome), YearInReviewSelectScreen (список годов со статусом «Готово / Посчитается при открытии»), прогресс-бар с динамическим числом сегментов.
+[x] 19.5 Шеринг: PNG текущего слайда через RepaintBoundary (pixelRatio 3) → временный файл → Share Sheet; временное снятие FLAG_SECURE на 5 сек (нативный таймер); PIN при require_pin_for_sensitive && enable_pin_code; аудит-лог для семейной статистики.
+[x] 19.6 Интеграция: роуты /year-in-review и /year-in-review/:year, карточка «Статистика года» в Профиле, авто-оверлей после 27 декабря (app.dart), маршрут пуша.
+Точки входа: Профиль → «Статистика года» → выбор года → сторис; пуш после 27 декабря → сразу сторис текущего года; авто-оверлей после 27 декабря, если статистика не просмотрена.
+Техдолг Этапа 19:
+[ ] TODO(25): синхронизация yearly_aggregates (E2E payload), индикаторы sync_status в Top Bar.
+[ ] Этап 21: тумблер require_pin_for_sensitive в SecuritySettingsScreen.
+[ ] Проверка на реальном устройстве: WorkManager-пересчёт, FLAG_SECURE, Share Sheet.
