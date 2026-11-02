@@ -68,6 +68,10 @@ abstract final class TransactionsLogLabels {
 
   static const edit = 'Редактировать';
   static const editTitle = 'Редактирование транзакции';
+static const delete = 'Удалить';
+static const deleteTitle = 'Удалить транзакцию?';
+static const deleteSubtitle = 'Операция будет удалена безвозвратно.';
+static const deleteDone = 'Транзакция удалена';
 
   static const refund = 'Создать компенсирующую операцию (Доход)';
   static const changeCategory = 'Изменить категорию';

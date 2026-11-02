@@ -36,10 +36,20 @@ class CalculateYearInReviewUseCase {
         year: year,
       );
       if (cached != null) {
-        return YearInReviewData.fromJson(
-          jsonDecode(cached.dataJson) as Map<String, dynamic>,
-        );
-      }
+  final cachedData = YearInReviewData.fromJson(
+jsonDecode(cached.dataJson) as Map<String, dynamic>,
+);
+final lastTx = await _repository.lastTransactionUpdate(
+userId: userId,
+spaceId: spaceId,
+);
+final fresh = lastTx == null || !cached.lastCalculatedAt.isBefore(lastTx);
+  // Пустой кэш мог устареть (фон посчитал год до появления данных) -
+  // в этом случае пересчитываем, чтобы не показывать "нет данных".
+  if (cachedData.transactionCount > 0 && fresh) {
+    return cachedData;
+  }
+}
       final settings = await _settingsDao.getForUser(userId);
       return await _recalculate(
         userId: userId,

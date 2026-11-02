@@ -1,4 +1,4 @@
-﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
 import 'package:budget_assistant/core/errors/result.dart';
@@ -7,6 +7,8 @@ import 'package:budget_assistant/features/auth/presentation/providers/current_us
 
 import '../../../../core/providers/security_providers.dart';
 import '../../data/repositories/drift_transactions_log_repository.dart';
+import '../../data/repositories/transactions_repository_impl.dart';
+import '../../domain/usecases/delete_transaction_usecase.dart';
 import '../../domain/entities/lookup_item.dart';
 import '../../domain/entities/transaction_day_group.dart';
 import '../../domain/entities/transaction_ui_model.dart';
@@ -304,6 +306,16 @@ final unhideTransactionAsGiftUseCaseProvider = Provider(
     ref.watch(transactionsLogRepositoryProvider),
   ),
 );
+
+final deleteTransactionUseCaseProvider = Provider<DeleteTransactionUseCase>((ref) {
+return DeleteTransactionUseCase(
+repository: TransactionsRepositoryImpl(
+db: ref.watch(appDatabaseProvider),
+logger: Logger(),
+),
+logger: Logger(),
+);
+});
 
 final transactionsLogProvider = NotifierProvider.autoDispose<TransactionsLogNotifier, TransactionsLogState>(
       TransactionsLogNotifier.new,

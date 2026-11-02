@@ -22,4 +22,9 @@ abstract interface class YearlyAggregatesRepository {
 
   /// Годы с данными для экрана «Статистика по годам» (по убыванию).
   Future<List<YearInReviewYearInfo>> availableYears({required String userId});
+
+Future<DateTime?> lastTransactionUpdate({
+required String userId,
+required String? spaceId,
+});
 }

@@ -84,8 +84,6 @@ class PrivacyFormatter {
     switch (mode) {
       case BalanceVisibilityMode.visible:
         return cardNumber;
-      case BalanceVisibilityMode.partial:
-        return '*•••';
       case BalanceVisibilityMode.hidden:
         return '••••';
     }

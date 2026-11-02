@@ -54,6 +54,7 @@ class _YearInReviewScreenState extends ConsumerState<YearInReviewScreen>
   late final AnimationController _progressController;
   bool _isPaused = false;
   int _currentIndex = 0;
+  int _slidesCount = 1;
 
   static const Duration _slideDuration = Duration(seconds: 7);
 
@@ -96,7 +97,19 @@ class _YearInReviewScreenState extends ConsumerState<YearInReviewScreen>
   void _startAutoPlay() {
     _autoPlayTimer?.cancel();
     _progressController.forward(from: 0);
-    _autoPlayTimer = Timer(_slideDuration, () => _next(const []));
+    _autoPlayTimer = Timer(_slideDuration, _autoTick);
+  }
+
+  void _autoTick() {
+    if (_currentIndex >= _slidesCount - 1) {
+      _stopAutoPlay();
+      return;
+    }
+    MotionTokens.light();
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
   }
 
   void _stopAutoPlay() {
@@ -153,32 +166,12 @@ class _YearInReviewScreenState extends ConsumerState<YearInReviewScreen>
     }
   }
 
-  Future<void> _confirmClose() async {
+  Future<void> _closeToProfile() async {
     MotionTokens.light();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surfaceCard,
-        title: const Text(YearReviewStrings.closeConfirmTitle),
-        content: const Text(YearReviewStrings.closeConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text(YearReviewStrings.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text(YearReviewStrings.closeConfirmYes),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
     await _markViewed();
     if (!mounted) return;
-    context.go('/');
+    context.go('/profile');
   }
-
   Future<void> _goHome() async {
     MotionTokens.light();
     await _markViewed();
@@ -279,6 +272,7 @@ class _YearInReviewScreenState extends ConsumerState<YearInReviewScreen>
           if (data == null || data.transactionCount == 0) {
             return _buildNoData();
           }
+          _slidesCount = slides.length;
           return _buildStory(slides, data, pf, mode, canShare);
         },
       ),
@@ -295,7 +289,7 @@ class _YearInReviewScreenState extends ConsumerState<YearInReviewScreen>
           subtitle: YearReviewStrings.noDataSubtitle,
           primaryAction: EmptyStateAction(
             label: YearReviewStrings.addFirstTx,
-            onPressed: () => context.go('/transactions/create'),
+            onPressed: () => context.go('/transactions'),
           ),
         ),
         Positioned(
@@ -306,7 +300,7 @@ class _YearInReviewScreenState extends ConsumerState<YearInReviewScreen>
             canShare: false,
             onClose: () async {
               await _markViewed();
-              if (mounted) context.go('/');
+              if (mounted) context.go('/profile');
             },
             onShare: () {},
           ),
@@ -378,7 +372,7 @@ class _YearInReviewScreenState extends ConsumerState<YearInReviewScreen>
                 ),
                 YearReviewTopBar(
                   canShare: canShare,
-                  onClose: _confirmClose,
+                  onClose: _closeToProfile,
                   onShare: _share,
                 ),
               ],

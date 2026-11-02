@@ -120,15 +120,6 @@ class _SavingsAnalyticsScreenState extends ConsumerState<SavingsAnalyticsScreen>
               },
             ),
             ListTile(
-              title: const Text(SavingsGoalsStrings.privacyPartial),
-              onTap: () {
-                ref
-                    .read(privacyModeProvider.notifier)
-                    .setMode(BalanceVisibilityMode.partial);
-                Navigator.of(sheetContext).pop();
-              },
-            ),
-            ListTile(
               title: const Text(SavingsGoalsStrings.privacyHidden),
               onTap: () {
                 ref

@@ -4,6 +4,7 @@ import 'package:logger/logger.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/database/database_provider.dart';
 import 'package:budget_assistant/core/logger.dart';
+import 'package:budget_assistant/core/providers/transactions_trigger_provider.dart';
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
 import 'package:budget_assistant/core/services/secure_flag_service.dart';
@@ -115,7 +116,8 @@ final yearReviewSpaceProvider =
 /// Годовые итоги для экрана (кэш или расчёт на лету).
 final yearInReviewDataProvider =
     FutureProvider.family<YearInReviewData?, YearReviewQuery>((ref, query) {
-  final useCase = ref.watch(calculateYearInReviewUseCaseProvider);
+  ref.watch(transactionsTriggerProvider);
+final useCase = ref.watch(calculateYearInReviewUseCaseProvider);
   final userId = ref.watch(currentUserIdProvider);
   return useCase(
     userId: userId,
@@ -209,6 +211,8 @@ final getAvailableYearsUseCaseProvider =
 /// Годы с данными для экрана «Статистика по годам».
 final availableYearsProvider =
     FutureProvider<List<YearInReviewYearInfo>>((ref) {
+  // Обновляем список лет при любом изменении транзакций (импорт, правки).
+  ref.watch(transactionsTriggerProvider);
   final useCase = ref.watch(getAvailableYearsUseCaseProvider);
   final userId = ref.watch(currentUserIdProvider);
   return useCase(userId: userId);

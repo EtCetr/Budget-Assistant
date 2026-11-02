@@ -182,18 +182,7 @@ class DebtsScreen extends ConsumerWidget {
                   Navigator.of(sheetContext).pop();
                 },
               ),
-              ListTile(
-                selected: current == BalanceVisibilityMode.partial,
-                leading: const Icon(Icons.visibility_outlined),
-                title: const Text(DebtsStrings.privacyPartial),
-                onTap: () {
-                  ref
-                      .read(privacyModeProvider.notifier)
-                      .setMode(BalanceVisibilityMode.partial);
-                  Navigator.of(sheetContext).pop();
-                },
-              ),
-              ListTile(
+ListTile(
                 selected: current == BalanceVisibilityMode.hidden,
                 leading: const Icon(Icons.visibility_off),
                 title: const Text(DebtsStrings.privacyHidden),

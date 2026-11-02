@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -134,15 +134,6 @@ class _SavingsGoalsScreenState extends ConsumerState<SavingsGoalsScreen> {
                   ref
                       .read(privacyModeProvider.notifier)
                       .setMode(BalanceVisibilityMode.visible);
-                  Navigator.of(sheetContext).pop();
-                },
-              ),
-              ListTile(
-                title: const Text(SavingsGoalsStrings.privacyPartial),
-                onTap: () {
-                  ref
-                      .read(privacyModeProvider.notifier)
-                      .setMode(BalanceVisibilityMode.partial);
                   Navigator.of(sheetContext).pop();
                 },
               ),

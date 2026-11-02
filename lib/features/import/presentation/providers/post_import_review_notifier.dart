@@ -8,6 +8,7 @@ import 'package:budget_assistant/features/import/domain/entities/hold_confirmati
 import 'package:budget_assistant/features/import/domain/entities/import_result.dart';
 import 'package:budget_assistant/features/import/domain/entities/parsed_row.dart';
 import 'import_usecase_providers.dart';
+import 'package:budget_assistant/core/providers/transactions_trigger_provider.dart';
 
 /// Состояние экрана проверки импорта.
 class PostImportReviewState {
@@ -238,16 +239,21 @@ class PostImportReviewNotifier extends Notifier<PostImportReviewState> {
     state = state.copyWith(isFinalizing: true);
     try {
       final userId = ref.read(currentUserIdProvider);
-      return await ref.read(finalizeImportUseCaseProvider).call(
-            importResult: r.copyWith(
-              rows: state.rows,
-              duplicates: state.duplicates,
-              transfers: const [],
-              holdConfirmations: state.holds,
-            ),
-            userId: userId,
-            selectedRowIndices: state.selectedRows,
-          );
+      final outcome = await ref.read(finalizeImportUseCaseProvider).call(
+        importResult: r.copyWith(
+          rows: state.rows,
+          duplicates: state.duplicates,
+          transfers: const [],
+          holdConfirmations: state.holds,
+        ),
+        userId: userId,
+        selectedRowIndices: state.selectedRows,
+      );
+      if (outcome != null) {
+        // Дашборд и "Статистика по годам" должны увидеть новые транзакции.
+        ref.read(transactionsTriggerProvider.notifier).bump();
+      }
+      return outcome;
     } catch (_) {
       MotionTokens.error();
       return null;

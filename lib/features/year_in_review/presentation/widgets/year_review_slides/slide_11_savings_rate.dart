@@ -45,10 +45,10 @@ class SlideSavingsRate extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             '$rate%',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 56,
               fontWeight: FontWeight.w800,
-              color: AppColors.colorIncome,
+              color: rate < 0 ? AppColors.colorExpense : AppColors.colorIncome,
             ),
           ),
           const SizedBox(height: 16),

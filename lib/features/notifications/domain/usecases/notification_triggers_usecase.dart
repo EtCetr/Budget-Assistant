@@ -205,30 +205,35 @@ class NotificationTriggersUseCase {
     }
 
     if (enableDeficit) {
-      try {
-        final f = await _db.customSelect(
-          'SELECT date, total FROM forecast_cache WHERE category_id IS NULL '
-          'AND date >= ? AND date <= ? ORDER BY total ASC LIMIT 1',
-          variables: [
-            Variable.withInt(_epoch(now)),
-            Variable.withInt(_epoch(now.add(const Duration(days: 7)))),
-          ],
-        ).get();
-        if (f.isNotEmpty && f.first.read<int>('total') < 0) {
-          final d = f.first.read<DateTime>('date');
-          final days = d.difference(now).inDays;
-          out.add(NotificationTriggerResult(
-            type: NotificationType.deficitForecastWarning,
-            title: '🔮 Баланс уйдёт в минус через $days дн',
-            body: 'Проверьте прогноз расходов и скорректируйте траты.',
-            entityId: '${now.year}-${now.month}-${now.day}',
-            dedupDays: 2,
-          ));
-        }
-      } catch (e) {
-        AppLogger.w('triggers: deficit forecast skipped: $e');
-      }
+  try {
+    final nowMonth = '${now.year}-${now.month.toString().padLeft(2, '0')}';
+    final nextMonthDate = DateTime(now.year, now.month + 1, 1);
+    final nextMonth = '${nextMonthDate.year}-${nextMonthDate.month.toString().padLeft(2, '0')}';
+    final f = await _db.customSelect(
+      'SELECT month_year, forecasted_amount FROM forecast_cache '
+      'WHERE user_id = ? AND category_id IS NULL '
+      'AND month_year IN (?, ?) AND forecasted_amount < 0 '
+      'ORDER BY month_year ASC LIMIT 1',
+      variables: [
+        Variable.withString(userId),
+        Variable.withString(nowMonth),
+        Variable.withString(nextMonth),
+      ],
+    ).get();
+    if (f.isNotEmpty) {
+      final my = f.first.read<String>('month_year');
+      out.add(NotificationTriggerResult(
+        type: NotificationType.deficitForecastWarning,
+        title: '🔮 Баланс уйдёт в минус',
+        body: 'Прогноз на $my отрицательный. Проверьте расходы.',
+        entityId: 'deficit:$my',
+        dedupDays: 7,
+      ));
     }
+  } catch (e) {
+    AppLogger.w('triggers: deficit forecast skipped: $e');
+  }
+}
 
     if (enableDebts) {
       try {

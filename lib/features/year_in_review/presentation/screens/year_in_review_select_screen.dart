@@ -48,7 +48,7 @@ class YearInReviewSelectScreen extends ConsumerWidget {
               subtitle: YearReviewStrings.noDataSubtitle,
               primaryAction: EmptyStateAction(
                 label: YearReviewStrings.addFirstTx,
-                onPressed: () => context.go('/transactions/create'),
+                onPressed: () => context.go('/transactions'),
               ),
             );
           }

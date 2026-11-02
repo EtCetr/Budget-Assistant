@@ -1,4 +1,4 @@
-﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/features/privacy/presentation/privacy_formatter.dart';
@@ -24,8 +24,7 @@ class PrivacyModeNotifier extends Notifier<BalanceVisibilityMode> {
 
   void toggle() {
     state = switch (state) {
-      BalanceVisibilityMode.visible => BalanceVisibilityMode.partial,
-      BalanceVisibilityMode.partial => BalanceVisibilityMode.hidden,
+      BalanceVisibilityMode.visible => BalanceVisibilityMode.hidden,
       BalanceVisibilityMode.hidden => BalanceVisibilityMode.visible,
     };
   }

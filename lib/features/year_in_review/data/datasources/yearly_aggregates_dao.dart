@@ -106,7 +106,20 @@ class YearlyAggregatesDao extends DatabaseAccessor<AppDatabase>
     return rows.first.read<int>('c');
   }
 
-  /// Личные агрегаты по всем годам.
+  /// Момент последнего изменения транзакций в скоупе (свежесть кэша).
+Future<DateTime?> lastTransactionUpdate(String userId, String? spaceId) async {
+final sql = spaceId == null
+? 'SELECT MAX(updated_at) AS m FROM transactions WHERE user_id = ? AND space_id IS NULL'
+: 'SELECT MAX(updated_at) AS m FROM transactions WHERE user_id = ? OR space_id = ?';
+final vars = spaceId == null
+? <Variable>[Variable.withString(userId)]
+: <Variable>[Variable.withString(userId), Variable.withString(spaceId)];
+final rows = await customSelect(sql, variables: vars).get();
+if (rows.isEmpty) return null;
+return rows.first.readNullable<DateTime>('m');
+}
+
+/// Личные агрегаты по всем годам.
   Future<Map<int, YearlyAggregateDb>> personalAggregatesByYear(
       String userId) async {
     final rows = await (select(yearlyAggregates)

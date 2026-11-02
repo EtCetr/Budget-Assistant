@@ -292,7 +292,7 @@ class TransactionsLogScreen extends ConsumerWidget {
   void _togglePrivacyQuick(WidgetRef ref, BalanceVisibilityMode current) {
     HapticFeedback.lightImpact();
     final next = current == BalanceVisibilityMode.visible
-        ? BalanceVisibilityMode.partial
+        ? BalanceVisibilityMode.hidden
         : BalanceVisibilityMode.visible;
     ref.read(privacyModeProvider.notifier).setMode(next);
   }
@@ -375,18 +375,7 @@ class TransactionsLogScreen extends ConsumerWidget {
                   Navigator.of(sheetContext).pop();
                 },
               ),
-              ListTile(
-                selected: current == BalanceVisibilityMode.partial,
-                leading: const Icon(Icons.visibility_outlined),
-                title: const Text(TransactionsLogLabels.partial),
-                onTap: () {
-                  ref
-                      .read(privacyModeProvider.notifier)
-                      .setMode(BalanceVisibilityMode.partial);
-                  Navigator.of(sheetContext).pop();
-                },
-              ),
-              ListTile(
+ListTile(
                 selected: current == BalanceVisibilityMode.hidden,
                 leading: const Icon(Icons.visibility_off),
                 title: const Text(TransactionsLogLabels.hidden),

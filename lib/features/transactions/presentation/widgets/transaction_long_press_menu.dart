@@ -12,6 +12,9 @@ import '../../domain/entities/lookup_item.dart';
 import '../../domain/entities/transaction_ui_model.dart';
 import '../labels/transactions_log_labels.dart';
 import '../providers/transactions_log_providers.dart';
+import 'package:budget_assistant/core/theme/app_colors.dart';
+import 'package:budget_assistant/core/providers/transactions_trigger_provider.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 
 /// Контекстное меню транзакции (long-press на TransactionRow).
 Future<void> showTransactionLongPressMenu({
@@ -187,7 +190,18 @@ context.push('/receipts//preview');
                 },
               ),
 
-            const SizedBox(height: 16),
+            // 🗑️ Удалить транзакцию (владелец: отдельная кнопка, не в редакторе).
+        ListTile(
+          leading: const Icon(Icons.delete_outline,
+              color: AppColors.colorExpense),
+          title: const Text(TransactionsLogLabels.delete),
+          onTap: () {
+            Navigator.of(sheetContext).pop();
+            HapticFeedback.mediumImpact();
+            _confirmDelete(context, ref, messenger, transaction);
+          },
+        ),
+        const SizedBox(height: 16),
           ],
         ),
       );
@@ -261,4 +275,39 @@ Future<void> _showCategoryPicker(
       );
     },
   );
+}
+
+/// Удаление транзакции с подтверждением (пункт long-press меню).
+Future<void> _confirmDelete(
+  BuildContext context,
+  WidgetRef ref,
+  ScaffoldMessengerState messenger,
+  TransactionUiModel transaction,
+) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text(TransactionsLogLabels.deleteTitle),
+      content: const Text(TransactionsLogLabels.deleteSubtitle),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(false),
+          child: const Text(TransactionsLogLabels.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(ctx).pop(true),
+          child: const Text(TransactionsLogLabels.delete),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true) return;
+  final userId = ref.read(currentUserIdProvider);
+  final result = await ref
+      .read(deleteTransactionUseCaseProvider)
+      .call(id: transaction.id, userId: userId);
+  if (result.isSuccess) {
+    ref.read(transactionsTriggerProvider.notifier).bump();
+  }
+  _invalidateAndNotify(messenger, ref, result);
 }

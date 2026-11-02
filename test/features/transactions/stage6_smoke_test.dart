@@ -217,7 +217,7 @@ void main() {
         isNot('•••'),
       );
       expect(
-        formatter.formatAmount(15000000, 'RUB', BalanceVisibilityMode.partial),
+        formatter.formatAmount(15000000, 'RUB', BalanceVisibilityMode.hidden),
         '•••',
       );
       expect(
@@ -228,7 +228,7 @@ void main() {
 
     test('мерчант виден в partial, скрыт в hidden', () {
       expect(
-        formatter.formatMerchant('Перекрёсток', BalanceVisibilityMode.partial),
+        formatter.formatMerchant('Перекрёсток', BalanceVisibilityMode.hidden),
         'Перекрёсток',
       );
       expect(

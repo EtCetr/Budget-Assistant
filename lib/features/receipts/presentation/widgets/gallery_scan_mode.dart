@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -101,13 +100,7 @@ class GalleryScanMode extends ConsumerWidget {
                     )
                   : SizedBox(
                       height: 240,
-                      child: mode == BalanceVisibilityMode.partial
-                          ? ImageFiltered(
-                              imageFilter:
-                                  ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                              child: Image.file(File(imagePath!)),
-                            )
-                          : Image.file(File(imagePath!)),
+                      child: Image.file(File(imagePath!)),
                     ),
             ),
             const SizedBox(height: 12),

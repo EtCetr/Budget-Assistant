@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -62,16 +62,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                   Navigator.of(sheetContext).pop();
                 },
               ),
-              ListTile(
-                title: const Text('partial'),
-                onTap: () {
-                  ref
-                      .read(privacyModeProvider.notifier)
-                      .setMode(BalanceVisibilityMode.partial);
-                  Navigator.of(sheetContext).pop();
-                },
-              ),
-              ListTile(
+ListTile(
                 title: const Text('hidden'),
                 onTap: () {
                   ref

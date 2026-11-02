@@ -80,7 +80,22 @@ class YearlyAggregatesRepositoryImpl implements YearlyAggregatesRepository {
   }
 
   @override
-  Future<List<YearInReviewYearInfo>> availableYears({
+  @override
+Future<DateTime?> lastTransactionUpdate({
+required String userId,
+required String? spaceId,
+}) async {
+try {
+return await _dao.lastTransactionUpdate(userId, spaceId);
+} catch (e, st) {
+_logger.e('YearlyAggregatesRepo.lastTransactionUpdate failed',
+error: e, stackTrace: st);
+rethrow;
+}
+}
+
+@override
+Future<List<YearInReviewYearInfo>> availableYears({
     required String userId,
   }) async {
     try {

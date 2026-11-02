@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
@@ -75,16 +75,7 @@ class DashboardScreen extends ConsumerWidget {
                   Navigator.of(sheetContext).pop();
                 },
               ),
-              ListTile(
-                title: const Text(DashboardStrings.privacyPartial),
-                onTap: () {
-                  ref
-                      .read(privacyModeProvider.notifier)
-                      .setMode(BalanceVisibilityMode.partial);
-                  Navigator.of(sheetContext).pop();
-                },
-              ),
-              ListTile(
+ListTile(
                 title: const Text(DashboardStrings.privacyHidden),
                 onTap: () {
                   ref

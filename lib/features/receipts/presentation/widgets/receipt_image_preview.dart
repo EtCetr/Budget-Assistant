@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -53,13 +52,7 @@ class ReceiptImagePreview extends ConsumerWidget {
                 height: 280,
                 child: InteractiveViewer(
                   maxScale: 3.0,
-                  child: mode == BalanceVisibilityMode.partial
-                      ? ImageFiltered(
-                          imageFilter:
-                              ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: Image.file(File(path), fit: BoxFit.contain),
-                        )
-                      : Image.file(File(path), fit: BoxFit.contain),
+                  child: Image.file(File(path), fit: BoxFit.contain),
                 ),
               ),
       ),

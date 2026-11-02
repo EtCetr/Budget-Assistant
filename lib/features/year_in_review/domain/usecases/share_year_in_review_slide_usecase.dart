@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/rendering.dart' show RenderRepaintBoundary;
-import 'package:flutter/widgets.dart' show GlobalKey;
+import 'package:flutter/widgets.dart' show GlobalKey, WidgetsBinding;
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -50,7 +50,11 @@ class ShareYearInReviewSlideUseCase {
             await _secureFlag.disableTemporarily(const Duration(seconds: 5));
       }
       // 2. Генерация PNG (pixelRatio 3 — как в экспорте Этапа 12.8).
-      final image = await renderObject.toImage(pixelRatio: 3.0);
+      // Ждём конец кадра: тап по кнопке внутри слайда помечает слой
+// как «нужна перерисовка», без этого toImage падает ассертом в debug.
+renderObject.markNeedsPaint();
+    await WidgetsBinding.instance.endOfFrame;
+final image = await renderObject.toImage(pixelRatio: 3.0);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) throw StateError('Не удалось закодировать PNG');
       final dir = await getTemporaryDirectory();

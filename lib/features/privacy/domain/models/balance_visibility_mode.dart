@@ -1,6 +1,6 @@
-﻿/// Режимы приватности.
+/// Режимы приватности.
 ///
 /// visible — пользователь один, всё видно.
-/// partial — публичное место, суммы скрыты, метаданные видны.
 /// hidden — демонстрация экрана, скрываем всё чувствительное.
-enum BalanceVisibilityMode { visible, partial, hidden }
+/// (Промежуточный режим partial удалён решением владельца, Этап 19.)
+enum BalanceVisibilityMode { visible, hidden }

@@ -78,6 +78,7 @@ class RecalculateYearlyAggregatesUseCase {
 
 /// Сам расчёт. Открывает отдельное соединение с БД внутри isolate
 /// (прецедент Этапа 14: запись в БД из фонового isolate через FFI).
+/// Семейный скоуп (D19-13): операции семьи + мои личные.
 Future<String> _aggregateInIsolate(_YearAggArgs args) async {
   final db = AppDatabase.forBackground(
     NativeDatabase.createInBackground(File(args.path)),
@@ -87,11 +88,15 @@ Future<String> _aggregateInIsolate(_YearAggArgs args) async {
     final yearEnd = DateTime.utc(args.year + 1, 1, 1);
     final prevStart = DateTime.utc(args.year - 1, 1, 1);
     final isPersonal = args.spaceId == null;
-    final scopeSql =
-        isPersonal ? '(t.space_id IS NULL AND t.user_id = ?)' : '(t.space_id = ?)';
+    final scopeSql = isPersonal
+        ? '(t.space_id IS NULL AND t.user_id = ?)'
+        : '(t.space_id = ? OR (t.space_id IS NULL AND t.user_id = ?))';
     final scopeVars = isPersonal
         ? <Variable>[Variable.withString(args.userId)]
-        : <Variable>[Variable.withString(args.spaceId!)];
+        : <Variable>[
+            Variable.withString(args.spaceId!),
+            Variable.withString(args.userId),
+          ];
 
     // ── Транзакции за год и за прошлый год (для роста дохода) ──
     final txSql = '''
@@ -148,7 +153,10 @@ Future<String> _aggregateInIsolate(_YearAggArgs args) async {
     ).get();
 
     // ── Цели, категории, кэшбэк, счета, регулярки ──
-    final goalScope = isPersonal ? 'space_id IS NULL' : "space_id = '${args.spaceId}'";
+    final goalScope = isPersonal
+        ? 'space_id IS NULL'
+        : "(space_id = '${args.spaceId}' OR "
+            "(space_id IS NULL AND user_id = '${args.userId}'))";
     final goalRows = await db.customSelect(
       'SELECT status, completed_at, created_at FROM savings_goals '
       'WHERE user_id = ? AND $goalScope',
@@ -163,12 +171,15 @@ Future<String> _aggregateInIsolate(_YearAggArgs args) async {
     ).get();
     final accountScope = isPersonal
         ? 'user_id = ? AND space_id IS NULL'
-        : 'space_id = ?';
+        : '(space_id = ? OR (space_id IS NULL AND user_id = ?))';
     final accountRows = await db.customSelect(
       'SELECT id, account_type FROM accounts WHERE $accountScope',
       variables: isPersonal
           ? [Variable.withString(args.userId)]
-          : [Variable.withString(args.spaceId!)],
+          : [
+              Variable.withString(args.spaceId!),
+              Variable.withString(args.userId),
+            ],
     ).get();
     final recRows = await db.customSelect(
       "SELECT merchant_name FROM recurring_transactions "
@@ -224,7 +235,8 @@ Future<String> _aggregateInIsolate(_YearAggArgs args) async {
     void addExpense(int amt, DateTime date, String? categoryId) {
       expense += amt;
       monthly[date.month] = (monthly[date.month] ?? 0) + amt;
-      final dayKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final dayKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-'
+          '${date.day.toString().padLeft(2, '0')}';
       daily[dayKey] = (daily[dayKey] ?? 0) + amt;
       final key = categoryId ?? '__none__';
       byCategory[key] = (byCategory[key] ?? 0) + amt;
@@ -280,7 +292,8 @@ Future<String> _aggregateInIsolate(_YearAggArgs args) async {
       } else if (type == 'transfer' && inYear) {
         final acc = r.read<String>('account_id');
         final linked = r.readNullable<String>('linked_account_id');
-        if (linked != null && investIds.contains(linked) &&
+        if (linked != null &&
+            investIds.contains(linked) &&
             !investIds.contains(acc)) {
           netInvested += amt;
         } else if (investIds.contains(acc) &&
@@ -319,9 +332,8 @@ Future<String> _aggregateInIsolate(_YearAggArgs args) async {
     // Щедрый месяц/день.
     int? bestMonth;
     if (monthly.isNotEmpty) {
-      bestMonth = monthly.entries
-          .reduce((a, b) => b.value > a.value ? b : a)
-          .key;
+      bestMonth =
+          monthly.entries.reduce((a, b) => b.value > a.value ? b : a).key;
     }
     String? bestDay;
     var bestDayAmount = 0;
@@ -382,8 +394,8 @@ Future<String> _aggregateInIsolate(_YearAggArgs args) async {
         ..sort((a, b) => b.value.compareTo(a.value));
       bestCashbackCat = sorted.first.key;
       for (final e in sorted.take(3)) {
-        cashbackTop.add(
-            YearCategoryStat(name: e.key, amount: e.value, percent: 0));
+        cashbackTop
+            .add(YearCategoryStat(name: e.key, amount: e.value, percent: 0));
       }
     }
 
@@ -409,9 +421,8 @@ Future<String> _aggregateInIsolate(_YearAggArgs args) async {
     final myPercent =
         familyTotal > 0 ? (familyMy * 100 / familyTotal).round() : 0;
 
-    final savingsRate = income > 0
-        ? ((income - expense) * 100 / income).round()
-        : 0;
+    final savingsRate =
+        income > 0 ? ((income - expense) * 100 / income).round() : 0;
     final growth = prevIncome > 0
         ? ((income - prevIncome) * 100 / prevIncome).round()
         : null;
