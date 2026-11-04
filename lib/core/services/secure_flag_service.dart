@@ -29,4 +29,15 @@ class SecureFlagService {
       AppLogger.e('SecureFlag restore failed', e, st);
     }
   }
+
+  /// Спека 6.3.21.13.11: temporarilyDisableSecureFlag({Duration? duration}).
+  /// duration == null по спеке = «до явного restore»; нативный канал всегда
+  /// планирует автовозврат, поэтому используем страховочные 10 минут
+  /// (Kotlin не трогаем — решение D20), явный restore отменяет таймер.
+  Future<bool> temporarilyDisableSecureFlag({Duration? duration}) {
+    return disableTemporarily(duration ?? const Duration(minutes: 10));
+  }
+
+  /// Спека 6.3.21.13.11: вернуть предыдущее состояние флага.
+  Future<void> restoreSecureFlag() => restore();
 }

@@ -72,4 +72,16 @@ abstract final class LoyaltyCardsStrings {
   static const String typeManual = 'Только номер';
   static const String cameraDenied = 'Нет доступа к камере';
   static const String cameraUnavailable = 'Камера недоступна';
+  static const String displaySubtitle = 'Карта лояльности';
+  static const String displayHint = 'Покажите экран кассиру для сканирования';
+  static const String displayClose = 'Закрыть';
+  static const String displayRotate = 'Повернуть';
+  static const String displayEdit = 'Редактировать';
+  static const String displayNotFoundTitle = 'Карта не найдена';
+  static const String displayNotFoundSubtitle = 'Возможно, она была удалена';
+  static const String displayBack = 'Вернуться к списку';
+  static const String hiddenWarningTitle = 'Скрытый режим активен';
+  static const String hiddenWarningText =
+      'Для показа карты кассиру нужно переключиться в режим видимости. Переключить сейчас?';
+  static const String hiddenWarningSwitch = 'Переключить';
 }

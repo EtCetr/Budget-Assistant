@@ -46,6 +46,10 @@ dependencies:
   mobile_scanner: ^7.4.2
   image_picker: ^1.2.4
   qr_flutter: ^4.1.0
+  wakelock_plus: ^1.5.2
+  screen_brightness: ^2.1.11
+  barcode_widget: ^2.0.4
+  barcode: ^2.2.9
 dev_dependencies:
   flutter_test:
     sdk: flutter

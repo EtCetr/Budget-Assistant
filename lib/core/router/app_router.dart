@@ -62,7 +62,7 @@ import 'package:budget_assistant/features/year_in_review/presentation/screens/ye
 import 'package:budget_assistant/features/year_in_review/presentation/screens/year_in_review_select_screen.dart';
 import 'package:budget_assistant/features/loyalty_cards/presentation/screens/loyalty_cards_screen.dart';
 import 'package:budget_assistant/features/loyalty_cards/presentation/screens/add_loyalty_card_screen.dart';
-import 'package:budget_assistant/features/loyalty_cards/presentation/screens/loyalty_cards_stub_screens.dart';
+import 'package:budget_assistant/features/loyalty_cards/presentation/screens/loyalty_card_display_screen.dart';
 part 'app_router.g.dart';
 
 @riverpod
@@ -464,9 +464,7 @@ SplitReceiptScreen(receiptId: state.pathParameters['id']!),
         GoRoute(
           path: '/loyalty-cards/display/:id',
           name: 'loyalty-cards-display',
-          builder: (context, state) => LoyaltyCardDisplayStubScreen(
-            cardId: state.pathParameters['id']!,
-          ),
+          builder: (context, state) => LoyaltyCardDisplayScreen(cardId: state.pathParameters['id']!),
         ),
     ],
     redirect: (context, state) {
