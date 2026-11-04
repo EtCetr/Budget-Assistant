@@ -4542,6 +4542,18 @@ class $AppSettingsTable extends AppSettings
         ),
         defaultValue: const Constant(true),
       );
+  static const VerificationMeta _popularStoresJsonMeta = const VerificationMeta(
+    'popularStoresJson',
+  );
+  @override
+  late final GeneratedColumn<String> popularStoresJson =
+      GeneratedColumn<String>(
+        'popular_stores_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     createdAt,
@@ -4598,6 +4610,7 @@ class $AppSettingsTable extends AppSettings
     recurringDetectionDismissCount,
     autoDetectRecurring,
     enableFamilyHolidayAlerts,
+    popularStoresJson,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -5083,6 +5096,15 @@ class $AppSettingsTable extends AppSettings
         ),
       );
     }
+    if (data.containsKey('popular_stores_json')) {
+      context.handle(
+        _popularStoresJsonMeta,
+        popularStoresJson.isAcceptableOrUnknown(
+          data['popular_stores_json']!,
+          _popularStoresJsonMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -5308,6 +5330,10 @@ class $AppSettingsTable extends AppSettings
         DriftSqlType.bool,
         data['${effectivePrefix}enable_family_holiday_alerts'],
       )!,
+      popularStoresJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}popular_stores_json'],
+      ),
     );
   }
 
@@ -5372,6 +5398,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
   final int recurringDetectionDismissCount;
   final bool autoDetectRecurring;
   final bool enableFamilyHolidayAlerts;
+  final String? popularStoresJson;
   const AppSetting({
     required this.createdAt,
     required this.updatedAt,
@@ -5427,6 +5454,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     required this.recurringDetectionDismissCount,
     required this.autoDetectRecurring,
     required this.enableFamilyHolidayAlerts,
+    this.popularStoresJson,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -5527,6 +5555,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     map['enable_family_holiday_alerts'] = Variable<bool>(
       enableFamilyHolidayAlerts,
     );
+    if (!nullToAbsent || popularStoresJson != null) {
+      map['popular_stores_json'] = Variable<String>(popularStoresJson);
+    }
     return map;
   }
 
@@ -5586,6 +5617,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       recurringDetectionDismissCount: Value(recurringDetectionDismissCount),
       autoDetectRecurring: Value(autoDetectRecurring),
       enableFamilyHolidayAlerts: Value(enableFamilyHolidayAlerts),
+      popularStoresJson: popularStoresJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(popularStoresJson),
     );
   }
 
@@ -5721,6 +5755,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       enableFamilyHolidayAlerts: serializer.fromJson<bool>(
         json['enableFamilyHolidayAlerts'],
       ),
+      popularStoresJson: serializer.fromJson<String?>(
+        json['popularStoresJson'],
+      ),
     );
   }
   @override
@@ -5825,6 +5862,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       'enableFamilyHolidayAlerts': serializer.toJson<bool>(
         enableFamilyHolidayAlerts,
       ),
+      'popularStoresJson': serializer.toJson<String?>(popularStoresJson),
     };
   }
 
@@ -5883,6 +5921,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     int? recurringDetectionDismissCount,
     bool? autoDetectRecurring,
     bool? enableFamilyHolidayAlerts,
+    Value<String?> popularStoresJson = const Value.absent(),
   }) => AppSetting(
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -5963,6 +6002,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     autoDetectRecurring: autoDetectRecurring ?? this.autoDetectRecurring,
     enableFamilyHolidayAlerts:
         enableFamilyHolidayAlerts ?? this.enableFamilyHolidayAlerts,
+    popularStoresJson: popularStoresJson.present
+        ? popularStoresJson.value
+        : this.popularStoresJson,
   );
   AppSetting copyWithCompanion(AppSettingsCompanion data) {
     return AppSetting(
@@ -6123,6 +6165,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       enableFamilyHolidayAlerts: data.enableFamilyHolidayAlerts.present
           ? data.enableFamilyHolidayAlerts.value
           : this.enableFamilyHolidayAlerts,
+      popularStoresJson: data.popularStoresJson.present
+          ? data.popularStoresJson.value
+          : this.popularStoresJson,
     );
   }
 
@@ -6194,7 +6239,8 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
             'recurringDetectionDismissCount: $recurringDetectionDismissCount, ',
           )
           ..write('autoDetectRecurring: $autoDetectRecurring, ')
-          ..write('enableFamilyHolidayAlerts: $enableFamilyHolidayAlerts')
+          ..write('enableFamilyHolidayAlerts: $enableFamilyHolidayAlerts, ')
+          ..write('popularStoresJson: $popularStoresJson')
           ..write(')'))
         .toString();
   }
@@ -6255,6 +6301,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     recurringDetectionDismissCount,
     autoDetectRecurring,
     enableFamilyHolidayAlerts,
+    popularStoresJson,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -6322,7 +6369,8 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
           other.recurringDetectionDismissCount ==
               this.recurringDetectionDismissCount &&
           other.autoDetectRecurring == this.autoDetectRecurring &&
-          other.enableFamilyHolidayAlerts == this.enableFamilyHolidayAlerts);
+          other.enableFamilyHolidayAlerts == this.enableFamilyHolidayAlerts &&
+          other.popularStoresJson == this.popularStoresJson);
 }
 
 class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
@@ -6380,6 +6428,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   final Value<int> recurringDetectionDismissCount;
   final Value<bool> autoDetectRecurring;
   final Value<bool> enableFamilyHolidayAlerts;
+  final Value<String?> popularStoresJson;
   final Value<int> rowid;
   const AppSettingsCompanion({
     this.createdAt = const Value.absent(),
@@ -6436,6 +6485,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     this.recurringDetectionDismissCount = const Value.absent(),
     this.autoDetectRecurring = const Value.absent(),
     this.enableFamilyHolidayAlerts = const Value.absent(),
+    this.popularStoresJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   AppSettingsCompanion.insert({
@@ -6493,6 +6543,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     this.recurringDetectionDismissCount = const Value.absent(),
     this.autoDetectRecurring = const Value.absent(),
     this.enableFamilyHolidayAlerts = const Value.absent(),
+    this.popularStoresJson = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        userId = Value(userId);
@@ -6551,6 +6602,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     Expression<int>? recurringDetectionDismissCount,
     Expression<bool>? autoDetectRecurring,
     Expression<bool>? enableFamilyHolidayAlerts,
+    Expression<String>? popularStoresJson,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -6646,6 +6698,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
         'auto_detect_recurring': autoDetectRecurring,
       if (enableFamilyHolidayAlerts != null)
         'enable_family_holiday_alerts': enableFamilyHolidayAlerts,
+      if (popularStoresJson != null) 'popular_stores_json': popularStoresJson,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -6705,6 +6758,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     Value<int>? recurringDetectionDismissCount,
     Value<bool>? autoDetectRecurring,
     Value<bool>? enableFamilyHolidayAlerts,
+    Value<String?>? popularStoresJson,
     Value<int>? rowid,
   }) {
     return AppSettingsCompanion(
@@ -6794,6 +6848,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
       autoDetectRecurring: autoDetectRecurring ?? this.autoDetectRecurring,
       enableFamilyHolidayAlerts:
           enableFamilyHolidayAlerts ?? this.enableFamilyHolidayAlerts,
+      popularStoresJson: popularStoresJson ?? this.popularStoresJson,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -7027,6 +7082,9 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
         enableFamilyHolidayAlerts.value,
       );
     }
+    if (popularStoresJson.present) {
+      map['popular_stores_json'] = Variable<String>(popularStoresJson.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -7102,6 +7160,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
           )
           ..write('autoDetectRecurring: $autoDetectRecurring, ')
           ..write('enableFamilyHolidayAlerts: $enableFamilyHolidayAlerts, ')
+          ..write('popularStoresJson: $popularStoresJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -28582,6 +28641,2096 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
   }
 }
 
+class $LoyaltyCardsTable extends LoyaltyCards
+    with TableInfo<$LoyaltyCardsTable, LoyaltyCardDb> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LoyaltyCardsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _spaceIdMeta = const VerificationMeta(
+    'spaceId',
+  );
+  @override
+  late final GeneratedColumn<String> spaceId = GeneratedColumn<String>(
+    'space_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES spaces (id)',
+    ),
+  );
+  static const VerificationMeta _storeNameMeta = const VerificationMeta(
+    'storeName',
+  );
+  @override
+  late final GeneratedColumn<String> storeName = GeneratedColumn<String>(
+    'store_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cardNumberMeta = const VerificationMeta(
+    'cardNumber',
+  );
+  @override
+  late final GeneratedColumn<String> cardNumber = GeneratedColumn<String>(
+    'card_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _barcodeTypeMeta = const VerificationMeta(
+    'barcodeType',
+  );
+  @override
+  late final GeneratedColumn<String> barcodeType = GeneratedColumn<String>(
+    'barcode_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('manual'),
+  );
+  static const VerificationMeta _barcodeDataMeta = const VerificationMeta(
+    'barcodeData',
+  );
+  @override
+  late final GeneratedColumn<String> barcodeData = GeneratedColumn<String>(
+    'barcode_data',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _brandColorMeta = const VerificationMeta(
+    'brandColor',
+  );
+  @override
+  late final GeneratedColumn<String> brandColor = GeneratedColumn<String>(
+    'brand_color',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _iconAssetMeta = const VerificationMeta(
+    'iconAsset',
+  );
+  @override
+  late final GeneratedColumn<String> iconAsset = GeneratedColumn<String>(
+    'icon_asset',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('other'),
+  );
+  static const VerificationMeta _isFavoriteMeta = const VerificationMeta(
+    'isFavorite',
+  );
+  @override
+  late final GeneratedColumn<bool> isFavorite = GeneratedColumn<bool>(
+    'is_favorite',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_favorite" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isSharedMeta = const VerificationMeta(
+    'isShared',
+  );
+  @override
+  late final GeneratedColumn<bool> isShared = GeneratedColumn<bool>(
+    'is_shared',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_shared" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+    'sort_order',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _preferredOrientationMeta =
+      const VerificationMeta('preferredOrientation');
+  @override
+  late final GeneratedColumn<String> preferredOrientation =
+      GeneratedColumn<String>(
+        'preferred_orientation',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    spaceId,
+    storeName,
+    cardNumber,
+    barcodeType,
+    barcodeData,
+    brandColor,
+    iconAsset,
+    category,
+    isFavorite,
+    isShared,
+    sortOrder,
+    preferredOrientation,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'loyalty_cards';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LoyaltyCardDb> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('space_id')) {
+      context.handle(
+        _spaceIdMeta,
+        spaceId.isAcceptableOrUnknown(data['space_id']!, _spaceIdMeta),
+      );
+    }
+    if (data.containsKey('store_name')) {
+      context.handle(
+        _storeNameMeta,
+        storeName.isAcceptableOrUnknown(data['store_name']!, _storeNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_storeNameMeta);
+    }
+    if (data.containsKey('card_number')) {
+      context.handle(
+        _cardNumberMeta,
+        cardNumber.isAcceptableOrUnknown(data['card_number']!, _cardNumberMeta),
+      );
+    }
+    if (data.containsKey('barcode_type')) {
+      context.handle(
+        _barcodeTypeMeta,
+        barcodeType.isAcceptableOrUnknown(
+          data['barcode_type']!,
+          _barcodeTypeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('barcode_data')) {
+      context.handle(
+        _barcodeDataMeta,
+        barcodeData.isAcceptableOrUnknown(
+          data['barcode_data']!,
+          _barcodeDataMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_barcodeDataMeta);
+    }
+    if (data.containsKey('brand_color')) {
+      context.handle(
+        _brandColorMeta,
+        brandColor.isAcceptableOrUnknown(data['brand_color']!, _brandColorMeta),
+      );
+    }
+    if (data.containsKey('icon_asset')) {
+      context.handle(
+        _iconAssetMeta,
+        iconAsset.isAcceptableOrUnknown(data['icon_asset']!, _iconAssetMeta),
+      );
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    }
+    if (data.containsKey('is_favorite')) {
+      context.handle(
+        _isFavoriteMeta,
+        isFavorite.isAcceptableOrUnknown(data['is_favorite']!, _isFavoriteMeta),
+      );
+    }
+    if (data.containsKey('is_shared')) {
+      context.handle(
+        _isSharedMeta,
+        isShared.isAcceptableOrUnknown(data['is_shared']!, _isSharedMeta),
+      );
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
+      );
+    }
+    if (data.containsKey('preferred_orientation')) {
+      context.handle(
+        _preferredOrientationMeta,
+        preferredOrientation.isAcceptableOrUnknown(
+          data['preferred_orientation']!,
+          _preferredOrientationMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LoyaltyCardDb map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LoyaltyCardDb(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      spaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}space_id'],
+      ),
+      storeName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}store_name'],
+      )!,
+      cardNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}card_number'],
+      ),
+      barcodeType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}barcode_type'],
+      )!,
+      barcodeData: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}barcode_data'],
+      )!,
+      brandColor: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}brand_color'],
+      ),
+      iconAsset: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon_asset'],
+      ),
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      isFavorite: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_favorite'],
+      )!,
+      isShared: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_shared'],
+      )!,
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sort_order'],
+      ),
+      preferredOrientation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}preferred_orientation'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+    );
+  }
+
+  @override
+  $LoyaltyCardsTable createAlias(String alias) {
+    return $LoyaltyCardsTable(attachedDatabase, alias);
+  }
+}
+
+class LoyaltyCardDb extends DataClass implements Insertable<LoyaltyCardDb> {
+  final String id;
+  final String userId;
+
+  /// NULL = личная карта, UUID = семейная (Multi-group).
+  final String? spaceId;
+  final String storeName;
+
+  /// Номер карты (для типа manual); у сканированных обычно равен barcodeData.
+  final String? cardNumber;
+
+  /// 'ean13' | 'code128' | 'qr' | 'pdf417' | 'manual'.
+  final String barcodeType;
+  final String barcodeData;
+
+  /// Бренд-цвет (#RRGGBB), открытые метаданные.
+  final String? brandColor;
+
+  /// Эмодзи/ассет, открытые метаданные.
+  final String? iconAsset;
+
+  /// 'grocery' | 'pharmacy' | 'clothing' | 'fuel' | 'other'.
+  final String category;
+  final bool isFavorite;
+
+  /// Видимость семье (ТЗ 6.3.19): FALSE — карту видит только создатель.
+  final bool isShared;
+
+  /// [LOCAL] локальная сортировка (drag-and-drop), не синхронизируется.
+  final int? sortOrder;
+
+  /// [LOCAL] 'portrait' | 'landscape' (ТЗ 6.3.21.13.8; отклонение от ТОМ 2 —
+  /// будет зафиксировано в DECISIONS как D20).
+  final String? preferredOrientation;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String syncStatus;
+  const LoyaltyCardDb({
+    required this.id,
+    required this.userId,
+    this.spaceId,
+    required this.storeName,
+    this.cardNumber,
+    required this.barcodeType,
+    required this.barcodeData,
+    this.brandColor,
+    this.iconAsset,
+    required this.category,
+    required this.isFavorite,
+    required this.isShared,
+    this.sortOrder,
+    this.preferredOrientation,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.syncStatus,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || spaceId != null) {
+      map['space_id'] = Variable<String>(spaceId);
+    }
+    map['store_name'] = Variable<String>(storeName);
+    if (!nullToAbsent || cardNumber != null) {
+      map['card_number'] = Variable<String>(cardNumber);
+    }
+    map['barcode_type'] = Variable<String>(barcodeType);
+    map['barcode_data'] = Variable<String>(barcodeData);
+    if (!nullToAbsent || brandColor != null) {
+      map['brand_color'] = Variable<String>(brandColor);
+    }
+    if (!nullToAbsent || iconAsset != null) {
+      map['icon_asset'] = Variable<String>(iconAsset);
+    }
+    map['category'] = Variable<String>(category);
+    map['is_favorite'] = Variable<bool>(isFavorite);
+    map['is_shared'] = Variable<bool>(isShared);
+    if (!nullToAbsent || sortOrder != null) {
+      map['sort_order'] = Variable<int>(sortOrder);
+    }
+    if (!nullToAbsent || preferredOrientation != null) {
+      map['preferred_orientation'] = Variable<String>(preferredOrientation);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['sync_status'] = Variable<String>(syncStatus);
+    return map;
+  }
+
+  LoyaltyCardsCompanion toCompanion(bool nullToAbsent) {
+    return LoyaltyCardsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      spaceId: spaceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(spaceId),
+      storeName: Value(storeName),
+      cardNumber: cardNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cardNumber),
+      barcodeType: Value(barcodeType),
+      barcodeData: Value(barcodeData),
+      brandColor: brandColor == null && nullToAbsent
+          ? const Value.absent()
+          : Value(brandColor),
+      iconAsset: iconAsset == null && nullToAbsent
+          ? const Value.absent()
+          : Value(iconAsset),
+      category: Value(category),
+      isFavorite: Value(isFavorite),
+      isShared: Value(isShared),
+      sortOrder: sortOrder == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sortOrder),
+      preferredOrientation: preferredOrientation == null && nullToAbsent
+          ? const Value.absent()
+          : Value(preferredOrientation),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncStatus: Value(syncStatus),
+    );
+  }
+
+  factory LoyaltyCardDb.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LoyaltyCardDb(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      spaceId: serializer.fromJson<String?>(json['spaceId']),
+      storeName: serializer.fromJson<String>(json['storeName']),
+      cardNumber: serializer.fromJson<String?>(json['cardNumber']),
+      barcodeType: serializer.fromJson<String>(json['barcodeType']),
+      barcodeData: serializer.fromJson<String>(json['barcodeData']),
+      brandColor: serializer.fromJson<String?>(json['brandColor']),
+      iconAsset: serializer.fromJson<String?>(json['iconAsset']),
+      category: serializer.fromJson<String>(json['category']),
+      isFavorite: serializer.fromJson<bool>(json['isFavorite']),
+      isShared: serializer.fromJson<bool>(json['isShared']),
+      sortOrder: serializer.fromJson<int?>(json['sortOrder']),
+      preferredOrientation: serializer.fromJson<String?>(
+        json['preferredOrientation'],
+      ),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'spaceId': serializer.toJson<String?>(spaceId),
+      'storeName': serializer.toJson<String>(storeName),
+      'cardNumber': serializer.toJson<String?>(cardNumber),
+      'barcodeType': serializer.toJson<String>(barcodeType),
+      'barcodeData': serializer.toJson<String>(barcodeData),
+      'brandColor': serializer.toJson<String?>(brandColor),
+      'iconAsset': serializer.toJson<String?>(iconAsset),
+      'category': serializer.toJson<String>(category),
+      'isFavorite': serializer.toJson<bool>(isFavorite),
+      'isShared': serializer.toJson<bool>(isShared),
+      'sortOrder': serializer.toJson<int?>(sortOrder),
+      'preferredOrientation': serializer.toJson<String?>(preferredOrientation),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+    };
+  }
+
+  LoyaltyCardDb copyWith({
+    String? id,
+    String? userId,
+    Value<String?> spaceId = const Value.absent(),
+    String? storeName,
+    Value<String?> cardNumber = const Value.absent(),
+    String? barcodeType,
+    String? barcodeData,
+    Value<String?> brandColor = const Value.absent(),
+    Value<String?> iconAsset = const Value.absent(),
+    String? category,
+    bool? isFavorite,
+    bool? isShared,
+    Value<int?> sortOrder = const Value.absent(),
+    Value<String?> preferredOrientation = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? syncStatus,
+  }) => LoyaltyCardDb(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    spaceId: spaceId.present ? spaceId.value : this.spaceId,
+    storeName: storeName ?? this.storeName,
+    cardNumber: cardNumber.present ? cardNumber.value : this.cardNumber,
+    barcodeType: barcodeType ?? this.barcodeType,
+    barcodeData: barcodeData ?? this.barcodeData,
+    brandColor: brandColor.present ? brandColor.value : this.brandColor,
+    iconAsset: iconAsset.present ? iconAsset.value : this.iconAsset,
+    category: category ?? this.category,
+    isFavorite: isFavorite ?? this.isFavorite,
+    isShared: isShared ?? this.isShared,
+    sortOrder: sortOrder.present ? sortOrder.value : this.sortOrder,
+    preferredOrientation: preferredOrientation.present
+        ? preferredOrientation.value
+        : this.preferredOrientation,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+  );
+  LoyaltyCardDb copyWithCompanion(LoyaltyCardsCompanion data) {
+    return LoyaltyCardDb(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
+      storeName: data.storeName.present ? data.storeName.value : this.storeName,
+      cardNumber: data.cardNumber.present
+          ? data.cardNumber.value
+          : this.cardNumber,
+      barcodeType: data.barcodeType.present
+          ? data.barcodeType.value
+          : this.barcodeType,
+      barcodeData: data.barcodeData.present
+          ? data.barcodeData.value
+          : this.barcodeData,
+      brandColor: data.brandColor.present
+          ? data.brandColor.value
+          : this.brandColor,
+      iconAsset: data.iconAsset.present ? data.iconAsset.value : this.iconAsset,
+      category: data.category.present ? data.category.value : this.category,
+      isFavorite: data.isFavorite.present
+          ? data.isFavorite.value
+          : this.isFavorite,
+      isShared: data.isShared.present ? data.isShared.value : this.isShared,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      preferredOrientation: data.preferredOrientation.present
+          ? data.preferredOrientation.value
+          : this.preferredOrientation,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LoyaltyCardDb(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('storeName: $storeName, ')
+          ..write('cardNumber: $cardNumber, ')
+          ..write('barcodeType: $barcodeType, ')
+          ..write('barcodeData: $barcodeData, ')
+          ..write('brandColor: $brandColor, ')
+          ..write('iconAsset: $iconAsset, ')
+          ..write('category: $category, ')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('isShared: $isShared, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('preferredOrientation: $preferredOrientation, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    spaceId,
+    storeName,
+    cardNumber,
+    barcodeType,
+    barcodeData,
+    brandColor,
+    iconAsset,
+    category,
+    isFavorite,
+    isShared,
+    sortOrder,
+    preferredOrientation,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LoyaltyCardDb &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.spaceId == this.spaceId &&
+          other.storeName == this.storeName &&
+          other.cardNumber == this.cardNumber &&
+          other.barcodeType == this.barcodeType &&
+          other.barcodeData == this.barcodeData &&
+          other.brandColor == this.brandColor &&
+          other.iconAsset == this.iconAsset &&
+          other.category == this.category &&
+          other.isFavorite == this.isFavorite &&
+          other.isShared == this.isShared &&
+          other.sortOrder == this.sortOrder &&
+          other.preferredOrientation == this.preferredOrientation &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncStatus == this.syncStatus);
+}
+
+class LoyaltyCardsCompanion extends UpdateCompanion<LoyaltyCardDb> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String?> spaceId;
+  final Value<String> storeName;
+  final Value<String?> cardNumber;
+  final Value<String> barcodeType;
+  final Value<String> barcodeData;
+  final Value<String?> brandColor;
+  final Value<String?> iconAsset;
+  final Value<String> category;
+  final Value<bool> isFavorite;
+  final Value<bool> isShared;
+  final Value<int?> sortOrder;
+  final Value<String?> preferredOrientation;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<String> syncStatus;
+  final Value<int> rowid;
+  const LoyaltyCardsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.spaceId = const Value.absent(),
+    this.storeName = const Value.absent(),
+    this.cardNumber = const Value.absent(),
+    this.barcodeType = const Value.absent(),
+    this.barcodeData = const Value.absent(),
+    this.brandColor = const Value.absent(),
+    this.iconAsset = const Value.absent(),
+    this.category = const Value.absent(),
+    this.isFavorite = const Value.absent(),
+    this.isShared = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.preferredOrientation = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LoyaltyCardsCompanion.insert({
+    required String id,
+    required String userId,
+    this.spaceId = const Value.absent(),
+    required String storeName,
+    this.cardNumber = const Value.absent(),
+    this.barcodeType = const Value.absent(),
+    required String barcodeData,
+    this.brandColor = const Value.absent(),
+    this.iconAsset = const Value.absent(),
+    this.category = const Value.absent(),
+    this.isFavorite = const Value.absent(),
+    this.isShared = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.preferredOrientation = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       storeName = Value(storeName),
+       barcodeData = Value(barcodeData);
+  static Insertable<LoyaltyCardDb> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? spaceId,
+    Expression<String>? storeName,
+    Expression<String>? cardNumber,
+    Expression<String>? barcodeType,
+    Expression<String>? barcodeData,
+    Expression<String>? brandColor,
+    Expression<String>? iconAsset,
+    Expression<String>? category,
+    Expression<bool>? isFavorite,
+    Expression<bool>? isShared,
+    Expression<int>? sortOrder,
+    Expression<String>? preferredOrientation,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? syncStatus,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (spaceId != null) 'space_id': spaceId,
+      if (storeName != null) 'store_name': storeName,
+      if (cardNumber != null) 'card_number': cardNumber,
+      if (barcodeType != null) 'barcode_type': barcodeType,
+      if (barcodeData != null) 'barcode_data': barcodeData,
+      if (brandColor != null) 'brand_color': brandColor,
+      if (iconAsset != null) 'icon_asset': iconAsset,
+      if (category != null) 'category': category,
+      if (isFavorite != null) 'is_favorite': isFavorite,
+      if (isShared != null) 'is_shared': isShared,
+      if (sortOrder != null) 'sort_order': sortOrder,
+      if (preferredOrientation != null)
+        'preferred_orientation': preferredOrientation,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LoyaltyCardsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String?>? spaceId,
+    Value<String>? storeName,
+    Value<String?>? cardNumber,
+    Value<String>? barcodeType,
+    Value<String>? barcodeData,
+    Value<String?>? brandColor,
+    Value<String?>? iconAsset,
+    Value<String>? category,
+    Value<bool>? isFavorite,
+    Value<bool>? isShared,
+    Value<int?>? sortOrder,
+    Value<String?>? preferredOrientation,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<String>? syncStatus,
+    Value<int>? rowid,
+  }) {
+    return LoyaltyCardsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      spaceId: spaceId ?? this.spaceId,
+      storeName: storeName ?? this.storeName,
+      cardNumber: cardNumber ?? this.cardNumber,
+      barcodeType: barcodeType ?? this.barcodeType,
+      barcodeData: barcodeData ?? this.barcodeData,
+      brandColor: brandColor ?? this.brandColor,
+      iconAsset: iconAsset ?? this.iconAsset,
+      category: category ?? this.category,
+      isFavorite: isFavorite ?? this.isFavorite,
+      isShared: isShared ?? this.isShared,
+      sortOrder: sortOrder ?? this.sortOrder,
+      preferredOrientation: preferredOrientation ?? this.preferredOrientation,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (spaceId.present) {
+      map['space_id'] = Variable<String>(spaceId.value);
+    }
+    if (storeName.present) {
+      map['store_name'] = Variable<String>(storeName.value);
+    }
+    if (cardNumber.present) {
+      map['card_number'] = Variable<String>(cardNumber.value);
+    }
+    if (barcodeType.present) {
+      map['barcode_type'] = Variable<String>(barcodeType.value);
+    }
+    if (barcodeData.present) {
+      map['barcode_data'] = Variable<String>(barcodeData.value);
+    }
+    if (brandColor.present) {
+      map['brand_color'] = Variable<String>(brandColor.value);
+    }
+    if (iconAsset.present) {
+      map['icon_asset'] = Variable<String>(iconAsset.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (isFavorite.present) {
+      map['is_favorite'] = Variable<bool>(isFavorite.value);
+    }
+    if (isShared.present) {
+      map['is_shared'] = Variable<bool>(isShared.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
+    if (preferredOrientation.present) {
+      map['preferred_orientation'] = Variable<String>(
+        preferredOrientation.value,
+      );
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LoyaltyCardsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('storeName: $storeName, ')
+          ..write('cardNumber: $cardNumber, ')
+          ..write('barcodeType: $barcodeType, ')
+          ..write('barcodeData: $barcodeData, ')
+          ..write('brandColor: $brandColor, ')
+          ..write('iconAsset: $iconAsset, ')
+          ..write('category: $category, ')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('isShared: $isShared, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('preferredOrientation: $preferredOrientation, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LoyaltyCardDraftsTable extends LoyaltyCardDrafts
+    with TableInfo<$LoyaltyCardDraftsTable, LoyaltyCardDraftDb> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LoyaltyCardDraftsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _cardIdMeta = const VerificationMeta('cardId');
+  @override
+  late final GeneratedColumn<String> cardId = GeneratedColumn<String>(
+    'card_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _formDataJsonMeta = const VerificationMeta(
+    'formDataJson',
+  );
+  @override
+  late final GeneratedColumn<String> formDataJson = GeneratedColumn<String>(
+    'form_data_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    cardId,
+    formDataJson,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'loyalty_card_drafts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LoyaltyCardDraftDb> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('card_id')) {
+      context.handle(
+        _cardIdMeta,
+        cardId.isAcceptableOrUnknown(data['card_id']!, _cardIdMeta),
+      );
+    }
+    if (data.containsKey('form_data_json')) {
+      context.handle(
+        _formDataJsonMeta,
+        formDataJson.isAcceptableOrUnknown(
+          data['form_data_json']!,
+          _formDataJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_formDataJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  LoyaltyCardDraftDb map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LoyaltyCardDraftDb(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      cardId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}card_id'],
+      ),
+      formDataJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}form_data_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $LoyaltyCardDraftsTable createAlias(String alias) {
+    return $LoyaltyCardDraftsTable(attachedDatabase, alias);
+  }
+}
+
+class LoyaltyCardDraftDb extends DataClass
+    implements Insertable<LoyaltyCardDraftDb> {
+  final String id;
+  final String userId;
+
+  /// NULL = новая карта, UUID = редактирование.
+  final String? cardId;
+  final String formDataJson;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const LoyaltyCardDraftDb({
+    required this.id,
+    required this.userId,
+    this.cardId,
+    required this.formDataJson,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    if (!nullToAbsent || cardId != null) {
+      map['card_id'] = Variable<String>(cardId);
+    }
+    map['form_data_json'] = Variable<String>(formDataJson);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  LoyaltyCardDraftsCompanion toCompanion(bool nullToAbsent) {
+    return LoyaltyCardDraftsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      cardId: cardId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cardId),
+      formDataJson: Value(formDataJson),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory LoyaltyCardDraftDb.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LoyaltyCardDraftDb(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      cardId: serializer.fromJson<String?>(json['cardId']),
+      formDataJson: serializer.fromJson<String>(json['formDataJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'cardId': serializer.toJson<String?>(cardId),
+      'formDataJson': serializer.toJson<String>(formDataJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  LoyaltyCardDraftDb copyWith({
+    String? id,
+    String? userId,
+    Value<String?> cardId = const Value.absent(),
+    String? formDataJson,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => LoyaltyCardDraftDb(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    cardId: cardId.present ? cardId.value : this.cardId,
+    formDataJson: formDataJson ?? this.formDataJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  LoyaltyCardDraftDb copyWithCompanion(LoyaltyCardDraftsCompanion data) {
+    return LoyaltyCardDraftDb(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      cardId: data.cardId.present ? data.cardId.value : this.cardId,
+      formDataJson: data.formDataJson.present
+          ? data.formDataJson.value
+          : this.formDataJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LoyaltyCardDraftDb(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('cardId: $cardId, ')
+          ..write('formDataJson: $formDataJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, userId, cardId, formDataJson, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LoyaltyCardDraftDb &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.cardId == this.cardId &&
+          other.formDataJson == this.formDataJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class LoyaltyCardDraftsCompanion extends UpdateCompanion<LoyaltyCardDraftDb> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String?> cardId;
+  final Value<String> formDataJson;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const LoyaltyCardDraftsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.cardId = const Value.absent(),
+    this.formDataJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LoyaltyCardDraftsCompanion.insert({
+    required String id,
+    required String userId,
+    this.cardId = const Value.absent(),
+    required String formDataJson,
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       formDataJson = Value(formDataJson);
+  static Insertable<LoyaltyCardDraftDb> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? cardId,
+    Expression<String>? formDataJson,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (cardId != null) 'card_id': cardId,
+      if (formDataJson != null) 'form_data_json': formDataJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LoyaltyCardDraftsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String?>? cardId,
+    Value<String>? formDataJson,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return LoyaltyCardDraftsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      cardId: cardId ?? this.cardId,
+      formDataJson: formDataJson ?? this.formDataJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (cardId.present) {
+      map['card_id'] = Variable<String>(cardId.value);
+    }
+    if (formDataJson.present) {
+      map['form_data_json'] = Variable<String>(formDataJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LoyaltyCardDraftsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('cardId: $cardId, ')
+          ..write('formDataJson: $formDataJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ProductAnalyticsCacheTable extends ProductAnalyticsCache
+    with TableInfo<$ProductAnalyticsCacheTable, ProductAnalyticsCacheDb> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProductAnalyticsCacheTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _spaceIdMeta = const VerificationMeta(
+    'spaceId',
+  );
+  @override
+  late final GeneratedColumn<String> spaceId = GeneratedColumn<String>(
+    'space_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _dayMeta = const VerificationMeta('day');
+  @override
+  late final GeneratedColumn<String> day = GeneratedColumn<String>(
+    'day',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _productHashMeta = const VerificationMeta(
+    'productHash',
+  );
+  @override
+  late final GeneratedColumn<String> productHash = GeneratedColumn<String>(
+    'product_hash',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
+    'categoryId',
+  );
+  @override
+  late final GeneratedColumn<String> categoryId = GeneratedColumn<String>(
+    'category_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _purchasesMeta = const VerificationMeta(
+    'purchases',
+  );
+  @override
+  late final GeneratedColumn<int> purchases = GeneratedColumn<int>(
+    'purchases',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _totalSpendKopecksMeta = const VerificationMeta(
+    'totalSpendKopecks',
+  );
+  @override
+  late final GeneratedColumn<int> totalSpendKopecks = GeneratedColumn<int>(
+    'total_spend_kopecks',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _totalQuantityMeta = const VerificationMeta(
+    'totalQuantity',
+  );
+  @override
+  late final GeneratedColumn<double> totalQuantity = GeneratedColumn<double>(
+    'total_quantity',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _avgPriceKopecksMeta = const VerificationMeta(
+    'avgPriceKopecks',
+  );
+  @override
+  late final GeneratedColumn<int> avgPriceKopecks = GeneratedColumn<int>(
+    'avg_price_kopecks',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    spaceId,
+    day,
+    productHash,
+    categoryId,
+    purchases,
+    totalSpendKopecks,
+    totalQuantity,
+    avgPriceKopecks,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'product_analytics_cache';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ProductAnalyticsCacheDb> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('space_id')) {
+      context.handle(
+        _spaceIdMeta,
+        spaceId.isAcceptableOrUnknown(data['space_id']!, _spaceIdMeta),
+      );
+    }
+    if (data.containsKey('day')) {
+      context.handle(
+        _dayMeta,
+        day.isAcceptableOrUnknown(data['day']!, _dayMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dayMeta);
+    }
+    if (data.containsKey('product_hash')) {
+      context.handle(
+        _productHashMeta,
+        productHash.isAcceptableOrUnknown(
+          data['product_hash']!,
+          _productHashMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_productHashMeta);
+    }
+    if (data.containsKey('category_id')) {
+      context.handle(
+        _categoryIdMeta,
+        categoryId.isAcceptableOrUnknown(data['category_id']!, _categoryIdMeta),
+      );
+    }
+    if (data.containsKey('purchases')) {
+      context.handle(
+        _purchasesMeta,
+        purchases.isAcceptableOrUnknown(data['purchases']!, _purchasesMeta),
+      );
+    }
+    if (data.containsKey('total_spend_kopecks')) {
+      context.handle(
+        _totalSpendKopecksMeta,
+        totalSpendKopecks.isAcceptableOrUnknown(
+          data['total_spend_kopecks']!,
+          _totalSpendKopecksMeta,
+        ),
+      );
+    }
+    if (data.containsKey('total_quantity')) {
+      context.handle(
+        _totalQuantityMeta,
+        totalQuantity.isAcceptableOrUnknown(
+          data['total_quantity']!,
+          _totalQuantityMeta,
+        ),
+      );
+    }
+    if (data.containsKey('avg_price_kopecks')) {
+      context.handle(
+        _avgPriceKopecksMeta,
+        avgPriceKopecks.isAcceptableOrUnknown(
+          data['avg_price_kopecks']!,
+          _avgPriceKopecksMeta,
+        ),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ProductAnalyticsCacheDb map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ProductAnalyticsCacheDb(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      spaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}space_id'],
+      )!,
+      day: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}day'],
+      )!,
+      productHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}product_hash'],
+      )!,
+      categoryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_id'],
+      ),
+      purchases: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}purchases'],
+      )!,
+      totalSpendKopecks: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_spend_kopecks'],
+      )!,
+      totalQuantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}total_quantity'],
+      )!,
+      avgPriceKopecks: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}avg_price_kopecks'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ProductAnalyticsCacheTable createAlias(String alias) {
+    return $ProductAnalyticsCacheTable(attachedDatabase, alias);
+  }
+}
+
+class ProductAnalyticsCacheDb extends DataClass
+    implements Insertable<ProductAnalyticsCacheDb> {
+  final String id;
+  final String userId;
+
+  /// '' = личные чеки, UUID = семейное пространство.
+  final String spaceId;
+
+  /// 'YYYY-MM-DD' — локальный день покупки.
+  final String day;
+
+  /// SHA-256(lowercase(normalized_name)) — ключ группировки без расшифровки.
+  final String productHash;
+  final String? categoryId;
+  final int purchases;
+  final int totalSpendKopecks;
+
+  /// Количество (не деньги — допустим double, ТОМ 2 §17.3).
+  final double totalQuantity;
+  final int avgPriceKopecks;
+  final DateTime updatedAt;
+  const ProductAnalyticsCacheDb({
+    required this.id,
+    required this.userId,
+    required this.spaceId,
+    required this.day,
+    required this.productHash,
+    this.categoryId,
+    required this.purchases,
+    required this.totalSpendKopecks,
+    required this.totalQuantity,
+    required this.avgPriceKopecks,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['space_id'] = Variable<String>(spaceId);
+    map['day'] = Variable<String>(day);
+    map['product_hash'] = Variable<String>(productHash);
+    if (!nullToAbsent || categoryId != null) {
+      map['category_id'] = Variable<String>(categoryId);
+    }
+    map['purchases'] = Variable<int>(purchases);
+    map['total_spend_kopecks'] = Variable<int>(totalSpendKopecks);
+    map['total_quantity'] = Variable<double>(totalQuantity);
+    map['avg_price_kopecks'] = Variable<int>(avgPriceKopecks);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ProductAnalyticsCacheCompanion toCompanion(bool nullToAbsent) {
+    return ProductAnalyticsCacheCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      spaceId: Value(spaceId),
+      day: Value(day),
+      productHash: Value(productHash),
+      categoryId: categoryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryId),
+      purchases: Value(purchases),
+      totalSpendKopecks: Value(totalSpendKopecks),
+      totalQuantity: Value(totalQuantity),
+      avgPriceKopecks: Value(avgPriceKopecks),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ProductAnalyticsCacheDb.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ProductAnalyticsCacheDb(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      spaceId: serializer.fromJson<String>(json['spaceId']),
+      day: serializer.fromJson<String>(json['day']),
+      productHash: serializer.fromJson<String>(json['productHash']),
+      categoryId: serializer.fromJson<String?>(json['categoryId']),
+      purchases: serializer.fromJson<int>(json['purchases']),
+      totalSpendKopecks: serializer.fromJson<int>(json['totalSpendKopecks']),
+      totalQuantity: serializer.fromJson<double>(json['totalQuantity']),
+      avgPriceKopecks: serializer.fromJson<int>(json['avgPriceKopecks']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'spaceId': serializer.toJson<String>(spaceId),
+      'day': serializer.toJson<String>(day),
+      'productHash': serializer.toJson<String>(productHash),
+      'categoryId': serializer.toJson<String?>(categoryId),
+      'purchases': serializer.toJson<int>(purchases),
+      'totalSpendKopecks': serializer.toJson<int>(totalSpendKopecks),
+      'totalQuantity': serializer.toJson<double>(totalQuantity),
+      'avgPriceKopecks': serializer.toJson<int>(avgPriceKopecks),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ProductAnalyticsCacheDb copyWith({
+    String? id,
+    String? userId,
+    String? spaceId,
+    String? day,
+    String? productHash,
+    Value<String?> categoryId = const Value.absent(),
+    int? purchases,
+    int? totalSpendKopecks,
+    double? totalQuantity,
+    int? avgPriceKopecks,
+    DateTime? updatedAt,
+  }) => ProductAnalyticsCacheDb(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    spaceId: spaceId ?? this.spaceId,
+    day: day ?? this.day,
+    productHash: productHash ?? this.productHash,
+    categoryId: categoryId.present ? categoryId.value : this.categoryId,
+    purchases: purchases ?? this.purchases,
+    totalSpendKopecks: totalSpendKopecks ?? this.totalSpendKopecks,
+    totalQuantity: totalQuantity ?? this.totalQuantity,
+    avgPriceKopecks: avgPriceKopecks ?? this.avgPriceKopecks,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ProductAnalyticsCacheDb copyWithCompanion(
+    ProductAnalyticsCacheCompanion data,
+  ) {
+    return ProductAnalyticsCacheDb(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
+      day: data.day.present ? data.day.value : this.day,
+      productHash: data.productHash.present
+          ? data.productHash.value
+          : this.productHash,
+      categoryId: data.categoryId.present
+          ? data.categoryId.value
+          : this.categoryId,
+      purchases: data.purchases.present ? data.purchases.value : this.purchases,
+      totalSpendKopecks: data.totalSpendKopecks.present
+          ? data.totalSpendKopecks.value
+          : this.totalSpendKopecks,
+      totalQuantity: data.totalQuantity.present
+          ? data.totalQuantity.value
+          : this.totalQuantity,
+      avgPriceKopecks: data.avgPriceKopecks.present
+          ? data.avgPriceKopecks.value
+          : this.avgPriceKopecks,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProductAnalyticsCacheDb(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('day: $day, ')
+          ..write('productHash: $productHash, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('purchases: $purchases, ')
+          ..write('totalSpendKopecks: $totalSpendKopecks, ')
+          ..write('totalQuantity: $totalQuantity, ')
+          ..write('avgPriceKopecks: $avgPriceKopecks, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    spaceId,
+    day,
+    productHash,
+    categoryId,
+    purchases,
+    totalSpendKopecks,
+    totalQuantity,
+    avgPriceKopecks,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ProductAnalyticsCacheDb &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.spaceId == this.spaceId &&
+          other.day == this.day &&
+          other.productHash == this.productHash &&
+          other.categoryId == this.categoryId &&
+          other.purchases == this.purchases &&
+          other.totalSpendKopecks == this.totalSpendKopecks &&
+          other.totalQuantity == this.totalQuantity &&
+          other.avgPriceKopecks == this.avgPriceKopecks &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ProductAnalyticsCacheCompanion
+    extends UpdateCompanion<ProductAnalyticsCacheDb> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> spaceId;
+  final Value<String> day;
+  final Value<String> productHash;
+  final Value<String?> categoryId;
+  final Value<int> purchases;
+  final Value<int> totalSpendKopecks;
+  final Value<double> totalQuantity;
+  final Value<int> avgPriceKopecks;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ProductAnalyticsCacheCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.spaceId = const Value.absent(),
+    this.day = const Value.absent(),
+    this.productHash = const Value.absent(),
+    this.categoryId = const Value.absent(),
+    this.purchases = const Value.absent(),
+    this.totalSpendKopecks = const Value.absent(),
+    this.totalQuantity = const Value.absent(),
+    this.avgPriceKopecks = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ProductAnalyticsCacheCompanion.insert({
+    required String id,
+    required String userId,
+    this.spaceId = const Value.absent(),
+    required String day,
+    required String productHash,
+    this.categoryId = const Value.absent(),
+    this.purchases = const Value.absent(),
+    this.totalSpendKopecks = const Value.absent(),
+    this.totalQuantity = const Value.absent(),
+    this.avgPriceKopecks = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       day = Value(day),
+       productHash = Value(productHash);
+  static Insertable<ProductAnalyticsCacheDb> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? spaceId,
+    Expression<String>? day,
+    Expression<String>? productHash,
+    Expression<String>? categoryId,
+    Expression<int>? purchases,
+    Expression<int>? totalSpendKopecks,
+    Expression<double>? totalQuantity,
+    Expression<int>? avgPriceKopecks,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (spaceId != null) 'space_id': spaceId,
+      if (day != null) 'day': day,
+      if (productHash != null) 'product_hash': productHash,
+      if (categoryId != null) 'category_id': categoryId,
+      if (purchases != null) 'purchases': purchases,
+      if (totalSpendKopecks != null) 'total_spend_kopecks': totalSpendKopecks,
+      if (totalQuantity != null) 'total_quantity': totalQuantity,
+      if (avgPriceKopecks != null) 'avg_price_kopecks': avgPriceKopecks,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ProductAnalyticsCacheCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? spaceId,
+    Value<String>? day,
+    Value<String>? productHash,
+    Value<String?>? categoryId,
+    Value<int>? purchases,
+    Value<int>? totalSpendKopecks,
+    Value<double>? totalQuantity,
+    Value<int>? avgPriceKopecks,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ProductAnalyticsCacheCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      spaceId: spaceId ?? this.spaceId,
+      day: day ?? this.day,
+      productHash: productHash ?? this.productHash,
+      categoryId: categoryId ?? this.categoryId,
+      purchases: purchases ?? this.purchases,
+      totalSpendKopecks: totalSpendKopecks ?? this.totalSpendKopecks,
+      totalQuantity: totalQuantity ?? this.totalQuantity,
+      avgPriceKopecks: avgPriceKopecks ?? this.avgPriceKopecks,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (spaceId.present) {
+      map['space_id'] = Variable<String>(spaceId.value);
+    }
+    if (day.present) {
+      map['day'] = Variable<String>(day.value);
+    }
+    if (productHash.present) {
+      map['product_hash'] = Variable<String>(productHash.value);
+    }
+    if (categoryId.present) {
+      map['category_id'] = Variable<String>(categoryId.value);
+    }
+    if (purchases.present) {
+      map['purchases'] = Variable<int>(purchases.value);
+    }
+    if (totalSpendKopecks.present) {
+      map['total_spend_kopecks'] = Variable<int>(totalSpendKopecks.value);
+    }
+    if (totalQuantity.present) {
+      map['total_quantity'] = Variable<double>(totalQuantity.value);
+    }
+    if (avgPriceKopecks.present) {
+      map['avg_price_kopecks'] = Variable<int>(avgPriceKopecks.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProductAnalyticsCacheCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('day: $day, ')
+          ..write('productHash: $productHash, ')
+          ..write('categoryId: $categoryId, ')
+          ..write('purchases: $purchases, ')
+          ..write('totalSpendKopecks: $totalSpendKopecks, ')
+          ..write('totalQuantity: $totalQuantity, ')
+          ..write('avgPriceKopecks: $avgPriceKopecks, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -28628,6 +30777,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ReceiptItemsTable receiptItems = $ReceiptItemsTable(this);
   late final $ProductAliasesTable productAliases = $ProductAliasesTable(this);
   late final $ReceiptDraftsTable receiptDrafts = $ReceiptDraftsTable(this);
+  late final $LoyaltyCardsTable loyaltyCards = $LoyaltyCardsTable(this);
+  late final $LoyaltyCardDraftsTable loyaltyCardDrafts =
+      $LoyaltyCardDraftsTable(this);
+  late final $ProductAnalyticsCacheTable productAnalyticsCache =
+      $ProductAnalyticsCacheTable(this);
   late final Index idxInvitationsSpace = Index(
     'idx_invitations_space',
     'CREATE INDEX idx_invitations_space ON invitations (space_id)',
@@ -28699,6 +30853,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     receiptItems,
     productAliases,
     receiptDrafts,
+    loyaltyCards,
+    loyaltyCardDrafts,
+    productAnalyticsCache,
     idxInvitationsSpace,
     idxInvitationsSync,
     idxAuditSpace,
@@ -29813,6 +31970,70 @@ final class $$UsersTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$LoyaltyCardsTable, List<LoyaltyCardDb>>
+  _loyaltyCardsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.loyaltyCards,
+    aliasName: 'users__id__loyalty_cards__user_id',
+  );
+
+  $$LoyaltyCardsTableProcessedTableManager get loyaltyCardsRefs {
+    final manager = $$LoyaltyCardsTableTableManager(
+      $_db,
+      $_db.loyaltyCards,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_loyaltyCardsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$LoyaltyCardDraftsTable, List<LoyaltyCardDraftDb>>
+  _loyaltyCardDraftsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.loyaltyCardDrafts,
+        aliasName: 'users__id__loyalty_card_drafts__user_id',
+      );
+
+  $$LoyaltyCardDraftsTableProcessedTableManager get loyaltyCardDraftsRefs {
+    final manager = $$LoyaltyCardDraftsTableTableManager(
+      $_db,
+      $_db.loyaltyCardDrafts,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _loyaltyCardDraftsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $ProductAnalyticsCacheTable,
+    List<ProductAnalyticsCacheDb>
+  >
+  _productAnalyticsCacheRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.productAnalyticsCache,
+        aliasName: 'users__id__product_analytics_cache__user_id',
+      );
+
+  $$ProductAnalyticsCacheTableProcessedTableManager
+  get productAnalyticsCacheRefs {
+    final manager = $$ProductAnalyticsCacheTableTableManager(
+      $_db,
+      $_db.productAnalyticsCache,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _productAnalyticsCacheRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
@@ -30436,6 +32657,82 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
                 $removeJoinBuilderFromRootComposer,
           ),
     );
+    return f(composer);
+  }
+
+  Expression<bool> loyaltyCardsRefs(
+    Expression<bool> Function($$LoyaltyCardsTableFilterComposer f) f,
+  ) {
+    final $$LoyaltyCardsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.loyaltyCards,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LoyaltyCardsTableFilterComposer(
+            $db: $db,
+            $table: $db.loyaltyCards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> loyaltyCardDraftsRefs(
+    Expression<bool> Function($$LoyaltyCardDraftsTableFilterComposer f) f,
+  ) {
+    final $$LoyaltyCardDraftsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.loyaltyCardDrafts,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LoyaltyCardDraftsTableFilterComposer(
+            $db: $db,
+            $table: $db.loyaltyCardDrafts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> productAnalyticsCacheRefs(
+    Expression<bool> Function($$ProductAnalyticsCacheTableFilterComposer f) f,
+  ) {
+    final $$ProductAnalyticsCacheTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.productAnalyticsCache,
+          getReferencedColumn: (t) => t.userId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ProductAnalyticsCacheTableFilterComposer(
+                $db: $db,
+                $table: $db.productAnalyticsCache,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
@@ -31105,6 +33402,83 @@ class $$UsersTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> loyaltyCardsRefs<T extends Object>(
+    Expression<T> Function($$LoyaltyCardsTableAnnotationComposer a) f,
+  ) {
+    final $$LoyaltyCardsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.loyaltyCards,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LoyaltyCardsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.loyaltyCards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> loyaltyCardDraftsRefs<T extends Object>(
+    Expression<T> Function($$LoyaltyCardDraftsTableAnnotationComposer a) f,
+  ) {
+    final $$LoyaltyCardDraftsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.loyaltyCardDrafts,
+          getReferencedColumn: (t) => t.userId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$LoyaltyCardDraftsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.loyaltyCardDrafts,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<T> productAnalyticsCacheRefs<T extends Object>(
+    Expression<T> Function($$ProductAnalyticsCacheTableAnnotationComposer a) f,
+  ) {
+    final $$ProductAnalyticsCacheTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.productAnalyticsCache,
+          getReferencedColumn: (t) => t.userId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ProductAnalyticsCacheTableAnnotationComposer(
+                $db: $db,
+                $table: $db.productAnalyticsCache,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$UsersTableTableManager
@@ -31144,6 +33518,9 @@ class $$UsersTableTableManager
             bool receiptsRefs,
             bool productAliasesRefs,
             bool receiptDraftsRefs,
+            bool loyaltyCardsRefs,
+            bool loyaltyCardDraftsRefs,
+            bool productAnalyticsCacheRefs,
           })
         > {
   $$UsersTableTableManager(_$AppDatabase db, $UsersTable table)
@@ -31232,6 +33609,9 @@ class $$UsersTableTableManager
                 receiptsRefs = false,
                 productAliasesRefs = false,
                 receiptDraftsRefs = false,
+                loyaltyCardsRefs = false,
+                loyaltyCardDraftsRefs = false,
+                productAnalyticsCacheRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -31259,6 +33639,9 @@ class $$UsersTableTableManager
                     if (receiptsRefs) db.receipts,
                     if (productAliasesRefs) db.productAliases,
                     if (receiptDraftsRefs) db.receiptDrafts,
+                    if (loyaltyCardsRefs) db.loyaltyCards,
+                    if (loyaltyCardDraftsRefs) db.loyaltyCardDrafts,
+                    if (productAnalyticsCacheRefs) db.productAnalyticsCache,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -31726,6 +34109,69 @@ class $$UsersTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (loyaltyCardsRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          LoyaltyCardDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._loyaltyCardsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).loyaltyCardsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (loyaltyCardDraftsRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          LoyaltyCardDraftDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._loyaltyCardDraftsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).loyaltyCardDraftsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (productAnalyticsCacheRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          ProductAnalyticsCacheDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._productAnalyticsCacheRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).productAnalyticsCacheRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -31770,6 +34216,9 @@ typedef $$UsersTableProcessedTableManager =
         bool receiptsRefs,
         bool productAliasesRefs,
         bool receiptDraftsRefs,
+        bool loyaltyCardsRefs,
+        bool loyaltyCardDraftsRefs,
+        bool productAnalyticsCacheRefs,
       })
     >;
 typedef $$SpacesTableCreateCompanionBuilder =
@@ -32087,6 +34536,24 @@ final class $$SpacesTableReferences
     ).filter((f) => f.spaceId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_productAliasesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$LoyaltyCardsTable, List<LoyaltyCardDb>>
+  _loyaltyCardsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.loyaltyCards,
+    aliasName: 'spaces__id__loyalty_cards__space_id',
+  );
+
+  $$LoyaltyCardsTableProcessedTableManager get loyaltyCardsRefs {
+    final manager = $$LoyaltyCardsTableTableManager(
+      $_db,
+      $_db.loyaltyCards,
+    ).filter((f) => f.spaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_loyaltyCardsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -32534,6 +35001,31 @@ class $$SpacesTableFilterComposer
           }) => $$ProductAliasesTableFilterComposer(
             $db: $db,
             $table: $db.productAliases,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> loyaltyCardsRefs(
+    Expression<bool> Function($$LoyaltyCardsTableFilterComposer f) f,
+  ) {
+    final $$LoyaltyCardsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.loyaltyCards,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LoyaltyCardsTableFilterComposer(
+            $db: $db,
+            $table: $db.loyaltyCards,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -33054,6 +35546,31 @@ class $$SpacesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> loyaltyCardsRefs<T extends Object>(
+    Expression<T> Function($$LoyaltyCardsTableAnnotationComposer a) f,
+  ) {
+    final $$LoyaltyCardsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.loyaltyCards,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$LoyaltyCardsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.loyaltyCards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$SpacesTableTableManager
@@ -33085,6 +35602,7 @@ class $$SpacesTableTableManager
             bool forecastCacheRefs,
             bool receiptsRefs,
             bool productAliasesRefs,
+            bool loyaltyCardsRefs,
           })
         > {
   $$SpacesTableTableManager(_$AppDatabase db, $SpacesTable table)
@@ -33185,6 +35703,7 @@ class $$SpacesTableTableManager
                 forecastCacheRefs = false,
                 receiptsRefs = false,
                 productAliasesRefs = false,
+                loyaltyCardsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -33204,6 +35723,7 @@ class $$SpacesTableTableManager
                     if (forecastCacheRefs) db.forecastCache,
                     if (receiptsRefs) db.receipts,
                     if (productAliasesRefs) db.productAliases,
+                    if (loyaltyCardsRefs) db.loyaltyCards,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -33511,6 +36031,27 @@ class $$SpacesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (loyaltyCardsRefs)
+                        await $_getPrefetchedData<
+                          Space,
+                          $SpacesTable,
+                          LoyaltyCardDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SpacesTableReferences
+                              ._loyaltyCardsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SpacesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).loyaltyCardsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.spaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -33547,6 +36088,7 @@ typedef $$SpacesTableProcessedTableManager =
         bool forecastCacheRefs,
         bool receiptsRefs,
         bool productAliasesRefs,
+        bool loyaltyCardsRefs,
       })
     >;
 typedef $$YearlyAggregatesTableCreateCompanionBuilder =
@@ -34704,6 +37246,7 @@ typedef $$AppSettingsTableCreateCompanionBuilder =
       Value<int> recurringDetectionDismissCount,
       Value<bool> autoDetectRecurring,
       Value<bool> enableFamilyHolidayAlerts,
+      Value<String?> popularStoresJson,
       Value<int> rowid,
     });
 typedef $$AppSettingsTableUpdateCompanionBuilder =
@@ -34762,6 +37305,7 @@ typedef $$AppSettingsTableUpdateCompanionBuilder =
       Value<int> recurringDetectionDismissCount,
       Value<bool> autoDetectRecurring,
       Value<bool> enableFamilyHolidayAlerts,
+      Value<String?> popularStoresJson,
       Value<int> rowid,
     });
 
@@ -35058,6 +37602,11 @@ class $$AppSettingsTableFilterComposer
 
   ColumnFilters<bool> get enableFamilyHolidayAlerts => $composableBuilder(
     column: $table.enableFamilyHolidayAlerts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get popularStoresJson => $composableBuilder(
+    column: $table.popularStoresJson,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -35361,6 +37910,11 @@ class $$AppSettingsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get popularStoresJson => $composableBuilder(
+    column: $table.popularStoresJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$UsersTableOrderingComposer get userId {
     final $$UsersTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -35655,6 +38209,11 @@ class $$AppSettingsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get popularStoresJson => $composableBuilder(
+    column: $table.popularStoresJson,
+    builder: (column) => column,
+  );
+
   $$UsersTableAnnotationComposer get userId {
     final $$UsersTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -35766,6 +38325,7 @@ class $$AppSettingsTableTableManager
                     const Value.absent(),
                 Value<bool> autoDetectRecurring = const Value.absent(),
                 Value<bool> enableFamilyHolidayAlerts = const Value.absent(),
+                Value<String?> popularStoresJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AppSettingsCompanion(
                 createdAt: createdAt,
@@ -35824,6 +38384,7 @@ class $$AppSettingsTableTableManager
                 recurringDetectionDismissCount: recurringDetectionDismissCount,
                 autoDetectRecurring: autoDetectRecurring,
                 enableFamilyHolidayAlerts: enableFamilyHolidayAlerts,
+                popularStoresJson: popularStoresJson,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -35887,6 +38448,7 @@ class $$AppSettingsTableTableManager
                     const Value.absent(),
                 Value<bool> autoDetectRecurring = const Value.absent(),
                 Value<bool> enableFamilyHolidayAlerts = const Value.absent(),
+                Value<String?> popularStoresJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AppSettingsCompanion.insert(
                 createdAt: createdAt,
@@ -35945,6 +38507,7 @@ class $$AppSettingsTableTableManager
                 recurringDetectionDismissCount: recurringDetectionDismissCount,
                 autoDetectRecurring: autoDetectRecurring,
                 enableFamilyHolidayAlerts: enableFamilyHolidayAlerts,
+                popularStoresJson: popularStoresJson,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -54507,6 +57070,1468 @@ typedef $$ReceiptDraftsTableProcessedTableManager =
       ReceiptDraftDb,
       PrefetchHooks Function({bool userId})
     >;
+typedef $$LoyaltyCardsTableCreateCompanionBuilder =
+    LoyaltyCardsCompanion Function({
+      required String id,
+      required String userId,
+      Value<String?> spaceId,
+      required String storeName,
+      Value<String?> cardNumber,
+      Value<String> barcodeType,
+      required String barcodeData,
+      Value<String?> brandColor,
+      Value<String?> iconAsset,
+      Value<String> category,
+      Value<bool> isFavorite,
+      Value<bool> isShared,
+      Value<int?> sortOrder,
+      Value<String?> preferredOrientation,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
+      Value<int> rowid,
+    });
+typedef $$LoyaltyCardsTableUpdateCompanionBuilder =
+    LoyaltyCardsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String?> spaceId,
+      Value<String> storeName,
+      Value<String?> cardNumber,
+      Value<String> barcodeType,
+      Value<String> barcodeData,
+      Value<String?> brandColor,
+      Value<String?> iconAsset,
+      Value<String> category,
+      Value<bool> isFavorite,
+      Value<bool> isShared,
+      Value<int?> sortOrder,
+      Value<String?> preferredOrientation,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
+      Value<int> rowid,
+    });
+
+final class $$LoyaltyCardsTableReferences
+    extends BaseReferences<_$AppDatabase, $LoyaltyCardsTable, LoyaltyCardDb> {
+  $$LoyaltyCardsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('loyalty_cards__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SpacesTable _spaceIdTable(_$AppDatabase db) =>
+      db.spaces.createAlias('loyalty_cards__space_id__spaces__id');
+
+  $$SpacesTableProcessedTableManager? get spaceId {
+    final $_column = $_itemColumn<String>('space_id');
+    if ($_column == null) return null;
+    final manager = $$SpacesTableTableManager(
+      $_db,
+      $_db.spaces,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_spaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$LoyaltyCardsTableFilterComposer
+    extends Composer<_$AppDatabase, $LoyaltyCardsTable> {
+  $$LoyaltyCardsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get storeName => $composableBuilder(
+    column: $table.storeName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cardNumber => $composableBuilder(
+    column: $table.cardNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get barcodeType => $composableBuilder(
+    column: $table.barcodeType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get barcodeData => $composableBuilder(
+    column: $table.barcodeData,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get brandColor => $composableBuilder(
+    column: $table.brandColor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get iconAsset => $composableBuilder(
+    column: $table.iconAsset,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isFavorite => $composableBuilder(
+    column: $table.isFavorite,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isShared => $composableBuilder(
+    column: $table.isShared,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get preferredOrientation => $composableBuilder(
+    column: $table.preferredOrientation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableFilterComposer get spaceId {
+    final $$SpacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableFilterComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LoyaltyCardsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LoyaltyCardsTable> {
+  $$LoyaltyCardsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get storeName => $composableBuilder(
+    column: $table.storeName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cardNumber => $composableBuilder(
+    column: $table.cardNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get barcodeType => $composableBuilder(
+    column: $table.barcodeType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get barcodeData => $composableBuilder(
+    column: $table.barcodeData,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get brandColor => $composableBuilder(
+    column: $table.brandColor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get iconAsset => $composableBuilder(
+    column: $table.iconAsset,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isFavorite => $composableBuilder(
+    column: $table.isFavorite,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isShared => $composableBuilder(
+    column: $table.isShared,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get preferredOrientation => $composableBuilder(
+    column: $table.preferredOrientation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableOrderingComposer get spaceId {
+    final $$SpacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LoyaltyCardsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LoyaltyCardsTable> {
+  $$LoyaltyCardsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get storeName =>
+      $composableBuilder(column: $table.storeName, builder: (column) => column);
+
+  GeneratedColumn<String> get cardNumber => $composableBuilder(
+    column: $table.cardNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get barcodeType => $composableBuilder(
+    column: $table.barcodeType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get barcodeData => $composableBuilder(
+    column: $table.barcodeData,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get brandColor => $composableBuilder(
+    column: $table.brandColor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get iconAsset =>
+      $composableBuilder(column: $table.iconAsset, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<bool> get isFavorite => $composableBuilder(
+    column: $table.isFavorite,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isShared =>
+      $composableBuilder(column: $table.isShared, builder: (column) => column);
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<String> get preferredOrientation => $composableBuilder(
+    column: $table.preferredOrientation,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableAnnotationComposer get spaceId {
+    final $$SpacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LoyaltyCardsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LoyaltyCardsTable,
+          LoyaltyCardDb,
+          $$LoyaltyCardsTableFilterComposer,
+          $$LoyaltyCardsTableOrderingComposer,
+          $$LoyaltyCardsTableAnnotationComposer,
+          $$LoyaltyCardsTableCreateCompanionBuilder,
+          $$LoyaltyCardsTableUpdateCompanionBuilder,
+          (LoyaltyCardDb, $$LoyaltyCardsTableReferences),
+          LoyaltyCardDb,
+          PrefetchHooks Function({bool userId, bool spaceId})
+        > {
+  $$LoyaltyCardsTableTableManager(_$AppDatabase db, $LoyaltyCardsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LoyaltyCardsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LoyaltyCardsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LoyaltyCardsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String?> spaceId = const Value.absent(),
+                Value<String> storeName = const Value.absent(),
+                Value<String?> cardNumber = const Value.absent(),
+                Value<String> barcodeType = const Value.absent(),
+                Value<String> barcodeData = const Value.absent(),
+                Value<String?> brandColor = const Value.absent(),
+                Value<String?> iconAsset = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<bool> isFavorite = const Value.absent(),
+                Value<bool> isShared = const Value.absent(),
+                Value<int?> sortOrder = const Value.absent(),
+                Value<String?> preferredOrientation = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LoyaltyCardsCompanion(
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                storeName: storeName,
+                cardNumber: cardNumber,
+                barcodeType: barcodeType,
+                barcodeData: barcodeData,
+                brandColor: brandColor,
+                iconAsset: iconAsset,
+                category: category,
+                isFavorite: isFavorite,
+                isShared: isShared,
+                sortOrder: sortOrder,
+                preferredOrientation: preferredOrientation,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                Value<String?> spaceId = const Value.absent(),
+                required String storeName,
+                Value<String?> cardNumber = const Value.absent(),
+                Value<String> barcodeType = const Value.absent(),
+                required String barcodeData,
+                Value<String?> brandColor = const Value.absent(),
+                Value<String?> iconAsset = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<bool> isFavorite = const Value.absent(),
+                Value<bool> isShared = const Value.absent(),
+                Value<int?> sortOrder = const Value.absent(),
+                Value<String?> preferredOrientation = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LoyaltyCardsCompanion.insert(
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                storeName: storeName,
+                cardNumber: cardNumber,
+                barcodeType: barcodeType,
+                barcodeData: barcodeData,
+                brandColor: brandColor,
+                iconAsset: iconAsset,
+                category: category,
+                isFavorite: isFavorite,
+                isShared: isShared,
+                sortOrder: sortOrder,
+                preferredOrientation: preferredOrientation,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$LoyaltyCardsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false, spaceId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.userId,
+                                referencedTable: $$LoyaltyCardsTableReferences
+                                    ._userIdTable(db),
+                                referencedColumn: $$LoyaltyCardsTableReferences
+                                    ._userIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+                    if (spaceId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.spaceId,
+                                referencedTable: $$LoyaltyCardsTableReferences
+                                    ._spaceIdTable(db),
+                                referencedColumn: $$LoyaltyCardsTableReferences
+                                    ._spaceIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$LoyaltyCardsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LoyaltyCardsTable,
+      LoyaltyCardDb,
+      $$LoyaltyCardsTableFilterComposer,
+      $$LoyaltyCardsTableOrderingComposer,
+      $$LoyaltyCardsTableAnnotationComposer,
+      $$LoyaltyCardsTableCreateCompanionBuilder,
+      $$LoyaltyCardsTableUpdateCompanionBuilder,
+      (LoyaltyCardDb, $$LoyaltyCardsTableReferences),
+      LoyaltyCardDb,
+      PrefetchHooks Function({bool userId, bool spaceId})
+    >;
+typedef $$LoyaltyCardDraftsTableCreateCompanionBuilder =
+    LoyaltyCardDraftsCompanion Function({
+      required String id,
+      required String userId,
+      Value<String?> cardId,
+      required String formDataJson,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$LoyaltyCardDraftsTableUpdateCompanionBuilder =
+    LoyaltyCardDraftsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String?> cardId,
+      Value<String> formDataJson,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$LoyaltyCardDraftsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $LoyaltyCardDraftsTable,
+          LoyaltyCardDraftDb
+        > {
+  $$LoyaltyCardDraftsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('loyalty_card_drafts__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$LoyaltyCardDraftsTableFilterComposer
+    extends Composer<_$AppDatabase, $LoyaltyCardDraftsTable> {
+  $$LoyaltyCardDraftsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cardId => $composableBuilder(
+    column: $table.cardId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get formDataJson => $composableBuilder(
+    column: $table.formDataJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LoyaltyCardDraftsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LoyaltyCardDraftsTable> {
+  $$LoyaltyCardDraftsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cardId => $composableBuilder(
+    column: $table.cardId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get formDataJson => $composableBuilder(
+    column: $table.formDataJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LoyaltyCardDraftsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LoyaltyCardDraftsTable> {
+  $$LoyaltyCardDraftsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get cardId =>
+      $composableBuilder(column: $table.cardId, builder: (column) => column);
+
+  GeneratedColumn<String> get formDataJson => $composableBuilder(
+    column: $table.formDataJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$LoyaltyCardDraftsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LoyaltyCardDraftsTable,
+          LoyaltyCardDraftDb,
+          $$LoyaltyCardDraftsTableFilterComposer,
+          $$LoyaltyCardDraftsTableOrderingComposer,
+          $$LoyaltyCardDraftsTableAnnotationComposer,
+          $$LoyaltyCardDraftsTableCreateCompanionBuilder,
+          $$LoyaltyCardDraftsTableUpdateCompanionBuilder,
+          (LoyaltyCardDraftDb, $$LoyaltyCardDraftsTableReferences),
+          LoyaltyCardDraftDb,
+          PrefetchHooks Function({bool userId})
+        > {
+  $$LoyaltyCardDraftsTableTableManager(
+    _$AppDatabase db,
+    $LoyaltyCardDraftsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LoyaltyCardDraftsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LoyaltyCardDraftsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LoyaltyCardDraftsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String?> cardId = const Value.absent(),
+                Value<String> formDataJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LoyaltyCardDraftsCompanion(
+                id: id,
+                userId: userId,
+                cardId: cardId,
+                formDataJson: formDataJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                Value<String?> cardId = const Value.absent(),
+                required String formDataJson,
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LoyaltyCardDraftsCompanion.insert(
+                id: id,
+                userId: userId,
+                cardId: cardId,
+                formDataJson: formDataJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$LoyaltyCardDraftsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.userId,
+                                referencedTable:
+                                    $$LoyaltyCardDraftsTableReferences
+                                        ._userIdTable(db),
+                                referencedColumn:
+                                    $$LoyaltyCardDraftsTableReferences
+                                        ._userIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$LoyaltyCardDraftsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LoyaltyCardDraftsTable,
+      LoyaltyCardDraftDb,
+      $$LoyaltyCardDraftsTableFilterComposer,
+      $$LoyaltyCardDraftsTableOrderingComposer,
+      $$LoyaltyCardDraftsTableAnnotationComposer,
+      $$LoyaltyCardDraftsTableCreateCompanionBuilder,
+      $$LoyaltyCardDraftsTableUpdateCompanionBuilder,
+      (LoyaltyCardDraftDb, $$LoyaltyCardDraftsTableReferences),
+      LoyaltyCardDraftDb,
+      PrefetchHooks Function({bool userId})
+    >;
+typedef $$ProductAnalyticsCacheTableCreateCompanionBuilder =
+    ProductAnalyticsCacheCompanion Function({
+      required String id,
+      required String userId,
+      Value<String> spaceId,
+      required String day,
+      required String productHash,
+      Value<String?> categoryId,
+      Value<int> purchases,
+      Value<int> totalSpendKopecks,
+      Value<double> totalQuantity,
+      Value<int> avgPriceKopecks,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ProductAnalyticsCacheTableUpdateCompanionBuilder =
+    ProductAnalyticsCacheCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String> spaceId,
+      Value<String> day,
+      Value<String> productHash,
+      Value<String?> categoryId,
+      Value<int> purchases,
+      Value<int> totalSpendKopecks,
+      Value<double> totalQuantity,
+      Value<int> avgPriceKopecks,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ProductAnalyticsCacheTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $ProductAnalyticsCacheTable,
+          ProductAnalyticsCacheDb
+        > {
+  $$ProductAnalyticsCacheTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('product_analytics_cache__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ProductAnalyticsCacheTableFilterComposer
+    extends Composer<_$AppDatabase, $ProductAnalyticsCacheTable> {
+  $$ProductAnalyticsCacheTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get spaceId => $composableBuilder(
+    column: $table.spaceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get day => $composableBuilder(
+    column: $table.day,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get productHash => $composableBuilder(
+    column: $table.productHash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get purchases => $composableBuilder(
+    column: $table.purchases,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalSpendKopecks => $composableBuilder(
+    column: $table.totalSpendKopecks,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get totalQuantity => $composableBuilder(
+    column: $table.totalQuantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get avgPriceKopecks => $composableBuilder(
+    column: $table.avgPriceKopecks,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ProductAnalyticsCacheTableOrderingComposer
+    extends Composer<_$AppDatabase, $ProductAnalyticsCacheTable> {
+  $$ProductAnalyticsCacheTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get spaceId => $composableBuilder(
+    column: $table.spaceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get day => $composableBuilder(
+    column: $table.day,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get productHash => $composableBuilder(
+    column: $table.productHash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get purchases => $composableBuilder(
+    column: $table.purchases,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalSpendKopecks => $composableBuilder(
+    column: $table.totalSpendKopecks,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get totalQuantity => $composableBuilder(
+    column: $table.totalQuantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get avgPriceKopecks => $composableBuilder(
+    column: $table.avgPriceKopecks,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ProductAnalyticsCacheTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ProductAnalyticsCacheTable> {
+  $$ProductAnalyticsCacheTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get spaceId =>
+      $composableBuilder(column: $table.spaceId, builder: (column) => column);
+
+  GeneratedColumn<String> get day =>
+      $composableBuilder(column: $table.day, builder: (column) => column);
+
+  GeneratedColumn<String> get productHash => $composableBuilder(
+    column: $table.productHash,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get categoryId => $composableBuilder(
+    column: $table.categoryId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get purchases =>
+      $composableBuilder(column: $table.purchases, builder: (column) => column);
+
+  GeneratedColumn<int> get totalSpendKopecks => $composableBuilder(
+    column: $table.totalSpendKopecks,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get totalQuantity => $composableBuilder(
+    column: $table.totalQuantity,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get avgPriceKopecks => $composableBuilder(
+    column: $table.avgPriceKopecks,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ProductAnalyticsCacheTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ProductAnalyticsCacheTable,
+          ProductAnalyticsCacheDb,
+          $$ProductAnalyticsCacheTableFilterComposer,
+          $$ProductAnalyticsCacheTableOrderingComposer,
+          $$ProductAnalyticsCacheTableAnnotationComposer,
+          $$ProductAnalyticsCacheTableCreateCompanionBuilder,
+          $$ProductAnalyticsCacheTableUpdateCompanionBuilder,
+          (ProductAnalyticsCacheDb, $$ProductAnalyticsCacheTableReferences),
+          ProductAnalyticsCacheDb,
+          PrefetchHooks Function({bool userId})
+        > {
+  $$ProductAnalyticsCacheTableTableManager(
+    _$AppDatabase db,
+    $ProductAnalyticsCacheTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProductAnalyticsCacheTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$ProductAnalyticsCacheTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ProductAnalyticsCacheTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> spaceId = const Value.absent(),
+                Value<String> day = const Value.absent(),
+                Value<String> productHash = const Value.absent(),
+                Value<String?> categoryId = const Value.absent(),
+                Value<int> purchases = const Value.absent(),
+                Value<int> totalSpendKopecks = const Value.absent(),
+                Value<double> totalQuantity = const Value.absent(),
+                Value<int> avgPriceKopecks = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ProductAnalyticsCacheCompanion(
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                day: day,
+                productHash: productHash,
+                categoryId: categoryId,
+                purchases: purchases,
+                totalSpendKopecks: totalSpendKopecks,
+                totalQuantity: totalQuantity,
+                avgPriceKopecks: avgPriceKopecks,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                Value<String> spaceId = const Value.absent(),
+                required String day,
+                required String productHash,
+                Value<String?> categoryId = const Value.absent(),
+                Value<int> purchases = const Value.absent(),
+                Value<int> totalSpendKopecks = const Value.absent(),
+                Value<double> totalQuantity = const Value.absent(),
+                Value<int> avgPriceKopecks = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ProductAnalyticsCacheCompanion.insert(
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                day: day,
+                productHash: productHash,
+                categoryId: categoryId,
+                purchases: purchases,
+                totalSpendKopecks: totalSpendKopecks,
+                totalQuantity: totalQuantity,
+                avgPriceKopecks: avgPriceKopecks,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ProductAnalyticsCacheTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.userId,
+                                referencedTable:
+                                    $$ProductAnalyticsCacheTableReferences
+                                        ._userIdTable(db),
+                                referencedColumn:
+                                    $$ProductAnalyticsCacheTableReferences
+                                        ._userIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ProductAnalyticsCacheTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ProductAnalyticsCacheTable,
+      ProductAnalyticsCacheDb,
+      $$ProductAnalyticsCacheTableFilterComposer,
+      $$ProductAnalyticsCacheTableOrderingComposer,
+      $$ProductAnalyticsCacheTableAnnotationComposer,
+      $$ProductAnalyticsCacheTableCreateCompanionBuilder,
+      $$ProductAnalyticsCacheTableUpdateCompanionBuilder,
+      (ProductAnalyticsCacheDb, $$ProductAnalyticsCacheTableReferences),
+      ProductAnalyticsCacheDb,
+      PrefetchHooks Function({bool userId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -54583,4 +58608,10 @@ class $AppDatabaseManager {
       $$ProductAliasesTableTableManager(_db, _db.productAliases);
   $$ReceiptDraftsTableTableManager get receiptDrafts =>
       $$ReceiptDraftsTableTableManager(_db, _db.receiptDrafts);
+  $$LoyaltyCardsTableTableManager get loyaltyCards =>
+      $$LoyaltyCardsTableTableManager(_db, _db.loyaltyCards);
+  $$LoyaltyCardDraftsTableTableManager get loyaltyCardDrafts =>
+      $$LoyaltyCardDraftsTableTableManager(_db, _db.loyaltyCardDrafts);
+  $$ProductAnalyticsCacheTableTableManager get productAnalyticsCache =>
+      $$ProductAnalyticsCacheTableTableManager(_db, _db.productAnalyticsCache);
 }

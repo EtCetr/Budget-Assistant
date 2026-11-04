@@ -156,6 +156,9 @@ class AppSettings extends Table with SyncableTable {
   BoolColumn get enableFamilyHolidayAlerts => boolean()
       .named('enable_family_holiday_alerts')
       .withDefault(const Constant(true))();
-  @override
+    // Этап 20: популярные магазины — локальный JSON [LOCAL], без синка (ТЗ 6.3.20.13.5).
+  TextColumn get popularStoresJson =>
+      text().named('popular_stores_json').nullable()();
+@override
   Set<Column> get primaryKey => {id};
 }

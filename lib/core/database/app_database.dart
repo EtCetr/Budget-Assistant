@@ -30,6 +30,9 @@ import 'package:budget_assistant/features/import/data/seeds/default_parser_confi
 import 'tables/invitations.dart';
 import 'tables/admin_audit_log.dart';
 import 'tables/yearly_aggregates.dart';
+import 'tables/loyalty_cards.dart';
+import 'tables/loyalty_card_drafts.dart';
+import 'tables/product_analytics_cache.dart';
 part 'app_database.g.dart';
 
 // Этап 5: Счета, Ипотеки, Категории
@@ -588,6 +591,9 @@ Receipts,
 ReceiptItems,
 ProductAliases,
 ReceiptDrafts,
+LoyaltyCards,
+LoyaltyCardDrafts,
+ProductAnalyticsCache,
 ],
   daos: [
     UsersDao,
@@ -610,7 +616,7 @@ class AppDatabase extends _$AppDatabase {
   /// v13: Этап 14 — reminders, holidays, recurring_transactions,
   /// forecast_cache, reminder_drafts + 5 колонок app_settings + сиды РФ.
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   Future<void> _createSavingsIndexes() async {
     await customStatement('''
@@ -734,6 +740,25 @@ CREATE INDEX IF NOT EXISTS idx_receipt_drafts_user
 ON receipt_drafts(user_id, updated_at)
 ''');
 }
+Future<void> _createLoyaltyCardsIndexes() async {
+    // ТОМ 2 §22: фильтрация карт, синхронизация, локальные черновики.
+    await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_loyalty_cards_user ON loyalty_cards(user_id, space_id, category, is_favorite, sync_status)');
+    await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_loyalty_cards_sync_status ON loyalty_cards(sync_status)');
+    await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_loyalty_card_drafts_user ON loyalty_card_drafts(user_id, updated_at)');
+  }
+
+  Future<void> _createProductAnalyticsIndexes() async {
+    // ТЗ 6.3.24.12.2: отчёты за период и по товару.
+    await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_product_analytics_scope ON product_analytics_cache(user_id, space_id, day)');
+    await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_product_analytics_product ON product_analytics_cache(product_hash)');
+    await customStatement(
+        'CREATE UNIQUE INDEX IF NOT EXISTS idx_product_analytics_unique ON product_analytics_cache(user_id, space_id, day, product_hash)');
+  }
 Future<void> _createAllIndexes() async {
     await customStatement('''
 CREATE INDEX IF NOT EXISTS idx_memberships_user
@@ -867,6 +892,8 @@ ON cashback_matrix(sync_status)
     await _createRemindersIndexes();
     await _createImportIndexes();
 await _createReceiptsIndexes();
+    await _createLoyaltyCardsIndexes();
+    await _createProductAnalyticsIndexes();
 }
 
   @override
@@ -1046,6 +1073,15 @@ await _createReceiptsIndexes();
               ON yearly_aggregates(sync_status)
             ''');
           }
+        if (from < 20) {
+          // Этап 20: скидочные карты, черновики, кэш аналитики товаров.
+          await m.createTable(loyaltyCards);
+          await m.createTable(loyaltyCardDrafts);
+          await m.createTable(productAnalyticsCache);
+          await m.addColumn(appSettings, appSettings.popularStoresJson);
+          await _createLoyaltyCardsIndexes();
+          await _createProductAnalyticsIndexes();
+        }
         },
         beforeOpen: (details) async {
           AppLogger.i(

@@ -65,6 +65,8 @@ abstract class AppSettingsModel with _$AppSettingsModel {
     @Default(false) bool notificationInfoDismissed,
     @Default(false) bool digestInfoDismissed,
     @Default(false) bool importInfoDismissed,
+    // Этап 20: популярные магазины [LOCAL].
+    String? popularStoresJson,
     required DateTime createdAt,
     required DateTime updatedAt,
     @Default('pending') String syncStatus,

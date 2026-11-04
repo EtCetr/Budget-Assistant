@@ -137,6 +137,26 @@ class PrivacyFormatter {
     return mode != BalanceVisibilityMode.hidden;
   }
 
+  /// Название товара (ТЗ 6.3.24.12.11): в hidden — точки.
+  String formatProductName(String? productName, BalanceVisibilityMode mode) {
+    if (mode == BalanceVisibilityMode.hidden) {
+      return '•••';
+    }
+    return productName ?? '';
+  }
+
+  /// Графики цен (ТЗ 6.3.24.12.11): в hidden — скрываем.
+  bool shouldShowPriceChart(BalanceVisibilityMode mode) {
+    return mode != BalanceVisibilityMode.hidden;
+  }
+
+  /// Процент изменения цены (ТЗ 6.3.24.12.11): в hidden — пустая строка.
+  String formatPriceTrendPercent(String? percent, BalanceVisibilityMode mode) {
+    if (mode == BalanceVisibilityMode.hidden) {
+      return '';
+    }
+    return percent ?? '';
+  }
   bool shouldShowBrandColors(BalanceVisibilityMode mode) {
     return mode != BalanceVisibilityMode.hidden;
   }

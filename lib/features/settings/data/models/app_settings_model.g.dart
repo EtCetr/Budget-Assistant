@@ -199,6 +199,10 @@ _AppSettingsModel _$AppSettingsModelFromJson(
       'importInfoDismissed',
       (v) => v as bool? ?? false,
     ),
+    popularStoresJson: $checkedConvert(
+      'popularStoresJson',
+      (v) => v as String?,
+    ),
     createdAt: $checkedConvert('createdAt', (v) => DateTime.parse(v as String)),
     updatedAt: $checkedConvert('updatedAt', (v) => DateTime.parse(v as String)),
     syncStatus: $checkedConvert('syncStatus', (v) => v as String? ?? 'pending'),
@@ -260,6 +264,7 @@ Map<String, dynamic> _$AppSettingsModelToJson(
   'notificationInfoDismissed': instance.notificationInfoDismissed,
   'digestInfoDismissed': instance.digestInfoDismissed,
   'importInfoDismissed': instance.importInfoDismissed,
+  'popularStoresJson': instance.popularStoresJson,
   'createdAt': instance.createdAt.toIso8601String(),
   'updatedAt': instance.updatedAt.toIso8601String(),
   'syncStatus': instance.syncStatus,
