@@ -13,6 +13,8 @@ abstract final class ProductAnalyticsStrings {
   static const String summaryUnique = 'Уникальных товаров:';
   static const String summaryAvgCheck = 'Средний чек:';
   static const String summaryPositions = 'позиции';
+  /// D20: отчёты агрегируются в рублях (мульти-валюта — после синка).
+  static const String analyticsCurrency = 'RUB';
   static const String trendRising = 'цена растёт';
   static const String trendStable = 'цена стабильна';
   static const String trendFalling = 'цена падает';
