@@ -54,7 +54,6 @@ class _ProductAnalyticsScreenState
       final hash = widget.initialProductHash;
       if (hash != null && hash.isNotEmpty) {
         // Deep-link из чеков / слайда итогов года.
-        // TODO(20.7): передать categoryId из источника перехода.
         showModalBottomSheet<void>(
           context: context,
           isScrollControlled: true,
@@ -62,7 +61,7 @@ class _ProductAnalyticsScreenState
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          builder: (ctx) => ProductDetailsSheet(productHash: hash, categoryId: null),
+          builder: (ctx) => ProductDetailsSheet(productHash: hash),
         );
       }
     });

@@ -108,7 +108,6 @@ class _TopProductsReportState extends ConsumerState<TopProductsReport> {
           ProductDetailsSheet.show(
             context,
             productHash: p.productHash,
-            categoryId: p.categoryId,
           );
         },
         child: Container(

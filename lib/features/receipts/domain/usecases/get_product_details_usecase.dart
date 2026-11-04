@@ -28,12 +28,16 @@ class GetProductDetailsUseCase {
     required String userId,
     required String productHash,
     required Map<String, String> namesByHash,
-    String? categoryId,
   }) async {
     try {
       final receipts = await _sourceDao.receiptsByUser(userId);
       final byId = {for (final r in receipts) r.id: r};
       final items = await _sourceDao.itemsForReceipts(byId.keys.toList());
+      final aliases = await _sourceDao.aliasesByUser(userId);
+      final aliasCategory = <String, String?>{
+        for (final a in aliases)
+          ProductHashUtil.hash(a.normalizedName): a.categoryId,
+      };
       final dayAgg = <String, (int, double)>{};
       final storeAgg = <String, _Store>{};
       final countedReceipts = <String>{};
@@ -101,7 +105,7 @@ class GetProductDetailsUseCase {
         ProductDetails(
           productHash: productHash,
           name: namesByHash[productHash] ?? productHash.substring(0, 8),
-          categoryId: categoryId,
+          categoryId: aliasCategory[productHash],
           purchases: purchases,
           totalSpendKopecks: totalSpend,
           points: points,

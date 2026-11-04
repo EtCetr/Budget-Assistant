@@ -83,7 +83,6 @@ class PriceDynamicsReport extends ConsumerWidget {
           ProductDetailsSheet.show(
             context,
             productHash: e.productHash,
-            categoryId: e.categoryId,
           );
         },
         child: Container(

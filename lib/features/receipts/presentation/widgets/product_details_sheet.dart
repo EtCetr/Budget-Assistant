@@ -14,16 +14,13 @@ class ProductDetailsSheet extends ConsumerWidget {
   const ProductDetailsSheet({
     super.key,
     required this.productHash,
-    required this.categoryId,
   });
 
   final String productHash;
-  final String? categoryId;
 
   static Future<void> show(
     BuildContext context, {
     required String productHash,
-    String? categoryId,
   }) {
     return showModalBottomSheet<void>(
       context: context,
@@ -34,7 +31,6 @@ class ProductDetailsSheet extends ConsumerWidget {
       ),
       builder: (ctx) => ProductDetailsSheet(
         productHash: productHash,
-        categoryId: categoryId,
       ),
     );
   }

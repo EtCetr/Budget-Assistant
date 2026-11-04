@@ -141,7 +141,17 @@ _card('Аккаунт', [
             ),
           ]),
           const SizedBox(height: 16),
-          _card('Скидочные карты', [
+          _card('Аналитика товаров', [
+          TextButton.icon(
+            onPressed: () => context.push('/product-analytics'),
+            icon: const Icon(Icons.insights_outlined,
+                color: AppColors.colorIncome),
+            label: const Text('Отчёты по покупкам из чеков',
+                style: TextStyle(color: AppColors.textPrimary)),
+          ),
+        ]),
+        const SizedBox(height: 16),
+        _card('Скидочные карты', [
           TextButton.icon(
             onPressed: () => context.push('/loyalty-cards'),
             icon: const Icon(Icons.card_membership_outlined,

@@ -294,3 +294,38 @@ duplicate_receipt / duplicate_detected / transfer_detected / hold_confirmed вш
 | D19-17: Триггер deficitForecastWarning читает month_year/forecasted_amount из forecast_cache | Ранний SQL ссылался на несуществующие колонки date/total |
 | D19-18: Снимок слайда для шеринга: markNeedsPaint + await endOfFrame перед toImage | Фикс ассерта !debugNeedsPaint при тапе по кнопке внутри слайда |
 | D19-19: Свежесть кэша годовых итогов: пересчёт, если lastCalculatedAt старше MAX(transactions.updated_at) в скоупе | Фикс «нет данных» после импорта/правок |
+## Обновления решений (Этап 20 — Product Analytics + Loyalty Cards, 2026-11-05)
+| Решение | Обоснование |
+| --- | --- |
+| D20-1: privacy-матрицы карт и аналитики — только visible/hidden | partial удалён решением владельца (D19-14); спеки 6.3.19–6.3.24 адаптированы: hidden маскирует имена/суммы/проценты и скрывает графики |
+| D20-2: UseCases фильтров/поиска лояльности объединены в WatchLoyaltyCardsUseCase | все фильтры уходят одним SQL WHERE (DECISIONS: фильтры только в SQL); прецедент savings_goals watchActive |
+| D20-3: сканер штрих-кодов — mobile_scanner, а не google_mlkit_barcode_scanning | пакет уже в проекте (Этап 16), покрывает ean13/code128/qr/pdf417; баннер модели ML Kit не нужен (bundled, прецедент Этапа 15) |
+| D20-4: популярные магазины — app_settings.popular_stores_json [LOCAL] + сид 12 магазинов | ТЗ 6.3.20.13.5; без синка, чтобы LWW не затирал UX-настройки устройств |
+| D20-5: product_analytics_cache — day TEXT 'YYYY-MM-DD', id PK + уникальный индекс, пересчёт атомарным DELETE+INSERT (batch) | составной PK с NULL space_id не даёт уникальности в SQLite; '' вместо NULL; идемпотентность пересчёта |
+| D20-6: семейный алиас = product_aliases.space_id = currentSpaceId | колонки is_shared у алиасов нет (Этап 16); семантика области «Я/Семья» сохранена |
+| D20-7: FLAG_SECURE на экране кассира — страховочный нативный таймер 10 минут + явный restore в dispose и при уходе в фон | Kotlin-канал всегда планирует возврат (защита от краша); MainActivity не тронут — нет риска полной пересборки |
+| D20-8: loyalty_cards.preferred_orientation — [LOCAL] колонка | требуется спекой 6.3.21.13.8, отсутствует в ТОМ 2 §16.2; не синхронизируется как sort_order |
+| D20-9: режим сортировки карт включается кнопкой в AppBar | противоречие спеки 6.3.19: long-press одновременно объявлен стартом drag-and-drop и открытием меню |
+| D20-10: бейдж создателя карты — colorTransfer | override цветами member_colors — долг Этапа 21 (D17-3) |
+| D20-11: аналитика товаров — только RUB | formatAmount(kopecks, currencyCode, mode); мультивалютная агрегация после синка (Этап 25) |
+| D20-12: экспорт аналитики — CSV вручную (UTF-8 BOM, разделитель ';') + PNG текущего отчёта через share_plus | пакеты csv/zip не подключались; архив 3 отчётов и сохранение в Downloads исключены (share sheet покрывает); в hidden экспорт заблокирован |
+| D20-13: триггеры пересчёта кэша — вход на экран при stale > 24 ч + ручная кнопка | вшивку в confirm чека/импорт и WorkManager-задачу отложили на Этап 25 (TODO(25) в recalculate_product_analytics_cache_usecase.dart) |
+| D20-14: слайд YIR «Топ товаров» и cross-filter транзакций по product_hash не реализованы | слайда нет в Этапе 19; фильтр транзакций требует синка позиций чеков; deep-link /product-analytics?product_hash=… поддержан экраном |
+## Обновления решений (Этап 20 — Product Analytics + Loyalty Cards, 2026-11-05)
+| Решение | Обоснование |
+| --- | --- |
+| D20-1: privacy-матрицы карт и аналитики — только visible/hidden | partial удалён решением владельца (D19-14); спеки 6.3.19–6.3.24 адаптированы: hidden маскирует имена/суммы/проценты и скрывает графики |
+| D20-2: UseCases фильтров/поиска лояльности объединены в WatchLoyaltyCardsUseCase | все фильтры уходят одним SQL WHERE (DECISIONS: фильтры только в SQL); прецедент savings_goals watchActive |
+| D20-3: сканер штрих-кодов — mobile_scanner, а не google_mlkit_barcode_scanning | пакет уже в проекте (Этап 16), покрывает ean13/code128/qr/pdf417; баннер модели ML Kit не нужен (bundled, прецедент Этапа 15) |
+| D20-4: популярные магазины — app_settings.popular_stores_json [LOCAL] + сид 12 магазинов | ТЗ 6.3.20.13.5; без синка, чтобы LWW не затирал UX-настройки устройств |
+| D20-5: product_analytics_cache — day TEXT 'YYYY-MM-DD', id PK + уникальный индекс, пересчёт атомарным DELETE+INSERT (batch) | составной PK с NULL space_id не даёт уникальности в SQLite; '' вместо NULL; идемпотентность пересчёта |
+| D20-6: семейный алиас = product_aliases.space_id = currentSpaceId | колонки is_shared у алиасов нет (Этап 16); семантика области «Я/Семья» сохранена |
+| D20-7: FLAG_SECURE на экране кассира — страховочный нативный таймер 10 минут + явный restore в dispose и при уходе в фон | Kotlin-канал всегда планирует возврат (защита от краша); MainActivity не тронут — нет риска полной пересборки |
+| D20-8: loyalty_cards.preferred_orientation — [LOCAL] колонка | требуется спекой 6.3.21.13.8, отсутствует в ТОМ 2 §16.2; не синхронизируется как sort_order |
+| D20-9: режим сортировки карт включается кнопкой в AppBar | противоречие спеки 6.3.19: long-press одновременно объявлен стартом drag-and-drop и открытием меню |
+| D20-10: бейдж создателя карты — colorTransfer | override цветами member_colors — долг Этапа 21 (D17-3) |
+| D20-11: аналитика товаров — только RUB | formatAmount(kopecks, currencyCode, mode); мультивалютная агрегация после синка (Этап 25) |
+| D20-12: экспорт аналитики — CSV вручную (UTF-8 BOM, ';') + PNG текущего отчёта через share_plus | пакеты csv/zip не подключались; архив 3 отчётов и сохранение в Downloads исключены (share sheet покрывает); в hidden экспорт заблокирован |
+| D20-13: триггеры пересчёта кэша — вход на экран при stale > 24 ч + ручная кнопка | вшивку в confirm чека/импорт и WorkManager-задачу отложили на Этап 25 (TODO(25) в recalculate_product_analytics_cache_usecase.dart) |
+| D20-14: слайд YIR «Топ товаров» и cross-filter транзакций по product_hash не реализованы | слайда нет в Этапе 19; фильтр транзакций требует синка позиций чеков; deep-link /product-analytics?product_hash=… поддержан экраном |
+| D20-15: categoryId товара в детализации резолвится внутри GetProductDetailsUseCase по алиасу (product_hash → category_id) | закрыт TODO(20.7): deep-link и отчёты не передают категорию, источник истины — product_aliases |

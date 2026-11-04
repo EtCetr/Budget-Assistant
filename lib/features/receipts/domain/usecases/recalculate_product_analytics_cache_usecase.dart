@@ -106,3 +106,9 @@ class _Agg {
   double quantity = 0;
   String? categoryId;
 }
+// TODO(25): автотриггеры пересчёта product_analytics_cache:
+//   1) после успешного confirm чека (ConfirmReceiptUseCase);
+//   2) после Batch-импорта (FinalizeImportUseCase);
+//   3) WorkManager-задача раз в сутки (прецедент YearlyAggregatesWorker, Этап 19).
+// Сейчас пересчёт запускается только при входе на экран (stale > 24 ч)
+// и вручную кнопкой «Обновить» (ТЗ 6.3.24.12.2.a).
