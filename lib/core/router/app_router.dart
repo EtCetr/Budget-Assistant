@@ -60,6 +60,8 @@ import 'package:budget_assistant/features/receipts/presentation/screens/receipt_
 import 'package:budget_assistant/features/receipts/presentation/screens/split_receipt_screen.dart';
 import 'package:budget_assistant/features/year_in_review/presentation/screens/year_in_review_screen.dart';
 import 'package:budget_assistant/features/year_in_review/presentation/screens/year_in_review_select_screen.dart';
+import 'package:budget_assistant/features/loyalty_cards/presentation/screens/loyalty_cards_screen.dart';
+import 'package:budget_assistant/features/loyalty_cards/presentation/screens/loyalty_cards_stub_screens.dart';
 part 'app_router.g.dart';
 
 @riverpod
@@ -448,6 +450,25 @@ SplitReceiptScreen(receiptId: state.pathParameters['id']!),
           return YearInReviewScreen(year: parsedYear);
         },
       ),
+        GoRoute(
+          path: '/loyalty-cards',
+          name: 'loyalty-cards',
+          builder: (context, state) => const LoyaltyCardsScreen(),
+        ),
+        GoRoute(
+          path: '/loyalty-cards/add',
+          name: 'loyalty-cards-add',
+          builder: (context, state) => AddLoyaltyCardStubScreen(
+            cardId: state.uri.queryParameters['id'],
+          ),
+        ),
+        GoRoute(
+          path: '/loyalty-cards/display/:id',
+          name: 'loyalty-cards-display',
+          builder: (context, state) => LoyaltyCardDisplayStubScreen(
+            cardId: state.pathParameters['id']!,
+          ),
+        ),
     ],
     redirect: (context, state) {
       final location = state.uri.toString();

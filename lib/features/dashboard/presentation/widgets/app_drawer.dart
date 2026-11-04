@@ -4,6 +4,7 @@ import '../dashboard_strings.dart';
 import 'package:budget_assistant/features/debts/presentation/debts_strings.dart';
 import 'package:budget_assistant/features/reminders/presentation/reminders_strings.dart';
 import 'package:budget_assistant/features/calendar/presentation/calendar_strings.dart';
+import 'package:budget_assistant/features/loyalty_cards/presentation/loyalty_cards_strings.dart';
 
 class AppDrawer extends StatelessWidget {
   final String currentRoute;
@@ -48,7 +49,8 @@ class AppDrawer extends StatelessWidget {
             _item(context, '/reminders', Icons.alarm_outlined, RemindersStrings.screenTitle),
             _item(context, '/calendar', Icons.calendar_month_outlined, CalendarStrings.navCalendar),
             _item(context, '/notifications', Icons.notifications_outlined, 'Уведомления'),
-_item(context, '/profile', Icons.person_outline, DashboardStrings.navProfile),
+_item(context, '/loyalty-cards', Icons.card_membership_outlined, LoyaltyCardsStrings.screenTitle),
+          _item(context, '/profile', Icons.person_outline, DashboardStrings.navProfile),
           ],
         ),
       ),

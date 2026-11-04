@@ -141,7 +141,17 @@ _card('Аккаунт', [
             ),
           ]),
           const SizedBox(height: 16),
-          _card('Статистика года', [
+          _card('Скидочные карты', [
+          TextButton.icon(
+            onPressed: () => context.push('/loyalty-cards'),
+            icon: const Icon(Icons.card_membership_outlined,
+                color: AppColors.colorFAB),
+            label: const Text('Мои карты лояльности',
+                style: TextStyle(color: AppColors.textPrimary)),
+          ),
+        ]),
+        const SizedBox(height: 16),
+        _card('Статистика года', [
             TextButton.icon(
               onPressed: () =>
                   context.push('/year-in-review'),
