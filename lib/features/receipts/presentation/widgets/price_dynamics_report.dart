@@ -18,11 +18,11 @@ import 'sparkline_chart.dart';
 class PriceDynamicsReport extends ConsumerWidget {
   const PriceDynamicsReport({
     super.key,
-    required this.onScan,
+    this.onScan,
     required this.onPickPeriod,
   });
 
-  final VoidCallback onScan;
+  final VoidCallback? onScan;
   final VoidCallback onPickPeriod;
 
   @override

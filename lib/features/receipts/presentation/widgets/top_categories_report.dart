@@ -15,11 +15,11 @@ import 'product_analytics_empty_state.dart';
 class TopCategoriesReport extends ConsumerWidget {
   const TopCategoriesReport({
     super.key,
-    required this.onScan,
+    this.onScan,
     required this.onPickPeriod,
   });
 
-  final VoidCallback onScan;
+  final VoidCallback? onScan;
   final VoidCallback onPickPeriod;
 
   Color _parseColor(String? hex) {

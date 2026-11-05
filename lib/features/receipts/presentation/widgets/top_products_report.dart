@@ -19,11 +19,11 @@ import 'sparkline_chart.dart';
 class TopProductsReport extends ConsumerStatefulWidget {
   const TopProductsReport({
     super.key,
-    required this.onScan,
+    this.onScan,
     required this.onPickPeriod,
   });
 
-  final VoidCallback onScan;
+  final VoidCallback? onScan;
   final VoidCallback onPickPeriod;
 
   @override

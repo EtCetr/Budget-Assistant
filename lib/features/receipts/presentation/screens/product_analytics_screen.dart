@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:budget_assistant/core/providers/security_providers.dart';
 import 'package:budget_assistant/core/services/secure_flag_service.dart';
@@ -82,7 +81,7 @@ class _ProductAnalyticsScreenState
     setState(() => _recalculating = true);
     MotionTokens.medium();
     final userId = ref.read(currentUserIdProvider);
-    await ref
+    final result = await ref
         .read(recalculateProductAnalyticsCacheUseCaseProvider)
         .call(userId: userId);
     if (!mounted) return;
@@ -92,11 +91,10 @@ class _ProductAnalyticsScreenState
     ref.invalidate(topProductsProvider);
     ref.invalidate(topCategoriesProvider);
     ref.invalidate(priceDynamicsProvider);
+    if (result is Error) {
+      _snack(ProductAnalyticsStrings.recalcFailed);
+    }
     setState(() => _recalculating = false);
-  }
-
-  void _onScan() {
-    context.push('/receipts/scan');
   }
 
   void _onPickPeriod() {
@@ -233,6 +231,38 @@ class _ProductAnalyticsScreenState
           const ProductAnalyticsPeriodSelector(),
           if (spaceId != null) const ProductAnalyticsScopeSelector(),
           const ProductAnalyticsSummaryRow(),
+          Container(
+            margin: const EdgeInsets.fromLTRB(
+              AppSpacing.spacing16,
+              AppSpacing.spacing8,
+              AppSpacing.spacing16,
+              0,
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.spacing12,
+              vertical: AppSpacing.spacing8,
+            ),
+            decoration: const BoxDecoration(
+              color: AppColors.surfaceElevated,
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.info_outline,
+                    size: 16, color: AppColors.textSecondary),
+                SizedBox(width: AppSpacing.spacing8),
+                Expanded(
+                  child: Text(
+                    ProductAnalyticsStrings.scanInfoNote,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           if (stale || _recalculating)
             Container(
               margin: const EdgeInsets.fromLTRB(
@@ -277,15 +307,12 @@ class _ProductAnalyticsScreenState
               key: _reportKey,
               child: switch (tab) {
                 'categories' => TopCategoriesReport(
-                    onScan: _onScan,
                     onPickPeriod: _onPickPeriod,
                   ),
                 'dynamics' => PriceDynamicsReport(
-                    onScan: _onScan,
                     onPickPeriod: _onPickPeriod,
                   ),
                 _ => TopProductsReport(
-                    onScan: _onScan,
                     onPickPeriod: _onPickPeriod,
                   ),
               },

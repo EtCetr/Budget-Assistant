@@ -33,6 +33,9 @@ abstract final class ProductAnalyticsStrings {
   static const String staleBanner = 'Данные могут быть устаревшими. Обновить?';
   static const String staleUpdate = 'Обновить';
   static const String aggregating = 'Агрегируем данные...';
+  static const String scanInfoNote =
+      'Сканирование доступно из операции: удерживайте транзакцию и выберите «Прикрепить чек»';
+  static const String recalcFailed = 'Не удалось обновить данные';
   static const String emptyPeriodTitle = 'За этот период нет данных';
   static const String emptyPeriodSub =
       'Аналитика товаров работает с распознанными чеками. Отсканируйте первый чек или выберите другой период';

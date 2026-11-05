@@ -173,6 +173,9 @@ final productAnalyticsCacheProvider =
 /// Кэш устарел, если пересчёта не было > 24 часов (ТЗ 6.3.24.9).
 final productAnalyticsStaleProvider = FutureProvider.autoDispose<bool>((ref) async {
   final userId = ref.watch(currentUserIdProvider);
+  final summary = await ref.watch(productAnalyticsSummaryProvider.future);
+  // Нечего пересчитывать (чеков нет или позиции не размечены) — баннер не нужен.
+  if (summary.checksCount == 0 || summary.uniqueProducts == 0) return false;
   final last = await ref
       .watch(productAnalyticsCacheRepositoryProvider)
       .lastUpdatedAt(userId);

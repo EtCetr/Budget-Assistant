@@ -316,7 +316,7 @@ class _LoyaltyCardsScreenState extends ConsumerState<LoyaltyCardsScreen> {
           if (_searchOpen) LoyaltyCardsSearchBar(controller: _searchController),
           const SizedBox(height: AppSpacing.spacing8),
           const LoyaltyCardsFilterRow(),
-          _buildBody(),
+          Expanded(child: _buildBody()),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
