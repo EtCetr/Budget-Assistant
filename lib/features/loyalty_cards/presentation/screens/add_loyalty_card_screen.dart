@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mobile_scanner/mobile_scanner.dart' hide BarcodeType;
 import 'package:budget_assistant/core/errors/failures.dart';
 import 'package:budget_assistant/core/errors/result.dart';
 import 'package:budget_assistant/core/providers/security_providers.dart';
@@ -20,8 +22,8 @@ import '../widgets/loyalty_card_tile.dart';
 import '../widgets/popular_stores_row.dart';
 
 /// Добавление / редактирование скидочной карты (ТЗ 6.3.20):
-/// сканер или ручной ввод, пресеты магазинов, черновики 5 сек,
-/// валидация и сборка — через UseCases (логика не в UI).
+/// галерея (распознавание со скриншота) / сканер / ручной ввод,
+/// пресеты магазинов, черновики 5 сек, валидация и сборка — через UseCases.
 class AddLoyaltyCardScreen extends ConsumerStatefulWidget {
   const AddLoyaltyCardScreen({super.key, this.cardId});
 
@@ -35,7 +37,8 @@ class AddLoyaltyCardScreen extends ConsumerStatefulWidget {
 class _AddLoyaltyCardScreenState extends ConsumerState<AddLoyaltyCardScreen> {
   final _storeController = TextEditingController();
   final _barcodeController = TextEditingController();
-  bool _scanMode = true;
+  final MobileScannerController _analyzeController = MobileScannerController();
+  String _mode = 'gallery';
   bool _initialized = false;
   late final Future<bool> _initFuture;
 
@@ -49,11 +52,10 @@ class _AddLoyaltyCardScreenState extends ConsumerState<AddLoyaltyCardScreen> {
   void dispose() {
     _storeController.dispose();
     _barcodeController.dispose();
+    _analyzeController.dispose();
     super.dispose();
   }
 
-  /// Загрузка (редактирование или черновик) + старт автосейва.
-  /// Возвращает false, если экран нужно закрыть (не создатель).
   Future<bool> _init() async {
     final userId = ref.read(currentUserIdProvider);
     if (widget.cardId != null) {
@@ -74,7 +76,7 @@ class _AddLoyaltyCardScreenState extends ConsumerState<AddLoyaltyCardScreen> {
             return false;
           }
           ref.read(addLoyaltyCardFormProvider.notifier).loadFromCard(card);
-          _scanMode = false;
+          _mode = 'manual';
         case Error():
           context.pop();
           return false;
@@ -125,6 +127,55 @@ class _AddLoyaltyCardScreenState extends ConsumerState<AddLoyaltyCardScreen> {
     ref.read(addLoyaltyCardFormProvider.notifier).startDraftAutosave(userId);
     setState(() => _initialized = true);
     return true;
+  }
+
+  BarcodeType _mapFormat(BarcodeFormat format) => switch (format) {
+        BarcodeFormat.ean13 => BarcodeType.ean13,
+        BarcodeFormat.code128 => BarcodeType.code128,
+        BarcodeFormat.qrCode => BarcodeType.qr,
+        BarcodeFormat.pdf417 => BarcodeType.pdf417,
+        _ => BarcodeType.manual,
+      };
+
+  void _applyDetected(String raw, BarcodeType type) {
+    final notifier = ref.read(addLoyaltyCardFormProvider.notifier);
+    notifier.setBarcodeData(raw);
+    notifier.setBarcodeType(type);
+    _barcodeController.text = raw;
+    setState(() => _mode = 'manual');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text(LoyaltyCardsStrings.scanDetected)),
+    );
+  }
+
+  /// Распознавание кода с картинки из галереи (большинство карт — скриншоты).
+  Future<void> _pickFromGallery() async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final picker = ImagePicker();
+      final file = await picker.pickImage(source: ImageSource.gallery);
+      if (file == null) return;
+      final capture = await _analyzeController.analyzeImage(file.path);
+      if (!mounted) return;
+      final codes = capture?.barcodes ?? const <Barcode>[];
+      final barcode = codes.isEmpty ? null : codes.first;
+      final raw = barcode?.rawValue;
+      if (raw == null || raw.isEmpty) {
+        MotionTokens.error();
+        messenger.showSnackBar(
+          const SnackBar(content: Text(LoyaltyCardsStrings.galleryNotFound)),
+        );
+        return;
+      }
+      MotionTokens.medium();
+      _applyDetected(raw, _mapFormat(barcode!.format));
+    } catch (_) {
+      if (!mounted) return;
+      MotionTokens.error();
+      messenger.showSnackBar(
+        const SnackBar(content: Text(LoyaltyCardsStrings.galleryNotFound)),
+      );
+    }
   }
 
   Future<void> _save() async {
@@ -201,6 +252,49 @@ class _AddLoyaltyCardScreenState extends ConsumerState<AddLoyaltyCardScreen> {
     );
   }
 
+  Widget _galleryPicker() {
+    return Container(
+      height: 180,
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.all(Radius.circular(16)),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.photo_library_outlined,
+                size: 40, color: AppColors.textSecondary),
+            const SizedBox(height: AppSpacing.spacing8),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: AppSpacing.spacing24),
+              child: Text(
+                LoyaltyCardsStrings.galleryHint,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.spacing12),
+            FilledButton.icon(
+              onPressed: () {
+                MotionTokens.light();
+                _pickFromGallery();
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.colorFAB,
+              ),
+              icon: const Icon(Icons.upload_file_outlined, color: Colors.white),
+              label: const Text(
+                LoyaltyCardsStrings.galleryPick,
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final form = ref.watch(addLoyaltyCardFormProvider);
@@ -232,7 +326,7 @@ class _AddLoyaltyCardScreenState extends ConsumerState<AddLoyaltyCardScreen> {
             padding: const EdgeInsets.all(AppSpacing.spacing16),
             children: [
               SizedBox(
-                height: 150,
+                height: 170,
                 child: LoyaltyCardTile(
                   card: preview,
                   mode: mode,
@@ -242,24 +336,15 @@ class _AddLoyaltyCardScreenState extends ConsumerState<AddLoyaltyCardScreen> {
               ),
               const SizedBox(height: AppSpacing.spacing16),
               AddLoyaltyCardModeToggle(
-                isScanMode: _scanMode,
-                onChanged: (v) => setState(() => _scanMode = v),
+                mode: _mode,
+                onChanged: (v) => setState(() => _mode = v),
               ),
               const SizedBox(height: AppSpacing.spacing16),
-              if (_scanMode && form.cardId == null)
+              if (_mode == 'gallery' && form.cardId == null)
+                _galleryPicker()
+              else if (_mode == 'scan' && form.cardId == null)
                 BarcodeScannerView(
-                  onDetected: (raw, type) {
-                    final notifier =
-                        ref.read(addLoyaltyCardFormProvider.notifier);
-                    notifier.setBarcodeData(raw);
-                    notifier.setBarcodeType(type);
-                    _barcodeController.text = raw;
-                    setState(() => _scanMode = false);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text(LoyaltyCardsStrings.scanDetected)),
-                    );
-                  },
+                  onDetected: (raw, type) => _applyDetected(raw, type),
                 )
               else ...[
                 TextField(

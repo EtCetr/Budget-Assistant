@@ -66,9 +66,11 @@ class LoyaltyCardTile extends StatelessWidget {
       child: Stack(
         children: [
           Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
                 Text(
                   card.iconAsset ?? '💳',
                   style: const TextStyle(fontSize: 40),
@@ -112,7 +114,8 @@ class LoyaltyCardTile extends StatelessWidget {
                     ],
                   ],
                 ),
-              ],
+                ],
+              ),
             ),
           ),
           if (card.syncStatus == SyncStatus.pending)

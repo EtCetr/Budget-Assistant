@@ -45,6 +45,10 @@ abstract final class LoyaltyCardsStrings {
   static const String profileCardTitle = 'Скидочные карты';
   static const String profileCardAction = 'Мои карты лояльности';
   static const String editTitle = 'Редактировать карту';
+  static const String modeGallery = 'Из галереи';
+  static const String galleryHint = 'Выберите скриншот или фото карты — код распознается автоматически';
+  static const String galleryPick = 'Выбрать из галереи';
+  static const String galleryNotFound = 'Не удалось распознать код на изображении';
   static const String modeScan = 'Сканер';
   static const String modeManual = 'Вручную';
   static const String scanHint = 'Наведите камеру на штрих-код';
