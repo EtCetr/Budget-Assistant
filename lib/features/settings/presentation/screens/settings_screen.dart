@@ -69,7 +69,7 @@ class SettingsScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               _receiptsSection(context, ref, s),
               const SizedBox(height: 16),
-              _familySection(ref, s),
+              _familySection(context, ref, s),
               const SizedBox(height: 16),
               _currencySection(context, ref, s),
               const SizedBox(height: 16),
@@ -346,7 +346,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   // ============ Section 5: Семья и пространства ============
-  Widget _familySection(WidgetRef ref, AppSetting s) {
+  Widget _familySection(BuildContext context, WidgetRef ref, AppSetting s) {
     return SettingsSection(
       title: '👨‍👩‍ Семья и пространства',
       subtitle: 'Multi-group: пространства, цвета, активность',
