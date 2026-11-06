@@ -65,6 +65,25 @@ class AppSettings extends Table with SyncableTable {
   BoolColumn get enableBiometricLogin => boolean()
       .named('enable_biometric_login')
       .withDefault(const Constant(false))();
+  // Этап 21 (6.3.28): таймаут автоскрытия в секундах. 0 = выключено [LOCAL].
+  IntColumn get autoHideTimeoutSeconds => integer()
+      .named('auto_hide_timeout_seconds')
+      .withDefault(const Constant(10))();
+  // Этап 21 (6.3.28): балансы на экране блокировки [LOCAL].
+  BoolColumn get showBalancesOnLockScreen => boolean()
+      .named('show_balances_on_lock_screen')
+      .withDefault(const Constant(false))();
+  // Этап 21 (6.3.28): онбординг-баннер экрана безопасности показан [LOCAL].
+  BoolColumn get securityOnboardingShown => boolean()
+      .named('security_onboarding_shown')
+      .withDefault(const Constant(false))();
+  // Этап 21 (6.3.46): цвета семьи [LOCAL].
+  BoolColumn get showFamilyColorsInTransactions => boolean()
+      .named('show_family_colors_in_transactions')
+      .withDefault(const Constant(true))();
+  BoolColumn get showFamilyColorsInCharts => boolean()
+      .named('show_family_colors_in_charts')
+      .withDefault(const Constant(true))();
   // Импорт и Чеки [LOCAL]
   BoolColumn get enableAutoDetectDuplicates => boolean()
       .named('enable_auto_detect_duplicates')

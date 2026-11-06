@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserDto {
 
- String get id; String get email; String get displayName; String? get displayNameDative; String? get avatarUrl; DateTime get createdAt; DateTime get updatedAt; String get syncStatus;
+ String get id; String get email; String get displayName; String? get displayNameDative; String? get avatarUrl; String? get avatarPath; DateTime get createdAt; DateTime get updatedAt; String get syncStatus;
 /// Create a copy of UserDto
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $UserDtoCopyWith<UserDto> get copyWith => _$UserDtoCopyWithImpl<UserDto>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserDto&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.displayNameDative, displayNameDative) || other.displayNameDative == displayNameDative)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserDto&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.displayNameDative, displayNameDative) || other.displayNameDative == displayNameDative)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.avatarPath, avatarPath) || other.avatarPath == avatarPath)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,email,displayName,displayNameDative,avatarUrl,createdAt,updatedAt,syncStatus);
+int get hashCode => Object.hash(runtimeType,id,email,displayName,displayNameDative,avatarUrl,avatarPath,createdAt,updatedAt,syncStatus);
 
 @override
 String toString() {
-  return 'UserDto(id: $id, email: $email, displayName: $displayName, displayNameDative: $displayNameDative, avatarUrl: $avatarUrl, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus)';
+  return 'UserDto(id: $id, email: $email, displayName: $displayName, displayNameDative: $displayNameDative, avatarUrl: $avatarUrl, avatarPath: $avatarPath, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $UserDtoCopyWith<$Res>  {
   factory $UserDtoCopyWith(UserDto value, $Res Function(UserDto) _then) = _$UserDtoCopyWithImpl;
 @useResult
 $Res call({
- String id, String email, String displayName, String? displayNameDative, String? avatarUrl, DateTime createdAt, DateTime updatedAt, String syncStatus
+ String id, String email, String displayName, String? displayNameDative, String? avatarUrl, String? avatarPath, DateTime createdAt, DateTime updatedAt, String syncStatus
 });
 
 
@@ -65,13 +65,14 @@ class _$UserDtoCopyWithImpl<$Res>
 
 /// Create a copy of UserDto
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = null,Object? displayName = null,Object? displayNameDative = freezed,Object? avatarUrl = freezed,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = null,Object? displayName = null,Object? displayNameDative = freezed,Object? avatarUrl = freezed,Object? avatarPath = freezed,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,displayNameDative: freezed == displayNameDative ? _self.displayNameDative : displayNameDative // ignore: cast_nullable_to_non_nullable
 as String?,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,avatarPath: freezed == avatarPath ? _self.avatarPath : avatarPath // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable
@@ -155,7 +156,7 @@ return $default(_that);case _:
 @JsonSerializable()
 
 class _UserDto implements UserDto {
-  const _UserDto({required this.id, required this.email, required this.displayName, this.displayNameDative, this.avatarUrl, required this.createdAt, required this.updatedAt, required this.syncStatus});
+  const _UserDto({required this.id, required this.email, required this.displayName, this.displayNameDative, this.avatarUrl, this.avatarPath, required this.createdAt, required this.updatedAt, required this.syncStatus});
   factory _UserDto.fromJson(Map<String, dynamic> json) => _$UserDtoFromJson(json);
 
 @override final  String id;
@@ -163,6 +164,7 @@ class _UserDto implements UserDto {
 @override final  String displayName;
 @override final  String? displayNameDative;
 @override final  String? avatarUrl;
+@override final  String? avatarPath;
 @override final  DateTime createdAt;
 @override final  DateTime updatedAt;
 @override final  String syncStatus;
@@ -180,16 +182,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserDto&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.displayNameDative, displayNameDative) || other.displayNameDative == displayNameDative)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserDto&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.displayNameDative, displayNameDative) || other.displayNameDative == displayNameDative)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.avatarPath, avatarPath) || other.avatarPath == avatarPath)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,email,displayName,displayNameDative,avatarUrl,createdAt,updatedAt,syncStatus);
+int get hashCode => Object.hash(runtimeType,id,email,displayName,displayNameDative,avatarUrl,avatarPath,createdAt,updatedAt,syncStatus);
 
 @override
 String toString() {
-  return 'UserDto(id: $id, email: $email, displayName: $displayName, displayNameDative: $displayNameDative, avatarUrl: $avatarUrl, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus)';
+  return 'UserDto(id: $id, email: $email, displayName: $displayName, displayNameDative: $displayNameDative, avatarUrl: $avatarUrl, avatarPath: $avatarPath, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus)';
 }
 
 
@@ -200,7 +202,7 @@ abstract mixin class _$UserDtoCopyWith<$Res> implements $UserDtoCopyWith<$Res> {
   factory _$UserDtoCopyWith(_UserDto value, $Res Function(_UserDto) _then) = __$UserDtoCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String email, String displayName, String? displayNameDative, String? avatarUrl, DateTime createdAt, DateTime updatedAt, String syncStatus
+ String id, String email, String displayName, String? displayNameDative, String? avatarUrl, String? avatarPath, DateTime createdAt, DateTime updatedAt, String syncStatus
 });
 
 
@@ -217,13 +219,14 @@ class __$UserDtoCopyWithImpl<$Res>
 
 /// Create a copy of UserDto
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = null,Object? displayName = null,Object? displayNameDative = freezed,Object? avatarUrl = freezed,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = null,Object? displayName = null,Object? displayNameDative = freezed,Object? avatarUrl = freezed,Object? avatarPath = freezed,Object? createdAt = null,Object? updatedAt = null,Object? syncStatus = null,}) {
   return _then(_UserDto(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String,displayNameDative: freezed == displayNameDative ? _self.displayNameDative : displayNameDative // ignore: cast_nullable_to_non_nullable
 as String?,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,avatarPath: freezed == avatarPath ? _self.avatarPath : avatarPath // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,syncStatus: null == syncStatus ? _self.syncStatus : syncStatus // ignore: cast_nullable_to_non_nullable

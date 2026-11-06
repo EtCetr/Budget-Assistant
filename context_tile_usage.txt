@@ -1,0 +1,217 @@
+﻿D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.dart:27: import 'daos/member_colors_dao.dart';
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.dart:37: import 'tables/member_colors.dart';
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.dart:599: MemberColors,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.dart:610: MemberColorsDao,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.dart:1091: await m.createTable(memberColors);
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.dart:1099: 'CREATE UNIQUE INDEX IF NOT EXISTS idx_member_colors_unique ON member_colors(user_id, space_id)');
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31106: class $MemberColorsTable extends MemberColors
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31107: with TableInfo<$MemberColorsTable, MemberColor> {
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31111: $MemberColorsTable(this.attachedDatabase, [this._alias]);
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31206: static const String $name = 'member_colors';
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31209: Insertable<MemberColor> instance, {
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31272: MemberColor map(Map<String, dynamic> data, {String? tablePrefix}) {
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31274: return MemberColor(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31307: $MemberColorsTable createAlias(String alias) {
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31308: return $MemberColorsTable(attachedDatabase, alias);
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31312: class MemberColor extends DataClass implements Insertable<MemberColor> {
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31326: const MemberColor({
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31348: MemberColorsCompanion toCompanion(bool nullToAbsent) {
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31349: return MemberColorsCompanion(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31360: factory MemberColor.fromJson(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31365: return MemberColor(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31389: MemberColor copyWith({
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31397: }) => MemberColor(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31406: MemberColor copyWithCompanion(MemberColorsCompanion data) {
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31407: return MemberColor(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31424: return (StringBuffer('MemberColor(')
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31449: (other is MemberColor &&
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31459: class MemberColorsCompanion extends UpdateCompanion<MemberColor> {
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31468: const MemberColorsCompanion({
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31478: MemberColorsCompanion.insert({
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31490: static Insertable<MemberColor> custom({
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31512: MemberColorsCompanion copyWith({
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31522: return MemberColorsCompanion(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31566: return (StringBuffer('MemberColorsCompanion(')
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31631: late final $MemberColorsTable memberColors = $MemberColorsTable(this);
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31662: late final MemberColorsDao memberColorsDao = MemberColorsDao(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:31709: memberColors,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:32891: static MultiTypedResultKey<$MemberColorsTable, List<MemberColor>>
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:32892: _memberColorsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:32893: db.memberColors,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:32894: aliasName: 'users__id__member_colors__user_id',
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:32897: $$MemberColorsTableProcessedTableManager get memberColorsRefs {
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:32898: final manager = $$MemberColorsTableTableManager(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:32900: $_db.memberColors,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:32903: final cache = $_typedResult.readTableOrNull(_memberColorsRefsTable($_db));
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:33615: Expression<bool> memberColorsRefs(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:33616: Expression<bool> Function($$MemberColorsTableFilterComposer f) f,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:33618: final $$MemberColorsTableFilterComposer composer = $composerBuilder(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:33621: referencedTable: $db.memberColors,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:33628: }) => $$MemberColorsTableFilterComposer(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:33630: $table: $db.memberColors,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:34394: Expression<T> memberColorsRefs<T extends Object>(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:34395: Expression<T> Function($$MemberColorsTableAnnotationComposer a) f,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:34397: final $$MemberColorsTableAnnotationComposer composer = $composerBuilder(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:34400: referencedTable: $db.memberColors,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:34407: }) => $$MemberColorsTableAnnotationComposer(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:34409: $table: $db.memberColors,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:34460: bool memberColorsRefs,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:34556: memberColorsRefs = false,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:34587: if (memberColorsRefs) db.memberColors,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:35118: if (memberColorsRefs)
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:35122: MemberColor
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:35126: ._memberColorsRefsTable(db),
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:35132: ).memberColorsRefs,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:35186: bool memberColorsRefs,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59609: typedef $$MemberColorsTableCreateCompanionBuilder =
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59610: MemberColorsCompanion Function({
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59620: typedef $$MemberColorsTableUpdateCompanionBuilder =
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59621: MemberColorsCompanion Function({
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59632: final class $$MemberColorsTableReferences
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59633: extends BaseReferences<_$AppDatabase, $MemberColorsTable, MemberColor> {
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59634: $$MemberColorsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59637: db.users.createAlias('member_colors__user_id__users__id');
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59654: class $$MemberColorsTableFilterComposer
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59655: extends Composer<_$AppDatabase, $MemberColorsTable> {
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59656: $$MemberColorsTableFilterComposer({
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59717: class $$MemberColorsTableOrderingComposer
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59718: extends Composer<_$AppDatabase, $MemberColorsTable> {
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59719: $$MemberColorsTableOrderingComposer({
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59780: class $$MemberColorsTableAnnotationComposer
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59781: extends Composer<_$AppDatabase, $MemberColorsTable> {
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59782: $$MemberColorsTableAnnotationComposer({
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59835: class $$MemberColorsTableTableManager
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59839: $MemberColorsTable,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59840: MemberColor,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59841: $$MemberColorsTableFilterComposer,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59842: $$MemberColorsTableOrderingComposer,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59843: $$MemberColorsTableAnnotationComposer,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59844: $$MemberColorsTableCreateCompanionBuilder,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59845: $$MemberColorsTableUpdateCompanionBuilder,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59846: (MemberColor, $$MemberColorsTableReferences),
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59847: MemberColor,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59850: $$MemberColorsTableTableManager(_$AppDatabase db, $MemberColorsTable table)
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59856: $$MemberColorsTableFilterComposer($db: db, $table: table),
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59858: $$MemberColorsTableOrderingComposer($db: db, $table: table),
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59860: $$MemberColorsTableAnnotationComposer($db: db, $table: table),
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59871: }) => MemberColorsCompanion(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59891: }) => MemberColorsCompanion.insert(
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59905: $$MemberColorsTableReferences(db, table, e),
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59934: referencedTable: $$MemberColorsTableReferences
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59936: referencedColumn: $$MemberColorsTableReferences
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59954: typedef $$MemberColorsTableProcessedTableManager =
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59957: $MemberColorsTable,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59958: MemberColor,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59959: $$MemberColorsTableFilterComposer,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59960: $$MemberColorsTableOrderingComposer,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59961: $$MemberColorsTableAnnotationComposer,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59962: $$MemberColorsTableCreateCompanionBuilder,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59963: $$MemberColorsTableUpdateCompanionBuilder,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59964: (MemberColor, $$MemberColorsTableReferences),
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:59965: MemberColor,
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:60050: $$MemberColorsTableTableManager get memberColors =>
+D:\Et_Cetr\Budget Assistant\lib\core\database\app_database.g.dart:60051: $$MemberColorsTableTableManager(_db, _db.memberColors);
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.dart:1: // lib/core/database/daos/member_colors_dao.dart
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.dart:5: import '../tables/member_colors.dart';
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.dart:7: part 'member_colors_dao.g.dart';
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.dart:9: @DriftAccessor(tables: [MemberColors])
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.dart:10: class MemberColorsDao extends DatabaseAccessor<AppDatabase>
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.dart:11: with _$MemberColorsDaoMixin {
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.dart:12: MemberColorsDao(super.db);
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.dart:15: Stream<List<MemberColor>> watchOverrides(String userId, String spaceId) {
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.dart:16: return (select(memberColors)
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.dart:22: Future<MemberColor?> getOverride(String userId, String spaceId) {
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.dart:23: return (select(memberColors)
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.dart:29: Future<void> upsertOverride(MemberColorsCompanion entry) {
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.dart:30: return into(memberColors).insertOnConflictUpdate(entry);
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.dart:35: return (delete(memberColors)
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.g.dart:3: part of 'member_colors_dao.dart';
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.g.dart:6: mixin _$MemberColorsDaoMixin on DatabaseAccessor<AppDatabase> {
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.g.dart:8: $MemberColorsTable get memberColors => attachedDatabase.memberColors;
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.g.dart:9: MemberColorsDaoManager get managers => MemberColorsDaoManager(this);
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.g.dart:12: class MemberColorsDaoManager {
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.g.dart:13: final _$MemberColorsDaoMixin _db;
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.g.dart:14: MemberColorsDaoManager(this._db);
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.g.dart:17: $$MemberColorsTableTableManager get memberColors =>
+D:\Et_Cetr\Budget Assistant\lib\core\database\daos\member_colors_dao.g.dart:18: $$MemberColorsTableTableManager(_db.attachedDatabase, _db.memberColors);
+D:\Et_Cetr\Budget Assistant\lib\core\database\tables\member_colors.dart:1: // lib/core/database/tables/member_colors.dart
+D:\Et_Cetr\Budget Assistant\lib\core\database\tables\member_colors.dart:10: class MemberColors extends Table with SyncableTable {
+D:\Et_Cetr\Budget Assistant\lib\features\admin\presentation\widgets\activity_chart.dart:50: hidden ? Colors.grey : familyColorFor(u),
+D:\Et_Cetr\Budget Assistant\lib\features\admin\presentation\widgets\activity_chart.dart:148: color: hidden ? Colors.grey : familyColorFor(m.userId),
+D:\Et_Cetr\Budget Assistant\lib\features\admin\presentation\widgets\activity_chart_day_details_sheet.dart:54: hidden ? Colors.grey : familyColorFor(e.key),
+D:\Et_Cetr\Budget Assistant\lib\features\admin\presentation\widgets\edit_space_identity_sheet.dart:144: for (final c in kFamilyPalette)
+D:\Et_Cetr\Budget Assistant\lib\features\admin\presentation\widgets\family_colors.dart:4: /// Ручной выбор цвета (member_colors) — долг Этапа 21.
+D:\Et_Cetr\Budget Assistant\lib\features\admin\presentation\widgets\family_colors.dart:5: const List<Color> kFamilyPalette = [
+D:\Et_Cetr\Budget Assistant\lib\features\admin\presentation\widgets\family_colors.dart:20: Color familyColorFor(String userId) =>
+D:\Et_Cetr\Budget Assistant\lib\features\admin\presentation\widgets\family_colors.dart:21: kFamilyPalette[userId.hashCode.abs() % kFamilyPalette.length];
+D:\Et_Cetr\Budget Assistant\lib\features\admin\presentation\widgets\member_activity_card.dart:91: : familyColorFor(member.userId),
+D:\Et_Cetr\Budget Assistant\lib\features\admin\presentation\widgets\top_active_members_section.dart:70: hidden ? Colors.grey : familyColorFor(top[i].userId),
+D:\Et_Cetr\Budget Assistant\lib\features\debts\presentation\widgets\debt_card.dart:19: /// Детерминированная палитра цветов семьи (member_colors появится в
+D:\Et_Cetr\Budget Assistant\lib\features\loyalty_cards\presentation\widgets\loyalty_card_tile.dart:111: // TODO(21): цвет семьи из member_colors (D17-3).
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.dart:8: abstract class MemberColorModel with _$MemberColorModel {
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.dart:9: const factory MemberColorModel({
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.dart:17: }) = _MemberColorModel;
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.dart:19: factory MemberColorModel.fromJson(Map<String, dynamic> json) =>
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.dart:20: _$MemberColorModelFromJson(json);
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:16: mixin _$MemberColorModel {
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:19: /// Create a copy of MemberColorModel
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:23: $MemberColorModelCopyWith<MemberColorModel> get copyWith => _$MemberColorModelCopyWithImpl<MemberColorModel>(this as MemberColorModel, _$identity);
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:25: /// Serializes this MemberColorModel to a JSON map.
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:31: return identical(this, other) || (other.runtimeType == runtimeType&&other is MemberColorModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.customColorHex, customColorHex) || other.customColorHex == customColorHex)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:40: return 'MemberColorModel(id: $id, userId: $userId, spaceId: $spaceId, customColorHex: $customColorHex, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus)';
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:47: abstract mixin class $MemberColorModelCopyWith<$Res>  {
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:48: factory $MemberColorModelCopyWith(MemberColorModel value, $Res Function(MemberColorModel) _then) = _$MemberColorModelCopyWithImpl;
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:59: class _$MemberColorModelCopyWithImpl<$Res>
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:60: implements $MemberColorModelCopyWith<$Res> {
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:61: _$MemberColorModelCopyWithImpl(this._self, this._then);
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:63: final MemberColorModel _self;
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:64: final $Res Function(MemberColorModel) _then;
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:66: /// Create a copy of MemberColorModel
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:84: /// Adds pattern-matching-related methods to [MemberColorModel].
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:85: extension MemberColorModelPatterns on MemberColorModel {
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:98: @optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _MemberColorModel value)?  $default,{required TResult orElse(),}){
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:101: case _MemberColorModel() when $default != null:
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:120: @optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _MemberColorModel value)  $default,){
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:123: case _MemberColorModel():
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:141: @optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _MemberColorModel value)?  $default,){
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:144: case _MemberColorModel() when $default != null:
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:156: class _MemberColorModel implements MemberColorModel {
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:157: const _MemberColorModel({required this.id, required this.userId, this.spaceId = '', required this.customColorHex, required this.createdAt, required this.updatedAt, this.syncStatus = 'pending'});
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:158: factory _MemberColorModel.fromJson(Map<String, dynamic> json) => _$MemberColorModelFromJson(json);
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:168: /// Create a copy of MemberColorModel
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:172: _$MemberColorModelCopyWith<_MemberColorModel> get copyWith => __$MemberColorModelCopyWithImpl<_MemberColorModel>(this, _$identity);
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:176: return _$MemberColorModelToJson(this, );
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:181: return identical(this, other) || (other.runtimeType == runtimeType&&other is _MemberColorModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.customColorHex, customColorHex) || other.customColorHex == customColorHex)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus));
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:190: return 'MemberColorModel(id: $id, userId: $userId, spaceId: $spaceId, customColorHex: $customColorHex, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus)';
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:197: abstract mixin class _$MemberColorModelCopyWith<$Res> implements $MemberColorModelCopyWith<$Res> {
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:198: factory _$MemberColorModelCopyWith(_MemberColorModel value, $Res Function(_MemberColorModel) _then) = __$MemberColorModelCopyWithImpl;
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:209: class __$MemberColorModelCopyWithImpl<$Res>
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:210: implements _$MemberColorModelCopyWith<$Res> {
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:211: __$MemberColorModelCopyWithImpl(this._self, this._then);
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:213: final _MemberColorModel _self;
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:214: final $Res Function(_MemberColorModel) _then;
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:216: /// Create a copy of MemberColorModel
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.freezed.dart:219: return _then(_MemberColorModel(
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.g.dart:9: _MemberColorModel _$MemberColorModelFromJson(
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.g.dart:11: ) => $checkedCreate('_MemberColorModel', json, ($checkedConvert) {
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.g.dart:12: final val = _MemberColorModel(
+D:\Et_Cetr\Budget Assistant\lib\features\settings\data\models\member_color_model.g.dart:24: Map<String, dynamic> _$MemberColorModelToJson(_MemberColorModel instance) =>
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\data\repositories\drift_transactions_log_repository.dart:309: memberColorHex: null,
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.dart:27: required String? memberColorHex,
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.freezed.dart:17: String get id; String get userId; String? get spaceId; String get accountId; String? get categoryId; TransactionType get type; int get amountKopecks; String get currencyCode; DateTime get date; String? get merchantName; String? get comment; String? get receiptId; bool get isSplit; AuditStatus get auditStatus; SyncStatus get syncStatus; String get categoryName; String get categoryColorHex; String? get memberDisplayName; String? get memberColorHex; bool get isHiddenByCalendar; bool get isLargeExpense;
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.freezed.dart:28: return identical(this, other) || (other.runtimeType == runtimeType&&other is TransactionUiModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.type, type) || other.type == type)&&(identical(other.amountKopecks, amountKopecks) || other.amountKopecks == amountKopecks)&&(identical(other.currencyCode, currencyCode) || other.currencyCode == currencyCode)&&(identical(other.date, date) || other.date == date)&&(identical(other.merchantName, merchantName) || other.merchantName == merchantName)&&(identical(other.comment, comment) || other.comment == comment)&&(identical(other.receiptId, receiptId) || other.receiptId == receiptId)&&(identical(other.isSplit, isSplit) || other.isSplit == isSplit)&&(identical(other.auditStatus, auditStatus) || other.auditStatus == auditStatus)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.categoryColorHex, categoryColorHex) || other.categoryColorHex == categoryColorHex)&&(identical(other.memberDisplayName, memberDisplayName) || other.memberDisplayName == memberDisplayName)&&(identical(other.memberColorHex, memberColorHex) || other.memberColorHex == memberColorHex)&&(identical(other.isHiddenByCalendar, isHiddenByCalendar) || other.isHiddenByCalendar == isHiddenByCalendar)&&(identical(other.isLargeExpense, isLargeExpense) || other.isLargeExpense == isLargeExpense));
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.freezed.dart:33: int get hashCode => Object.hashAll([runtimeType,id,userId,spaceId,accountId,categoryId,type,amountKopecks,currencyCode,date,merchantName,comment,receiptId,isSplit,auditStatus,syncStatus,categoryName,categoryColorHex,memberDisplayName,memberColorHex,isHiddenByCalendar,isLargeExpense]);
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.freezed.dart:37: return 'TransactionUiModel(id: $id, userId: $userId, spaceId: $spaceId, accountId: $accountId, categoryId: $categoryId, type: $type, amountKopecks: $amountKopecks, currencyCode: $currencyCode, date: $date, merchantName: $merchantName, comment: $comment, receiptId: $receiptId, isSplit: $isSplit, auditStatus: $auditStatus, syncStatus: $syncStatus, categoryName: $categoryName, categoryColorHex: $categoryColorHex, memberDisplayName: $memberDisplayName, memberColorHex: $memberColorHex, isHiddenByCalendar: $isHiddenByCalendar, isLargeExpense: $isLargeExpense)';
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.freezed.dart:48: String id, String userId, String? spaceId, String accountId, String? categoryId, TransactionType type, int amountKopecks, String currencyCode, DateTime date, String? merchantName, String? comment, String? receiptId, bool isSplit, AuditStatus auditStatus, SyncStatus syncStatus, String categoryName, String categoryColorHex, String? memberDisplayName, String? memberColorHex, bool isHiddenByCalendar, bool isLargeExpense
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.freezed.dart:65: @pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = null,Object? spaceId = freezed,Object? accountId = null,Object? categoryId = freezed,Object? type = null,Object? amountKopecks = null,Object? currencyCode = null,Object? date = null,Object? merchantName = freezed,Object? comment = freezed,Object? receiptId = freezed,Object? isSplit = null,Object? auditStatus = null,Object? syncStatus = null,Object? categoryName = null,Object? categoryColorHex = null,Object? memberDisplayName = freezed,Object? memberColorHex = freezed,Object? isHiddenByCalendar = null,Object? isLargeExpense = null,}) {
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.freezed.dart:85: as String?,memberColorHex: freezed == memberColorHex ? _self.memberColorHex : memberColorHex // ignore: cast_nullable_to_non_nullable
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.freezed.dart:168: const _TransactionUiModel({required this.id, required this.userId, required this.spaceId, required this.accountId, required this.categoryId, required this.type, required this.amountKopecks, required this.currencyCode, required this.date, required this.merchantName, required this.comment, required this.receiptId, required this.isSplit, required this.auditStatus, required this.syncStatus, required this.categoryName, required this.categoryColorHex, required this.memberDisplayName, required this.memberColorHex, this.isHiddenByCalendar = false, this.isLargeExpense = false});
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.freezed.dart:189: @override final  String? memberColorHex;
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.freezed.dart:203: return identical(this, other) || (other.runtimeType == runtimeType&&other is _TransactionUiModel&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.spaceId, spaceId) || other.spaceId == spaceId)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.type, type) || other.type == type)&&(identical(other.amountKopecks, amountKopecks) || other.amountKopecks == amountKopecks)&&(identical(other.currencyCode, currencyCode) || other.currencyCode == currencyCode)&&(identical(other.date, date) || other.date == date)&&(identical(other.merchantName, merchantName) || other.merchantName == merchantName)&&(identical(other.comment, comment) || other.comment == comment)&&(identical(other.receiptId, receiptId) || other.receiptId == receiptId)&&(identical(other.isSplit, isSplit) || other.isSplit == isSplit)&&(identical(other.auditStatus, auditStatus) || other.auditStatus == auditStatus)&&(identical(other.syncStatus, syncStatus) || other.syncStatus == syncStatus)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.categoryColorHex, categoryColorHex) || other.categoryColorHex == categoryColorHex)&&(identical(other.memberDisplayName, memberDisplayName) || other.memberDisplayName == memberDisplayName)&&(identical(other.memberColorHex, memberColorHex) || other.memberColorHex == memberColorHex)&&(identical(other.isHiddenByCalendar, isHiddenByCalendar) || other.isHiddenByCalendar == isHiddenByCalendar)&&(identical(other.isLargeExpense, isLargeExpense) || other.isLargeExpense == isLargeExpense));
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.freezed.dart:208: int get hashCode => Object.hashAll([runtimeType,id,userId,spaceId,accountId,categoryId,type,amountKopecks,currencyCode,date,merchantName,comment,receiptId,isSplit,auditStatus,syncStatus,categoryName,categoryColorHex,memberDisplayName,memberColorHex,isHiddenByCalendar,isLargeExpense]);
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.freezed.dart:212: return 'TransactionUiModel(id: $id, userId: $userId, spaceId: $spaceId, accountId: $accountId, categoryId: $categoryId, type: $type, amountKopecks: $amountKopecks, currencyCode: $currencyCode, date: $date, merchantName: $merchantName, comment: $comment, receiptId: $receiptId, isSplit: $isSplit, auditStatus: $auditStatus, syncStatus: $syncStatus, categoryName: $categoryName, categoryColorHex: $categoryColorHex, memberDisplayName: $memberDisplayName, memberColorHex: $memberColorHex, isHiddenByCalendar: $isHiddenByCalendar, isLargeExpense: $isLargeExpense)';
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.freezed.dart:223: String id, String userId, String? spaceId, String accountId, String? categoryId, TransactionType type, int amountKopecks, String currencyCode, DateTime date, String? merchantName, String? comment, String? receiptId, bool isSplit, AuditStatus auditStatus, SyncStatus syncStatus, String categoryName, String categoryColorHex, String? memberDisplayName, String? memberColorHex, bool isHiddenByCalendar, bool isLargeExpense
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.freezed.dart:240: @override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = null,Object? spaceId = freezed,Object? accountId = null,Object? categoryId = freezed,Object? type = null,Object? amountKopecks = null,Object? currencyCode = null,Object? date = null,Object? merchantName = freezed,Object? comment = freezed,Object? receiptId = freezed,Object? isSplit = null,Object? auditStatus = null,Object? syncStatus = null,Object? categoryName = null,Object? categoryColorHex = null,Object? memberDisplayName = freezed,Object? memberColorHex = freezed,Object? isHiddenByCalendar = null,Object? isLargeExpense = null,}) {
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\domain\entities\transaction_ui_model.freezed.dart:260: as String?,memberColorHex: freezed == memberColorHex ? _self.memberColorHex : memberColorHex // ignore: cast_nullable_to_non_nullable
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\widgets\transaction_row.dart:88: transaction.memberColorHex ?? '#60A5FA',
+D:\Et_Cetr\Budget Assistant\lib\features\transactions\presentation\widgets\transaction_row.dart:131: transaction.memberColorHex ?? '#60A5FA',

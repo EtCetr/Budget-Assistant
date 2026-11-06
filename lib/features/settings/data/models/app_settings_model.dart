@@ -32,6 +32,13 @@ abstract class AppSettingsModel with _$AppSettingsModel {
     @Default(false) bool requireBiometricsToUnhide,
     @Default(false) bool enablePinCode,
     @Default(false) bool enableBiometricLogin,
+    // Этап 21 (6.3.28): безопасность
+    @Default(10) int autoHideTimeoutSeconds,
+    @Default(false) bool showBalancesOnLockScreen,
+    @Default(false) bool securityOnboardingShown,
+    // Этап 21 (6.3.46): цвета семьи
+    @Default(true) bool showFamilyColorsInTransactions,
+    @Default(true) bool showFamilyColorsInCharts,
     // Импорт
     @Default(true) bool enableAutoDetectDuplicates,
     @Default(true) bool enableAutoDetectTransfers,

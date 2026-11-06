@@ -1,4 +1,4 @@
-﻿// lib/features/profile/data/datasources/users_local_datasource.dart
+// lib/features/profile/data/datasources/users_local_datasource.dart
 import 'package:drift/drift.dart'; // ✅ ДОБАВИТЬ для Value
 import 'package:logger/logger.dart'; // ✅ Заменить logging на logger
 import 'package:budget_assistant/core/database/app_database.dart';
@@ -48,6 +48,7 @@ class UsersLocalDataSource {
       // Nullable поля (оборачиваем в Value)
       displayNameDative: Value(dto.displayNameDative),
       avatarUrl: Value(dto.avatarUrl),
+        avatarPath: Value(dto.avatarPath),
 
       // Поле с default значением (оборачиваем в Value)
       syncStatus: Value(dto.syncStatus),
@@ -62,6 +63,7 @@ class UsersLocalDataSource {
       displayName: row.displayName,
       displayNameDative: row.displayNameDative,
       avatarUrl: row.avatarUrl,
+        avatarPath: row.avatarPath,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       syncStatus: row.syncStatus,

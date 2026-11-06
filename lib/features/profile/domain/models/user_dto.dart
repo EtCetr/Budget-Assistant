@@ -1,4 +1,4 @@
-﻿import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'user_dto.freezed.dart';
 part 'user_dto.g.dart';
@@ -11,6 +11,7 @@ abstract class UserDto with _$UserDto {
     required String displayName,
     String? displayNameDative,
     String? avatarUrl,
+    String? avatarPath,
     required DateTime createdAt,
     required DateTime updatedAt,
     required String syncStatus,

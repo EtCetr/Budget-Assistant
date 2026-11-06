@@ -86,6 +86,26 @@ _AppSettingsModel _$AppSettingsModelFromJson(
       'enableBiometricLogin',
       (v) => v as bool? ?? false,
     ),
+    autoHideTimeoutSeconds: $checkedConvert(
+      'autoHideTimeoutSeconds',
+      (v) => (v as num?)?.toInt() ?? 10,
+    ),
+    showBalancesOnLockScreen: $checkedConvert(
+      'showBalancesOnLockScreen',
+      (v) => v as bool? ?? false,
+    ),
+    securityOnboardingShown: $checkedConvert(
+      'securityOnboardingShown',
+      (v) => v as bool? ?? false,
+    ),
+    showFamilyColorsInTransactions: $checkedConvert(
+      'showFamilyColorsInTransactions',
+      (v) => v as bool? ?? true,
+    ),
+    showFamilyColorsInCharts: $checkedConvert(
+      'showFamilyColorsInCharts',
+      (v) => v as bool? ?? true,
+    ),
     enableAutoDetectDuplicates: $checkedConvert(
       'enableAutoDetectDuplicates',
       (v) => v as bool? ?? true,
@@ -235,6 +255,11 @@ Map<String, dynamic> _$AppSettingsModelToJson(
   'requireBiometricsToUnhide': instance.requireBiometricsToUnhide,
   'enablePinCode': instance.enablePinCode,
   'enableBiometricLogin': instance.enableBiometricLogin,
+  'autoHideTimeoutSeconds': instance.autoHideTimeoutSeconds,
+  'showBalancesOnLockScreen': instance.showBalancesOnLockScreen,
+  'securityOnboardingShown': instance.securityOnboardingShown,
+  'showFamilyColorsInTransactions': instance.showFamilyColorsInTransactions,
+  'showFamilyColorsInCharts': instance.showFamilyColorsInCharts,
   'enableAutoDetectDuplicates': instance.enableAutoDetectDuplicates,
   'enableAutoDetectTransfers': instance.enableAutoDetectTransfers,
   'duplicateDateToleranceDays': instance.duplicateDateToleranceDays,

@@ -1,0 +1,788 @@
+﻿===== FILE: lib\core\database\tables\app_settings.dart =====
+// lib/core/database/tables/app_settings.dart
+import 'package:drift/drift.dart';
+import 'syncable_mixin.dart';
+import 'users.dart';
+
+class AppSettings extends Table with SyncableTable {
+  TextColumn get id => text().named('id')();
+  TextColumn get userId => text().named('user_id').references(Users, #id)();
+  // Р¤РёРЅР°РЅСЃС‹ Рё Р’Р°Р»СЋС‚С‹ [SYNC]
+  TextColumn get baseCurrency =>
+      text().named('base_currency').withDefault(const Constant('RUB'))();
+  BoolColumn get useHistoricalExchangeRate => boolean()
+      .named('use_historical_exchange_rate')
+      .withDefault(const Constant(true))();
+  // Р›РёРјРёС‚С‹ Рё Р‘СЋРґР¶РµС‚С‹ [SYNC]
+  BoolColumn get inheritLimitFromPreviousMonth => boolean()
+      .named('inherit_limit_from_previous_month')
+      .withDefault(const Constant(false))();
+  BoolColumn get carryOverUnusedLimit => boolean()
+      .named('carry_over_unused_limit')
+      .withDefault(const Constant(false))();
+  TextColumn get limitAlertMode => text()
+      .named('limit_alert_mode')
+      .withDefault(const Constant('global_percent'))();
+  IntColumn get globalAlertPercent =>
+      integer().named('global_alert_percent').withDefault(const Constant(80))();
+  IntColumn get globalAlertAmount =>
+      integer().named('global_alert_amount').withDefault(const Constant(0))();
+  // Р РµР¶РёРј РЎРµРєСЂРµС‚РЅРѕСЃС‚Рё [SYNC]
+  BoolColumn get enableSecrecyMode => boolean()
+      .named('enable_secrecy_mode')
+      .withDefault(const Constant(true))();
+  IntColumn get secrecyDaysBefore =>
+      integer().named('secrecy_days_before').withDefault(const Constant(14))();
+  IntColumn get secrecyTimeoutSeconds => integer()
+      .named('secrecy_timeout_seconds')
+      .withDefault(const Constant(120))();
+  IntColumn get largeTransactionThreshold => integer()
+      .named('large_transaction_threshold')
+      .withDefault(const Constant(10000000))();
+  BoolColumn get autoHideGiftsOnImport => boolean()
+      .named('auto_hide_gifts_on_import')
+      .withDefault(const Constant(true))();
+  // Р‘РµР·РѕРїР°СЃРЅРѕСЃС‚СЊ Рё РџСЂРёРІР°С‚РЅРѕСЃС‚СЊ [LOCAL]
+  TextColumn get defaultBalanceVisibility => text()
+      .named('default_balance_visibility')
+      .withDefault(const Constant('visible'))();
+  BoolColumn get enableShakeToHide => boolean()
+      .named('enable_shake_to_hide')
+      .withDefault(const Constant(true))();
+  BoolColumn get enableFaceDownHide => boolean()
+      .named('enable_face_down_hide')
+      .withDefault(const Constant(true))();
+  BoolColumn get enableAutoHideTimeout => boolean()
+      .named('enable_auto_hide_timeout')
+      .withDefault(const Constant(true))();
+  BoolColumn get enableScreenCaptureProtection => boolean()
+      .named('enable_screen_capture_protection')
+      .withDefault(const Constant(false))();
+  BoolColumn get requireBiometricsToUnhide => boolean()
+      .named('require_biometrics_to_unhide')
+      .withDefault(const Constant(false))();
+  BoolColumn get enablePinCode =>
+      boolean().named('enable_pin_code').withDefault(const Constant(false))();
+  BoolColumn get enableBiometricLogin => boolean()
+      .named('enable_biometric_login')
+      .withDefault(const Constant(false))();
+  // РРјРїРѕСЂС‚ Рё Р§РµРєРё [LOCAL]
+  BoolColumn get enableAutoDetectDuplicates => boolean()
+      .named('enable_auto_detect_duplicates')
+      .withDefault(const Constant(true))();
+  BoolColumn get enableAutoDetectTransfers => boolean()
+      .named('enable_auto_detect_transfers')
+      .withDefault(const Constant(true))();
+  IntColumn get duplicateDateToleranceDays => integer()
+      .named('duplicate_date_tolerance_days')
+      .withDefault(const Constant(1))();
+  IntColumn get transferTimeToleranceMinutes => integer()
+      .named('transfer_time_tolerance_minutes')
+      .withDefault(const Constant(5))();
+  BoolColumn get autoOfferReceiptSplit => boolean()
+      .named('auto_offer_receipt_split')
+      .withDefault(const Constant(true))();
+  IntColumn get offerReceiptSplitCount => integer()
+      .named('offer_receipt_split_count')
+      .withDefault(const Constant(0))();
+  BoolColumn get autoOfferProductNaming => boolean()
+      .named('auto_offer_product_naming')
+      .withDefault(const Constant(true))();
+  IntColumn get offerProductNamingCount => integer()
+      .named('offer_product_naming_count')
+      .withDefault(const Constant(0))();
+  BoolColumn get syncImagesToCloud => boolean()
+      .named('sync_images_to_cloud')
+      .withDefault(const Constant(false))();
+  BoolColumn get enableBankStatementReminder => boolean()
+      .named('enable_bank_statement_reminder')
+      .withDefault(const Constant(true))();
+  // РЈРІРµРґРѕРјР»РµРЅРёСЏ Рё РџСѓС€Рё [LOCAL]
+  BoolColumn get enableGroupActivityAlerts => boolean()
+      .named('enable_group_activity_alerts')
+      .withDefault(const Constant(true))();
+  BoolColumn get enableDeficitForecastAlerts => boolean()
+      .named('enable_deficit_forecast_alerts')
+      .withDefault(const Constant(true))();
+  BoolColumn get enableYearInReviewAlerts => boolean()
+      .named('enable_year_in_review_alerts')
+      .withDefault(const Constant(true))();
+
+  // Р­С‚Р°Рї 19 (6.9): PIN РїРµСЂРµРґ С‡СѓРІСЃС‚РІРёС‚РµР»СЊРЅС‹Рј СЌРєСЃРїРѕСЂС‚РѕРј/С€РµСЂРёРЅРіРѕРј.
+  // РўСѓРјР±Р»РµСЂ РїРѕСЏРІРёС‚СЃСЏ РІ SecuritySettingsScreen (Р­С‚Р°Рї 21).
+  BoolColumn get requirePinForSensitive => boolean()
+      .named('require_pin_for_sensitive')
+      .withDefault(const Constant(false))();
+  BoolColumn get enableDebtAlerts =>
+      boolean().named('enable_debt_alerts').withDefault(const Constant(true))();
+  BoolColumn get enableReminderNotifications => boolean()
+      .named('enable_reminder_notifications')
+      .withDefault(const Constant(true))();
+  IntColumn get reminderAdvanceDays =>
+      integer().named('reminder_advance_days').withDefault(const Constant(1))();
+  TextColumn get reminderTimeOfDay => text()
+      .named('reminder_time_of_day')
+      .withDefault(const Constant('17:00'))();
+  BoolColumn get autoCreateRemindersForRecurring => boolean()
+      .named('auto_create_reminders_for_recurring')
+      .withDefault(const Constant(true))();
+  TextColumn get digestConfig =>
+      text().named('digest_config').withDefault(const Constant('{}'))();
+  // Р­С‚Р°Рї 18 (6.3.40/6.3.41): 27 РїСѓС€РµР№ x СЃРІРёС‚С‡Рё РѕРґРЅРёРј JSON [LOCAL] + Р±Р°РЅРЅРµСЂС‹.
+  TextColumn get notificationSettingsJson => text()
+      .named('notification_settings_json')
+      .withDefault(const Constant('{}'))();
+  BoolColumn get notificationInfoDismissed => boolean()
+      .named('notification_info_dismissed')
+      .withDefault(const Constant(false))();
+  BoolColumn get digestInfoDismissed => boolean()
+      .named('digest_info_dismissed')
+      .withDefault(const Constant(false))();
+  BoolColumn get importInfoDismissed => boolean()
+      .named('import_info_dismissed')
+      .withDefault(const Constant(false))();
+  // Р­С‚Р°Рї 14: РєР°Р»РµРЅРґР°СЂРЅР°СЏ РіСЂСѓРїРїР° [LOCAL]
+  BoolColumn get holidaysInfoDismissed => boolean()
+      .named('holidays_info_dismissed')
+      .withDefault(const Constant(false))();
+  BoolColumn get recurringDetectionInfoDismissed => boolean()
+      .named('recurring_detection_info_dismissed')
+      .withDefault(const Constant(false))();
+  IntColumn get recurringDetectionDismissCount => integer()
+      .named('recurring_detection_dismiss_count')
+      .withDefault(const Constant(0))();
+  BoolColumn get autoDetectRecurring => boolean()
+      .named('auto_detect_recurring')
+      .withDefault(const Constant(true))();
+  BoolColumn get enableFamilyHolidayAlerts => boolean()
+      .named('enable_family_holiday_alerts')
+      .withDefault(const Constant(true))();
+    // Р­С‚Р°Рї 20: РїРѕРїСѓР»СЏСЂРЅС‹Рµ РјР°РіР°Р·РёРЅС‹ вЂ” Р»РѕРєР°Р»СЊРЅС‹Р№ JSON [LOCAL], Р±РµР· СЃРёРЅРєР° (РўР— 6.3.20.13.5).
+  TextColumn get popularStoresJson =>
+      text().named('popular_stores_json').nullable()();
+@override
+  Set<Column> get primaryKey => {id};
+}
+
+===== FILE: lib\core\database\tables\users.dart =====
+// lib/core/database/tables/users.dart
+import 'package:drift/drift.dart';
+import 'syncable_mixin.dart';
+
+class Users extends Table with SyncableTable {
+  TextColumn get id => text().named('id')();
+  TextColumn get email => text().named('email')();
+  TextColumn get displayName => text().named('display_name')(); // [E2E]
+  TextColumn get displayNameDative =>
+      text().named('display_name_dative').nullable()(); // [E2E]
+  TextColumn get avatarUrl => text().named('avatar_url').nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+===== FILE: lib\core\database\tables\spaces.dart =====
+// lib/core/database/tables/spaces.dart
+import 'package:drift/drift.dart';
+import 'syncable_mixin.dart';
+
+class Spaces extends Table with SyncableTable {
+  TextColumn get id => text().named('id')();
+  TextColumn get name => text().named('name')(); // [E2E]
+  TextColumn get encryptionSalt => text().named('encryption_salt')();
+  TextColumn get status => text()
+      .named('status')
+      .withDefault(const Constant('active'))(); // active | dissolved
+  TextColumn get currencyCode =>
+      text().named('currency_code').withDefault(const Constant('RUB'))();
+  // Р­С‚Р°Рї 18 (6.3.36): identity + dissolve. icon_* вЂ” РѕС‚РєСЂС‹С‚С‹Рµ РјРµС‚Р°РґР°РЅРЅС‹Рµ,
+  // monthly_budget_limit вЂ” [E2E] РїСЂРё СЃРёРЅРєРµ. encryption_salt РЅРµРёР·РјРµРЅСЏРµРј.
+  TextColumn get iconEmoji => text().named('icon_emoji').nullable()();
+  TextColumn get iconColor => text().named('icon_color').nullable()();
+  IntColumn get monthlyBudgetLimit =>
+      integer().named('monthly_budget_limit').nullable()();
+  DateTimeColumn get dissolvedAt => dateTime().named('dissolved_at').nullable()();
+  TextColumn get dissolvedBy => text().named('dissolved_by').nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+===== FILE: lib\core\database\tables\memberships.dart =====
+// lib/core/database/tables/memberships.dart
+import 'package:drift/drift.dart';
+import 'syncable_mixin.dart';
+import 'users.dart';
+import 'spaces.dart';
+
+class Memberships extends Table with SyncableTable {
+  TextColumn get id => text().named('id')();
+  TextColumn get userId => text().named('user_id').references(Users, #id)();
+  TextColumn get spaceId => text().named('space_id').references(Spaces, #id)();
+  TextColumn get role => text()
+      .named('role')
+      .withDefault(const Constant('member'))(); // admin | member
+  TextColumn get status => text()
+      .named('status')
+      .withDefault(const Constant('active'))(); // active | pending | left
+  DateTimeColumn get lastActiveAt =>
+      dateTime().named('last_active_at').nullable()();
+  DateTimeColumn get joinedAt => dateTime().named('joined_at')();
+  DateTimeColumn get leftAt => dateTime().named('left_at').nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+    {userId, spaceId},
+  ];
+}
+
+===== FILE: lib\core\database\daos\app_settings_dao.dart =====
+import 'package:drift/drift.dart';
+import '../app_database.dart';
+import '../tables/app_settings.dart';
+
+part 'app_settings_dao.g.dart';
+
+@DriftAccessor(tables: [AppSettings])
+class AppSettingsDao extends DatabaseAccessor<AppDatabase>
+    with _$AppSettingsDaoMixin {
+  AppSettingsDao(super.db);
+
+  /// Получить настройки пользователя (создать дефолтные, если нет)
+  /// Drift генерирует класс `AppSetting` (ед. число), а не `AppSettings`
+  Future<AppSetting> getForUser(String userId) async {
+    final existing = await (select(
+      appSettings,
+    )..where((t) => t.userId.equals(userId))).getSingleOrNull();
+
+    if (existing != null) return existing;
+
+    // AppSettingsCompanion — от имени таблицы
+    final defaultSettings = AppSettingsCompanion.insert(
+      id: 'settings_$userId',
+      userId: userId,
+      // createdAt и updatedAt подставит SyncableTable mixin
+    );
+    await into(appSettings).insert(defaultSettings);
+
+    return (select(
+      appSettings,
+    )..where((t) => t.userId.equals(userId))).getSingle();
+  }
+
+  Stream<AppSetting> watchForUser(String userId) {
+    return (select(
+      appSettings,
+    )..where((t) => t.userId.equals(userId))).watchSingle();
+  }
+
+  Future<int> updateForUser(String userId, AppSettingsCompanion changes) {
+    return (update(appSettings)..where((t) => t.userId.equals(userId))).write(
+      changes.copyWith(syncStatus: const Value('pending')),
+    );
+  }
+}
+
+===== FILE: lib\features\settings\data\models\app_settings_model.dart =====
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'app_settings_model.freezed.dart';
+part 'app_settings_model.g.dart';
+
+@freezed
+abstract class AppSettingsModel with _$AppSettingsModel {
+  const factory AppSettingsModel({
+    required String id,
+    required String userId,
+    // Р¤РёРЅР°РЅСЃС‹
+    @Default('RUB') String baseCurrency,
+    @Default(true) bool useHistoricalExchangeRate,
+    // Р›РёРјРёС‚С‹
+    @Default(false) bool inheritLimitFromPreviousMonth,
+    @Default(false) bool carryOverUnusedLimit,
+    @Default('global_percent') String limitAlertMode,
+    @Default(80) int globalAlertPercent,
+    @Default(0) int globalAlertAmount,
+    // Р РµР¶РёРј СЃРµРєСЂРµС‚РЅРѕСЃС‚Рё
+    @Default(true) bool enableSecrecyMode,
+    @Default(14) int secrecyDaysBefore,
+    @Default(120) int secrecyTimeoutSeconds,
+    @Default(10000000) int largeTransactionThreshold,
+    @Default(true) bool autoHideGiftsOnImport,
+    // Р‘РµР·РѕРїР°СЃРЅРѕСЃС‚СЊ
+    @Default('visible') String defaultBalanceVisibility,
+    @Default(true) bool enableShakeToHide,
+    @Default(true) bool enableFaceDownHide,
+    @Default(true) bool enableAutoHideTimeout,
+    @Default(false) bool enableScreenCaptureProtection,
+    @Default(false) bool requireBiometricsToUnhide,
+    @Default(false) bool enablePinCode,
+    @Default(false) bool enableBiometricLogin,
+    // РРјРїРѕСЂС‚
+    @Default(true) bool enableAutoDetectDuplicates,
+    @Default(true) bool enableAutoDetectTransfers,
+    @Default(1) int duplicateDateToleranceDays,
+    @Default(5) int transferTimeToleranceMinutes,
+    @Default(true) bool autoOfferReceiptSplit,
+    @Default(0) int offerReceiptSplitCount,
+    @Default(true) bool autoOfferProductNaming,
+    @Default(0) int offerProductNamingCount,
+    @Default(false) bool syncImagesToCloud,
+    @Default(true) bool enableBankStatementReminder,
+    // РЈРІРµРґРѕРјР»РµРЅРёСЏ
+    @Default(true) bool enableGroupActivityAlerts,
+    @Default(true) bool enableDeficitForecastAlerts,
+    @Default(true) bool enableYearInReviewAlerts,
+  @Default(false) bool requirePinForSensitive,
+    @Default(true) bool enableDebtAlerts,
+    @Default(true) bool enableReminderNotifications,
+    @Default(1) int reminderAdvanceDays,
+    @Default('17:00') String reminderTimeOfDay,
+    @Default(true) bool autoCreateRemindersForRecurring,
+    @Default('{}') String digestConfig,
+    // Р­С‚Р°Рї 14: РєР°Р»РµРЅРґР°СЂРЅР°СЏ РіСЂСѓРїРїР°
+    @Default(false) bool holidaysInfoDismissed,
+    @Default(false) bool recurringDetectionInfoDismissed,
+    @Default(0) int recurringDetectionDismissCount,
+    @Default(true) bool autoDetectRecurring,
+    @Default(true) bool enableFamilyHolidayAlerts,
+    // Р­С‚Р°Рї 18 (6.3.40/6.3.41): РЅР°СЃС‚СЂРѕР№РєРё РїСѓС€РµР№ РѕРґРЅРёРј JSON + РёРЅС„Рѕ-Р±Р°РЅРЅРµСЂС‹.
+    @Default('{}') String notificationSettingsJson,
+    @Default(false) bool notificationInfoDismissed,
+    @Default(false) bool digestInfoDismissed,
+    @Default(false) bool importInfoDismissed,
+    // Р­С‚Р°Рї 20: РїРѕРїСѓР»СЏСЂРЅС‹Рµ РјР°РіР°Р·РёРЅС‹ [LOCAL].
+    String? popularStoresJson,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    @Default('pending') String syncStatus,
+  }) = _AppSettingsModel;
+
+  factory AppSettingsModel.fromJson(Map<String, dynamic> json) =>
+      _$AppSettingsModelFromJson(json);
+}
+
+===== FILE: lib\features\security\data\repositories\pin_code_repository.dart =====
+// lib/features/security/data/repositories/pin_code_repository.dart
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
+import 'package:budget_assistant/core/errors/failures.dart';
+import 'package:budget_assistant/core/logger.dart';
+import 'package:budget_assistant/core/services/secure_storage_service.dart';
+import 'package:budget_assistant/core/utils/result.dart';
+
+abstract class PinCodeRepository {
+  Future<Result<void>> savePin(String pin);
+  Future<Result<bool>> verifyPin(String pin);
+  Future<Result<bool>> hasPin();
+}
+
+class PinCodeRepositoryImpl implements PinCodeRepository {
+  final SecureStorageService _secureStorage;
+  static const String _pinKey = 'pin_code_hash';
+  static const String _pinSaltKey = 'pin_code_salt';
+
+  PinCodeRepositoryImpl(this._secureStorage);
+
+  @override
+  Future<Result<void>> savePin(String pin) async {
+    try {
+      final salt = DateTime.now().millisecondsSinceEpoch.toString();
+      final hash = sha256.convert(utf8.encode(pin + salt)).toString();
+
+      // ✅ ПОЗИЦИОННЫЕ аргументы — как требует ваш SecureStorageService
+      await _secureStorage.write(_pinKey, hash);
+      await _secureStorage.write(_pinSaltKey, salt);
+
+      AppLogger.i('PIN saved successfully');
+      return Result.success(null);
+    } catch (e, stackTrace) {
+      AppLogger.e('Failed to save PIN', e, stackTrace);
+      return Result.failure(
+        Failure.unexpected('Failed to save PIN: $e', stackTrace),
+      );
+    }
+  }
+
+  @override
+  Future<Result<bool>> verifyPin(String pin) async {
+    try {
+      final savedHash = await _secureStorage.read(_pinKey);
+      final savedSalt = await _secureStorage.read(_pinSaltKey);
+
+      if (savedHash == null || savedSalt == null) {
+        return Result.success(false);
+      }
+
+      final hash = sha256.convert(utf8.encode(pin + savedSalt)).toString();
+      return Result.success(hash == savedHash);
+    } catch (e, stackTrace) {
+      AppLogger.e('Failed to verify PIN', e, stackTrace);
+      return Result.failure(
+        Failure.unexpected('Failed to verify PIN: $e', stackTrace),
+      );
+    }
+  }
+
+  @override
+  Future<Result<bool>> hasPin() async {
+    try {
+      final hash = await _secureStorage.read(_pinKey);
+      return Result.success(hash != null && hash.isNotEmpty);
+    } catch (e, stackTrace) {
+      AppLogger.e('Failed to check PIN existence', e, stackTrace);
+      return Result.failure(
+        Failure.unexpected('Failed to check PIN: $e', stackTrace),
+      );
+    }
+  }
+}
+
+===== FILE: lib\features\security\services\biometric_service.dart =====
+import 'package:local_auth/local_auth.dart';
+import 'package:budget_assistant/core/logger.dart';
+
+class BiometricService {
+  static final _localAuth = LocalAuthentication();
+
+  static Future<bool> isAvailable() async {
+    try {
+      final canCheck = await _localAuth.canCheckBiometrics;
+      final isDeviceSupported = await _localAuth.isDeviceSupported();
+      return canCheck && isDeviceSupported;
+    } catch (e, st) {
+      AppLogger.e('Biometric availability check failed', e, st);
+      return false;
+    }
+  }
+
+  static Future<bool> authenticate({required String reason}) async {
+    try {
+      return await _localAuth.authenticate(
+        localizedReason: reason,
+        options: const AuthenticationOptions(
+          stickyAuth: true,
+          biometricOnly: false, // Разрешаем PIN как fallback
+        ),
+      );
+    } catch (e, st) {
+      AppLogger.e('Biometric authentication failed', e, st);
+      return false;
+    }
+  }
+}
+
+===== FILE: lib\core\services\secure_flag_service.dart =====
+import 'package:flutter/services.dart';
+import 'package:budget_assistant/core/logger.dart';
+
+/// РћР±С‘СЂС‚РєР° РЅР°Рґ MethodChannel РґР»СЏ FLAG_SECURE (РўРћРњ 3 В§6).
+/// РќР°С‚РёРІРЅС‹Р№ СЃР»РѕР№ СЃР°Рј РІРѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі РїРѕ С‚Р°Р№РјРµСЂСѓ (СЃС‚СЂР°С…РѕРІРєР° РѕС‚ РєСЂР°С€Р°).
+class SecureFlagService {
+  static const MethodChannel _channel =
+      MethodChannel('budget_assistant/secure_flag');
+
+  /// Р’СЂРµРјРµРЅРЅРѕ СЃРЅРёРјР°РµС‚ FLAG_SECURE. Р’РѕР·РІСЂР°С‰Р°РµС‚ true, РµСЃР»Рё С„Р»Р°Рі Р±С‹Р» СѓСЃС‚Р°РЅРѕРІР»РµРЅ
+  /// (Р·РЅР°С‡РёС‚, РїРѕСЃР»Рµ РѕРїРµСЂР°С†РёРё РµРіРѕ РЅСѓР¶РЅРѕ РІРµСЂРЅСѓС‚СЊ).
+  Future<bool> disableTemporarily(Duration duration) async {
+    try {
+      final was = await _channel.invokeMethod<bool>(
+        'disableTemporarily',
+        {'durationMs': duration.inMilliseconds},
+      );
+      return was ?? false;
+    } catch (e, st) {
+      AppLogger.e('SecureFlag disableTemporarily failed', e, st);
+      return false;
+    }
+  }
+
+  Future<void> restore() async {
+    try {
+      await _channel.invokeMethod<void>('restoreSecure');
+    } catch (e, st) {
+      AppLogger.e('SecureFlag restore failed', e, st);
+    }
+  }
+
+  /// РЎРїРµРєР° 6.3.21.13.11: temporarilyDisableSecureFlag({Duration? duration}).
+  /// duration == null РїРѕ СЃРїРµРєРµ = В«РґРѕ СЏРІРЅРѕРіРѕ restoreВ»; РЅР°С‚РёРІРЅС‹Р№ РєР°РЅР°Р» РІСЃРµРіРґР°
+  /// РїР»Р°РЅРёСЂСѓРµС‚ Р°РІС‚РѕРІРѕР·РІСЂР°С‚, РїРѕСЌС‚РѕРјСѓ РёСЃРїРѕР»СЊР·СѓРµРј СЃС‚СЂР°С…РѕРІРѕС‡РЅС‹Рµ 10 РјРёРЅСѓС‚
+  /// (Kotlin РЅРµ С‚СЂРѕРіР°РµРј вЂ” СЂРµС€РµРЅРёРµ D20), СЏРІРЅС‹Р№ restore РѕС‚РјРµРЅСЏРµС‚ С‚Р°Р№РјРµСЂ.
+  Future<bool> temporarilyDisableSecureFlag({Duration? duration}) {
+    return disableTemporarily(duration ?? const Duration(minutes: 10));
+  }
+
+  /// РЎРїРµРєР° 6.3.21.13.11: РІРµСЂРЅСѓС‚СЊ РїСЂРµРґС‹РґСѓС‰РµРµ СЃРѕСЃС‚РѕСЏРЅРёРµ С„Р»Р°РіР°.
+  Future<void> restoreSecureFlag() => restore();
+}
+
+===== FILE: lib\core\utils\pin_utils.dart =====
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:crypto/crypto.dart';
+
+// Generates a random salt
+String generateSalt() {
+  final randomBytes = Uint8List.fromList(
+    List.generate(16, (index) => index),
+  ); // Use proper crypto random
+  return base64Encode(randomBytes);
+}
+
+// Hashes the PIN combined with the salt using SHA256
+String hashPinWithSalt(String pin, String salt) {
+  final bytes = utf8.encode(pin + salt);
+  final digest = sha256.convert(bytes);
+  return base64Encode(digest.bytes);
+}
+
+===== FILE: lib\features\privacy\presentation\privacy_formatter.dart =====
+import 'package:intl/intl.dart';
+
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+
+/// Р¦РµРЅС‚СЂР°Р»РёР·РѕРІР°РЅРЅРѕРµ С„РѕСЂРјР°С‚РёСЂРѕРІР°РЅРёРµ РїСЂРёРІР°С‚РЅС‹С… РґР°РЅРЅС‹С….
+///
+/// РђСЂС…РёС‚РµРєС‚СѓСЂРЅРѕРµ РїСЂР°РІРёР»Рѕ:
+/// - Р·Р°РїСЂРµС‰РµРЅРѕ С…Р°СЂРґРєРѕРґРёС‚СЊ 'вЂўвЂўвЂў' РІ РІРёРґР¶РµС‚Р°С…;
+/// - Р»СЋР±РѕР№ СЌРєСЂР°РЅ РёСЃРїРѕР»СЊР·СѓРµС‚ С‚РѕР»СЊРєРѕ СЌС‚РѕС‚ РєР»Р°СЃСЃ С‡РµСЂРµР· РїСЂРѕРІР°Р№РґРµСЂ.
+class PrivacyFormatter {
+  const PrivacyFormatter();
+
+  /// Р¤РѕСЂРјР°С‚РёСЂРѕРІР°РЅРёРµ РґРµРЅРµР¶РЅРѕР№ СЃСѓРјРјС‹.
+  ///
+  /// Р’ СЂРµР¶РёРјР°С… partial Рё hidden СЃСѓРјРјР° РїРѕР»РЅРѕСЃС‚СЊСЋ СЃРєСЂС‹РІР°РµС‚СЃСЏ.
+  String formatAmount(
+    int kopecks,
+    String currencyCode,
+    BalanceVisibilityMode mode,
+  ) {
+    if (mode != BalanceVisibilityMode.visible) {
+      return 'вЂўвЂўвЂў';
+    }
+
+    return _formatKopecks(kopecks, currencyCode);
+  }
+
+  /// РњРµСЂС‡Р°РЅС‚ РІРёРґРµРЅ РІ visible Рё partial.
+  /// Р’ hidden СЃРєСЂС‹РІР°РµС‚СЃСЏ.
+  String formatMerchant(String? merchantName, BalanceVisibilityMode mode) {
+    if (mode == BalanceVisibilityMode.hidden) {
+      return 'вЂўвЂўвЂў';
+    }
+
+    return merchantName ?? '';
+  }
+
+  /// РљРѕРјРјРµРЅС‚Р°СЂРёР№ РјРѕР¶РµС‚ СЃРѕРґРµСЂР¶Р°С‚СЊ Р»РёС‡РЅС‹Рµ РґР°РЅРЅС‹Рµ.
+  String formatComment(String? comment, BalanceVisibilityMode mode) {
+    if (mode == BalanceVisibilityMode.hidden) {
+      return 'вЂўвЂўвЂў';
+    }
+
+    return comment ?? '';
+  }
+
+  /// РРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ/СѓС‡Р°СЃС‚РЅРёРєР°.
+  String formatName(String? name, BalanceVisibilityMode mode) {
+    if (mode == BalanceVisibilityMode.hidden) {
+      return 'вЂўвЂўвЂў';
+    }
+
+    return name ?? '';
+  }
+
+  /// Email СЏРІР»СЏРµС‚СЃСЏ РїРµСЂСЃРѕРЅР°Р»СЊРЅС‹Рј РґР°РЅРЅС‹РјРё.
+  String formatEmail(String? email, BalanceVisibilityMode mode) {
+    if (mode == BalanceVisibilityMode.hidden) {
+      return 'вЂўвЂўвЂў';
+    }
+
+    return email ?? '';
+  }
+
+  /// РќР°Р·РІР°РЅРёРµ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІР°.
+  String formatSpaceName(String? spaceName, BalanceVisibilityMode mode) {
+    if (mode == BalanceVisibilityMode.hidden) {
+      return 'вЂўвЂўвЂў';
+    }
+
+    return spaceName ?? '';
+  }
+
+  /// РќРѕРјРµСЂ РєР°СЂС‚С‹.
+  ///
+  /// visible: *1234
+  /// partial: *вЂўвЂўвЂў
+  /// hidden: вЂўвЂўвЂўвЂў
+  String formatCardNumber(String? cardNumber, BalanceVisibilityMode mode) {
+    if (cardNumber == null || cardNumber.isEmpty) {
+      return '';
+    }
+
+    switch (mode) {
+      case BalanceVisibilityMode.visible:
+        return cardNumber;
+      case BalanceVisibilityMode.hidden:
+        return 'вЂўвЂўвЂўвЂў';
+    }
+  }
+
+  /// РџСЂРѕС†РµРЅС‚С‹ РјРѕР¶РЅРѕ РїРѕРєР°Р·С‹РІР°С‚СЊ РІ visible Рё partial.
+  ///
+  /// Р’ hidden РѕРЅРё РјРѕРіСѓС‚ РґРµР°РЅРѕРЅРёРјРёР·РёСЂРѕРІР°С‚СЊ РјР°СЃС€С‚Р°Р± РґР°РЅРЅС‹С….
+  String formatPercent(int percent, BalanceVisibilityMode mode) {
+    if (mode == BalanceVisibilityMode.hidden) {
+      return '';
+    }
+
+    return '$percent%';
+  }
+
+  /// РџСЂРѕС†РµРЅС‚ РєСЌС€Р±СЌРєР° РёР· Р±Р°Р·РёСЃРЅС‹С… РїСѓРЅРєС‚РѕРІ (Р­С‚Р°Рї 10).
+  ///
+  /// 500 bps -> '5%', 250 bps -> '2.5%'.
+  /// Р’ hidden СЂРµР¶РёРјРµ РІРѕР·РІСЂР°С‰Р°РµС‚ РїСѓСЃС‚СѓСЋ СЃС‚СЂРѕРєСѓ.
+  String formatPercentBps(int percentBps, BalanceVisibilityMode mode) {
+    if (mode == BalanceVisibilityMode.hidden) {
+      return '';
+    }
+
+    final percent = percentBps / 100;
+    if (percent == percent.roundToDouble()) {
+      return '${percent.round()}%';
+    }
+    return '${percent.toStringAsFixed(1)}%';
+  }
+
+  /// РўСЂРµРЅРґ С†РµРЅС‹.
+  String formatPriceTrend(String? trend, BalanceVisibilityMode mode) {
+    if (mode == BalanceVisibilityMode.hidden) {
+      return '';
+    }
+
+    return trend ?? '';
+  }
+
+  bool shouldShowFamilyColors(BalanceVisibilityMode mode) {
+    return mode != BalanceVisibilityMode.hidden;
+  }
+
+  bool shouldShowChart(BalanceVisibilityMode mode) {
+    return mode != BalanceVisibilityMode.hidden;
+  }
+
+  bool shouldShowCategoryColors(BalanceVisibilityMode mode) {
+    return mode != BalanceVisibilityMode.hidden;
+  }
+
+  /// РќР°Р·РІР°РЅРёРµ С‚РѕРІР°СЂР° (РўР— 6.3.24.12.11): РІ hidden вЂ” С‚РѕС‡РєРё.
+  String formatProductName(String? productName, BalanceVisibilityMode mode) {
+    if (mode == BalanceVisibilityMode.hidden) {
+      return 'вЂўвЂўвЂў';
+    }
+    return productName ?? '';
+  }
+
+  /// Р“СЂР°С„РёРєРё С†РµРЅ (РўР— 6.3.24.12.11): РІ hidden вЂ” СЃРєСЂС‹РІР°РµРј.
+  bool shouldShowPriceChart(BalanceVisibilityMode mode) {
+    return mode != BalanceVisibilityMode.hidden;
+  }
+
+  /// РџСЂРѕС†РµРЅС‚ РёР·РјРµРЅРµРЅРёСЏ С†РµРЅС‹ (РўР— 6.3.24.12.11): РІ hidden вЂ” РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР°.
+  String formatPriceTrendPercent(String? percent, BalanceVisibilityMode mode) {
+    if (mode == BalanceVisibilityMode.hidden) {
+      return '';
+    }
+    return percent ?? '';
+  }
+  bool shouldShowBrandColors(BalanceVisibilityMode mode) {
+    return mode != BalanceVisibilityMode.hidden;
+  }
+
+  bool shouldShowReceiptImage(BalanceVisibilityMode mode) {
+    return mode != BalanceVisibilityMode.hidden;
+  }
+
+  bool shouldShowCelebration(BalanceVisibilityMode mode) {
+    return mode != BalanceVisibilityMode.hidden;
+  }
+
+  /// Р¤РѕСЂРјР°С‚РёСЂРѕРІР°РЅРёРµ РєРѕРїРµРµРє Р±РµР· РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ double.
+  ///
+  /// РџСЂРёРјРµСЂ:
+  /// 15000000 -> "150 000,00 RUB"
+  /// -210000 -> "-2 100,00 RUB"
+  String _formatKopecks(int kopecks, String currencyCode) {
+    final isNegative = kopecks < 0;
+    final absKopecks = kopecks.abs();
+
+    final whole = absKopecks ~/ 100;
+    final fraction = absKopecks % 100;
+
+    final formattedWhole = NumberFormat('#,##0', 'ru').format(whole);
+    final formattedFraction = fraction.toString().padLeft(2, '0');
+
+    final sign = isNegative ? '-' : '';
+
+    return '$sign$formattedWhole,$formattedFraction $currencyCode';
+  }
+}
+
+===== FILE: lib\features\privacy\domain\models\balance_visibility_mode.dart =====
+/// Р РµР¶РёРјС‹ РїСЂРёРІР°С‚РЅРѕСЃС‚Рё.
+///
+/// visible вЂ” РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РѕРґРёРЅ, РІСЃС‘ РІРёРґРЅРѕ.
+/// hidden вЂ” РґРµРјРѕРЅСЃС‚СЂР°С†РёСЏ СЌРєСЂР°РЅР°, СЃРєСЂС‹РІР°РµРј РІСЃС‘ С‡СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕРµ.
+/// (РџСЂРѕРјРµР¶СѓС‚РѕС‡РЅС‹Р№ СЂРµР¶РёРј partial СѓРґР°Р»С‘РЅ СЂРµС€РµРЅРёРµРј РІР»Р°РґРµР»СЊС†Р°, Р­С‚Р°Рї 19.)
+enum BalanceVisibilityMode { visible, hidden }
+
+===== FILE: lib\features\privacy\presentation\providers\privacy_mode_provider.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+import 'package:budget_assistant/features/privacy/presentation/privacy_formatter.dart';
+
+/// РќРѕС‚РёС„РёРєР°С‚РѕСЂ СЂРµР¶РёРјР° РїСЂРёРІР°С‚РЅРѕСЃС‚Рё (Riverpod 3.x, Р±РµР· StateProvider).
+///
+/// РСЃС‚РѕС‡РЅРёРєРё СЂРµР¶РёРјР° (РїРѕРґРєР»СЋС‡Р°СЋС‚СЃСЏ РЅР° СЌС‚Р°РїР°С… 21 Рё 23):
+/// - app_settings.default_balance_visibility;
+/// - shake-to-hide;
+/// - face-down;
+/// - auto-hide timeout;
+/// - biometric/PIN unhide.
+class PrivacyModeNotifier extends Notifier<BalanceVisibilityMode> {
+  @override
+  BalanceVisibilityMode build() {
+    // Р‘Р°Р·РѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ. Р­С‚Р°Рї 21 Р·Р°РјРµРЅРёС‚ РЅР° С‡С‚РµРЅРёРµ РёР· app_settings.
+    return BalanceVisibilityMode.visible;
+  }
+
+  void setMode(BalanceVisibilityMode mode) {
+    state = mode;
+  }
+
+  void toggle() {
+    state = switch (state) {
+      BalanceVisibilityMode.visible => BalanceVisibilityMode.hidden,
+      BalanceVisibilityMode.hidden => BalanceVisibilityMode.visible,
+    };
+  }
+}
+
+final privacyModeProvider =
+    NotifierProvider<PrivacyModeNotifier, BalanceVisibilityMode>(
+      PrivacyModeNotifier.new,
+    );
+
+/// Р•РґРёРЅСЃС‚РІРµРЅРЅР°СЏ С‚РѕС‡РєР° РґРѕСЃС‚СѓРїР° Рє PrivacyFormatter.
+/// Р’РёРґР¶РµС‚С‹ РїРѕР»СѓС‡Р°СЋС‚ formatter РўРћР›Р¬РљРћ РѕС‚СЃСЋРґР° (РўРћРњ 6, СЂР°Р·РґРµР» 6.6).
+final privacyFormatterProvider = Provider<PrivacyFormatter>((ref) {
+  return const PrivacyFormatter();
+});
+

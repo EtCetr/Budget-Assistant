@@ -1422,6 +1422,17 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _avatarPathMeta = const VerificationMeta(
+    'avatarPath',
+  );
+  @override
+  late final GeneratedColumn<String> avatarPath = GeneratedColumn<String>(
+    'avatar_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     createdAt,
@@ -1432,6 +1443,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     displayName,
     displayNameDative,
     avatarUrl,
+    avatarPath,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1502,6 +1514,12 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         avatarUrl.isAcceptableOrUnknown(data['avatar_url']!, _avatarUrlMeta),
       );
     }
+    if (data.containsKey('avatar_path')) {
+      context.handle(
+        _avatarPathMeta,
+        avatarPath.isAcceptableOrUnknown(data['avatar_path']!, _avatarPathMeta),
+      );
+    }
     return context;
   }
 
@@ -1543,6 +1561,10 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         DriftSqlType.string,
         data['${effectivePrefix}avatar_url'],
       ),
+      avatarPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}avatar_path'],
+      ),
     );
   }
 
@@ -1561,6 +1583,7 @@ class User extends DataClass implements Insertable<User> {
   final String displayName;
   final String? displayNameDative;
   final String? avatarUrl;
+  final String? avatarPath;
   const User({
     required this.createdAt,
     required this.updatedAt,
@@ -1570,6 +1593,7 @@ class User extends DataClass implements Insertable<User> {
     required this.displayName,
     this.displayNameDative,
     this.avatarUrl,
+    this.avatarPath,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1585,6 +1609,9 @@ class User extends DataClass implements Insertable<User> {
     }
     if (!nullToAbsent || avatarUrl != null) {
       map['avatar_url'] = Variable<String>(avatarUrl);
+    }
+    if (!nullToAbsent || avatarPath != null) {
+      map['avatar_path'] = Variable<String>(avatarPath);
     }
     return map;
   }
@@ -1603,6 +1630,9 @@ class User extends DataClass implements Insertable<User> {
       avatarUrl: avatarUrl == null && nullToAbsent
           ? const Value.absent()
           : Value(avatarUrl),
+      avatarPath: avatarPath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(avatarPath),
     );
   }
 
@@ -1622,6 +1652,7 @@ class User extends DataClass implements Insertable<User> {
         json['displayNameDative'],
       ),
       avatarUrl: serializer.fromJson<String?>(json['avatarUrl']),
+      avatarPath: serializer.fromJson<String?>(json['avatarPath']),
     );
   }
   @override
@@ -1636,6 +1667,7 @@ class User extends DataClass implements Insertable<User> {
       'displayName': serializer.toJson<String>(displayName),
       'displayNameDative': serializer.toJson<String?>(displayNameDative),
       'avatarUrl': serializer.toJson<String?>(avatarUrl),
+      'avatarPath': serializer.toJson<String?>(avatarPath),
     };
   }
 
@@ -1648,6 +1680,7 @@ class User extends DataClass implements Insertable<User> {
     String? displayName,
     Value<String?> displayNameDative = const Value.absent(),
     Value<String?> avatarUrl = const Value.absent(),
+    Value<String?> avatarPath = const Value.absent(),
   }) => User(
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -1659,6 +1692,7 @@ class User extends DataClass implements Insertable<User> {
         ? displayNameDative.value
         : this.displayNameDative,
     avatarUrl: avatarUrl.present ? avatarUrl.value : this.avatarUrl,
+    avatarPath: avatarPath.present ? avatarPath.value : this.avatarPath,
   );
   User copyWithCompanion(UsersCompanion data) {
     return User(
@@ -1676,6 +1710,9 @@ class User extends DataClass implements Insertable<User> {
           ? data.displayNameDative.value
           : this.displayNameDative,
       avatarUrl: data.avatarUrl.present ? data.avatarUrl.value : this.avatarUrl,
+      avatarPath: data.avatarPath.present
+          ? data.avatarPath.value
+          : this.avatarPath,
     );
   }
 
@@ -1689,7 +1726,8 @@ class User extends DataClass implements Insertable<User> {
           ..write('email: $email, ')
           ..write('displayName: $displayName, ')
           ..write('displayNameDative: $displayNameDative, ')
-          ..write('avatarUrl: $avatarUrl')
+          ..write('avatarUrl: $avatarUrl, ')
+          ..write('avatarPath: $avatarPath')
           ..write(')'))
         .toString();
   }
@@ -1704,6 +1742,7 @@ class User extends DataClass implements Insertable<User> {
     displayName,
     displayNameDative,
     avatarUrl,
+    avatarPath,
   );
   @override
   bool operator ==(Object other) =>
@@ -1716,7 +1755,8 @@ class User extends DataClass implements Insertable<User> {
           other.email == this.email &&
           other.displayName == this.displayName &&
           other.displayNameDative == this.displayNameDative &&
-          other.avatarUrl == this.avatarUrl);
+          other.avatarUrl == this.avatarUrl &&
+          other.avatarPath == this.avatarPath);
 }
 
 class UsersCompanion extends UpdateCompanion<User> {
@@ -1728,6 +1768,7 @@ class UsersCompanion extends UpdateCompanion<User> {
   final Value<String> displayName;
   final Value<String?> displayNameDative;
   final Value<String?> avatarUrl;
+  final Value<String?> avatarPath;
   final Value<int> rowid;
   const UsersCompanion({
     this.createdAt = const Value.absent(),
@@ -1738,6 +1779,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.displayName = const Value.absent(),
     this.displayNameDative = const Value.absent(),
     this.avatarUrl = const Value.absent(),
+    this.avatarPath = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   UsersCompanion.insert({
@@ -1749,6 +1791,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     required String displayName,
     this.displayNameDative = const Value.absent(),
     this.avatarUrl = const Value.absent(),
+    this.avatarPath = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        email = Value(email),
@@ -1762,6 +1805,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     Expression<String>? displayName,
     Expression<String>? displayNameDative,
     Expression<String>? avatarUrl,
+    Expression<String>? avatarPath,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1773,6 +1817,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       if (displayName != null) 'display_name': displayName,
       if (displayNameDative != null) 'display_name_dative': displayNameDative,
       if (avatarUrl != null) 'avatar_url': avatarUrl,
+      if (avatarPath != null) 'avatar_path': avatarPath,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1786,6 +1831,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     Value<String>? displayName,
     Value<String?>? displayNameDative,
     Value<String?>? avatarUrl,
+    Value<String?>? avatarPath,
     Value<int>? rowid,
   }) {
     return UsersCompanion(
@@ -1797,6 +1843,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       displayName: displayName ?? this.displayName,
       displayNameDative: displayNameDative ?? this.displayNameDative,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      avatarPath: avatarPath ?? this.avatarPath,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1828,6 +1875,9 @@ class UsersCompanion extends UpdateCompanion<User> {
     if (avatarUrl.present) {
       map['avatar_url'] = Variable<String>(avatarUrl.value);
     }
+    if (avatarPath.present) {
+      map['avatar_path'] = Variable<String>(avatarPath.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1845,6 +1895,7 @@ class UsersCompanion extends UpdateCompanion<User> {
           ..write('displayName: $displayName, ')
           ..write('displayNameDative: $displayNameDative, ')
           ..write('avatarUrl: $avatarUrl, ')
+          ..write('avatarPath: $avatarPath, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4138,6 +4189,77 @@ class $AppSettingsTable extends AppSettings
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _autoHideTimeoutSecondsMeta =
+      const VerificationMeta('autoHideTimeoutSeconds');
+  @override
+  late final GeneratedColumn<int> autoHideTimeoutSeconds = GeneratedColumn<int>(
+    'auto_hide_timeout_seconds',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(10),
+  );
+  static const VerificationMeta _showBalancesOnLockScreenMeta =
+      const VerificationMeta('showBalancesOnLockScreen');
+  @override
+  late final GeneratedColumn<bool> showBalancesOnLockScreen =
+      GeneratedColumn<bool>(
+        'show_balances_on_lock_screen',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("show_balances_on_lock_screen" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _securityOnboardingShownMeta =
+      const VerificationMeta('securityOnboardingShown');
+  @override
+  late final GeneratedColumn<bool> securityOnboardingShown =
+      GeneratedColumn<bool>(
+        'security_onboarding_shown',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("security_onboarding_shown" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _showFamilyColorsInTransactionsMeta =
+      const VerificationMeta('showFamilyColorsInTransactions');
+  @override
+  late final GeneratedColumn<bool> showFamilyColorsInTransactions =
+      GeneratedColumn<bool>(
+        'show_family_colors_in_transactions',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("show_family_colors_in_transactions" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
+  static const VerificationMeta _showFamilyColorsInChartsMeta =
+      const VerificationMeta('showFamilyColorsInCharts');
+  @override
+  late final GeneratedColumn<bool> showFamilyColorsInCharts =
+      GeneratedColumn<bool>(
+        'show_family_colors_in_charts',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("show_family_colors_in_charts" IN (0, 1))',
+        ),
+        defaultValue: const Constant(true),
+      );
   static const VerificationMeta _enableAutoDetectDuplicatesMeta =
       const VerificationMeta('enableAutoDetectDuplicates');
   @override
@@ -4581,6 +4703,11 @@ class $AppSettingsTable extends AppSettings
     requireBiometricsToUnhide,
     enablePinCode,
     enableBiometricLogin,
+    autoHideTimeoutSeconds,
+    showBalancesOnLockScreen,
+    securityOnboardingShown,
+    showFamilyColorsInTransactions,
+    showFamilyColorsInCharts,
     enableAutoDetectDuplicates,
     enableAutoDetectTransfers,
     duplicateDateToleranceDays,
@@ -4832,6 +4959,51 @@ class $AppSettingsTable extends AppSettings
         enableBiometricLogin.isAcceptableOrUnknown(
           data['enable_biometric_login']!,
           _enableBiometricLoginMeta,
+        ),
+      );
+    }
+    if (data.containsKey('auto_hide_timeout_seconds')) {
+      context.handle(
+        _autoHideTimeoutSecondsMeta,
+        autoHideTimeoutSeconds.isAcceptableOrUnknown(
+          data['auto_hide_timeout_seconds']!,
+          _autoHideTimeoutSecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('show_balances_on_lock_screen')) {
+      context.handle(
+        _showBalancesOnLockScreenMeta,
+        showBalancesOnLockScreen.isAcceptableOrUnknown(
+          data['show_balances_on_lock_screen']!,
+          _showBalancesOnLockScreenMeta,
+        ),
+      );
+    }
+    if (data.containsKey('security_onboarding_shown')) {
+      context.handle(
+        _securityOnboardingShownMeta,
+        securityOnboardingShown.isAcceptableOrUnknown(
+          data['security_onboarding_shown']!,
+          _securityOnboardingShownMeta,
+        ),
+      );
+    }
+    if (data.containsKey('show_family_colors_in_transactions')) {
+      context.handle(
+        _showFamilyColorsInTransactionsMeta,
+        showFamilyColorsInTransactions.isAcceptableOrUnknown(
+          data['show_family_colors_in_transactions']!,
+          _showFamilyColorsInTransactionsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('show_family_colors_in_charts')) {
+      context.handle(
+        _showFamilyColorsInChartsMeta,
+        showFamilyColorsInCharts.isAcceptableOrUnknown(
+          data['show_family_colors_in_charts']!,
+          _showFamilyColorsInChartsMeta,
         ),
       );
     }
@@ -5214,6 +5386,26 @@ class $AppSettingsTable extends AppSettings
         DriftSqlType.bool,
         data['${effectivePrefix}enable_biometric_login'],
       )!,
+      autoHideTimeoutSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}auto_hide_timeout_seconds'],
+      )!,
+      showBalancesOnLockScreen: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}show_balances_on_lock_screen'],
+      )!,
+      securityOnboardingShown: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}security_onboarding_shown'],
+      )!,
+      showFamilyColorsInTransactions: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}show_family_colors_in_transactions'],
+      )!,
+      showFamilyColorsInCharts: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}show_family_colors_in_charts'],
+      )!,
       enableAutoDetectDuplicates: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}enable_auto_detect_duplicates'],
@@ -5369,6 +5561,11 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
   final bool requireBiometricsToUnhide;
   final bool enablePinCode;
   final bool enableBiometricLogin;
+  final int autoHideTimeoutSeconds;
+  final bool showBalancesOnLockScreen;
+  final bool securityOnboardingShown;
+  final bool showFamilyColorsInTransactions;
+  final bool showFamilyColorsInCharts;
   final bool enableAutoDetectDuplicates;
   final bool enableAutoDetectTransfers;
   final int duplicateDateToleranceDays;
@@ -5425,6 +5622,11 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     required this.requireBiometricsToUnhide,
     required this.enablePinCode,
     required this.enableBiometricLogin,
+    required this.autoHideTimeoutSeconds,
+    required this.showBalancesOnLockScreen,
+    required this.securityOnboardingShown,
+    required this.showFamilyColorsInTransactions,
+    required this.showFamilyColorsInCharts,
     required this.enableAutoDetectDuplicates,
     required this.enableAutoDetectTransfers,
     required this.duplicateDateToleranceDays,
@@ -5496,6 +5698,17 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     );
     map['enable_pin_code'] = Variable<bool>(enablePinCode);
     map['enable_biometric_login'] = Variable<bool>(enableBiometricLogin);
+    map['auto_hide_timeout_seconds'] = Variable<int>(autoHideTimeoutSeconds);
+    map['show_balances_on_lock_screen'] = Variable<bool>(
+      showBalancesOnLockScreen,
+    );
+    map['security_onboarding_shown'] = Variable<bool>(securityOnboardingShown);
+    map['show_family_colors_in_transactions'] = Variable<bool>(
+      showFamilyColorsInTransactions,
+    );
+    map['show_family_colors_in_charts'] = Variable<bool>(
+      showFamilyColorsInCharts,
+    );
     map['enable_auto_detect_duplicates'] = Variable<bool>(
       enableAutoDetectDuplicates,
     );
@@ -5588,6 +5801,11 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       requireBiometricsToUnhide: Value(requireBiometricsToUnhide),
       enablePinCode: Value(enablePinCode),
       enableBiometricLogin: Value(enableBiometricLogin),
+      autoHideTimeoutSeconds: Value(autoHideTimeoutSeconds),
+      showBalancesOnLockScreen: Value(showBalancesOnLockScreen),
+      securityOnboardingShown: Value(securityOnboardingShown),
+      showFamilyColorsInTransactions: Value(showFamilyColorsInTransactions),
+      showFamilyColorsInCharts: Value(showFamilyColorsInCharts),
       enableAutoDetectDuplicates: Value(enableAutoDetectDuplicates),
       enableAutoDetectTransfers: Value(enableAutoDetectTransfers),
       duplicateDateToleranceDays: Value(duplicateDateToleranceDays),
@@ -5675,6 +5893,21 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       enablePinCode: serializer.fromJson<bool>(json['enablePinCode']),
       enableBiometricLogin: serializer.fromJson<bool>(
         json['enableBiometricLogin'],
+      ),
+      autoHideTimeoutSeconds: serializer.fromJson<int>(
+        json['autoHideTimeoutSeconds'],
+      ),
+      showBalancesOnLockScreen: serializer.fromJson<bool>(
+        json['showBalancesOnLockScreen'],
+      ),
+      securityOnboardingShown: serializer.fromJson<bool>(
+        json['securityOnboardingShown'],
+      ),
+      showFamilyColorsInTransactions: serializer.fromJson<bool>(
+        json['showFamilyColorsInTransactions'],
+      ),
+      showFamilyColorsInCharts: serializer.fromJson<bool>(
+        json['showFamilyColorsInCharts'],
       ),
       enableAutoDetectDuplicates: serializer.fromJson<bool>(
         json['enableAutoDetectDuplicates'],
@@ -5801,6 +6034,19 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       ),
       'enablePinCode': serializer.toJson<bool>(enablePinCode),
       'enableBiometricLogin': serializer.toJson<bool>(enableBiometricLogin),
+      'autoHideTimeoutSeconds': serializer.toJson<int>(autoHideTimeoutSeconds),
+      'showBalancesOnLockScreen': serializer.toJson<bool>(
+        showBalancesOnLockScreen,
+      ),
+      'securityOnboardingShown': serializer.toJson<bool>(
+        securityOnboardingShown,
+      ),
+      'showFamilyColorsInTransactions': serializer.toJson<bool>(
+        showFamilyColorsInTransactions,
+      ),
+      'showFamilyColorsInCharts': serializer.toJson<bool>(
+        showFamilyColorsInCharts,
+      ),
       'enableAutoDetectDuplicates': serializer.toJson<bool>(
         enableAutoDetectDuplicates,
       ),
@@ -5892,6 +6138,11 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     bool? requireBiometricsToUnhide,
     bool? enablePinCode,
     bool? enableBiometricLogin,
+    int? autoHideTimeoutSeconds,
+    bool? showBalancesOnLockScreen,
+    bool? securityOnboardingShown,
+    bool? showFamilyColorsInTransactions,
+    bool? showFamilyColorsInCharts,
     bool? enableAutoDetectDuplicates,
     bool? enableAutoDetectTransfers,
     int? duplicateDateToleranceDays,
@@ -5954,6 +6205,16 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
         requireBiometricsToUnhide ?? this.requireBiometricsToUnhide,
     enablePinCode: enablePinCode ?? this.enablePinCode,
     enableBiometricLogin: enableBiometricLogin ?? this.enableBiometricLogin,
+    autoHideTimeoutSeconds:
+        autoHideTimeoutSeconds ?? this.autoHideTimeoutSeconds,
+    showBalancesOnLockScreen:
+        showBalancesOnLockScreen ?? this.showBalancesOnLockScreen,
+    securityOnboardingShown:
+        securityOnboardingShown ?? this.securityOnboardingShown,
+    showFamilyColorsInTransactions:
+        showFamilyColorsInTransactions ?? this.showFamilyColorsInTransactions,
+    showFamilyColorsInCharts:
+        showFamilyColorsInCharts ?? this.showFamilyColorsInCharts,
     enableAutoDetectDuplicates:
         enableAutoDetectDuplicates ?? this.enableAutoDetectDuplicates,
     enableAutoDetectTransfers:
@@ -6075,6 +6336,22 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       enableBiometricLogin: data.enableBiometricLogin.present
           ? data.enableBiometricLogin.value
           : this.enableBiometricLogin,
+      autoHideTimeoutSeconds: data.autoHideTimeoutSeconds.present
+          ? data.autoHideTimeoutSeconds.value
+          : this.autoHideTimeoutSeconds,
+      showBalancesOnLockScreen: data.showBalancesOnLockScreen.present
+          ? data.showBalancesOnLockScreen.value
+          : this.showBalancesOnLockScreen,
+      securityOnboardingShown: data.securityOnboardingShown.present
+          ? data.securityOnboardingShown.value
+          : this.securityOnboardingShown,
+      showFamilyColorsInTransactions:
+          data.showFamilyColorsInTransactions.present
+          ? data.showFamilyColorsInTransactions.value
+          : this.showFamilyColorsInTransactions,
+      showFamilyColorsInCharts: data.showFamilyColorsInCharts.present
+          ? data.showFamilyColorsInCharts.value
+          : this.showFamilyColorsInCharts,
       enableAutoDetectDuplicates: data.enableAutoDetectDuplicates.present
           ? data.enableAutoDetectDuplicates.value
           : this.enableAutoDetectDuplicates,
@@ -6203,6 +6480,13 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
           ..write('requireBiometricsToUnhide: $requireBiometricsToUnhide, ')
           ..write('enablePinCode: $enablePinCode, ')
           ..write('enableBiometricLogin: $enableBiometricLogin, ')
+          ..write('autoHideTimeoutSeconds: $autoHideTimeoutSeconds, ')
+          ..write('showBalancesOnLockScreen: $showBalancesOnLockScreen, ')
+          ..write('securityOnboardingShown: $securityOnboardingShown, ')
+          ..write(
+            'showFamilyColorsInTransactions: $showFamilyColorsInTransactions, ',
+          )
+          ..write('showFamilyColorsInCharts: $showFamilyColorsInCharts, ')
           ..write('enableAutoDetectDuplicates: $enableAutoDetectDuplicates, ')
           ..write('enableAutoDetectTransfers: $enableAutoDetectTransfers, ')
           ..write('duplicateDateToleranceDays: $duplicateDateToleranceDays, ')
@@ -6272,6 +6556,11 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     requireBiometricsToUnhide,
     enablePinCode,
     enableBiometricLogin,
+    autoHideTimeoutSeconds,
+    showBalancesOnLockScreen,
+    securityOnboardingShown,
+    showFamilyColorsInTransactions,
+    showFamilyColorsInCharts,
     enableAutoDetectDuplicates,
     enableAutoDetectTransfers,
     duplicateDateToleranceDays,
@@ -6334,6 +6623,12 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
           other.requireBiometricsToUnhide == this.requireBiometricsToUnhide &&
           other.enablePinCode == this.enablePinCode &&
           other.enableBiometricLogin == this.enableBiometricLogin &&
+          other.autoHideTimeoutSeconds == this.autoHideTimeoutSeconds &&
+          other.showBalancesOnLockScreen == this.showBalancesOnLockScreen &&
+          other.securityOnboardingShown == this.securityOnboardingShown &&
+          other.showFamilyColorsInTransactions ==
+              this.showFamilyColorsInTransactions &&
+          other.showFamilyColorsInCharts == this.showFamilyColorsInCharts &&
           other.enableAutoDetectDuplicates == this.enableAutoDetectDuplicates &&
           other.enableAutoDetectTransfers == this.enableAutoDetectTransfers &&
           other.duplicateDateToleranceDays == this.duplicateDateToleranceDays &&
@@ -6399,6 +6694,11 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   final Value<bool> requireBiometricsToUnhide;
   final Value<bool> enablePinCode;
   final Value<bool> enableBiometricLogin;
+  final Value<int> autoHideTimeoutSeconds;
+  final Value<bool> showBalancesOnLockScreen;
+  final Value<bool> securityOnboardingShown;
+  final Value<bool> showFamilyColorsInTransactions;
+  final Value<bool> showFamilyColorsInCharts;
   final Value<bool> enableAutoDetectDuplicates;
   final Value<bool> enableAutoDetectTransfers;
   final Value<int> duplicateDateToleranceDays;
@@ -6456,6 +6756,11 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     this.requireBiometricsToUnhide = const Value.absent(),
     this.enablePinCode = const Value.absent(),
     this.enableBiometricLogin = const Value.absent(),
+    this.autoHideTimeoutSeconds = const Value.absent(),
+    this.showBalancesOnLockScreen = const Value.absent(),
+    this.securityOnboardingShown = const Value.absent(),
+    this.showFamilyColorsInTransactions = const Value.absent(),
+    this.showFamilyColorsInCharts = const Value.absent(),
     this.enableAutoDetectDuplicates = const Value.absent(),
     this.enableAutoDetectTransfers = const Value.absent(),
     this.duplicateDateToleranceDays = const Value.absent(),
@@ -6514,6 +6819,11 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     this.requireBiometricsToUnhide = const Value.absent(),
     this.enablePinCode = const Value.absent(),
     this.enableBiometricLogin = const Value.absent(),
+    this.autoHideTimeoutSeconds = const Value.absent(),
+    this.showBalancesOnLockScreen = const Value.absent(),
+    this.securityOnboardingShown = const Value.absent(),
+    this.showFamilyColorsInTransactions = const Value.absent(),
+    this.showFamilyColorsInCharts = const Value.absent(),
     this.enableAutoDetectDuplicates = const Value.absent(),
     this.enableAutoDetectTransfers = const Value.absent(),
     this.duplicateDateToleranceDays = const Value.absent(),
@@ -6573,6 +6883,11 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     Expression<bool>? requireBiometricsToUnhide,
     Expression<bool>? enablePinCode,
     Expression<bool>? enableBiometricLogin,
+    Expression<int>? autoHideTimeoutSeconds,
+    Expression<bool>? showBalancesOnLockScreen,
+    Expression<bool>? securityOnboardingShown,
+    Expression<bool>? showFamilyColorsInTransactions,
+    Expression<bool>? showFamilyColorsInCharts,
     Expression<bool>? enableAutoDetectDuplicates,
     Expression<bool>? enableAutoDetectTransfers,
     Expression<int>? duplicateDateToleranceDays,
@@ -6644,6 +6959,16 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
       if (enablePinCode != null) 'enable_pin_code': enablePinCode,
       if (enableBiometricLogin != null)
         'enable_biometric_login': enableBiometricLogin,
+      if (autoHideTimeoutSeconds != null)
+        'auto_hide_timeout_seconds': autoHideTimeoutSeconds,
+      if (showBalancesOnLockScreen != null)
+        'show_balances_on_lock_screen': showBalancesOnLockScreen,
+      if (securityOnboardingShown != null)
+        'security_onboarding_shown': securityOnboardingShown,
+      if (showFamilyColorsInTransactions != null)
+        'show_family_colors_in_transactions': showFamilyColorsInTransactions,
+      if (showFamilyColorsInCharts != null)
+        'show_family_colors_in_charts': showFamilyColorsInCharts,
       if (enableAutoDetectDuplicates != null)
         'enable_auto_detect_duplicates': enableAutoDetectDuplicates,
       if (enableAutoDetectTransfers != null)
@@ -6729,6 +7054,11 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     Value<bool>? requireBiometricsToUnhide,
     Value<bool>? enablePinCode,
     Value<bool>? enableBiometricLogin,
+    Value<int>? autoHideTimeoutSeconds,
+    Value<bool>? showBalancesOnLockScreen,
+    Value<bool>? securityOnboardingShown,
+    Value<bool>? showFamilyColorsInTransactions,
+    Value<bool>? showFamilyColorsInCharts,
     Value<bool>? enableAutoDetectDuplicates,
     Value<bool>? enableAutoDetectTransfers,
     Value<int>? duplicateDateToleranceDays,
@@ -6796,6 +7126,16 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
           requireBiometricsToUnhide ?? this.requireBiometricsToUnhide,
       enablePinCode: enablePinCode ?? this.enablePinCode,
       enableBiometricLogin: enableBiometricLogin ?? this.enableBiometricLogin,
+      autoHideTimeoutSeconds:
+          autoHideTimeoutSeconds ?? this.autoHideTimeoutSeconds,
+      showBalancesOnLockScreen:
+          showBalancesOnLockScreen ?? this.showBalancesOnLockScreen,
+      securityOnboardingShown:
+          securityOnboardingShown ?? this.securityOnboardingShown,
+      showFamilyColorsInTransactions:
+          showFamilyColorsInTransactions ?? this.showFamilyColorsInTransactions,
+      showFamilyColorsInCharts:
+          showFamilyColorsInCharts ?? this.showFamilyColorsInCharts,
       enableAutoDetectDuplicates:
           enableAutoDetectDuplicates ?? this.enableAutoDetectDuplicates,
       enableAutoDetectTransfers:
@@ -6951,6 +7291,31 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     if (enableBiometricLogin.present) {
       map['enable_biometric_login'] = Variable<bool>(
         enableBiometricLogin.value,
+      );
+    }
+    if (autoHideTimeoutSeconds.present) {
+      map['auto_hide_timeout_seconds'] = Variable<int>(
+        autoHideTimeoutSeconds.value,
+      );
+    }
+    if (showBalancesOnLockScreen.present) {
+      map['show_balances_on_lock_screen'] = Variable<bool>(
+        showBalancesOnLockScreen.value,
+      );
+    }
+    if (securityOnboardingShown.present) {
+      map['security_onboarding_shown'] = Variable<bool>(
+        securityOnboardingShown.value,
+      );
+    }
+    if (showFamilyColorsInTransactions.present) {
+      map['show_family_colors_in_transactions'] = Variable<bool>(
+        showFamilyColorsInTransactions.value,
+      );
+    }
+    if (showFamilyColorsInCharts.present) {
+      map['show_family_colors_in_charts'] = Variable<bool>(
+        showFamilyColorsInCharts.value,
       );
     }
     if (enableAutoDetectDuplicates.present) {
@@ -7123,6 +7488,13 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
           ..write('requireBiometricsToUnhide: $requireBiometricsToUnhide, ')
           ..write('enablePinCode: $enablePinCode, ')
           ..write('enableBiometricLogin: $enableBiometricLogin, ')
+          ..write('autoHideTimeoutSeconds: $autoHideTimeoutSeconds, ')
+          ..write('showBalancesOnLockScreen: $showBalancesOnLockScreen, ')
+          ..write('securityOnboardingShown: $securityOnboardingShown, ')
+          ..write(
+            'showFamilyColorsInTransactions: $showFamilyColorsInTransactions, ',
+          )
+          ..write('showFamilyColorsInCharts: $showFamilyColorsInCharts, ')
           ..write('enableAutoDetectDuplicates: $enableAutoDetectDuplicates, ')
           ..write('enableAutoDetectTransfers: $enableAutoDetectTransfers, ')
           ..write('duplicateDateToleranceDays: $duplicateDateToleranceDays, ')
@@ -30731,6 +31103,480 @@ class ProductAnalyticsCacheCompanion
   }
 }
 
+class $MemberColorsTable extends MemberColors
+    with TableInfo<$MemberColorsTable, MemberColor> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MemberColorsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _spaceIdMeta = const VerificationMeta(
+    'spaceId',
+  );
+  @override
+  late final GeneratedColumn<String> spaceId = GeneratedColumn<String>(
+    'space_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _customColorHexMeta = const VerificationMeta(
+    'customColorHex',
+  );
+  @override
+  late final GeneratedColumn<String> customColorHex = GeneratedColumn<String>(
+    'custom_color_hex',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    createdAt,
+    updatedAt,
+    syncStatus,
+    id,
+    userId,
+    spaceId,
+    customColorHex,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'member_colors';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MemberColor> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('space_id')) {
+      context.handle(
+        _spaceIdMeta,
+        spaceId.isAcceptableOrUnknown(data['space_id']!, _spaceIdMeta),
+      );
+    }
+    if (data.containsKey('custom_color_hex')) {
+      context.handle(
+        _customColorHexMeta,
+        customColorHex.isAcceptableOrUnknown(
+          data['custom_color_hex']!,
+          _customColorHexMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_customColorHexMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {userId, spaceId},
+  ];
+  @override
+  MemberColor map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MemberColor(
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      spaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}space_id'],
+      )!,
+      customColorHex: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_color_hex'],
+      )!,
+    );
+  }
+
+  @override
+  $MemberColorsTable createAlias(String alias) {
+    return $MemberColorsTable(attachedDatabase, alias);
+  }
+}
+
+class MemberColor extends DataClass implements Insertable<MemberColor> {
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String syncStatus;
+  final String id;
+  final String userId;
+
+  /// Скоуп действия. '' = личный цвет (прецедент D20-5: '' вместо NULL,
+  /// иначе UNIQUE(user_id, space_id) в SQLite не работает с NULL).
+  /// FK на Spaces сознательно нет из-за ''-скоупа.
+  final String spaceId;
+
+  /// Выбранный цвет (#RRGGBB). [E2E]
+  final String customColorHex;
+  const MemberColor({
+    required this.createdAt,
+    required this.updatedAt,
+    required this.syncStatus,
+    required this.id,
+    required this.userId,
+    required this.spaceId,
+    required this.customColorHex,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['space_id'] = Variable<String>(spaceId);
+    map['custom_color_hex'] = Variable<String>(customColorHex);
+    return map;
+  }
+
+  MemberColorsCompanion toCompanion(bool nullToAbsent) {
+    return MemberColorsCompanion(
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncStatus: Value(syncStatus),
+      id: Value(id),
+      userId: Value(userId),
+      spaceId: Value(spaceId),
+      customColorHex: Value(customColorHex),
+    );
+  }
+
+  factory MemberColor.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MemberColor(
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      spaceId: serializer.fromJson<String>(json['spaceId']),
+      customColorHex: serializer.fromJson<String>(json['customColorHex']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'spaceId': serializer.toJson<String>(spaceId),
+      'customColorHex': serializer.toJson<String>(customColorHex),
+    };
+  }
+
+  MemberColor copyWith({
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? syncStatus,
+    String? id,
+    String? userId,
+    String? spaceId,
+    String? customColorHex,
+  }) => MemberColor(
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    spaceId: spaceId ?? this.spaceId,
+    customColorHex: customColorHex ?? this.customColorHex,
+  );
+  MemberColor copyWithCompanion(MemberColorsCompanion data) {
+    return MemberColor(
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
+      customColorHex: data.customColorHex.present
+          ? data.customColorHex.value
+          : this.customColorHex,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MemberColor(')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('customColorHex: $customColorHex')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    createdAt,
+    updatedAt,
+    syncStatus,
+    id,
+    userId,
+    spaceId,
+    customColorHex,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MemberColor &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncStatus == this.syncStatus &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.spaceId == this.spaceId &&
+          other.customColorHex == this.customColorHex);
+}
+
+class MemberColorsCompanion extends UpdateCompanion<MemberColor> {
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<String> syncStatus;
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> spaceId;
+  final Value<String> customColorHex;
+  final Value<int> rowid;
+  const MemberColorsCompanion({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.spaceId = const Value.absent(),
+    this.customColorHex = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MemberColorsCompanion.insert({
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    required String id,
+    required String userId,
+    this.spaceId = const Value.absent(),
+    required String customColorHex,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       customColorHex = Value(customColorHex);
+  static Insertable<MemberColor> custom({
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? syncStatus,
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? spaceId,
+    Expression<String>? customColorHex,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (spaceId != null) 'space_id': spaceId,
+      if (customColorHex != null) 'custom_color_hex': customColorHex,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MemberColorsCompanion copyWith({
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<String>? syncStatus,
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? spaceId,
+    Value<String>? customColorHex,
+    Value<int>? rowid,
+  }) {
+    return MemberColorsCompanion(
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      spaceId: spaceId ?? this.spaceId,
+      customColorHex: customColorHex ?? this.customColorHex,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (spaceId.present) {
+      map['space_id'] = Variable<String>(spaceId.value);
+    }
+    if (customColorHex.present) {
+      map['custom_color_hex'] = Variable<String>(customColorHex.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MemberColorsCompanion(')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('customColorHex: $customColorHex, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -30782,6 +31628,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $LoyaltyCardDraftsTable(this);
   late final $ProductAnalyticsCacheTable productAnalyticsCache =
       $ProductAnalyticsCacheTable(this);
+  late final $MemberColorsTable memberColors = $MemberColorsTable(this);
   late final Index idxInvitationsSpace = Index(
     'idx_invitations_space',
     'CREATE INDEX idx_invitations_space ON invitations (space_id)',
@@ -30810,6 +31657,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final SyncLogsDao syncLogsDao = SyncLogsDao(this as AppDatabase);
   late final BudgetLimitsDao budgetLimitsDao = BudgetLimitsDao(
+    this as AppDatabase,
+  );
+  late final MemberColorsDao memberColorsDao = MemberColorsDao(
     this as AppDatabase,
   );
   @override
@@ -30856,6 +31706,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     loyaltyCards,
     loyaltyCardDrafts,
     productAnalyticsCache,
+    memberColors,
     idxInvitationsSpace,
     idxInvitationsSync,
     idxAuditSpace,
@@ -31522,6 +32373,7 @@ typedef $$UsersTableCreateCompanionBuilder =
       required String displayName,
       Value<String?> displayNameDative,
       Value<String?> avatarUrl,
+      Value<String?> avatarPath,
       Value<int> rowid,
     });
 typedef $$UsersTableUpdateCompanionBuilder =
@@ -31534,6 +32386,7 @@ typedef $$UsersTableUpdateCompanionBuilder =
       Value<String> displayName,
       Value<String?> displayNameDative,
       Value<String?> avatarUrl,
+      Value<String?> avatarPath,
       Value<int> rowid,
     });
 
@@ -32034,6 +32887,24 @@ final class $$UsersTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$MemberColorsTable, List<MemberColor>>
+  _memberColorsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.memberColors,
+    aliasName: 'users__id__member_colors__user_id',
+  );
+
+  $$MemberColorsTableProcessedTableManager get memberColorsRefs {
+    final manager = $$MemberColorsTableTableManager(
+      $_db,
+      $_db.memberColors,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_memberColorsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
@@ -32081,6 +32952,11 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
 
   ColumnFilters<String> get avatarUrl => $composableBuilder(
     column: $table.avatarUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get avatarPath => $composableBuilder(
+    column: $table.avatarPath,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -32735,6 +33611,31 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
         );
     return f(composer);
   }
+
+  Expression<bool> memberColorsRefs(
+    Expression<bool> Function($$MemberColorsTableFilterComposer f) f,
+  ) {
+    final $$MemberColorsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.memberColors,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MemberColorsTableFilterComposer(
+            $db: $db,
+            $table: $db.memberColors,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$UsersTableOrderingComposer
@@ -32785,6 +33686,11 @@ class $$UsersTableOrderingComposer
     column: $table.avatarUrl,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get avatarPath => $composableBuilder(
+    column: $table.avatarPath,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UsersTableAnnotationComposer
@@ -32825,6 +33731,11 @@ class $$UsersTableAnnotationComposer
 
   GeneratedColumn<String> get avatarUrl =>
       $composableBuilder(column: $table.avatarUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get avatarPath => $composableBuilder(
+    column: $table.avatarPath,
+    builder: (column) => column,
+  );
 
   Expression<T> yearlyAggregatesRefs<T extends Object>(
     Expression<T> Function($$YearlyAggregatesTableAnnotationComposer a) f,
@@ -33479,6 +34390,31 @@ class $$UsersTableAnnotationComposer
         );
     return f(composer);
   }
+
+  Expression<T> memberColorsRefs<T extends Object>(
+    Expression<T> Function($$MemberColorsTableAnnotationComposer a) f,
+  ) {
+    final $$MemberColorsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.memberColors,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MemberColorsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.memberColors,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$UsersTableTableManager
@@ -33521,6 +34457,7 @@ class $$UsersTableTableManager
             bool loyaltyCardsRefs,
             bool loyaltyCardDraftsRefs,
             bool productAnalyticsCacheRefs,
+            bool memberColorsRefs,
           })
         > {
   $$UsersTableTableManager(_$AppDatabase db, $UsersTable table)
@@ -33544,6 +34481,7 @@ class $$UsersTableTableManager
                 Value<String> displayName = const Value.absent(),
                 Value<String?> displayNameDative = const Value.absent(),
                 Value<String?> avatarUrl = const Value.absent(),
+                Value<String?> avatarPath = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UsersCompanion(
                 createdAt: createdAt,
@@ -33554,6 +34492,7 @@ class $$UsersTableTableManager
                 displayName: displayName,
                 displayNameDative: displayNameDative,
                 avatarUrl: avatarUrl,
+                avatarPath: avatarPath,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -33566,6 +34505,7 @@ class $$UsersTableTableManager
                 required String displayName,
                 Value<String?> displayNameDative = const Value.absent(),
                 Value<String?> avatarUrl = const Value.absent(),
+                Value<String?> avatarPath = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => UsersCompanion.insert(
                 createdAt: createdAt,
@@ -33576,6 +34516,7 @@ class $$UsersTableTableManager
                 displayName: displayName,
                 displayNameDative: displayNameDative,
                 avatarUrl: avatarUrl,
+                avatarPath: avatarPath,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -33612,6 +34553,7 @@ class $$UsersTableTableManager
                 loyaltyCardsRefs = false,
                 loyaltyCardDraftsRefs = false,
                 productAnalyticsCacheRefs = false,
+                memberColorsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -33642,6 +34584,7 @@ class $$UsersTableTableManager
                     if (loyaltyCardsRefs) db.loyaltyCards,
                     if (loyaltyCardDraftsRefs) db.loyaltyCardDrafts,
                     if (productAnalyticsCacheRefs) db.productAnalyticsCache,
+                    if (memberColorsRefs) db.memberColors,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -34172,6 +35115,27 @@ class $$UsersTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (memberColorsRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          MemberColor
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._memberColorsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).memberColorsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -34219,6 +35183,7 @@ typedef $$UsersTableProcessedTableManager =
         bool loyaltyCardsRefs,
         bool loyaltyCardDraftsRefs,
         bool productAnalyticsCacheRefs,
+        bool memberColorsRefs,
       })
     >;
 typedef $$SpacesTableCreateCompanionBuilder =
@@ -37217,6 +38182,11 @@ typedef $$AppSettingsTableCreateCompanionBuilder =
       Value<bool> requireBiometricsToUnhide,
       Value<bool> enablePinCode,
       Value<bool> enableBiometricLogin,
+      Value<int> autoHideTimeoutSeconds,
+      Value<bool> showBalancesOnLockScreen,
+      Value<bool> securityOnboardingShown,
+      Value<bool> showFamilyColorsInTransactions,
+      Value<bool> showFamilyColorsInCharts,
       Value<bool> enableAutoDetectDuplicates,
       Value<bool> enableAutoDetectTransfers,
       Value<int> duplicateDateToleranceDays,
@@ -37276,6 +38246,11 @@ typedef $$AppSettingsTableUpdateCompanionBuilder =
       Value<bool> requireBiometricsToUnhide,
       Value<bool> enablePinCode,
       Value<bool> enableBiometricLogin,
+      Value<int> autoHideTimeoutSeconds,
+      Value<bool> showBalancesOnLockScreen,
+      Value<bool> securityOnboardingShown,
+      Value<bool> showFamilyColorsInTransactions,
+      Value<bool> showFamilyColorsInCharts,
       Value<bool> enableAutoDetectDuplicates,
       Value<bool> enableAutoDetectTransfers,
       Value<int> duplicateDateToleranceDays,
@@ -37457,6 +38432,31 @@ class $$AppSettingsTableFilterComposer
 
   ColumnFilters<bool> get enableBiometricLogin => $composableBuilder(
     column: $table.enableBiometricLogin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get autoHideTimeoutSeconds => $composableBuilder(
+    column: $table.autoHideTimeoutSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get showBalancesOnLockScreen => $composableBuilder(
+    column: $table.showBalancesOnLockScreen,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get securityOnboardingShown => $composableBuilder(
+    column: $table.securityOnboardingShown,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get showFamilyColorsInTransactions => $composableBuilder(
+    column: $table.showFamilyColorsInTransactions,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get showFamilyColorsInCharts => $composableBuilder(
+    column: $table.showFamilyColorsInCharts,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -37763,6 +38763,32 @@ class $$AppSettingsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get autoHideTimeoutSeconds => $composableBuilder(
+    column: $table.autoHideTimeoutSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get showBalancesOnLockScreen => $composableBuilder(
+    column: $table.showBalancesOnLockScreen,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get securityOnboardingShown => $composableBuilder(
+    column: $table.securityOnboardingShown,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get showFamilyColorsInTransactions =>
+      $composableBuilder(
+        column: $table.showFamilyColorsInTransactions,
+        builder: (column) => ColumnOrderings(column),
+      );
+
+  ColumnOrderings<bool> get showFamilyColorsInCharts => $composableBuilder(
+    column: $table.showFamilyColorsInCharts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get enableAutoDetectDuplicates => $composableBuilder(
     column: $table.enableAutoDetectDuplicates,
     builder: (column) => ColumnOrderings(column),
@@ -38062,6 +39088,32 @@ class $$AppSettingsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get autoHideTimeoutSeconds => $composableBuilder(
+    column: $table.autoHideTimeoutSeconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get showBalancesOnLockScreen => $composableBuilder(
+    column: $table.showBalancesOnLockScreen,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get securityOnboardingShown => $composableBuilder(
+    column: $table.securityOnboardingShown,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get showFamilyColorsInTransactions =>
+      $composableBuilder(
+        column: $table.showFamilyColorsInTransactions,
+        builder: (column) => column,
+      );
+
+  GeneratedColumn<bool> get showFamilyColorsInCharts => $composableBuilder(
+    column: $table.showFamilyColorsInCharts,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get enableAutoDetectDuplicates => $composableBuilder(
     column: $table.enableAutoDetectDuplicates,
     builder: (column) => column,
@@ -38293,6 +39345,12 @@ class $$AppSettingsTableTableManager
                 Value<bool> requireBiometricsToUnhide = const Value.absent(),
                 Value<bool> enablePinCode = const Value.absent(),
                 Value<bool> enableBiometricLogin = const Value.absent(),
+                Value<int> autoHideTimeoutSeconds = const Value.absent(),
+                Value<bool> showBalancesOnLockScreen = const Value.absent(),
+                Value<bool> securityOnboardingShown = const Value.absent(),
+                Value<bool> showFamilyColorsInTransactions =
+                    const Value.absent(),
+                Value<bool> showFamilyColorsInCharts = const Value.absent(),
                 Value<bool> enableAutoDetectDuplicates = const Value.absent(),
                 Value<bool> enableAutoDetectTransfers = const Value.absent(),
                 Value<int> duplicateDateToleranceDays = const Value.absent(),
@@ -38353,6 +39411,11 @@ class $$AppSettingsTableTableManager
                 requireBiometricsToUnhide: requireBiometricsToUnhide,
                 enablePinCode: enablePinCode,
                 enableBiometricLogin: enableBiometricLogin,
+                autoHideTimeoutSeconds: autoHideTimeoutSeconds,
+                showBalancesOnLockScreen: showBalancesOnLockScreen,
+                securityOnboardingShown: securityOnboardingShown,
+                showFamilyColorsInTransactions: showFamilyColorsInTransactions,
+                showFamilyColorsInCharts: showFamilyColorsInCharts,
                 enableAutoDetectDuplicates: enableAutoDetectDuplicates,
                 enableAutoDetectTransfers: enableAutoDetectTransfers,
                 duplicateDateToleranceDays: duplicateDateToleranceDays,
@@ -38416,6 +39479,12 @@ class $$AppSettingsTableTableManager
                 Value<bool> requireBiometricsToUnhide = const Value.absent(),
                 Value<bool> enablePinCode = const Value.absent(),
                 Value<bool> enableBiometricLogin = const Value.absent(),
+                Value<int> autoHideTimeoutSeconds = const Value.absent(),
+                Value<bool> showBalancesOnLockScreen = const Value.absent(),
+                Value<bool> securityOnboardingShown = const Value.absent(),
+                Value<bool> showFamilyColorsInTransactions =
+                    const Value.absent(),
+                Value<bool> showFamilyColorsInCharts = const Value.absent(),
                 Value<bool> enableAutoDetectDuplicates = const Value.absent(),
                 Value<bool> enableAutoDetectTransfers = const Value.absent(),
                 Value<int> duplicateDateToleranceDays = const Value.absent(),
@@ -38476,6 +39545,11 @@ class $$AppSettingsTableTableManager
                 requireBiometricsToUnhide: requireBiometricsToUnhide,
                 enablePinCode: enablePinCode,
                 enableBiometricLogin: enableBiometricLogin,
+                autoHideTimeoutSeconds: autoHideTimeoutSeconds,
+                showBalancesOnLockScreen: showBalancesOnLockScreen,
+                securityOnboardingShown: securityOnboardingShown,
+                showFamilyColorsInTransactions: showFamilyColorsInTransactions,
+                showFamilyColorsInCharts: showFamilyColorsInCharts,
                 enableAutoDetectDuplicates: enableAutoDetectDuplicates,
                 enableAutoDetectTransfers: enableAutoDetectTransfers,
                 duplicateDateToleranceDays: duplicateDateToleranceDays,
@@ -58532,6 +59606,365 @@ typedef $$ProductAnalyticsCacheTableProcessedTableManager =
       ProductAnalyticsCacheDb,
       PrefetchHooks Function({bool userId})
     >;
+typedef $$MemberColorsTableCreateCompanionBuilder =
+    MemberColorsCompanion Function({
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
+      required String id,
+      required String userId,
+      Value<String> spaceId,
+      required String customColorHex,
+      Value<int> rowid,
+    });
+typedef $$MemberColorsTableUpdateCompanionBuilder =
+    MemberColorsCompanion Function({
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
+      Value<String> id,
+      Value<String> userId,
+      Value<String> spaceId,
+      Value<String> customColorHex,
+      Value<int> rowid,
+    });
+
+final class $$MemberColorsTableReferences
+    extends BaseReferences<_$AppDatabase, $MemberColorsTable, MemberColor> {
+  $$MemberColorsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('member_colors__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$MemberColorsTableFilterComposer
+    extends Composer<_$AppDatabase, $MemberColorsTable> {
+  $$MemberColorsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get spaceId => $composableBuilder(
+    column: $table.spaceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customColorHex => $composableBuilder(
+    column: $table.customColorHex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MemberColorsTableOrderingComposer
+    extends Composer<_$AppDatabase, $MemberColorsTable> {
+  $$MemberColorsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get spaceId => $composableBuilder(
+    column: $table.spaceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customColorHex => $composableBuilder(
+    column: $table.customColorHex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MemberColorsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MemberColorsTable> {
+  $$MemberColorsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get spaceId =>
+      $composableBuilder(column: $table.spaceId, builder: (column) => column);
+
+  GeneratedColumn<String> get customColorHex => $composableBuilder(
+    column: $table.customColorHex,
+    builder: (column) => column,
+  );
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MemberColorsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MemberColorsTable,
+          MemberColor,
+          $$MemberColorsTableFilterComposer,
+          $$MemberColorsTableOrderingComposer,
+          $$MemberColorsTableAnnotationComposer,
+          $$MemberColorsTableCreateCompanionBuilder,
+          $$MemberColorsTableUpdateCompanionBuilder,
+          (MemberColor, $$MemberColorsTableReferences),
+          MemberColor,
+          PrefetchHooks Function({bool userId})
+        > {
+  $$MemberColorsTableTableManager(_$AppDatabase db, $MemberColorsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MemberColorsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MemberColorsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MemberColorsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> spaceId = const Value.absent(),
+                Value<String> customColorHex = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MemberColorsCompanion(
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                customColorHex: customColorHex,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                required String id,
+                required String userId,
+                Value<String> spaceId = const Value.absent(),
+                required String customColorHex,
+                Value<int> rowid = const Value.absent(),
+              }) => MemberColorsCompanion.insert(
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                customColorHex: customColorHex,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$MemberColorsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.userId,
+                                referencedTable: $$MemberColorsTableReferences
+                                    ._userIdTable(db),
+                                referencedColumn: $$MemberColorsTableReferences
+                                    ._userIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$MemberColorsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MemberColorsTable,
+      MemberColor,
+      $$MemberColorsTableFilterComposer,
+      $$MemberColorsTableOrderingComposer,
+      $$MemberColorsTableAnnotationComposer,
+      $$MemberColorsTableCreateCompanionBuilder,
+      $$MemberColorsTableUpdateCompanionBuilder,
+      (MemberColor, $$MemberColorsTableReferences),
+      MemberColor,
+      PrefetchHooks Function({bool userId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -58614,4 +60047,6 @@ class $AppDatabaseManager {
       $$LoyaltyCardDraftsTableTableManager(_db, _db.loyaltyCardDrafts);
   $$ProductAnalyticsCacheTableTableManager get productAnalyticsCache =>
       $$ProductAnalyticsCacheTableTableManager(_db, _db.productAnalyticsCache);
+  $$MemberColorsTableTableManager get memberColors =>
+      $$MemberColorsTableTableManager(_db, _db.memberColors);
 }

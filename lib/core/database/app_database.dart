@@ -24,6 +24,7 @@ import 'daos/notifications_dao.dart';
 import 'daos/sync_conflicts_dao.dart';
 import 'daos/sync_logs_dao.dart';
 import 'daos/budget_limits_dao.dart';
+import 'daos/member_colors_dao.dart';
 import 'package:budget_assistant/core/logger.dart';
 import 'seeds/default_holidays_seed.dart';
 import 'package:budget_assistant/features/import/data/seeds/default_parser_configs_seed.dart';
@@ -33,6 +34,7 @@ import 'tables/yearly_aggregates.dart';
 import 'tables/loyalty_cards.dart';
 import 'tables/loyalty_card_drafts.dart';
 import 'tables/product_analytics_cache.dart';
+import 'tables/member_colors.dart';
 part 'app_database.g.dart';
 
 // Этап 5: Счета, Ипотеки, Категории
@@ -594,6 +596,7 @@ ReceiptDrafts,
 LoyaltyCards,
 LoyaltyCardDrafts,
 ProductAnalyticsCache,
+    MemberColors,
 ],
   daos: [
     UsersDao,
@@ -604,6 +607,7 @@ ProductAnalyticsCache,
     SyncConflictsDao,
     SyncLogsDao,
     BudgetLimitsDao,
+    MemberColorsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -616,7 +620,7 @@ class AppDatabase extends _$AppDatabase {
   /// v13: Этап 14 — reminders, holidays, recurring_transactions,
   /// forecast_cache, reminder_drafts + 5 колонок app_settings + сиды РФ.
   @override
-  int get schemaVersion => 20;
+  int get schemaVersion => 21;
 
   Future<void> _createSavingsIndexes() async {
     await customStatement('''
@@ -1081,6 +1085,18 @@ await _createReceiptsIndexes();
           await m.addColumn(appSettings, appSettings.popularStoresJson);
           await _createLoyaltyCardsIndexes();
           await _createProductAnalyticsIndexes();
+        }
+        if (from < 21) {
+          // Этап 21: цвета участников (6.3.46), настройки безопасности/профиля (6.3.28/6.3.39).
+          await m.createTable(memberColors);
+          await m.addColumn(appSettings, appSettings.autoHideTimeoutSeconds);
+          await m.addColumn(appSettings, appSettings.showBalancesOnLockScreen);
+          await m.addColumn(appSettings, appSettings.securityOnboardingShown);
+          await m.addColumn(appSettings, appSettings.showFamilyColorsInTransactions);
+          await m.addColumn(appSettings, appSettings.showFamilyColorsInCharts);
+          await m.addColumn(users, users.avatarPath);
+          await customStatement(
+              'CREATE UNIQUE INDEX IF NOT EXISTS idx_member_colors_unique ON member_colors(user_id, space_id)');
         }
         },
         beforeOpen: (details) async {
