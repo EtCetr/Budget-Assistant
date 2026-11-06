@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/core/providers/member_color_providers.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
@@ -12,7 +14,7 @@ import 'loyalty_cards_category_ui.dart';
 /// Privacy: имя магазина и номер — только через PrivacyFormatter
 /// (hidden: имя •••, номер ••••); бейджи категории/избранного остаются
 /// (метаданные), бейдж создателя скрывается в hidden.
-class LoyaltyCardTile extends StatelessWidget {
+class LoyaltyCardTile extends ConsumerWidget {
   const LoyaltyCardTile({
     super.key,
     required this.card,
@@ -46,7 +48,7 @@ class LoyaltyCardTile extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final brand = _brandColor;
     final onBrand = brand != AppColors.surfaceCard;
     final titleColor =
@@ -108,9 +110,11 @@ class LoyaltyCardTile extends StatelessWidget {
                     if (card.userId != currentUserId &&
                         formatter.shouldShowFamilyColors(mode)) ...[
                       const SizedBox(width: AppSpacing.spacing8),
-                      // TODO(21): цвет семьи из member_colors (D17-3).
-                      const Icon(Icons.person_outline,
-                          size: 16, color: AppColors.colorTransfer),
+                      // Этап 21 (D17-3 закрыт): цвет создателя — override из member_colors.
+            Icon(Icons.person_outline,
+                size: 16,
+                color: ref.watch(
+                    memberColorInCurrentSpaceProvider(card.userId))),
                     ],
                   ],
                 ),

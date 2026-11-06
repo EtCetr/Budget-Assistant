@@ -11,6 +11,13 @@ class MemberColorsDao extends DatabaseAccessor<AppDatabase>
     with _$MemberColorsDaoMixin {
   MemberColorsDao(super.db);
 
+  /// Все override-цвета скоупа (все участники семьи) — для резолвера цветов.
+  Stream<List<MemberColor>> watchAllInScope(String spaceScope) {
+    return (select(memberColors)
+          ..where((t) => t.spaceId.equals(spaceScope)))
+        .watch();
+  }
+
   /// Все override-цвета пользователя в скоупе (реактивно).
   Stream<List<MemberColor>> watchOverrides(String userId, String spaceId) {
     return (select(memberColors)
