@@ -1,4 +1,4 @@
-﻿// lib/features/security/data/repositories/pin_code_repository.dart
+// lib/features/security/data/repositories/pin_code_repository.dart
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
@@ -11,6 +11,7 @@ abstract class PinCodeRepository {
   Future<Result<void>> savePin(String pin);
   Future<Result<bool>> verifyPin(String pin);
   Future<Result<bool>> hasPin();
+  Future<Result<void>> deletePin();
 }
 
 class PinCodeRepositoryImpl implements PinCodeRepository {
@@ -69,6 +70,21 @@ class PinCodeRepositoryImpl implements PinCodeRepository {
       AppLogger.e('Failed to check PIN existence', e, stackTrace);
       return Result.failure(
         Failure.unexpected('Failed to check PIN: $e', stackTrace),
+      );
+    }
+  }
+
+  @override
+  Future<Result<void>> deletePin() async {
+    try {
+      await _secureStorage.delete(_pinKey);
+      await _secureStorage.delete(_pinSaltKey);
+      AppLogger.i('PIN deleted');
+      return Result.success(null);
+    } catch (e, stackTrace) {
+      AppLogger.e('Failed to delete PIN', e, stackTrace);
+      return Result.failure(
+        Failure.unexpected('Failed to delete PIN: $e', stackTrace),
       );
     }
   }

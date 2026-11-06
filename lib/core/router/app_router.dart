@@ -6,6 +6,7 @@ import 'package:budget_assistant/features/admin/presentation/screens/space_setti
 import 'package:budget_assistant/features/notifications/presentation/screens/notification_center_screen.dart';
 import 'package:budget_assistant/features/notifications/presentation/screens/notification_settings_screen.dart';
 import 'package:budget_assistant/features/notifications/presentation/screens/digest_settings_screen.dart';
+import 'package:budget_assistant/features/security/presentation/screens/security_settings_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -152,6 +153,13 @@ GoRouter appRouter(Ref ref) {
     GoRoute(path: '/notifications', name: 'notifications', builder: (context, state) => const NotificationCenterScreen()),
     GoRoute(path: '/settings/notifications', name: 'notification-settings', builder: (context, state) => const NotificationSettingsScreen()),
     GoRoute(path: '/settings/digest', name: 'digest-settings', builder: (context, state) => const DigestSettingsScreen()),
+GoRoute(
+path: '/settings/security',
+name: 'security-settings',
+builder: (context, state) => SecuritySettingsScreen(
+section: state.uri.queryParameters['section'],
+),
+),
     GoRoute(path: '/admin', name: 'admin', builder: (context, state) => const AdminDashboardScreen()),
       GoRoute(
         path: '/debts',
