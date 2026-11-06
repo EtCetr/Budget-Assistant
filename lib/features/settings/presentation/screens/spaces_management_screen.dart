@@ -117,7 +117,15 @@ class SpacesManagementScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 for (final info in dissolved)
-                  SpaceCard(info: info, mode: mode, formatter: formatter),
+                  SpaceCard(
+                    info: info,
+                    mode: mode,
+                    formatter: formatter,
+                    onOpenArchive: () {
+                      HapticFeedback.lightImpact();
+                      context.push('/spaces/${info.spaceId}/archive');
+                    },
+                  ),
               ],
               const SizedBox(height: 16),
               FilledButton.icon(

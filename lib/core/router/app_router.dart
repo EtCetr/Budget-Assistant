@@ -9,6 +9,7 @@ import 'package:budget_assistant/features/notifications/presentation/screens/dig
 import 'package:budget_assistant/features/security/presentation/screens/security_settings_screen.dart';
 import 'package:budget_assistant/features/settings/presentation/screens/settings_screen.dart';
 import 'package:budget_assistant/features/settings/presentation/screens/spaces_management_screen.dart';
+import 'package:budget_assistant/features/spaces/presentation/screens/space_archive_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -164,6 +165,13 @@ GoRoute(
 path: '/settings/spaces',
 name: 'spaces-management',
 builder: (context, state) => const SpacesManagementScreen(),
+),
+GoRoute(
+path: '/spaces/:id/archive',
+name: 'space-archive',
+builder: (context, state) => SpaceArchiveScreen(
+spaceId: state.pathParameters['id']!,
+),
 ),
 GoRoute(
 path: '/settings/security',
