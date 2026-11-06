@@ -351,13 +351,13 @@ class SettingsScreen extends ConsumerWidget {
       title: '👨‍👩‍ Семья и пространства',
       subtitle: 'Multi-group: пространства, цвета, активность',
       children: [
-        // TODO(21.5): включить после SpacesManagementScreen.
-        const SettingsNavigationItem(
+        SettingsNavigationItem(
           icon: Icons.home_outlined,
           label: 'Управление пространствами',
-          enabled: false,
-          tooltip: 'Появится в под-шаге 21.5',
-          onTap: _noopTap,
+          onTap: () {
+            HapticFeedback.lightImpact();
+            context.push('/settings/spaces');
+          },
         ),
         // TODO(21.7): включить после FamilyColorsSettingsScreen.
         const SettingsNavigationItem(

@@ -1,4 +1,4 @@
-﻿import 'package:drift/drift.dart';
+import 'package:drift/drift.dart';
 import '../app_database.dart';
 import '../tables/memberships.dart';
 
@@ -60,5 +60,19 @@ class MembershipsDao extends DatabaseAccessor<AppDatabase>
         syncStatus: const Value('pending'),
       ),
     );
+  }
+
+  /// Все членства пользователя (любой статус) — управление пространствами (6.3.51).
+  Stream<List<Membership>> watchAllByUserId(String userId) {
+    return (select(memberships)..where((t) => t.userId.equals(userId))).watch();
+  }
+
+  /// Количество активных участников пространства.
+  Future<int> countActiveMembers(String spaceId) async {
+    final rows = await (select(memberships)
+          ..where((t) =>
+              t.spaceId.equals(spaceId) & t.status.equals('active')))
+        .get();
+    return rows.length;
   }
 }
