@@ -51,6 +51,7 @@ dependencies:
   barcode_widget: ^2.0.4
   barcode: ^2.2.9
   sensors_plus: ^7.1.1
+  package_info_plus: ^9.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

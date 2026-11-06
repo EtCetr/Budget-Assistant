@@ -53,6 +53,7 @@ class AppDrawer extends StatelessWidget {
 _item(context, '/loyalty-cards', Icons.card_membership_outlined, LoyaltyCardsStrings.screenTitle),
           _item(context, '/product-analytics', Icons.insights_outlined, ProductAnalyticsStrings.screenTitle),
           _item(context, '/settings/security', Icons.shield_outlined, 'Безопасность'),
+_item(context, '/settings', Icons.settings_outlined, 'Настройки'),
 _item(context, '/profile', Icons.person_outline, DashboardStrings.navProfile),
           ],
         ),
