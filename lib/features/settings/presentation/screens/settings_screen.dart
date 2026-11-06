@@ -1,7 +1,7 @@
 // lib/features/settings/presentation/screens/settings_screen.dart
 // Этап 21 (ТЗ 6.3.38): главный хаб настроек (8 секций).
 // D21-16/D21-18/D21-19: пункты без готовых экранов/колонок — disabled + тултип
-// с TODO соответствующего под-шага; включаются микро-патчем в своём под-шаге.
+// с пометкой под-шага; включаются микро-патчем в своём под-шаге.
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -359,13 +359,13 @@ class SettingsScreen extends ConsumerWidget {
             context.push('/settings/spaces');
           },
         ),
-        // TODO(21.7): включить после FamilyColorsSettingsScreen.
-        const SettingsNavigationItem(
+        SettingsNavigationItem(
           icon: Icons.palette_outlined,
           label: 'Цвета участников',
-          enabled: false,
-          tooltip: 'Появится в под-шаге 21.7',
-          onTap: _noopTap,
+          onTap: () {
+            HapticFeedback.lightImpact();
+            context.push('/settings/family/colors');
+          },
         ),
         SettingsSwitchItem(
           label: 'Пуши о действиях в группе',

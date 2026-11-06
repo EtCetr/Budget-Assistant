@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/core/providers/member_color_providers.dart';
+import 'package:budget_assistant/features/settings/presentation/providers/settings_providers.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
@@ -108,7 +109,10 @@ class LoyaltyCardTile extends ConsumerWidget {
                       color: LoyaltyCardCategoryUi.color(card.category),
                     ),
                     if (card.userId != currentUserId &&
-                        formatter.shouldShowFamilyColors(mode)) ...[
+              formatter.shouldShowFamilyColors(mode) &&
+              (ref.watch(appSettingsRowProvider).value
+                      ?.showFamilyColorsInTransactions ??
+                  true)) ...[
                       const SizedBox(width: AppSpacing.spacing8),
                       // Этап 21 (D17-3 закрыт): цвет создателя — override из member_colors.
             Icon(Icons.person_outline,
