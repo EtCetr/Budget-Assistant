@@ -8,12 +8,52 @@ import 'package:budget_assistant/core/router/app_router.dart';
 import 'package:budget_assistant/core/services/deep_link_bus.dart';
 import 'package:budget_assistant/core/theme/app_theme.dart';
 import 'package:budget_assistant/features/year_in_review/presentation/providers/year_in_review_providers.dart';
+import 'package:budget_assistant/features/security/presentation/services/shake_detector.dart';
+import 'package:budget_assistant/features/security/presentation/services/face_down_detector.dart';
+import 'package:budget_assistant/features/security/presentation/services/user_activity_observer.dart';
+import 'package:budget_assistant/features/settings/presentation/providers/settings_providers.dart';
 
-class BudgetAssistantApp extends ConsumerWidget {
+class BudgetAssistantApp extends ConsumerStatefulWidget {
   const BudgetAssistantApp({super.key});
+  @override
+  ConsumerState<BudgetAssistantApp> createState() => _BudgetAssistantAppState();
+}
+
+class _BudgetAssistantAppState extends ConsumerState<BudgetAssistantApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startSecurityServices();
+    });
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void dispose() {
+    ShakeDetector.instance.stop();
+    FaceDownDetector.instance.stop();
+    UserActivityObserver.instance.stop();
+    super.dispose();
+  }
+
+  Future<void> _startSecurityServices() async {
+    try {
+      final s = await ref.read(appSettingsRowProvider.future);
+      if (!mounted) return;
+      if (s?.enableShakeToHide ?? false) {
+        ShakeDetector.instance.start(ref);
+      }
+      if (s?.enableFaceDownHide ?? false) {
+        FaceDownDetector.instance.start(ref);
+      }
+      UserActivityObserver.instance.start(ref);
+    } catch (e, st) {
+      AppLogger.e('Failed to start security services', e, st);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -34,13 +74,24 @@ class BudgetAssistantApp extends ConsumerWidget {
       router.go(route);
     });
 
-    return MaterialApp.router(
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () {
+        UserActivityObserver.instance.onUserActivity(
+            ref.read(appSettingsRowProvider).value?.autoHideTimeoutSeconds ?? 0);
+      },
+      onPanDown: (_) {
+        UserActivityObserver.instance.onUserActivity(
+            ref.read(appSettingsRowProvider).value?.autoHideTimeoutSeconds ?? 0);
+      },
+      child: MaterialApp.router(
       title: 'Budget Assistant',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       // Тёмное оформление по умолчанию (токены дизайн-системы — тёмные).
       themeMode: ThemeMode.dark,
       routerConfig: router,
+      ),
     );
   }
 

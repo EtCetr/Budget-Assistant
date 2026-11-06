@@ -50,6 +50,7 @@ dependencies:
   screen_brightness: ^2.1.11
   barcode_widget: ^2.0.4
   barcode: ^2.2.9
+  sensors_plus: ^7.1.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
