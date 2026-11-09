@@ -7,6 +7,7 @@ import 'package:budget_assistant/core/services/secure_storage_service.dart';
 import 'package:budget_assistant/features/security/data/repositories/pin_code_repository.dart';
 import 'package:budget_assistant/features/security/domain/usecases/calculate_security_level_usecase.dart';
 import 'package:budget_assistant/features/security/services/biometric_service.dart';
+import 'package:budget_assistant/features/security/domain/usecases/export_encryption_keys_usecase.dart';
 import 'package:budget_assistant/features/settings/presentation/providers/settings_providers.dart';
 
 final pinCodeRepositoryProvider = Provider<PinCodeRepository>(
@@ -88,3 +89,9 @@ final upcomingHolidaysCountProvider = StreamProvider<int>((ref) {
     readsFrom: {db.holidays},
   ).watch().map((rows) => rows.first.read<int>('c'));
 });
+
+/// Экспорт ключей шифрования (ТЗ 6.3.28.17, D21-35).
+final exportEncryptionKeysUseCaseProvider =
+    Provider<ExportEncryptionKeysUseCase>(
+  (ref) => ExportEncryptionKeysUseCase(storage: SecureStorageService()),
+);

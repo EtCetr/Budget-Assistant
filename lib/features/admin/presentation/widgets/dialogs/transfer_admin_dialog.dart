@@ -2,22 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/features/admin/domain/entities/admin_entities.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:budget_assistant/features/settings/presentation/providers/settings_providers.dart';
 
 /// D17-6: сейчас — confirm-диалог с вводом слова «ПЕРЕДАТЬ».
 /// PIN-подтверждение — долг Этапа 21.
-class TransferAdminDialog extends StatefulWidget {
+class TransferAdminDialog extends ConsumerStatefulWidget {
   const TransferAdminDialog({super.key, required this.target});
   final MemberInfo target;
   @override
-  State<TransferAdminDialog> createState() => _TransferAdminDialogState();
+  ConsumerState<TransferAdminDialog> createState() => _TransferAdminDialogState();
 }
 
-class _TransferAdminDialogState extends State<TransferAdminDialog> {
+class _TransferAdminDialogState extends ConsumerState<TransferAdminDialog> {
   final _controller = TextEditingController();
   static const _keyword = 'ПЕРЕДАТЬ';
 
   @override
   void dispose() { _controller.dispose(); super.dispose(); }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _guardPin());
+  }
+
+  /// D17-6 закрыт: PIN-подтверждение перед передачей роли
+  /// (если require_pin_for_sensitive && enable_pin_code).
+  Future<void> _guardPin() async {
+    if (!mounted) return;
+    try {
+      final s = await ref.read(appSettingsRowProvider.future);
+      if (!mounted) return;
+      if (s == null || !s.requirePinForSensitive || !s.enablePinCode) return;
+      final ok = await context.push('/security/pin-entry?mode=verify');
+      if (ok != true) {
+        if (!mounted) return;
+        Navigator.of(context).pop(false);
+      }
+    } catch (e) {
+      // Настройки недоступны — PIN не настроен, передачу разрешаем.
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

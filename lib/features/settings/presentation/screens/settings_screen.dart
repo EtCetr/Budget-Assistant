@@ -17,6 +17,7 @@ import 'package:budget_assistant/features/settings/presentation/widgets/settings
 import 'package:budget_assistant/features/settings/presentation/widgets/settings_section.dart';
 import 'package:budget_assistant/features/settings/presentation/widgets/settings_switch_item.dart';
 import 'package:budget_assistant/features/settings/presentation/widgets/sync_images_warning_dialog.dart';
+import 'package:budget_assistant/features/settings/presentation/widgets/export_all_data_sheet.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -443,13 +444,10 @@ class SettingsScreen extends ConsumerWidget {
       title: '📊 Данные и экспорт',
       subtitle: 'Экспорт XLSX, импорт, очистка кэша',
       children: [
-        // TODO(21.9): ExportAllDataSheet (XLSX 3 листа + PIN).
-        const SettingsNavigationItem(
+        SettingsNavigationItem(
           icon: Icons.upload_outlined,
           label: 'Экспорт всех данных (XLSX)',
-          enabled: false,
-          tooltip: 'Появится в под-шаге 21.9',
-          onTap: _noopTap,
+          onTap: () => ExportAllDataFlow.run(context, ref),
         ),
         SettingsNavigationItem(
           icon: Icons.download_outlined,

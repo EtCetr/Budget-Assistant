@@ -8,6 +8,7 @@ import 'package:budget_assistant/core/logger.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/features/settings/domain/usecases/clear_local_cache_usecase.dart';
 import 'package:budget_assistant/features/settings/domain/usecases/update_app_settings_usecase.dart';
+import 'package:budget_assistant/features/settings/domain/usecases/export_all_data_usecase.dart';
 
 /// Сырая строка app_settings текущего пользователя (реактивно).
 /// Если строки ещё нет — идемпотентно создаётся с дефолтами (getForUser).
@@ -41,3 +42,7 @@ final appVersionProvider = FutureProvider<String>((ref) async {
     return '—';
   }
 });
+
+final exportAllDataUseCaseProvider = Provider<ExportAllDataUseCase>(
+  (ref) => ExportAllDataUseCase(db: ref.watch(appDatabaseProvider)),
+);

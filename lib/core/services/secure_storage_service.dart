@@ -59,6 +59,15 @@ class SecureStorageService {
       return false;
     }
   }
+
+  Future<Map<String, String>> readAll() async {
+    try {
+      return await _storage.readAll();
+    } catch (e) {
+      AppLogger.e('SecureStorage readAll error: $e');
+      throw SecurityException('Failed to readAll from SecureStorage', e);
+    }
+  }
   Future<void> deleteAll() async {
     try {
       await _storage.deleteAll();

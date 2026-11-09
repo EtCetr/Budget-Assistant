@@ -15,6 +15,10 @@ import 'package:budget_assistant/features/security/presentation/widgets/security
 import 'package:budget_assistant/features/security/presentation/widgets/security_status_banner.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/features/settings/presentation/providers/settings_providers.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:budget_assistant/core/export/presentation/widgets/export_destination_dialog.dart';
+import 'package:budget_assistant/features/auth/domain/notifiers/auth_notifier.dart';
+import 'package:budget_assistant/features/profile/presentation/providers/profile_providers.dart';
 
 class SecuritySettingsScreen extends ConsumerStatefulWidget {
   const SecuritySettingsScreen({super.key, this.section});
@@ -564,6 +568,205 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
     );
   }
 
+  Future<void> _exportKeys() async {
+    HapticFeedback.lightImpact();
+    final messenger = ScaffoldMessenger.of(context);
+    final s = ref.read(appSettingsRowProvider).value;
+    if (s != null && s.requirePinForSensitive && s.enablePinCode) {
+      final ok = await context.push('/security/pin-entry?mode=verify');
+      if (ok != true || !mounted) return;
+    }
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceCard,
+        title: const Text('⚠️ Экспорт ключей шифрования'),
+        content: const Text(
+          'Ключи используются для защиты ваших данных (E2E, AES-256-GCM). '
+          'ВНИМАНИЕ: любой, кто получит файл и пароль, сможет расшифровать '
+          'все ваши данные. Файл будет зашифрован паролем.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Отмена'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Продолжить'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    final password = await _passwordSheet();
+    if (password == null || !mounted) return;
+    HapticFeedback.mediumImpact();
+    try {
+      final path =
+          await ref.read(exportEncryptionKeysUseCaseProvider).call(password);
+      if (!mounted) return;
+      await showExportDestinationDialog(
+        context,
+        path: path,
+        shareText: '🔑 Ключи шифрования Budget Assistant (зашифрованы)',
+        mime: 'application/octet-stream',
+      );
+      if (!mounted) return;
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            '⚠️ Храните файл в безопасном месте. Удалите после восстановления',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('❌ Ошибка экспорта ключей: $e')),
+        );
+      }
+    }
+  }
+
+  Future<String?> _passwordSheet() async {
+    final controller = TextEditingController();
+    final confirmController = TextEditingController();
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppColors.surfaceCard,
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '🔑 Пароль для файла ключей',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Минимум 8 символов. Без пароля файл бесполезен.',
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Пароль'),
+            ),
+            TextField(
+              controller: confirmController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Повторите пароль'),
+            ),
+            const SizedBox(height: 12),
+            FilledButton(
+              onPressed: () {
+                final pw = controller.text;
+                if (pw.length < 8 || pw != confirmController.text) return;
+                Navigator.pop(ctx, pw);
+              },
+              child: const Text('Продолжить'),
+            ),
+          ],
+        ),
+      ),
+    );
+    controller.dispose();
+    confirmController.dispose();
+    return result;
+  }
+
+  Future<void> _clearAppData() async {
+    HapticFeedback.lightImpact();
+    final messenger = ScaffoldMessenger.of(context);
+    final s = ref.read(appSettingsRowProvider).value;
+    if (s != null && s.requirePinForSensitive && s.enablePinCode) {
+      final ok = await context.push('/security/pin-entry?mode=verify');
+      if (ok != true || !mounted) return;
+    }
+    final c1 = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceCard,
+        title: const Text('⚠️ Очистить данные приложения?'),
+        content: const Text(
+          'Будут удалены: все локальные транзакции, счета, цели, '
+          'PIN-код и ключи шифрования. Данные в Supabase останутся, '
+          'но без ключей расшифровка при входе невозможна. '
+          'Рекомендуется сначала экспортировать ключи.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Отмена'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Продолжить'),
+          ),
+        ],
+      ),
+    );
+    if (c1 != true || !mounted) return;
+    HapticFeedback.mediumImpact();
+    final controller = TextEditingController();
+    final c2 = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surfaceCard,
+        title: const Text('🔴 Вы уверены?'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            labelText: 'Введите слово: ОЧИСТИТЬ',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Отмена'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Очистить'),
+          ),
+        ],
+      ),
+    );
+    final word = controller.text.trim().toUpperCase();
+    controller.dispose();
+    if (c2 != true || !mounted) return;
+    if (word != 'ОЧИСТИТЬ') {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('❌ Слово введено неверно')),
+      );
+      return;
+    }
+    HapticFeedback.heavyImpact();
+    try {
+      // D21-36: локально та же механика, что и удаление аккаунта (21.8).
+      await ref.read(deleteAccountUseCaseProvider).call();
+      try {
+        final cache = await getTemporaryDirectory();
+        if (cache.existsSync()) cache.deleteSync(recursive: true);
+      } catch (_) {}
+      await ref.read(authProvider.notifier).signOut();
+    } catch (e) {
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text('❌ Ошибка очистки: $e')),
+        );
+      }
+    }
+  }
+
   Widget _buildAdvancedSection(AppSetting s) {
     final pinStored = ref.watch(pinCodeStoredProvider).value ?? false;
     return Container(
@@ -601,19 +804,15 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
             icon: Icons.upload_outlined,
             label: 'Экспорт ключей шифрования',
             subtitle: '⚠️ Только для резервного копирования',
-            enabled: false,
-            tooltip: 'Появится в под-шаге 21.9',
             iconColor: AppColors.colorWarning,
-            onTap: () {},
+            onTap: _exportKeys,
           ),
           _navRow(
             icon: Icons.delete_forever_outlined,
             label: 'Очистить данные приложения',
             subtitle: '⚠️ Удалить все локальные данные и выйти из аккаунта',
-            enabled: false,
-            tooltip: 'Появится в под-шаге 21.8',
             iconColor: AppColors.colorExpense,
-            onTap: () {},
+            onTap: _clearAppData,
           ),
         ],
       ),
