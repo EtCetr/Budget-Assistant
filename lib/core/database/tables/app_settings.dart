@@ -178,6 +178,14 @@ class AppSettings extends Table with SyncableTable {
     // Этап 20: популярные магазины — локальный JSON [LOCAL], без синка (ТЗ 6.3.20.13.5).
   TextColumn get popularStoresJson =>
       text().named('popular_stores_json').nullable()();
+  // Этап 21 (ТЗ 6.3.38.4, D21-16): ночной режим пушей [LOCAL].
+  BoolColumn get nightModeEnabled => boolean()
+      .named('night_mode_enabled')
+      .withDefault(const Constant(false))();
+  TextColumn get nightModeStart =>
+      text().named('night_mode_start').withDefault(const Constant('22:00'))();
+  TextColumn get nightModeEnd =>
+      text().named('night_mode_end').withDefault(const Constant('08:00'))();
 @override
   Set<Column> get primaryKey => {id};
 }

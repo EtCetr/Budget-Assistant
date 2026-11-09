@@ -4676,6 +4676,45 @@ class $AppSettingsTable extends AppSettings
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _nightModeEnabledMeta = const VerificationMeta(
+    'nightModeEnabled',
+  );
+  @override
+  late final GeneratedColumn<bool> nightModeEnabled = GeneratedColumn<bool>(
+    'night_mode_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("night_mode_enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _nightModeStartMeta = const VerificationMeta(
+    'nightModeStart',
+  );
+  @override
+  late final GeneratedColumn<String> nightModeStart = GeneratedColumn<String>(
+    'night_mode_start',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('22:00'),
+  );
+  static const VerificationMeta _nightModeEndMeta = const VerificationMeta(
+    'nightModeEnd',
+  );
+  @override
+  late final GeneratedColumn<String> nightModeEnd = GeneratedColumn<String>(
+    'night_mode_end',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('08:00'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     createdAt,
@@ -4738,6 +4777,9 @@ class $AppSettingsTable extends AppSettings
     autoDetectRecurring,
     enableFamilyHolidayAlerts,
     popularStoresJson,
+    nightModeEnabled,
+    nightModeStart,
+    nightModeEnd,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -5277,6 +5319,33 @@ class $AppSettingsTable extends AppSettings
         ),
       );
     }
+    if (data.containsKey('night_mode_enabled')) {
+      context.handle(
+        _nightModeEnabledMeta,
+        nightModeEnabled.isAcceptableOrUnknown(
+          data['night_mode_enabled']!,
+          _nightModeEnabledMeta,
+        ),
+      );
+    }
+    if (data.containsKey('night_mode_start')) {
+      context.handle(
+        _nightModeStartMeta,
+        nightModeStart.isAcceptableOrUnknown(
+          data['night_mode_start']!,
+          _nightModeStartMeta,
+        ),
+      );
+    }
+    if (data.containsKey('night_mode_end')) {
+      context.handle(
+        _nightModeEndMeta,
+        nightModeEnd.isAcceptableOrUnknown(
+          data['night_mode_end']!,
+          _nightModeEndMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -5526,6 +5595,18 @@ class $AppSettingsTable extends AppSettings
         DriftSqlType.string,
         data['${effectivePrefix}popular_stores_json'],
       ),
+      nightModeEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}night_mode_enabled'],
+      )!,
+      nightModeStart: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}night_mode_start'],
+      )!,
+      nightModeEnd: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}night_mode_end'],
+      )!,
     );
   }
 
@@ -5596,6 +5677,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
   final bool autoDetectRecurring;
   final bool enableFamilyHolidayAlerts;
   final String? popularStoresJson;
+  final bool nightModeEnabled;
+  final String nightModeStart;
+  final String nightModeEnd;
   const AppSetting({
     required this.createdAt,
     required this.updatedAt,
@@ -5657,6 +5741,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     required this.autoDetectRecurring,
     required this.enableFamilyHolidayAlerts,
     this.popularStoresJson,
+    required this.nightModeEnabled,
+    required this.nightModeStart,
+    required this.nightModeEnd,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -5771,6 +5858,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     if (!nullToAbsent || popularStoresJson != null) {
       map['popular_stores_json'] = Variable<String>(popularStoresJson);
     }
+    map['night_mode_enabled'] = Variable<bool>(nightModeEnabled);
+    map['night_mode_start'] = Variable<String>(nightModeStart);
+    map['night_mode_end'] = Variable<String>(nightModeEnd);
     return map;
   }
 
@@ -5838,6 +5928,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       popularStoresJson: popularStoresJson == null && nullToAbsent
           ? const Value.absent()
           : Value(popularStoresJson),
+      nightModeEnabled: Value(nightModeEnabled),
+      nightModeStart: Value(nightModeStart),
+      nightModeEnd: Value(nightModeEnd),
     );
   }
 
@@ -5991,6 +6084,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       popularStoresJson: serializer.fromJson<String?>(
         json['popularStoresJson'],
       ),
+      nightModeEnabled: serializer.fromJson<bool>(json['nightModeEnabled']),
+      nightModeStart: serializer.fromJson<String>(json['nightModeStart']),
+      nightModeEnd: serializer.fromJson<String>(json['nightModeEnd']),
     );
   }
   @override
@@ -6109,6 +6205,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
         enableFamilyHolidayAlerts,
       ),
       'popularStoresJson': serializer.toJson<String?>(popularStoresJson),
+      'nightModeEnabled': serializer.toJson<bool>(nightModeEnabled),
+      'nightModeStart': serializer.toJson<String>(nightModeStart),
+      'nightModeEnd': serializer.toJson<String>(nightModeEnd),
     };
   }
 
@@ -6173,6 +6272,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     bool? autoDetectRecurring,
     bool? enableFamilyHolidayAlerts,
     Value<String?> popularStoresJson = const Value.absent(),
+    bool? nightModeEnabled,
+    String? nightModeStart,
+    String? nightModeEnd,
   }) => AppSetting(
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -6266,6 +6368,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     popularStoresJson: popularStoresJson.present
         ? popularStoresJson.value
         : this.popularStoresJson,
+    nightModeEnabled: nightModeEnabled ?? this.nightModeEnabled,
+    nightModeStart: nightModeStart ?? this.nightModeStart,
+    nightModeEnd: nightModeEnd ?? this.nightModeEnd,
   );
   AppSetting copyWithCompanion(AppSettingsCompanion data) {
     return AppSetting(
@@ -6445,6 +6550,15 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
       popularStoresJson: data.popularStoresJson.present
           ? data.popularStoresJson.value
           : this.popularStoresJson,
+      nightModeEnabled: data.nightModeEnabled.present
+          ? data.nightModeEnabled.value
+          : this.nightModeEnabled,
+      nightModeStart: data.nightModeStart.present
+          ? data.nightModeStart.value
+          : this.nightModeStart,
+      nightModeEnd: data.nightModeEnd.present
+          ? data.nightModeEnd.value
+          : this.nightModeEnd,
     );
   }
 
@@ -6524,7 +6638,10 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
           )
           ..write('autoDetectRecurring: $autoDetectRecurring, ')
           ..write('enableFamilyHolidayAlerts: $enableFamilyHolidayAlerts, ')
-          ..write('popularStoresJson: $popularStoresJson')
+          ..write('popularStoresJson: $popularStoresJson, ')
+          ..write('nightModeEnabled: $nightModeEnabled, ')
+          ..write('nightModeStart: $nightModeStart, ')
+          ..write('nightModeEnd: $nightModeEnd')
           ..write(')'))
         .toString();
   }
@@ -6591,6 +6708,9 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     autoDetectRecurring,
     enableFamilyHolidayAlerts,
     popularStoresJson,
+    nightModeEnabled,
+    nightModeStart,
+    nightModeEnd,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -6665,7 +6785,10 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
               this.recurringDetectionDismissCount &&
           other.autoDetectRecurring == this.autoDetectRecurring &&
           other.enableFamilyHolidayAlerts == this.enableFamilyHolidayAlerts &&
-          other.popularStoresJson == this.popularStoresJson);
+          other.popularStoresJson == this.popularStoresJson &&
+          other.nightModeEnabled == this.nightModeEnabled &&
+          other.nightModeStart == this.nightModeStart &&
+          other.nightModeEnd == this.nightModeEnd);
 }
 
 class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
@@ -6729,6 +6852,9 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   final Value<bool> autoDetectRecurring;
   final Value<bool> enableFamilyHolidayAlerts;
   final Value<String?> popularStoresJson;
+  final Value<bool> nightModeEnabled;
+  final Value<String> nightModeStart;
+  final Value<String> nightModeEnd;
   final Value<int> rowid;
   const AppSettingsCompanion({
     this.createdAt = const Value.absent(),
@@ -6791,6 +6917,9 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     this.autoDetectRecurring = const Value.absent(),
     this.enableFamilyHolidayAlerts = const Value.absent(),
     this.popularStoresJson = const Value.absent(),
+    this.nightModeEnabled = const Value.absent(),
+    this.nightModeStart = const Value.absent(),
+    this.nightModeEnd = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   AppSettingsCompanion.insert({
@@ -6854,6 +6983,9 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     this.autoDetectRecurring = const Value.absent(),
     this.enableFamilyHolidayAlerts = const Value.absent(),
     this.popularStoresJson = const Value.absent(),
+    this.nightModeEnabled = const Value.absent(),
+    this.nightModeStart = const Value.absent(),
+    this.nightModeEnd = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        userId = Value(userId);
@@ -6918,6 +7050,9 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     Expression<bool>? autoDetectRecurring,
     Expression<bool>? enableFamilyHolidayAlerts,
     Expression<String>? popularStoresJson,
+    Expression<bool>? nightModeEnabled,
+    Expression<String>? nightModeStart,
+    Expression<String>? nightModeEnd,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -7024,6 +7159,9 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
       if (enableFamilyHolidayAlerts != null)
         'enable_family_holiday_alerts': enableFamilyHolidayAlerts,
       if (popularStoresJson != null) 'popular_stores_json': popularStoresJson,
+      if (nightModeEnabled != null) 'night_mode_enabled': nightModeEnabled,
+      if (nightModeStart != null) 'night_mode_start': nightModeStart,
+      if (nightModeEnd != null) 'night_mode_end': nightModeEnd,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -7089,6 +7227,9 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     Value<bool>? autoDetectRecurring,
     Value<bool>? enableFamilyHolidayAlerts,
     Value<String?>? popularStoresJson,
+    Value<bool>? nightModeEnabled,
+    Value<String>? nightModeStart,
+    Value<String>? nightModeEnd,
     Value<int>? rowid,
   }) {
     return AppSettingsCompanion(
@@ -7189,6 +7330,9 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
       enableFamilyHolidayAlerts:
           enableFamilyHolidayAlerts ?? this.enableFamilyHolidayAlerts,
       popularStoresJson: popularStoresJson ?? this.popularStoresJson,
+      nightModeEnabled: nightModeEnabled ?? this.nightModeEnabled,
+      nightModeStart: nightModeStart ?? this.nightModeStart,
+      nightModeEnd: nightModeEnd ?? this.nightModeEnd,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -7450,6 +7594,15 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     if (popularStoresJson.present) {
       map['popular_stores_json'] = Variable<String>(popularStoresJson.value);
     }
+    if (nightModeEnabled.present) {
+      map['night_mode_enabled'] = Variable<bool>(nightModeEnabled.value);
+    }
+    if (nightModeStart.present) {
+      map['night_mode_start'] = Variable<String>(nightModeStart.value);
+    }
+    if (nightModeEnd.present) {
+      map['night_mode_end'] = Variable<String>(nightModeEnd.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -7533,6 +7686,9 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
           ..write('autoDetectRecurring: $autoDetectRecurring, ')
           ..write('enableFamilyHolidayAlerts: $enableFamilyHolidayAlerts, ')
           ..write('popularStoresJson: $popularStoresJson, ')
+          ..write('nightModeEnabled: $nightModeEnabled, ')
+          ..write('nightModeStart: $nightModeStart, ')
+          ..write('nightModeEnd: $nightModeEnd, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -38217,6 +38373,9 @@ typedef $$AppSettingsTableCreateCompanionBuilder =
       Value<bool> autoDetectRecurring,
       Value<bool> enableFamilyHolidayAlerts,
       Value<String?> popularStoresJson,
+      Value<bool> nightModeEnabled,
+      Value<String> nightModeStart,
+      Value<String> nightModeEnd,
       Value<int> rowid,
     });
 typedef $$AppSettingsTableUpdateCompanionBuilder =
@@ -38281,6 +38440,9 @@ typedef $$AppSettingsTableUpdateCompanionBuilder =
       Value<bool> autoDetectRecurring,
       Value<bool> enableFamilyHolidayAlerts,
       Value<String?> popularStoresJson,
+      Value<bool> nightModeEnabled,
+      Value<String> nightModeStart,
+      Value<String> nightModeEnd,
       Value<int> rowid,
     });
 
@@ -38607,6 +38769,21 @@ class $$AppSettingsTableFilterComposer
 
   ColumnFilters<String> get popularStoresJson => $composableBuilder(
     column: $table.popularStoresJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get nightModeEnabled => $composableBuilder(
+    column: $table.nightModeEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nightModeStart => $composableBuilder(
+    column: $table.nightModeStart,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nightModeEnd => $composableBuilder(
+    column: $table.nightModeEnd,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -38941,6 +39118,21 @@ class $$AppSettingsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get nightModeEnabled => $composableBuilder(
+    column: $table.nightModeEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nightModeStart => $composableBuilder(
+    column: $table.nightModeStart,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nightModeEnd => $composableBuilder(
+    column: $table.nightModeEnd,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$UsersTableOrderingComposer get userId {
     final $$UsersTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -39266,6 +39458,21 @@ class $$AppSettingsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get nightModeEnabled => $composableBuilder(
+    column: $table.nightModeEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get nightModeStart => $composableBuilder(
+    column: $table.nightModeStart,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get nightModeEnd => $composableBuilder(
+    column: $table.nightModeEnd,
+    builder: (column) => column,
+  );
+
   $$UsersTableAnnotationComposer get userId {
     final $$UsersTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -39384,6 +39591,9 @@ class $$AppSettingsTableTableManager
                 Value<bool> autoDetectRecurring = const Value.absent(),
                 Value<bool> enableFamilyHolidayAlerts = const Value.absent(),
                 Value<String?> popularStoresJson = const Value.absent(),
+                Value<bool> nightModeEnabled = const Value.absent(),
+                Value<String> nightModeStart = const Value.absent(),
+                Value<String> nightModeEnd = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AppSettingsCompanion(
                 createdAt: createdAt,
@@ -39448,6 +39658,9 @@ class $$AppSettingsTableTableManager
                 autoDetectRecurring: autoDetectRecurring,
                 enableFamilyHolidayAlerts: enableFamilyHolidayAlerts,
                 popularStoresJson: popularStoresJson,
+                nightModeEnabled: nightModeEnabled,
+                nightModeStart: nightModeStart,
+                nightModeEnd: nightModeEnd,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -39518,6 +39731,9 @@ class $$AppSettingsTableTableManager
                 Value<bool> autoDetectRecurring = const Value.absent(),
                 Value<bool> enableFamilyHolidayAlerts = const Value.absent(),
                 Value<String?> popularStoresJson = const Value.absent(),
+                Value<bool> nightModeEnabled = const Value.absent(),
+                Value<String> nightModeStart = const Value.absent(),
+                Value<String> nightModeEnd = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AppSettingsCompanion.insert(
                 createdAt: createdAt,
@@ -39582,6 +39798,9 @@ class $$AppSettingsTableTableManager
                 autoDetectRecurring: autoDetectRecurring,
                 enableFamilyHolidayAlerts: enableFamilyHolidayAlerts,
                 popularStoresJson: popularStoresJson,
+                nightModeEnabled: nightModeEnabled,
+                nightModeStart: nightModeStart,
+                nightModeEnd: nightModeEnd,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

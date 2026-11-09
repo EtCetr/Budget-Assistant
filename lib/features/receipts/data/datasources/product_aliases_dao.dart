@@ -34,4 +34,40 @@ class ProductAliasesDao extends DatabaseAccessor<AppDatabase> with _$ProductAlia
     final alias = await (select(productAliases)..where((a) => a.id.equals(id))).getSingle();
     await updateAlias(alias.copyWith(usageCount: alias.usageCount + 1));
   }
+
+  /// Этап 21 (6.3.38.6): список алиасов пользователя с фильтром области.
+  Stream<List<ProductAliasDb>> watchByUserFiltered({
+    required String userId,
+    required String mode,
+    String? spaceId,
+  }) {
+    final q = select(productAliases)
+      ..where((a) => a.userId.equals(userId));
+    if (mode == 'mine') {
+      q.where((a) => a.spaceId.isNull());
+    } else if (mode == 'family') {
+      if (spaceId == null) {
+        q.where((a) => a.id.equals(''));
+      } else {
+        q.where((a) => a.spaceId.equals(spaceId));
+      }
+    }
+    q.orderBy([(a) => OrderingTerm.desc(a.usageCount)]);
+    return q.watch();
+  }
+
+  Future<int> updateFields(
+    String id,
+    String normalizedName,
+    String categoryId,
+  ) {
+    return (update(productAliases)..where((a) => a.id.equals(id))).write(
+      ProductAliasesCompanion(
+        normalizedName: Value(normalizedName),
+        categoryId: Value(categoryId),
+        updatedAt: Value(DateTime.now().toUtc()),
+        syncStatus: const Value('pending'),
+      ),
+    );
+  }
 }

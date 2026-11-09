@@ -620,7 +620,7 @@ class AppDatabase extends _$AppDatabase {
   /// v13: Этап 14 — reminders, holidays, recurring_transactions,
   /// forecast_cache, reminder_drafts + 5 колонок app_settings + сиды РФ.
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 22;
 
   Future<void> _createSavingsIndexes() async {
     await customStatement('''
@@ -1097,6 +1097,12 @@ await _createReceiptsIndexes();
           await m.addColumn(users, users.avatarPath);
           await customStatement(
               'CREATE UNIQUE INDEX IF NOT EXISTS idx_member_colors_unique ON member_colors(user_id, space_id)');
+        }
+        if (from < 22) {
+          // Этап 21: ночной режим пушей (6.3.38.4).
+          await m.addColumn(appSettings, appSettings.nightModeEnabled);
+          await m.addColumn(appSettings, appSettings.nightModeStart);
+          await m.addColumn(appSettings, appSettings.nightModeEnd);
         }
         },
         beforeOpen: (details) async {

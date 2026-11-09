@@ -69,6 +69,8 @@ import 'package:budget_assistant/features/loyalty_cards/presentation/screens/loy
 import 'package:budget_assistant/features/loyalty_cards/presentation/screens/add_loyalty_card_screen.dart';
 import 'package:budget_assistant/features/loyalty_cards/presentation/screens/loyalty_card_display_screen.dart';
 import 'package:budget_assistant/features/receipts/presentation/screens/product_analytics_screen.dart';
+import 'package:budget_assistant/features/receipts/presentation/screens/product_aliases_settings_screen.dart';
+import 'package:budget_assistant/features/cashback/presentation/screens/exchange_rates_screen.dart';
 part 'app_router.g.dart';
 
 @riverpod
@@ -508,6 +510,16 @@ SplitReceiptScreen(receiptId: state.pathParameters['id']!),
             initialProductHash: state.uri.queryParameters['product_hash'],
           ),
         ),
+GoRoute(
+path: '/settings/product-aliases',
+name: 'product-aliases',
+builder: (context, state) => const ProductAliasesSettingsScreen(),
+),
+GoRoute(
+path: '/exchange-rates',
+name: 'exchange-rates',
+builder: (context, state) => const ExchangeRatesScreen(),
+),
     ],
     redirect: (context, state) {
       final location = state.uri.toString();

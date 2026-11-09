@@ -6,7 +6,8 @@ import 'package:budget_assistant/features/admin/domain/entities/admin_entities.d
 import 'package:budget_assistant/features/admin/domain/usecases/members_activity_usecases.dart';
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
-import 'family_colors.dart';
+import 'package:budget_assistant/core/providers/member_color_providers.dart';
+import 'package:budget_assistant/features/settings/presentation/providers/settings_providers.dart';
 
 /// Карточка участника с детальной статистикой (ТЗ 6.3.34.7).
 /// Кнопка «напомнить» — только для неактивных 14+ дней.
@@ -42,6 +43,7 @@ class MemberActivityCard extends ConsumerWidget {
     final hidden = mode == BalanceVisibilityMode.hidden;
     final pf = ref.watch(privacyFormatterProvider);
     final now = DateTime.now().toUtc();
+    final colorsOn = ref.watch(familyColorsInChartsProvider);
     const statusUseCase = GetActivityStatusUseCase();
     final status = statusUseCase.call(member, now);
     final left = status == ActivityStatus.left;
@@ -86,9 +88,9 @@ class MemberActivityCard extends ConsumerWidget {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: (hidden || left || member.status == MemberStatus.suspended)
-                      ? Colors.grey
-                      : familyColorFor(member.userId),
+                  backgroundColor: (hidden || left || member.status == MemberStatus.suspended || !colorsOn)
+                    ? Colors.grey
+                    : ref.watch(memberColorInCurrentSpaceProvider(member.userId)),
                   child: Text(
                     hidden ? '••' : _initials(member.displayName),
                     style: const TextStyle(

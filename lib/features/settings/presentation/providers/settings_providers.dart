@@ -46,3 +46,17 @@ final appVersionProvider = FutureProvider<String>((ref) async {
 final exportAllDataUseCaseProvider = Provider<ExportAllDataUseCase>(
   (ref) => ExportAllDataUseCase(db: ref.watch(appDatabaseProvider)),
 );
+
+/// D21-27: глобальные флаги цветов семьи (app_settings).
+final familyColorsInTransactionsProvider = Provider<bool>((ref) {
+  return ref
+      .watch(appSettingsRowProvider)
+      .value
+      ?.showFamilyColorsInTransactions ??
+      true;
+});
+
+final familyColorsInChartsProvider = Provider<bool>((ref) {
+  return ref.watch(appSettingsRowProvider).value?.showFamilyColorsInCharts ??
+      true;
+});

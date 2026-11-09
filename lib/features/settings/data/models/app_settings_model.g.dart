@@ -223,6 +223,18 @@ _AppSettingsModel _$AppSettingsModelFromJson(
       'popularStoresJson',
       (v) => v as String?,
     ),
+    nightModeEnabled: $checkedConvert(
+      'nightModeEnabled',
+      (v) => v as bool? ?? false,
+    ),
+    nightModeStart: $checkedConvert(
+      'nightModeStart',
+      (v) => v as String? ?? '22:00',
+    ),
+    nightModeEnd: $checkedConvert(
+      'nightModeEnd',
+      (v) => v as String? ?? '08:00',
+    ),
     createdAt: $checkedConvert('createdAt', (v) => DateTime.parse(v as String)),
     updatedAt: $checkedConvert('updatedAt', (v) => DateTime.parse(v as String)),
     syncStatus: $checkedConvert('syncStatus', (v) => v as String? ?? 'pending'),
@@ -290,6 +302,9 @@ Map<String, dynamic> _$AppSettingsModelToJson(
   'digestInfoDismissed': instance.digestInfoDismissed,
   'importInfoDismissed': instance.importInfoDismissed,
   'popularStoresJson': instance.popularStoresJson,
+  'nightModeEnabled': instance.nightModeEnabled,
+  'nightModeStart': instance.nightModeStart,
+  'nightModeEnd': instance.nightModeEnd,
   'createdAt': instance.createdAt.toIso8601String(),
   'updatedAt': instance.updatedAt.toIso8601String(),
   'syncStatus': instance.syncStatus,

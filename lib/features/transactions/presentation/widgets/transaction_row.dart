@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -13,6 +13,8 @@ import '../../../privacy/domain/models/balance_visibility_mode.dart';
 import '../../../auth/presentation/providers/current_user_provider.dart';
 import '../../domain/entities/transaction_ui_model.dart';
 import 'transaction_long_press_menu.dart';
+import 'package:budget_assistant/core/providers/member_color_providers.dart';
+import 'package:budget_assistant/features/settings/presentation/providers/settings_providers.dart';
 
 class TransactionRow extends ConsumerWidget {
   const TransactionRow({super.key, required this.transaction});
@@ -26,8 +28,10 @@ class TransactionRow extends ConsumerWidget {
     final formatter = PrivacyFormatter();
 
     final isFamilyMember = transaction.userId != currentUserId;
-    final showFamilyAttributes =
-        isFamilyMember && privacyMode != BalanceVisibilityMode.hidden;
+    final colorsOn = ref.watch(familyColorsInTransactionsProvider);
+    final showFamilyAttributes = isFamilyMember &&
+        colorsOn &&
+        privacyMode != BalanceVisibilityMode.hidden;
 
     final merchant = formatter.text(
       transaction.merchantName,
@@ -84,9 +88,7 @@ class TransactionRow extends ConsumerWidget {
                 height: 48,
                 margin: const EdgeInsets.only(right: 8),
                 decoration: BoxDecoration(
-                  color: ColorParser.fromHex(
-                    transaction.memberColorHex ?? '#60A5FA',
-                  ),
+                  color: ref.watch(memberColorInCurrentSpaceProvider(transaction.userId)),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -127,9 +129,7 @@ class TransactionRow extends ConsumerWidget {
                 padding: const EdgeInsets.only(right: 8),
                 child: CircleAvatar(
                   radius: 12,
-                  backgroundColor: ColorParser.fromHex(
-                    transaction.memberColorHex ?? '#60A5FA',
-                  ),
+                  backgroundColor: ref.watch(memberColorInCurrentSpaceProvider(transaction.userId)),
                   child: Text(
                     _initials(transaction.memberDisplayName!),
                     style: const TextStyle(fontSize: 10, color: Colors.white),

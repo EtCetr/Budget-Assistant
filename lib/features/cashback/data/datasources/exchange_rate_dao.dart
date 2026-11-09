@@ -141,4 +141,21 @@ class ExchangeRateDao extends DatabaseAccessor<AppDatabase>
 
   Future<int> deleteById(String id) =>
       (delete(exchangeRates)..where((t) => t.id.equals(id))).go();
+
+  /// Этап 21 (6.3.38.8): список валют для дропдауна пары.
+  Future<List<String>> distinctFromCurrencies() async {
+    final rows = await customSelect(
+      'SELECT DISTINCT from_currency AS c FROM exchange_rates ORDER BY c',
+    ).get();
+    return [for (final r in rows) r.read<String>('c')];
+  }
+
+  /// Пара за последний год (для графика и таблицы).
+  Stream<List<ExchangeRateDb>> watchPair(String from, String to) {
+    return (select(exchangeRates)
+      ..where((t) => t.fromCurrency.equals(from) & t.toCurrency.equals(to))
+      ..orderBy([(t) => OrderingTerm.desc(t.date)])
+      ..limit(365))
+        .watch();
+  }
 }

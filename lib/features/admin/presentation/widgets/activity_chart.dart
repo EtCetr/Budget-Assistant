@@ -7,7 +7,8 @@ import 'package:budget_assistant/features/admin/domain/entities/admin_entities.d
 import 'package:budget_assistant/features/admin/domain/usecases/members_activity_usecases.dart';
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
-import 'family_colors.dart';
+import 'package:budget_assistant/core/providers/member_color_providers.dart';
+import 'package:budget_assistant/features/settings/presentation/providers/settings_providers.dart';
 
 /// Стек-бар активности по дням (ТЗ 6.3.34.5): каждый цвет = член семьи.
 /// В hidden все стеки серые (матрица 6.3.34.8). Тап по столбику = детали дня.
@@ -28,6 +29,7 @@ class ActivityChart extends ConsumerWidget {
     final hidden = mode == BalanceVisibilityMode.hidden;
     final pf = ref.watch(privacyFormatterProvider);
     var maxTotal = 0;
+  final colorsOn = ref.watch(familyColorsInChartsProvider);
     for (final d in data) {
       if (d.total > maxTotal) {
         maxTotal = d.total;
@@ -47,7 +49,7 @@ class ActivityChart extends ConsumerWidget {
         stacks.add(BarChartRodStackItem(
           acc.toDouble(),
           (acc + c).toDouble(),
-          hidden ? Colors.grey : familyColorFor(u),
+          (!hidden && colorsOn) ? ref.watch(memberColorInCurrentSpaceProvider(u)) : Colors.grey,
         ));
         acc += c;
       }
@@ -145,7 +147,7 @@ class ActivityChart extends ConsumerWidget {
                       width: 10,
                       height: 10,
                       decoration: BoxDecoration(
-                        color: hidden ? Colors.grey : familyColorFor(m.userId),
+                        color: (!hidden && colorsOn) ? ref.watch(memberColorInCurrentSpaceProvider(m.userId)) : Colors.grey,
                         shape: BoxShape.circle,
                       ),
                     ),

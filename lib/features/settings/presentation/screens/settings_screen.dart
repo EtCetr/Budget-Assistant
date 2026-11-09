@@ -18,6 +18,9 @@ import 'package:budget_assistant/features/settings/presentation/widgets/settings
 import 'package:budget_assistant/features/settings/presentation/widgets/settings_switch_item.dart';
 import 'package:budget_assistant/features/settings/presentation/widgets/sync_images_warning_dialog.dart';
 import 'package:budget_assistant/features/settings/presentation/widgets/export_all_data_sheet.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:budget_assistant/core/constants/app_links.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -64,7 +67,7 @@ class SettingsScreen extends ConsumerWidget {
             children: [
               _securitySection(context, s),
               const SizedBox(height: 16),
-              _notificationsSection(context),
+              _notificationsSection(context, ref, s),
               const SizedBox(height: 16),
               _importSection(context, ref, s),
               const SizedBox(height: 16),
@@ -150,7 +153,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   // ============ Section 2: Уведомления ============
-  Widget _notificationsSection(BuildContext context) {
+  Widget _notificationsSection(BuildContext context, WidgetRef ref, AppSetting s) {
     return SettingsSection(
       title: '🔔 Уведомления',
       subtitle: 'Пуши, дайджесты, время тишины',
@@ -171,21 +174,22 @@ class SettingsScreen extends ConsumerWidget {
             context.push('/settings/digest');
           },
         ),
-        // D21-16: колонок night_mode нет; энфорсмент в воркере Этапа 18.
-        // TODO(21.10): миграция night_mode_* + проверка в триггерах пушей.
-        const SettingsSwitchItem(
+        SettingsSwitchItem(
           label: 'Время тишины (ночной режим)',
           description: '22:00 – 08:00 все пуши блокируются',
-          value: false,
-          onChanged: _noopSwitch,
-          enabled: false,
-          tooltip: 'Появится в под-шаге 21.10',
+          value: s.nightModeEnabled,
+          onChanged: (v) async {
+            HapticFeedback.selectionClick();
+            await _update(
+              ref,
+              AppSettingsCompanion(nightModeEnabled: Value(v)),
+            );
+          },
         ),
       ],
     );
   }
 
-  static void _noopSwitch(bool v) {}
 
   // ============ Section 3: Импорт данных ============
   Widget _importSection(BuildContext context, WidgetRef ref, AppSetting s) {
@@ -334,13 +338,13 @@ class SettingsScreen extends ConsumerWidget {
             );
           },
         ),
-        // TODO(21.10): ProductAliasesSettingsScreen (список алиасов).
-        const SettingsNavigationItem(
+        SettingsNavigationItem(
           icon: Icons.label_outline,
           label: 'Управление алиасами товаров',
-          enabled: false,
-          tooltip: 'Появится в под-шаге 21.10',
-          onTap: _noopTap,
+          onTap: () {
+            HapticFeedback.lightImpact();
+            context.push('/settings/product-aliases');
+          },
         ),
       ],
     );
@@ -426,13 +430,13 @@ class SettingsScreen extends ConsumerWidget {
             );
           },
         ),
-        // TODO(21.10): ExchangeRatesScreen (график курсов за год).
-        const SettingsNavigationItem(
+        SettingsNavigationItem(
           icon: Icons.show_chart_outlined,
           label: 'История курсов',
-          enabled: false,
-          tooltip: 'Появится в под-шаге 21.10',
-          onTap: _noopTap,
+          onTap: () {
+            HapticFeedback.lightImpact();
+            context.push('/exchange-rates');
+          },
         ),
       ],
     );
@@ -533,26 +537,36 @@ class SettingsScreen extends ConsumerWidget {
         ),
         // D21-18: url_launcher нет в pubspec.
         // TODO(21.10): политика/поддержка/Google Play через url_launcher.
-        const SettingsNavigationItem(
+        SettingsNavigationItem(
           icon: Icons.privacy_tip_outlined,
           label: 'Политика конфиденциальности',
-          enabled: false,
-          tooltip: 'Появится в под-шаге 21.10',
-          onTap: _noopTap,
+          onTap: () {
+            HapticFeedback.lightImpact();
+            launchUrl(
+              Uri.parse(AppLinks.privacyPolicy),
+              mode: LaunchMode.externalApplication,
+            );
+          },
         ),
-        const SettingsNavigationItem(
+        SettingsNavigationItem(
           icon: Icons.support_agent_outlined,
           label: 'Связаться с поддержкой',
-          enabled: false,
-          tooltip: 'Появится в под-шаге 21.10',
-          onTap: _noopTap,
+          onTap: () {
+            HapticFeedback.lightImpact();
+            launchUrl(Uri.parse('mailto:${AppLinks.supportEmail}'));
+          },
         ),
-        const SettingsNavigationItem(
+        SettingsNavigationItem(
           icon: Icons.star_outline,
           label: 'Оценить в Google Play',
-          enabled: false,
-          tooltip: 'Появится в под-шаге 21.10',
-          onTap: _noopTap,
+          onTap: () async {
+            HapticFeedback.lightImpact();
+            final info = await PackageInfo.fromPlatform();
+            launchUrl(
+              Uri.parse(AppLinks.playStoreBase + info.packageName),
+              mode: LaunchMode.externalApplication,
+            );
+          },
         ),
       ],
     );

@@ -6,7 +6,8 @@ import 'package:budget_assistant/features/admin/domain/entities/admin_entities.d
 import 'package:budget_assistant/features/admin/domain/usecases/members_activity_usecases.dart';
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
-import 'family_colors.dart';
+import 'package:budget_assistant/core/providers/member_color_providers.dart';
+import 'package:budget_assistant/features/settings/presentation/providers/settings_providers.dart';
 
 /// Топ-3 активных участников (ТЗ 6.3.34.6): медали 🥇🥈, процент от общей.
 class TopActiveMembersSection extends ConsumerWidget {
@@ -38,6 +39,7 @@ class TopActiveMembersSection extends ConsumerWidget {
     final mode = ref.watch(privacyModeProvider);
     final hidden = mode == BalanceVisibilityMode.hidden;
     final pf = ref.watch(privacyFormatterProvider);
+    final colorsOn = ref.watch(familyColorsInChartsProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -67,7 +69,7 @@ class TopActiveMembersSection extends ConsumerWidget {
                 CircleAvatar(
                   radius: 16,
                   backgroundColor:
-                      hidden ? Colors.grey : familyColorFor(top[i].userId),
+                      (!hidden && colorsOn) ? ref.watch(memberColorInCurrentSpaceProvider(top[i].userId)) : Colors.grey,
                   child: Text(
                     hidden ? '••' : _initials(top[i].displayName),
                     style: const TextStyle(

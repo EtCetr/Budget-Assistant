@@ -74,6 +74,10 @@ abstract class AppSettingsModel with _$AppSettingsModel {
     @Default(false) bool importInfoDismissed,
     // Этап 20: популярные магазины [LOCAL].
     String? popularStoresJson,
+    // Этап 21: ночной режим
+    @Default(false) bool nightModeEnabled,
+    @Default('22:00') String nightModeStart,
+    @Default('08:00') String nightModeEnd,
     required DateTime createdAt,
     required DateTime updatedAt,
     @Default('pending') String syncStatus,
