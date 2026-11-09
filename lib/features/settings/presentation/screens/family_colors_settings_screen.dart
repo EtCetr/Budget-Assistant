@@ -77,7 +77,6 @@ class FamilyColorsSettingsScreen extends ConsumerWidget {
               );
             },
           ),
-          // TODO(21.10): энфорсмент флагов в графиках (activity_chart,
           // member_activity_card, top_active_members_section) и
           // transaction_row (D21-27).
           const SizedBox(height: 16),

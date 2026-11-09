@@ -559,8 +559,7 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
             badge: secretCount > 0 ? secretCount : null,
             onTap: () {
               HapticFeedback.lightImpact();
-              // TODO(21.10): автофильтр is_hidden_by_calendar через query.
-              context.push('/transactions');
+              context.push('/transactions?filter=secret');
             },
           ),
         ],

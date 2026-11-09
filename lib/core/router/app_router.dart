@@ -284,9 +284,11 @@ section: state.uri.queryParameters['section'],
         ),
       ),
       GoRoute(
-        path: '/transactions',
-        builder: (context, state) => const TransactionsLogScreen(),
-      ),
+path: '/transactions',
+builder: (context, state) => TransactionsLogScreen(
+initialSecretFilter: state.uri.queryParameters['filter'] == 'secret',
+),
+),
       GoRoute(
         path: '/import/onboarding',
         name: 'import-onboarding',

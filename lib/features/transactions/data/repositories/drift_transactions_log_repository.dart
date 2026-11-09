@@ -108,6 +108,10 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
       if (filter.excludeLargeExpenses) {
         expressions.add(t.isLargeExpense.equals(false));
       }
+    // D21-14: секретные транзакции (режим секретности/подарки).
+    if (filter.onlySecret) {
+      expressions.add(t.isHiddenByCalendar.equals(true));
+    }
 
       final search = filter.search.trim();
       if (search.isNotEmpty) {

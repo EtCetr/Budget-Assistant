@@ -356,3 +356,18 @@ Flutter: DropdownButtonFormField в Row требует ограничения ш
 [x] 20.7 Интеграция: карточка «Аналитика товаров» в Профиле, пункт Drawer, закрыт TODO(20.7) (categoryId из алиасов), TODO(25) в коде, DECISIONS D20-1…D20-15, обновление контекста.
 Точки входа Этапа 20: Drawer и Профиль → «Скидочные карты» и «Аналитика товаров»; FAB/empty states → добавление карты; тап по карте → полноэкранный показ; deep-links: /loyalty-cards/add?id=…, /product-analytics?product_hash=….
 Техдолг Этапа 20 (всё TODO(25)): триггеры пересчёта кэша (confirm чека, Batch-импорт, WorkManager раз в сутки); cross-filter транзакций по product_hash; слайд YIR «Топ товаров»; синхронизация loyalty_cards и product_analytics_cache (E2E payload); zip-экспорт 3 PNG-отчётов и сохранение в Downloads.
+Этап 21 «Security Settings + Profile + Spaces Management»: ЗАВЕРШЁН (2026-11-10)
+[x] 21.1 Миграция v21: member_colors (unique user+space), app_settings +5 полей безопасности/цветов, users.avatar_path; SpaceModel catch-up.
+[x] 21.1b Резолвер цветов семьи (core/providers/member_color_providers) + TODO(21) закрыт в loyalty_tile.
+[x] 21.2 Датчики: ShakeDetector / FaceDownDetector / UserActivityObserver (sensors_plus), старт из app.dart по настройкам.
+[x] 21.3 SecuritySettingsScreen (/settings/security?section=): баннер уровня защиты, онбординг-баннер, 5 секций, PIN/биометрия флоу, якоря.
+[x] 21.4 SettingsScreen хаб (/settings): 8 секций, shared-виджеты, ClearLocalCacheUseCase.
+[x] 21.5 SpacesManagementScreen (/settings/spaces): сводка, карточки, LeaveSpaceUseCase (4 сценария), create/join.
+[x] 21.6 SpaceArchiveScreen (/spaces/:id/archive): баннер, stats 2×2, 4 таба read-only.
+[x] 21.7 FamilyColorsSettingsScreen (/settings/family/colors): палитра 12 + кастом hex + reset, member_colors override.
+[x] 21.8 ProfileScreen полный (/profile): header+аватар, EditProfileSheet (склонение), stats 2×2, пространства, статистика, DebtsSection, опасная зона.
+[x] 21.9 Экспорт всех данных XLSX (3 листа) + PIN; экспорт ключей (.enc AES-GCM); очистка данных; PIN при передаче роли (D17-6 закрыт).
+[x] 21.10a Ночной режим (v22 + блок пушей), ProductAliasesSettingsScreen, ExchangeRatesScreen, url_launcher, энфорсмент цветов семьи.
+[x] 21.10b Автофильтр секретных (?filter=secret), документы этапа, аудит TODO.
+Точки входа: Drawer «Безопасность»/«Настройки»; Профиль ⚙ → /settings; Settings → все подразделы.
+Техдолг Этапа 21 (всё TODO(25)): глобальное отключение FLAG_SECURE по тумблеру; балансы на lock screen; Supabase RPC delete_user_account; синк avatar_path и member_colors (E2E); night_mode в расписании дайджестов.

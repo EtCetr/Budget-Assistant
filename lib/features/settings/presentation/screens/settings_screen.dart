@@ -536,7 +536,6 @@ class SettingsScreen extends ConsumerWidget {
           },
         ),
         // D21-18: url_launcher нет в pubspec.
-        // TODO(21.10): политика/поддержка/Google Play через url_launcher.
         SettingsNavigationItem(
           icon: Icons.privacy_tip_outlined,
           label: 'Политика конфиденциальности',

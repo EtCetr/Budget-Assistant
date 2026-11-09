@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -102,6 +102,19 @@ class TransactionsFilterChipGroup extends ConsumerWidget {
             onSelected: (_) {
               HapticFeedback.selectionClick();
               ref.read(transactionsFilterProvider.notifier).toggleOnlyDebts();
+            },
+          ),
+          const SizedBox(width: 8),
+          FilterChip(
+            // D21-41: лейбл инлайном (TransactionsLogLabels не верифицирован).
+            label: const Text('🎁 Секретные'),
+            selected: filter.onlySecret,
+            selectedColor: AppColors.colorWarning.withValues(alpha: .25),
+            onSelected: (_) {
+              HapticFeedback.selectionClick();
+              ref
+                  .read(transactionsFilterProvider.notifier)
+                  .toggleOnlySecret();
             },
           ),
           const SizedBox(width: 8),

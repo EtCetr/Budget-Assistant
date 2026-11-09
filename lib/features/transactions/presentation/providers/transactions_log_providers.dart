@@ -134,6 +134,7 @@ class TransactionsFilterNotifier extends Notifier<TransactionsFilterState> {
   void toggleOnlySplit() => state = state.copyWith(onlySplit: !state.onlySplit);
 
   void toggleOnlyDebts() => state = state.copyWith(onlyDebts: !state.onlyDebts);
+  void toggleOnlySecret() => state = state.copyWith(onlySecret: !state.onlySecret);
 
   void setSearch(String value) => state = state.copyWith(search: value);
 

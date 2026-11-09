@@ -329,3 +329,26 @@ duplicate_receipt / duplicate_detected / transfer_detected / hold_confirmed вш
 | D20-13: триггеры пересчёта кэша — вход на экран при stale > 24 ч + ручная кнопка | вшивку в confirm чека/импорт и WorkManager-задачу отложили на Этап 25 (TODO(25) в recalculate_product_analytics_cache_usecase.dart) |
 | D20-14: слайд YIR «Топ товаров» и cross-filter транзакций по product_hash не реализованы | слайда нет в Этапе 19; фильтр транзакций требует синка позиций чеков; deep-link /product-analytics?product_hash=… поддержан экраном |
 | D20-15: categoryId товара в детализации резолвится внутри GetProductDetailsUseCase по алиасу (product_hash → category_id) | закрыт TODO(20.7): deep-link и отчёты не передают категорию, источник истины — product_aliases |
+Обновления решений (Этап 21 — Security Settings + Profile + Spaces Management, 2026-11-10)
+| Решение | Обоснование |
+| --- | --- |
+| D21-1: member_colors.space_id — TEXT с '' = личный скоуп | NULL ломает UNIQUE(user_id, space_id) в SQLite (прецедент D20-5) |
+| D21-2: auto_hide_timeout_seconds (0/10/30/60/300) рядом со старым enable_auto_hide_timeout | UI использует секунды (0 = выкл); старая колонка сохранена для совместимости синка |
+| D21-3: SpaceModel догоняет поля Этапа 18 (icon_*, monthly_budget_limit, dissolved_*) | модели Этапа 3 устарели; опциональные поля не ломают существующий код |
+| D21-4/D21-5: резолвер цветов: override(user,space) → override(user,'') → palette[userId.hashCode%12]; скоуп виджетов = currentSpaceId (security → router → '') | детерминированная база без синка (6.3.46.2) + реактивность через Drift watch |
+| D21-6…D21-9: датчики (shake/face-down/inactivity) — синглтоны в security/presentation/services, старт из app.dart по настройкам; partial→hidden везде (D19-14) | спеки 6.3.28.4-6; режим partial удалён владельцем |
+| D21-10: глобальный тумблер FLAG_SECURE только персистится; нативное управление — Kotlin-канал (D19-7/D20-7) | MainActivity не трогаем; реальное отключение — TODO(25) |
+| D21-11: UpdateAppSettingsUseCase принимает AppSettingsCompanion | прагматично, прецедент biometric_onboarding_screen |
+| D21-12: «Сменить PIN» = verify текущего → pin-onboarding | PinOnboardingScreen не имеет mode=change |
+| D21-13/D21-35/D21-36: экспорт ключей = снапшот SecureStorage (readAll) → JSON → AES-256-GCM паролем (SHA-256(password+salt)) → .enc; «Очистить данные» = локальный wipe + signOut | надмножество списка спеки надёжнее для восстановления; серверное удаление — TODO(25) |
+| D21-14: «Проверить секретные транзакции» → /transactions?filter=secret (chip onlySecret, SQL WHERE is_hidden_by_calendar) | закрыто в 21.10-B |
+| D21-16/D21-40: night_mode_* (миграция v22) + блокировка всех пушей в GenerateNotificationUseCase (единая точка) | расписание дайджестов не меняется (отклонение) |
+| D21-17/D21-18: package_info_plus (версия), url_launcher (политика/mailto/Play) | спека 6.3.38.10 |
+| D21-19: пункты хаба без готовых экранов — disabled + тултип, включаются микро-патчем в своём под-шаге | никаких мёртвых ссылок |
+| D21-20…D21-23: создание пространства — существующий CreateSpaceDialog; join = парсинг token → AcceptInviteScreen; «Настройки» карточки переключают оба currentSpaceId (D17-14); stats-сводка инлайном | переиспользование Этапов 3/17 |
+| D21-24…D21-26: архив пространства фильтрует по space_id (флаг is_archived_for_space есть только у транзакций); долги архива = space_id; суммы архива в original_currency ?? RUB | данные расформированной группы не видны нигде кроме архива |
+| D21-27/D21-38: флаги showFamilyColorsIn* + override-цвета в activity_chart/member_activity_card/top_active_members/transaction_row/loyalty_tile; day-details sheet остаётся детерминированным (функция без ref) | спека 6.3.46; отклонение sheet зафиксировано |
+| D21-28: аватар 512×512/80% — параметрами image_picker (maxWidth/maxHeight/imageQuality) | без новых пакетов |
+| D21-29…D21-34: удаление аккаунта локально (wipe+signOut, RPC — TODO(25)); signOut НЕ чистит SecureStorage (PIN/ключи для повторного входа); баланс пространства в базовой валюте; DebtsSection плиткой (ассерт ListTile); статистика → /year-in-review (D19-4) | спеки 6.3.39.7 / 6.3.38 |
+| D21-39: фильтр алиасов 'family' = space_id = текущий скоуп (D20-6) | семантика области «Я/Семья» |
+| D21-41: лейбл чипа «🎁 Секретные» инлайном (TransactionsLogLabels не верифицирован) | минимизация риска якорей |

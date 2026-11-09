@@ -24,7 +24,10 @@ import 'package:budget_assistant/features/dashboard/presentation/widgets/app_dra
 import '../widgets/transactions_segmented_control.dart';
 
 class TransactionsLogScreen extends ConsumerWidget {
-  const TransactionsLogScreen({super.key});
+  const TransactionsLogScreen({super.key, this.initialSecretFilter = false});
+
+  /// D21-14: автофильтр секретных транзакций (?filter=secret).
+  final bool initialSecretFilter;
 
   /// Активная группа: текущая, если она валидна, иначе первая из списка.
   UserSpace? _effectiveSpace(List<UserSpace> spaces, String? currentSpaceId) {
@@ -46,6 +49,14 @@ class TransactionsLogScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final logState = ref.watch(transactionsLogProvider);
     final filter = ref.watch(transactionsFilterProvider);
+    // D21-14: авто-включение чипа «Секретные» из query-параметра.
+    if (initialSecretFilter && !filter.onlySecret) {
+      Future.microtask(
+        () => ref
+            .read(transactionsFilterProvider.notifier)
+            .toggleOnlySecret(),
+      );
+    }
     final hasPendingAsync = ref.watch(hasPendingSyncProvider);
     final hasPending = hasPendingAsync.value ?? false;
     final privacyMode = ref.watch(privacyModeProvider);
