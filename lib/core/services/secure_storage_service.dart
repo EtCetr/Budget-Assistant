@@ -1,4 +1,4 @@
-﻿import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:budget_assistant/core/logger.dart';
 import '../exceptions/security_exceptions.dart';
@@ -57,6 +57,14 @@ class SecureStorageService {
     } catch (e) {
       AppLogger.e('SecureStorage containsKey error: $key - $e');
       return false;
+    }
+  }
+  Future<void> deleteAll() async {
+    try {
+      await _storage.deleteAll();
+    } catch (e) {
+      AppLogger.e('SecureStorage deleteAll error: $e');
+      throw SecurityException('Failed to clear SecureStorage', e);
     }
   }
 }

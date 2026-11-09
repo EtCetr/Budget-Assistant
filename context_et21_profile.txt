@@ -1,0 +1,720 @@
+﻿===== FILE: lib\features\profile\presentation\widgets\debts_section.dart =====
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:budget_assistant/core/theme/app_colors.dart';
+import 'package:budget_assistant/features/debts/presentation/debts_strings.dart';
+import 'package:budget_assistant/features/debts/presentation/providers/debts_providers.dart';
+
+/// РЎРµРєС†РёСЏ В«Р”РѕР»РіРёВ» РґР»СЏ ProfileScreen (РўР— 6.3.13.16 Рї.18).
+///
+/// ProfileScreen РїРѕСЏРІРёС‚СЃСЏ РІ Р­С‚Р°РїРµ 21 вЂ” РґРѕ СЌС‚РѕРіРѕ РІРёРґР¶РµС‚ РЅРµ РІСЃС‚СЂРѕРµРЅ
+/// РЅРё РІ РѕРґРёРЅ СЌРєСЂР°РЅ (С‚РѕС‡РєР° РІС…РѕРґР°: СЂРѕСѓС‚ /debts).
+class DebtsSection extends ConsumerWidget {
+  const DebtsSection({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final stats = ref.watch(debtsStatsProvider);
+    final badgeCount = stats.overdueCount;
+    return ListTile(
+      leading: const Icon(Icons.handshake_outlined, color: AppColors.colorTransfer),
+      title: const Text(DebtsStrings.screenTitle),
+      subtitle: Text(
+        badgeCount > 0
+            ? '$badgeCount ${DebtsStrings.statsOverdueSuffix}'
+            : '${DebtsStrings.tabPayable} / ${DebtsStrings.tabReceivable}',
+      ),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        context.push('/debts');
+      },
+    );
+  }
+}
+
+===== FILE: lib\features\debts\domain\usecases\decline_name_usecase.dart =====
+import '../entities/declined_name.dart';
+
+/// РћС„Р»Р°Р№РЅ-СЃРєР»РѕРЅРµРЅРёРµ Р¤РРћ РІ РґР°С‚РµР»СЊРЅС‹Р№ РїР°РґРµР¶ (РІР°СЂРёР°РЅС‚ В«Р°В»: СЃРІРѕР№ РїСЂР°РІРёР»-Р±РµР№СЃРґ
+/// СЃРєР»РѕРЅСЏС‚РµР»СЊ, Р±РµР· РІРЅРµС€РЅРёС… РїР°РєРµС‚РѕРІ). РџРѕРєСЂС‹РІР°РµС‚ С‚РёРїРѕРІС‹Рµ СЂСѓСЃСЃРєРёРµ РёРјРµРЅР°,
+/// РѕС‚С‡РµСЃС‚РІР° Рё С„Р°РјРёР»РёРё. Р›СЋР±РѕРµ СЃРѕРјРЅРµРЅРёРµ в†’ success=false, UI РїСЂРµРґР»РѕР¶РёС‚
+/// СЂСѓС‡РЅРѕР№ РІРІРѕРґ РґР°С‚РµР»СЊРЅРѕРіРѕ РїР°РґРµР¶Р° (fallback РїРѕ РўР— 6.3.14).
+class DeclineNameUseCase {
+  DeclinedName call(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) {
+      return DeclinedName(original: name, dative: name, success: false);
+    }
+    final words = trimmed.split(RegExp(r'\s+'));
+    final out = <String>[];
+    for (final w in words) {
+      final d = _declineWord(w);
+      if (d == null) {
+        return DeclinedName(original: name, dative: name, success: false);
+      }
+      out.add(d);
+    }
+    return DeclinedName(original: name, dative: out.join(' '), success: true);
+  }
+
+  String? _declineWord(String w) {
+    final s = w.toLowerCase();
+    String? r;
+    if (s.endsWith('СЃРєРёР№')) {
+      r = '${s.substring(0, s.length - 2)}РѕРјСѓ';
+    } else if (s.endsWith('СЃРєР°СЏ')) {
+      r = '${s.substring(0, s.length - 4)}СЃРєРѕР№';
+    } else if (s.endsWith('РѕРІР°') || s.endsWith('РµРІР°')) {
+      r = '${s.substring(0, s.length - 1)}РѕР№';
+    } else if (_femFirstIna.contains(s)) {
+      // Р–РµРЅСЃРєРёРµ РёРјРµРЅР° РЅР° -РёРЅР° (РСЂРёРЅР°, Р“Р°Р»РёРЅР°...) вЂ” РЅРµ С„Р°РјРёР»РёРё.
+      r = '${s.substring(0, s.length - 1)}Рµ';
+    } else if ((s.endsWith('РёРЅР°') || s.endsWith('С‹РЅР°')) && s.length >= 5) {
+      r = '${s.substring(0, s.length - 1)}РѕР№';
+    } else if (s.endsWith('РІРёС‡') || s.endsWith('РёС‡')) {
+      r = '$sСѓ';
+    } else if (s.endsWith('РёСЏ') || s.endsWith('РµСЏ')) {
+      r = '${s.substring(0, s.length - 2)}РёРё';
+    } else if (s.endsWith('СЊСЏ')) {
+      r = '${s.substring(0, s.length - 2)}СЊРµ';
+    } else if (s.endsWith('СЏ')) {
+      r = '${s.substring(0, s.length - 1)}Рµ';
+    } else if (s.endsWith('Р°')) {
+      r = '${s.substring(0, s.length - 1)}Рµ';
+    } else if (s.endsWith('Р№')) {
+      r = '${s.substring(0, s.length - 1)}СЋ';
+    } else if (s.endsWith('СЊ')) {
+      if (_maleSoft.contains(s)) {
+        r = '${s.substring(0, s.length - 1)}СЋ';
+      } else if (_femaleSoft.contains(s)) {
+        r = s; // 3-Рµ СЃРєР»РѕРЅРµРЅРёРµ: РЅРµ РёР·РјРµРЅСЏРµС‚СЃСЏ
+      } else {
+        return null;
+      }
+    } else if (s.endsWith('Рѕ') || s.endsWith('Рµ') || s.endsWith('СЌ') ||
+        s.endsWith('Сѓ') || s.endsWith('Рё')) {
+      r = s; // РЅРµСЃРєР»РѕРЅСЏРµРјС‹Рµ Р·Р°РёРјСЃС‚РІРѕРІР°РЅРЅС‹Рµ
+    } else if (RegExp(r'[Р±РІРіРґР¶Р·РєР»РјРЅРїСЂСЃС‚С„С…С†С‡С€С‰]$').hasMatch(s)) {
+      r = '$sСѓ'; // РјСѓР¶СЃРєРёРµ РЅР° СЃРѕРіР»Р°СЃРЅС‹Р№
+    } else {
+      return null;
+    }
+    return _restoreCase(w, r);
+  }
+
+  String _restoreCase(String original, String declined) {
+    if (original.isNotEmpty &&
+        declined.isNotEmpty &&
+        original[0] == original[0].toUpperCase() &&
+        original[0] != original[0].toLowerCase()) {
+      return declined[0].toUpperCase() + declined.substring(1);
+    }
+    return declined;
+  }
+
+  static const Set<String> _femFirstIna = {
+    'РЅРёРЅР°', 'Р·РёРЅР°', 'Р°Р»РёРЅР°', 'РјР°СЂРёРЅР°', 'РёСЂРёРЅР°', 'РіР°Р»РёРЅР°',
+    'РїРѕР»РёРЅР°', 'РІР°Р»РµРЅС‚РёРЅР°', 'Р°РЅРіРµР»РёРЅР°', 'РєР°СЂРёРЅР°',
+  };
+  static const Set<String> _maleSoft = {'РёРіРѕСЂСЊ'};
+  static const Set<String> _femaleSoft = {'Р»СЋР±РѕРІСЊ'};
+}
+
+===== FILE: lib\features\debts\domain\entities\declined_name.dart =====
+import 'package:freezed_annotation/freezed_annotation.dart';
+part 'declined_name.freezed.dart';
+
+/// Р РµР·СѓР»СЊС‚Р°С‚ СЃРєР»РѕРЅРµРЅРёСЏ Р¤РРћ (DeclineNameUseCase, РІР°СЂРёР°РЅС‚ В«Р°В»: СЃРІРѕР№
+/// РїСЂР°РІРёР»-Р±РµР№СЃРґ СЃРєР»РѕРЅСЏС‚РµР»СЊ Р±РµР· РІРЅРµС€РЅРёС… Р·Р°РІРёСЃРёРјРѕСЃС‚РµР№).
+@freezed
+abstract class DeclinedName with _$DeclinedName {
+  const factory DeclinedName({
+    required String original,
+    /// Р”Р°С‚РµР»СЊРЅС‹Р№ РїР°РґРµР¶; РїСЂРё РЅРµСѓРґР°С‡Рµ СЂР°РІРµРЅ original.
+    required String dative,
+    /// false вЂ” РїСЂР°РІРёР»Р° РЅРµ СЃРјРѕРіР»Рё РїСЂРѕСЃРєР»РѕРЅСЏС‚СЊ (UI 6.3.14 РїСЂРµРґР»РѕР¶РёС‚ СЂСѓС‡РЅРѕР№ РІРІРѕРґ).
+    required bool success,
+  }) = _DeclinedName;
+}
+
+===== FILE: lib\features\auth\domain\notifiers\auth_notifier.dart =====
+import 'dart:async';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:budget_assistant/core/utils/result.dart';
+import 'package:budget_assistant/features/auth/domain/repositories/i_auth_repository.dart';
+import 'package:budget_assistant/core/providers/auth_providers.dart';
+
+part 'auth_notifier.g.dart';
+
+enum AuthStatus { unknown, unauthenticated, authenticated }
+
+@riverpod
+class AuthNotifier extends _$AuthNotifier {
+  late final IAuthRepository _repository;
+  StreamSubscription<AuthState>? _authStreamSubscription;
+
+  @override
+  AuthStatus build() {
+    _repository = ref.watch(authRepositoryProvider);
+    ref.onDispose(() {
+      _authStreamSubscription?.cancel();
+    });
+    _initAuthState();
+    return AuthStatus.unknown;
+  }
+
+  void _initAuthState() {
+    _authStreamSubscription = _repository.authStateChanges.listen(
+      _handleAuthStateChange,
+    );
+  }
+
+  void _handleAuthStateChange(AuthState authState) {
+    if (authState.session != null) {
+      state = AuthStatus.authenticated;
+    } else {
+      state = AuthStatus.unauthenticated;
+    }
+  }
+
+  Future<Result<void>> signInWithEmailAndPassword(
+    String email,
+    String password,
+  ) async {
+    return _repository.signInWithEmailAndPassword(email, password);
+  }
+
+  Future<Result<void>> signUpWithEmailAndPassword(
+    String email,
+    String password,
+  ) async {
+    return _repository.signUpWithEmailAndPassword(email, password);
+  }
+
+  Future<Result<void>> signInWithOtp(String email) async {
+    return _repository.signInWithOtp(email);
+  }
+
+  Future<Result<void>> signInWithGoogle() async {
+    final result = await _repository.signInWithGoogle();
+    return result.when(
+      success: (_) => Result.success(null),
+      failure: (f) => Result.failure(f),
+    );
+  }
+
+  Future<Result<void>> signOut() async {
+    return _repository.signOut();
+  }
+}
+
+===== FILE: lib\features\year_in_review\presentation\providers\year_in_review_providers.dart =====
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+import 'package:logger/logger.dart';
+import 'package:budget_assistant/core/database/app_database.dart';
+import 'package:budget_assistant/core/database/database_provider.dart';
+import 'package:budget_assistant/core/logger.dart';
+import 'package:budget_assistant/core/providers/transactions_trigger_provider.dart';
+import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
+import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
+import 'package:budget_assistant/core/services/secure_flag_service.dart';
+import 'package:budget_assistant/features/admin/presentation/providers/admin_providers.dart';
+import '../../data/datasources/yearly_aggregates_dao.dart';
+import '../../data/repositories/yearly_aggregates_repository_impl.dart';
+import '../../domain/models/year_in_review_data.dart';
+import '../../domain/models/yearly_aggregate.dart';
+import '../../domain/usecases/get_available_years_usecase.dart';
+import '../../domain/repositories/yearly_aggregates_repository.dart';
+import '../../domain/usecases/calculate_year_in_review_usecase.dart';
+import '../../domain/usecases/check_year_in_review_availability_usecase.dart';
+import '../../domain/usecases/mark_year_in_review_as_viewed_usecase.dart';
+import '../../domain/usecases/recalculate_yearly_aggregates_usecase.dart';
+import '../../domain/usecases/share_year_in_review_slide_usecase.dart';
+
+final Logger _logger = Logger();
+
+/// РљР»СЋС‡ Р·Р°РїСЂРѕСЃР° В«РіРѕРґ + РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРѕВ» РґР»СЏ family-РїСЂРѕРІР°Р№РґРµСЂР°.
+class YearReviewQuery {
+  const YearReviewQuery({required this.year, required this.spaceId});
+
+  final int year;
+  final String? spaceId;
+
+  @override
+  bool operator ==(Object other) =>
+      other is YearReviewQuery &&
+      other.year == year &&
+      other.spaceId == spaceId;
+
+  @override
+  int get hashCode => Object.hash(year, spaceId);
+}
+
+final yearlyAggregatesDaoProvider = Provider<YearlyAggregatesDao>(
+  (ref) => YearlyAggregatesDao(ref.watch(appDatabaseProvider)),
+);
+
+final yearlyAggregatesRepositoryProvider =
+    Provider<YearlyAggregatesRepository>((ref) {
+  return YearlyAggregatesRepositoryImpl(
+    dao: ref.watch(yearlyAggregatesDaoProvider),
+    logger: _logger,
+  );
+});
+
+final secureFlagServiceProvider =
+    Provider<SecureFlagService>((ref) => SecureFlagService());
+
+final recalculateYearlyAggregatesUseCaseProvider =
+    Provider<RecalculateYearlyAggregatesUseCase>((ref) {
+  return RecalculateYearlyAggregatesUseCase(
+    repository: ref.watch(yearlyAggregatesRepositoryProvider),
+    logger: _logger,
+  );
+});
+
+final calculateYearInReviewUseCaseProvider =
+    Provider<CalculateYearInReviewUseCase>((ref) {
+  return CalculateYearInReviewUseCase(
+    repository: ref.watch(yearlyAggregatesRepositoryProvider),
+    recalculate: ref.watch(recalculateYearlyAggregatesUseCaseProvider),
+    settingsDao: ref.watch(appSettingsDaoProvider),
+    logger: _logger,
+  );
+});
+
+final markYearInReviewAsViewedUseCaseProvider =
+    Provider<MarkYearInReviewAsViewedUseCase>((ref) {
+  return MarkYearInReviewAsViewedUseCase(
+    repository: ref.watch(yearlyAggregatesRepositoryProvider),
+    logger: _logger,
+  );
+});
+
+final checkYearInReviewAvailabilityUseCaseProvider =
+    Provider<CheckYearInReviewAvailabilityUseCase>((ref) {
+  return CheckYearInReviewAvailabilityUseCase(
+    repository: ref.watch(yearlyAggregatesRepositoryProvider),
+    recalculate: ref.watch(recalculateYearlyAggregatesUseCaseProvider),
+    settingsDao: ref.watch(appSettingsDaoProvider),
+    logger: _logger,
+  );
+});
+
+final shareYearInReviewSlideUseCaseProvider =
+    Provider<ShareYearInReviewSlideUseCase>((ref) {
+  return ShareYearInReviewSlideUseCase(
+    logger: _logger,
+    secureFlag: ref.watch(secureFlagServiceProvider),
+    adminRepository: ref.watch(adminRepositoryProvider),
+  );
+});
+
+/// Р’С‹Р±СЂР°РЅРЅРѕРµ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРѕ РЅР° СЃР»Р°Р№РґРµ Welcome (null = В«РўРѕР»СЊРєРѕ СЏВ»).
+class YearReviewSpaceNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void select(String? spaceId) => state = spaceId;
+}
+
+final yearReviewSpaceProvider =
+    NotifierProvider<YearReviewSpaceNotifier, String?>(
+  YearReviewSpaceNotifier.new,
+);
+
+/// Р“РѕРґРѕРІС‹Рµ РёС‚РѕРіРё РґР»СЏ СЌРєСЂР°РЅР° (РєСЌС€ РёР»Рё СЂР°СЃС‡С‘С‚ РЅР° Р»РµС‚Сѓ).
+final yearInReviewDataProvider =
+    FutureProvider.family<YearInReviewData?, YearReviewQuery>((ref, query) {
+  ref.watch(transactionsTriggerProvider);
+final useCase = ref.watch(calculateYearInReviewUseCaseProvider);
+  final userId = ref.watch(currentUserIdProvider);
+  return useCase(
+    userId: userId,
+    year: query.year,
+    spaceId: query.spaceId,
+  );
+});
+
+/// РќР°СЃС‚СЂРѕР№РєРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РґР»СЏ С€РµСЂРёРЅРіР° (PIN / Р·Р°С‰РёС‚Р° СЌРєСЂР°РЅР°).
+final yearReviewSettingsProvider = FutureProvider<AppSetting?>((ref) async {
+  try {
+    final dao = ref.watch(appSettingsDaoProvider);
+    final userId = ref.watch(currentUserIdProvider);
+    return await dao.getForUser(userId);
+  } catch (e, st) {
+    AppLogger.e('yearReviewSettings failed', e, st);
+    return null;
+  }
+});
+
+/// РљР°РєРёРµ СЃР»Р°Р№РґС‹ СЂРµР°Р»СЊРЅРѕ РїРѕРєР°Р·С‹РІР°РµРј (СѓСЃР»РѕРІРЅС‹Р№ РїРѕРєР°Р· РїРѕ РґР°РЅРЅС‹Рј, РўР— 6.3.37.11).
+/// РџСЂРѕРіСЂРµСЃСЃ-Р±Р°СЂ РїРѕРґСЃС‚СЂР°РёРІР°РµС‚СЃСЏ РїРѕРґ РґР»РёРЅСѓ СЌС‚РѕРіРѕ СЃРїРёСЃРєР°.
+enum YearReviewSlideType {
+  welcome,
+  income,
+  expense,
+  topCategories,
+  generousDay,
+  investments,
+  savings,
+  cashback,
+  family,
+  subscriptions,
+  savingsRate,
+  finale,
+  littleData,
+}
+
+final yearReviewSlidesProvider =
+    Provider.family<List<YearReviewSlideType>, YearReviewQuery>((ref, query) {
+  final data = ref.watch(yearInReviewDataProvider(query)).value;
+  if (data == null || data.transactionCount == 0) {
+    return const [YearReviewSlideType.welcome];
+  }
+  if (data.transactionCount < 10) {
+    return const [
+      YearReviewSlideType.welcome,
+      YearReviewSlideType.littleData,
+      YearReviewSlideType.finale,
+    ];
+  }
+  final slides = <YearReviewSlideType>[YearReviewSlideType.welcome];
+  if (data.totalIncome > 0) slides.add(YearReviewSlideType.income);
+  if (data.totalExpense > 0) slides.add(YearReviewSlideType.expense);
+  if (data.topCategories.isNotEmpty) {
+    slides.add(YearReviewSlideType.topCategories);
+  }
+  if (data.mostGenerousDay != null) {
+    slides.add(YearReviewSlideType.generousDay);
+  }
+  if (data.netInvested > 0) slides.add(YearReviewSlideType.investments);
+  if (data.totalSaved > 0 || data.goalsTotal > 0) {
+    slides.add(YearReviewSlideType.savings);
+  }
+  if (data.cashbackTotal > 0) slides.add(YearReviewSlideType.cashback);
+  if (data.isFamily && data.familyTotalExpense > 0) {
+    slides.add(YearReviewSlideType.family);
+  }
+  if (data.subscriptionsTotal > 0) {
+    slides.add(YearReviewSlideType.subscriptions);
+  }
+  if (data.totalIncome > 0) slides.add(YearReviewSlideType.savingsRate);
+  slides.add(YearReviewSlideType.finale);
+  return slides;
+});
+
+/// РЁРµСЂРёРЅРі РґРѕСЃС‚СѓРїРµРЅ РІРѕ РІСЃРµС… СЂРµР¶РёРјР°С…, РєСЂРѕРјРµ hidden (Privacy Matrix 6.3.37).
+final yearReviewCanShareProvider = Provider<bool>((ref) {
+  final mode = ref.watch(privacyModeProvider);
+  return mode != BalanceVisibilityMode.hidden;
+});
+
+final getAvailableYearsUseCaseProvider =
+    Provider<GetAvailableYearsUseCase>((ref) {
+  return GetAvailableYearsUseCase(
+    repository: ref.watch(yearlyAggregatesRepositoryProvider),
+    logger: _logger,
+  );
+});
+
+/// Р“РѕРґС‹ СЃ РґР°РЅРЅС‹РјРё РґР»СЏ СЌРєСЂР°РЅР° В«РЎС‚Р°С‚РёСЃС‚РёРєР° РїРѕ РіРѕРґР°РјВ».
+final availableYearsProvider =
+    FutureProvider<List<YearInReviewYearInfo>>((ref) {
+  // РћР±РЅРѕРІР»СЏРµРј СЃРїРёСЃРѕРє Р»РµС‚ РїСЂРё Р»СЋР±РѕРј РёР·РјРµРЅРµРЅРёРё С‚СЂР°РЅР·Р°РєС†РёР№ (РёРјРїРѕСЂС‚, РїСЂР°РІРєРё).
+  ref.watch(transactionsTriggerProvider);
+  final useCase = ref.watch(getAvailableYearsUseCaseProvider);
+  final userId = ref.watch(currentUserIdProvider);
+  return useCase(userId: userId);
+});
+
+
+===== FILE: lib\features\year_in_review\data\datasources\yearly_aggregates_dao.dart =====
+import 'package:drift/drift.dart';
+import 'package:budget_assistant/core/database/app_database.dart';
+import 'package:budget_assistant/core/database/tables/yearly_aggregates.dart';
+
+part 'yearly_aggregates_dao.g.dart';
+
+@DriftAccessor(tables: [YearlyAggregates])
+class YearlyAggregatesDao extends DatabaseAccessor<AppDatabase>
+    with _$YearlyAggregatesDaoMixin {
+  YearlyAggregatesDao(super.db);
+
+  Future<YearlyAggregateDb?> getForScope({
+    required String userId,
+    required String? spaceId,
+    required int year,
+  }) {
+    final query = select(yearlyAggregates)
+      ..where((t) => t.userId.equals(userId) & t.year.equals(year));
+    if (spaceId == null) {
+      query.where((t) => t.spaceId.isNull());
+    } else {
+      query.where((t) => t.spaceId.equals(spaceId));
+    }
+    return query.getSingleOrNull();
+  }
+
+  Future<void> upsertAggregate({
+    required String newId,
+    required String userId,
+    required String? spaceId,
+    required int year,
+    required String dataJson,
+  }) async {
+    final existing =
+        await getForScope(userId: userId, spaceId: spaceId, year: year);
+    final now = DateTime.now().toUtc();
+    if (existing == null) {
+      await into(yearlyAggregates).insert(
+        YearlyAggregatesCompanion.insert(
+          id: newId,
+          userId: userId,
+          year: year,
+          dataJson: dataJson,
+          lastCalculatedAt: now,
+          spaceId: Value(spaceId),
+        ),
+      );
+      return;
+    }
+    await (update(yearlyAggregates)
+          ..where((t) => t.id.equals(existing.id)))
+        .write(
+      YearlyAggregatesCompanion(
+        dataJson: Value(dataJson),
+        lastCalculatedAt: Value(now),
+        syncStatus: const Value('pending'),
+      ),
+    );
+  }
+
+  Future<void> markViewed({
+    required String userId,
+    required String? spaceId,
+    required int year,
+  }) async {
+    final existing =
+        await getForScope(userId: userId, spaceId: spaceId, year: year);
+    if (existing == null) return;
+    await (update(yearlyAggregates)
+          ..where((t) => t.id.equals(existing.id)))
+        .write(
+      const YearlyAggregatesCompanion(
+        isViewed: Value(true),
+        syncStatus: Value('pending'),
+      ),
+    );
+  }
+
+  /// РњРёРЅРёРјР°Р»СЊРЅС‹Р№ Рё РјР°РєСЃРёРјР°Р»СЊРЅС‹Р№ РіРѕРґ С‚СЂР°РЅР·Р°РєС†РёР№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+  /// (РґР»СЏ СЃРїРёСЃРєР° СЌРєСЂР°РЅР° В«РЎС‚Р°С‚РёСЃС‚РёРєР° РїРѕ РіРѕРґР°РјВ»).
+  Future<(int, int)?> transactionYearBounds(String userId) async {
+    final rows = await customSelect(
+      'SELECT MIN(date) AS mn, MAX(date) AS mx FROM transactions '
+      'WHERE user_id = ?',
+      variables: [Variable.withString(userId)],
+    ).get();
+    if (rows.isEmpty) return null;
+    final mn = rows.first.readNullable<DateTime>('mn');
+    final mx = rows.first.readNullable<DateTime>('mx');
+    if (mn == null || mx == null) return null;
+    return (mn.year, mx.year);
+  }
+
+  /// Р§РёСЃР»Рѕ С‚СЂР°РЅР·Р°РєС†РёР№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ Р·Р° РіРѕРґ (Р»СЋР±РѕРµ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРѕ).
+  Future<int> countTransactionsInYear(String userId, int year) async {
+    final rows = await customSelect(
+      'SELECT COUNT(*) AS c FROM transactions '
+      'WHERE user_id = ? AND date >= ? AND date < ?',
+      variables: [
+        Variable.withString(userId),
+        Variable.withDateTime(DateTime.utc(year, 1, 1)),
+        Variable.withDateTime(DateTime.utc(year + 1, 1, 1)),
+      ],
+    ).get();
+    if (rows.isEmpty) return 0;
+    return rows.first.read<int>('c');
+  }
+
+  /// РњРѕРјРµРЅС‚ РїРѕСЃР»РµРґРЅРµРіРѕ РёР·РјРµРЅРµРЅРёСЏ С‚СЂР°РЅР·Р°РєС†РёР№ РІ СЃРєРѕСѓРїРµ (СЃРІРµР¶РµСЃС‚СЊ РєСЌС€Р°).
+Future<DateTime?> lastTransactionUpdate(String userId, String? spaceId) async {
+final sql = spaceId == null
+? 'SELECT MAX(updated_at) AS m FROM transactions WHERE user_id = ? AND space_id IS NULL'
+: 'SELECT MAX(updated_at) AS m FROM transactions WHERE user_id = ? OR space_id = ?';
+final vars = spaceId == null
+? <Variable>[Variable.withString(userId)]
+: <Variable>[Variable.withString(userId), Variable.withString(spaceId)];
+final rows = await customSelect(sql, variables: vars).get();
+if (rows.isEmpty) return null;
+return rows.first.readNullable<DateTime>('m');
+}
+
+/// Р›РёС‡РЅС‹Рµ Р°РіСЂРµРіР°С‚С‹ РїРѕ РІСЃРµРј РіРѕРґР°Рј.
+  Future<Map<int, YearlyAggregateDb>> personalAggregatesByYear(
+      String userId) async {
+    final rows = await (select(yearlyAggregates)
+          ..where((t) => t.userId.equals(userId) & t.spaceId.isNull()))
+        .get();
+    return {for (final r in rows) r.year: r};
+  }
+}
+
+===== FILE: lib\core\database\daos\users_dao.dart =====
+import 'package:drift/drift.dart';
+import '../app_database.dart';
+import '../tables/users.dart';
+
+part 'users_dao.g.dart';
+
+@DriftAccessor(tables: [Users])
+class UsersDao extends DatabaseAccessor<AppDatabase> with _$UsersDaoMixin {
+  UsersDao(super.db);
+
+  /// Получить пользователя по ID
+  Future<User?> getById(String id) {
+    return (select(users)..where((t) => t.id.equals(id))).getSingleOrNull();
+  }
+
+  /// Stream: наблюдать за изменениями пользователя
+  Stream<User?> watchById(String id) {
+    return (select(users)..where((t) => t.id.equals(id))).watchSingleOrNull();
+  }
+
+  /// Создать или обновить пользователя (upsert)
+  Future<void> upsert(User user) {
+    return into(users).insertOnConflictUpdate(user.toCompanion(true));
+  }
+
+  /// Получить всех пользователей (для admin-функционала)
+  Future<List<User>> getAll() => select(users).get();
+
+  /// Пометить как pending для синхронизации
+  Future<int> markAsPending(String id) {
+    return (update(users)..where((t) => t.id.equals(id))).write(
+      const UsersCompanion(syncStatus: Value('pending')),
+    );
+  }
+
+  /// Удалить пользователя (каскадно удалит memberships, app_settings и т.д.)
+  Future<int> deleteById(String id) {
+    return (delete(users)..where((t) => t.id.equals(id))).go();
+  }
+}
+
+===== FILE: lib\features\profile\data\datasources\users_local_datasource.dart =====
+// lib/features/profile/data/datasources/users_local_datasource.dart
+import 'package:drift/drift.dart'; // вњ… Р”РћР‘РђР’РРўР¬ РґР»СЏ Value
+import 'package:logger/logger.dart'; // вњ… Р—Р°РјРµРЅРёС‚СЊ logging РЅР° logger
+import 'package:budget_assistant/core/database/app_database.dart';
+import 'package:budget_assistant/features/profile/domain/models/user_dto.dart';
+
+final _log = Logger(printer: PrettyPrinter(methodCount: 0));
+
+class UsersLocalDataSource {
+  final AppDatabase _db;
+  UsersLocalDataSource(this._db);
+
+  Future<UserDto?> getUserById(String id) async {
+    try {
+      final query = _db.select(_db.users)..where((t) => t.id.equals(id));
+      final row = await query.getSingleOrNull();
+      if (row == null) return null;
+      return _mapRowToDto(row);
+    } catch (e, st) {
+      _log.e(
+        'вќЊ Failed to fetch user $id from local DB',
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> insertUser(UserDto dto) async {
+    try {
+      await _db.into(_db.users).insert(_mapDtoToCompanion(dto));
+      _log.i('вњ… User ${dto.id} saved locally (sync_status=pending)');
+    } catch (e, st) {
+      _log.e('вќЊ Failed to insert user ${dto.id}', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+    UsersCompanion _mapDtoToCompanion(UserDto dto) {
+    return UsersCompanion.insert(
+      // РћР±СЏР·Р°С‚РµР»СЊРЅС‹Рµ РїРѕР»СЏ (Р±РµР· Value)
+      id: dto.id,
+      email: dto.email,
+      displayName: dto.displayName,
+      createdAt: Value(dto.createdAt.toUtc()),
+      updatedAt: Value(dto.updatedAt.toUtc()),
+
+      // Nullable РїРѕР»СЏ (РѕР±РѕСЂР°С‡РёРІР°РµРј РІ Value)
+      displayNameDative: Value(dto.displayNameDative),
+      avatarUrl: Value(dto.avatarUrl),
+        avatarPath: Value(dto.avatarPath),
+
+      // РџРѕР»Рµ СЃ default Р·РЅР°С‡РµРЅРёРµРј (РѕР±РѕСЂР°С‡РёРІР°РµРј РІ Value)
+      syncStatus: Value(dto.syncStatus),
+    );
+  }
+
+  // вњ… Drift РіРµРЅРµСЂРёСЂСѓРµС‚ РєР»Р°СЃСЃ `User` (РµРґ. С‡РёСЃР»Рѕ) РґР»СЏ С‚Р°Р±Р»РёС†С‹ `Users`
+  UserDto _mapRowToDto(User row) {
+    return UserDto(
+      id: row.id,
+      email: row.email,
+      displayName: row.displayName,
+      displayNameDative: row.displayNameDative,
+      avatarUrl: row.avatarUrl,
+        avatarPath: row.avatarPath,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      syncStatus: row.syncStatus,
+    );
+  }
+}
+
+===== FILE: lib\core\providers\transfer_profile_provider.dart =====
+import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/core/services/secure_storage_service.dart';
+import 'package:budget_assistant/features/import/domain/entities/transfer_profile.dart';
+
+/// РџСЂРѕС„РёР»СЊ РґРµС‚РµРєС†РёРё РїРµСЂРµРІРѕРґРѕРІ (РјРѕРё С‚РµР»РµС„РѕРЅС‹/Р¤РРћ + СЃРµРјСЊРё). SecureStorage.
+class TransferProfileNotifier extends Notifier<TransferProfile> {
+  static const _key = 'transfer_profile_json';
+
+  @override
+  TransferProfile build() => const TransferProfile();
+
+  Future<TransferProfile> load() async {
+    try {
+      final raw = await SecureStorageService().read(_key);
+      if (raw != null && raw.isNotEmpty) {
+        state = TransferProfile.fromJson(
+            (jsonDecode(raw) as Map).cast<String, dynamic>());
+      }
+    } catch (_) {}
+    return state;
+  }
+
+  Future<void> save(TransferProfile next) async {
+    state = next;
+    try {
+      await SecureStorageService().write(_key, jsonEncode(next.toJson()));
+    } catch (_) {}
+  }
+}
+
+final transferProfileProvider =
+    NotifierProvider<TransferProfileNotifier, TransferProfile>(
+        TransferProfileNotifier.new);
+
