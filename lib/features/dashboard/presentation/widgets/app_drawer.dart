@@ -9,6 +9,7 @@ import 'package:budget_assistant/features/receipts/presentation/labels/product_a
 
 class AppDrawer extends StatelessWidget {
   final String currentRoute;
+
   const AppDrawer({super.key, required this.currentRoute});
 
   void _go(BuildContext context, String route) {
@@ -17,11 +18,15 @@ class AppDrawer extends StatelessWidget {
   }
 
   Widget _item(BuildContext context, String route, IconData icon, String title) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      selected: currentRoute == route,
-      onTap: () => _go(context, route),
+    final isSelected = currentRoute == route;
+    return Semantics(
+      selected: isSelected,
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(title),
+        selected: isSelected,
+        onTap: () => _go(context, route),
+      ),
     );
   }
 
@@ -32,11 +37,14 @@ class AppDrawer extends StatelessWidget {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
+            DrawerHeader(
               child: Align(
                 alignment: Alignment.bottomLeft,
-                child: Text('Budget Assistant',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+                child: Semantics(
+                  header: true,
+                  child: const Text('Budget Assistant',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+                ),
               ),
             ),
             _item(context, '/', Icons.home, DashboardStrings.screenTitle),
@@ -50,11 +58,11 @@ class AppDrawer extends StatelessWidget {
             _item(context, '/reminders', Icons.alarm_outlined, RemindersStrings.screenTitle),
             _item(context, '/calendar', Icons.calendar_month_outlined, CalendarStrings.navCalendar),
             _item(context, '/notifications', Icons.notifications_outlined, 'Уведомления'),
-_item(context, '/loyalty-cards', Icons.card_membership_outlined, LoyaltyCardsStrings.screenTitle),
-          _item(context, '/product-analytics', Icons.insights_outlined, ProductAnalyticsStrings.screenTitle),
-          _item(context, '/settings/security', Icons.shield_outlined, 'Безопасность'),
-_item(context, '/settings', Icons.settings_outlined, 'Настройки'),
-_item(context, '/profile', Icons.person_outline, DashboardStrings.navProfile),
+            _item(context, '/loyalty-cards', Icons.card_membership_outlined, LoyaltyCardsStrings.screenTitle),
+            _item(context, '/product-analytics', Icons.insights_outlined, ProductAnalyticsStrings.screenTitle),
+            _item(context, '/settings/security', Icons.shield_outlined, 'Безопасность'),
+            _item(context, '/settings', Icons.settings_outlined, 'Настройки'),
+            _item(context, '/profile', Icons.person_outline, DashboardStrings.navProfile),
           ],
         ),
       ),

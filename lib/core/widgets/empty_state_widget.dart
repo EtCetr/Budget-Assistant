@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
 /// Пустое состояние для списков (ТЗ 6.8).
 /// Анимации Lottie удалены по решению владельца — статичная иконка.
+/// Этап 22: добавлена семантика для TalkBack.
 class EmptyStateAction {
   const EmptyStateAction({
     required this.label,
@@ -35,52 +35,59 @@ class EmptyStateWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final semanticLabel = subtitle != null ? '$title. $subtitle' : title;
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.spacing32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 96, color: AppColors.textSecondary),
-            const SizedBox(height: AppSpacing.spacing24),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineLarge,
-            ),
-            if (subtitle != null) ...[
-              const SizedBox(height: AppSpacing.spacing12),
-              Text(
-                subtitle!,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge,
+        child: Semantics(
+          label: semanticLabel,
+          container: true,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ExcludeSemantics(
+                child: Icon(icon, size: 96, color: AppColors.textSecondary),
               ),
-            ],
-            if (primaryAction != null) ...[
               const SizedBox(height: AppSpacing.spacing24),
-              primaryAction!.isPrimary
-                  ? ElevatedButton(
-                      onPressed: primaryAction!.onPressed,
-                      child: Text(primaryAction!.label),
-                    )
-                  : OutlinedButton(
-                      onPressed: primaryAction!.onPressed,
-                      child: Text(primaryAction!.label),
-                    ),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
+              if (subtitle != null) ...[
+                const SizedBox(height: AppSpacing.spacing12),
+                Text(
+                  subtitle!,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ],
+              if (primaryAction != null) ...[
+                const SizedBox(height: AppSpacing.spacing24),
+                primaryAction!.isPrimary
+                    ? ElevatedButton(
+                        onPressed: primaryAction!.onPressed,
+                        child: Text(primaryAction!.label),
+                      )
+                    : OutlinedButton(
+                        onPressed: primaryAction!.onPressed,
+                        child: Text(primaryAction!.label),
+                      ),
+              ],
+              if (secondaryAction != null) ...[
+                const SizedBox(height: AppSpacing.spacing12),
+                secondaryAction!.isPrimary
+                    ? ElevatedButton(
+                        onPressed: secondaryAction!.onPressed,
+                        child: Text(secondaryAction!.label),
+                      )
+                    : OutlinedButton(
+                        onPressed: secondaryAction!.onPressed,
+                        child: Text(secondaryAction!.label),
+                      ),
+              ],
             ],
-            if (secondaryAction != null) ...[
-              const SizedBox(height: AppSpacing.spacing12),
-              secondaryAction!.isPrimary
-                  ? ElevatedButton(
-                      onPressed: secondaryAction!.onPressed,
-                      child: Text(secondaryAction!.label),
-                    )
-                  : OutlinedButton(
-                      onPressed: secondaryAction!.onPressed,
-                      child: Text(secondaryAction!.label),
-                    ),
-            ],
-          ],
+          ),
         ),
       ),
     );

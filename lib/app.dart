@@ -15,6 +15,7 @@ import 'package:budget_assistant/features/settings/presentation/providers/settin
 
 class BudgetAssistantApp extends ConsumerStatefulWidget {
   const BudgetAssistantApp({super.key});
+
   @override
   ConsumerState<BudgetAssistantApp> createState() => _BudgetAssistantAppState();
 }
@@ -55,7 +56,6 @@ class _BudgetAssistantAppState extends ConsumerState<BudgetAssistantApp> {
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final link = AppBootstrapFlags.pendingDeepLink;
       if (link != null && link.isNotEmpty) {
@@ -68,12 +68,10 @@ class _BudgetAssistantAppState extends ConsumerState<BudgetAssistantApp> {
         _maybeShowYearInReview(ref, router);
       });
     });
-
     // Тёплый deep-link: мгновенный переход при тапе на пуш (D18-9).
     DeepLinkBus.instance.stream.listen((route) {
       router.go(route);
     });
-
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
@@ -85,12 +83,21 @@ class _BudgetAssistantAppState extends ConsumerState<BudgetAssistantApp> {
             ref.read(appSettingsRowProvider).value?.autoHideTimeoutSeconds ?? 0);
       },
       child: MaterialApp.router(
-      title: 'Budget Assistant',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      // Тёмное оформление по умолчанию (токены дизайн-системы — тёмные).
-      themeMode: ThemeMode.dark,
-      routerConfig: router,
+        title: 'Budget Assistant',
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        // Тёмное оформление по умолчанию (токены дизайн-системы — тёмные).
+        themeMode: ThemeMode.dark,
+        routerConfig: router,
+        builder: (context, child) {
+          // Этап 22 (ТЗ 6.10.7): ограничение масштабирования текста до 2.0.
+          final mq = MediaQuery.of(context);
+          final scale = mq.textScaler.scale(1.0).clamp(1.0, 2.0);
+          return MediaQuery(
+            data: mq.copyWith(textScaler: TextScaler.linear(scale)),
+            child: child!,
+          );
+        },
       ),
     );
   }
