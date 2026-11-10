@@ -73,8 +73,6 @@ class SettingsScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               _receiptsSection(context, ref, s),
               const SizedBox(height: 16),
-              _familySection(context, ref, s),
-              const SizedBox(height: 16),
               _currencySection(context, ref, s),
               const SizedBox(height: 16),
               _dataSection(context, ref),
@@ -183,6 +181,17 @@ class SettingsScreen extends ConsumerWidget {
             await _update(
               ref,
               AppSettingsCompanion(nightModeEnabled: Value(v)),
+            );
+          },
+        ),
+        SettingsSwitchItem(
+          label: 'Пуши о действиях в группе',
+          value: s.enableGroupActivityAlerts,
+          onChanged: (v) async {
+            HapticFeedback.selectionClick();
+            await _update(
+              ref,
+              AppSettingsCompanion(enableGroupActivityAlerts: Value(v)),
             );
           },
         ),
@@ -351,42 +360,6 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   // ============ Section 5: Семья и пространства ============
-  Widget _familySection(BuildContext context, WidgetRef ref, AppSetting s) {
-    return SettingsSection(
-      title: '👨‍👩‍ Семья и пространства',
-      subtitle: 'Multi-group: пространства, цвета, активность',
-      children: [
-        SettingsNavigationItem(
-          icon: Icons.home_outlined,
-          label: 'Управление пространствами',
-          onTap: () {
-            HapticFeedback.lightImpact();
-            context.push('/settings/spaces');
-          },
-        ),
-        SettingsNavigationItem(
-          icon: Icons.palette_outlined,
-          label: 'Цвета участников',
-          onTap: () {
-            HapticFeedback.lightImpact();
-            context.push('/settings/family/colors');
-          },
-        ),
-        SettingsSwitchItem(
-          label: 'Пуши о действиях в группе',
-          value: s.enableGroupActivityAlerts,
-          onChanged: (v) async {
-            HapticFeedback.selectionClick();
-            await _update(
-              ref,
-              AppSettingsCompanion(enableGroupActivityAlerts: Value(v)),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
   // ============ Section 6: Валюта и курсы ============
   Widget _currencySection(BuildContext context, WidgetRef ref, AppSetting s) {
     return SettingsSection(

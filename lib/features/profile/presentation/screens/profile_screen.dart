@@ -1,7 +1,7 @@
 // lib/features/profile/presentation/screens/profile_screen.dart
-// Этап 21 (ТЗ 6.3.39): полный профиль пользователя.
-// Внутри цветных карточек НЕ используем ListTile/SwitchListTile (фикс ассерта);
-// DebtsSection — отдельной плиткой (D21-33).
+// Этап 21 (ТЗ 6.3.39) + UX-рефакторинг: профиль = личные данные + семья/
+// пространства + админ-вход; настройки приложения живут в /settings.
+// Внутри цветных карточек НЕ используем ListTile/SwitchListTile (фикс ассерта).
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -67,10 +67,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final parts = name.trim().split(RegExp(r'\s+'));
     if (parts.isEmpty || parts.first.isEmpty) return '?';
     final first = parts.first[0];
-    final second = parts.length > 1 && parts[1].isNotEmpty
-        ? parts[1][0]
-        : '';
+    final second = parts.length > 1 && parts[1].isNotEmpty ? parts[1][0] : '';
     return (first + second).toUpperCase();
+  }
+
+  bool _isAdmin() {
+    final scope = ref.watch(adminScopeProvider);
+    if (scope == null) return false;
+    return ref.watch(adminAccessProvider(scope)).value ?? false;
   }
 
   Future<void> _signOut() async {
@@ -98,7 +102,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
     if (confirm != true || !mounted) return;
     HapticFeedback.mediumImpact();
-    // D21-31: SecureStorage НЕ чистим (PIN и ключи нужны при повторном входе).
     await ref.read(authProvider.notifier).signOut();
   }
 
@@ -333,41 +336,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 16),
               _myStatsSection(),
               const SizedBox(height: 8),
-              // Долг Этапа 13 закрыт: секция долгов встроена (D21-33: плиткой).
               const DebtsSection(),
-              const SizedBox(height: 8),
-              _card('🔔 Уведомления', [
-                TextButton.icon(
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    context.push('/settings/notifications');
-                  },
-                  icon: const Icon(
-                    Icons.notifications_outlined,
-                    color: AppColors.colorTransfer,
-                  ),
-                  label: const Text(
-                    'Настройки уведомлений и дайджестов',
-                    style: TextStyle(color: AppColors.textPrimary),
-                  ),
-                ),
-              ]),
-              if (_isAdmin()) ...[
-                const SizedBox(height: 16),
-                _card('🛡 Администрирование', [
-                  TextButton.icon(
-                    onPressed: () => context.push('/admin'),
-                    icon: const Icon(
-                      Icons.admin_panel_settings,
-                      color: AppColors.colorFAB,
-                    ),
-                    label: const Text(
-                      'Управление участниками и настройками',
-                      style: TextStyle(color: AppColors.textPrimary),
-                    ),
-                  ),
-                ]),
-              ],
               const SizedBox(height: 16),
               _transferSection(),
               const SizedBox(height: 16),
@@ -378,12 +347,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         },
       ),
     );
-  }
-
-  bool _isAdmin() {
-    final scope = ref.watch(adminScopeProvider);
-    if (scope == null) return false;
-    return ref.watch(adminAccessProvider(scope)).value ?? false;
   }
 
   Widget _header(
@@ -402,48 +365,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       child: Column(
         children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              CircleAvatar(
-                radius: 60,
-                backgroundColor: AppColors.colorTransfer,
-                backgroundImage: hasAvatar ? FileImage(avatarFile) : null,
-                child: hasAvatar
-                    ? null
-                    : Text(
-                        _initials(user.displayName),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 40,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-              ),
-              Positioned(
-                bottom: 0,
-                right: -4,
-                child: InkWell(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    EditProfileSheet.show(context, user);
-                  },
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: const BoxDecoration(
-                      color: AppColors.colorFAB,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.edit_outlined,
-                      size: 16,
+          CircleAvatar(
+            radius: 60,
+            backgroundColor: AppColors.colorTransfer,
+            backgroundImage: hasAvatar ? FileImage(avatarFile) : null,
+            child: hasAvatar
+                ? null
+                : Text(
+                    _initials(user.displayName),
+                    style: const TextStyle(
                       color: Colors.white,
+                      fontSize: 40,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
-              ),
-            ],
           ),
           const SizedBox(height: 16),
           Text(
@@ -455,17 +390,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               fontWeight: FontWeight.w700,
             ),
           ),
-          TextButton(
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              EditProfileSheet.show(context, user);
-            },
-            child: const Text(
-              '✏️ Изменить имя',
-              style: TextStyle(color: AppColors.colorTransfer),
-            ),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             'В дательном падеже: ${formatter.formatName(user.displayNameDative, mode)}',
             textAlign: TextAlign.center,
@@ -474,26 +399,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               fontSize: 14,
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextButton(
-                onPressed: () {
-                  HapticFeedback.lightImpact();
-                  EditProfileSheet.show(context, user);
-                },
-                child: const Text(
-                  '✏️ Изменить',
-                  style: TextStyle(color: AppColors.colorTransfer),
-                ),
-              ),
-            ],
-          ),
           const Text(
             '💡 Используется в пушах о долгах',
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              EditProfileSheet.show(context, user);
+            },
+            child: const Text(
+              '✏️ Редактировать профиль',
+              style: TextStyle(color: AppColors.colorTransfer),
+            ),
+          ),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -546,10 +467,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Row(
               children: [
                 Expanded(
-                  child: _stat('🏠', 'Пространств:', '${s.spacesCount}', AppColors.colorTransfer),
+                  child: _stat(
+                    '🏠',
+                    'Пространств:',
+                    '${s.spacesCount}',
+                    AppColors.colorTransfer,
+                  ),
                 ),
                 Expanded(
-                  child: _stat('💳', 'Счетов:', '${s.accountsCount}', AppColors.colorIncome),
+                  child: _stat(
+                    '💳',
+                    'Счетов:',
+                    '${s.accountsCount}',
+                    AppColors.colorIncome,
+                  ),
                 ),
               ],
             ),
@@ -557,10 +488,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Row(
               children: [
                 Expanded(
-                  child: _stat('📋', 'Транзакций:', '${s.transactionsCount}', AppColors.textSecondary),
+                  child: _stat(
+                    '📋',
+                    'Транзакций:',
+                    '${s.transactionsCount}',
+                    AppColors.textSecondary,
+                  ),
                 ),
                 Expanded(
-                  child: _stat('🎯', 'Целей:', '${s.goalsCount}', AppColors.colorFAB),
+                  child: _stat(
+                    '🎯',
+                    'Целей:',
+                    '${s.goalsCount}',
+                    AppColors.colorFAB,
+                  ),
                 ),
               ],
             ),
@@ -632,6 +573,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           );
         },
+      ),
+      const SizedBox(height: 8),
+      if (_isAdmin())
+        TextButton.icon(
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            context.push('/admin');
+          },
+          icon: const Icon(
+            Icons.admin_panel_settings,
+            color: AppColors.colorFAB,
+          ),
+          label: const Text(
+            'Админ-панель: участники и журнал',
+            style: TextStyle(color: AppColors.textPrimary),
+          ),
+        ),
+      TextButton.icon(
+        onPressed: () {
+          HapticFeedback.lightImpact();
+          context.push('/settings/family/colors');
+        },
+        icon: const Icon(Icons.palette_outlined, color: AppColors.colorTransfer),
+        label: const Text(
+          'Цвета участников',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
       ),
       const SizedBox(height: 8),
       OutlinedButton.icon(

@@ -15,6 +15,7 @@ import 'package:budget_assistant/features/security/presentation/widgets/security
 import 'package:budget_assistant/features/security/presentation/widgets/security_status_banner.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/features/settings/presentation/providers/settings_providers.dart';
+import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:budget_assistant/core/export/presentation/widgets/export_destination_dialog.dart';
 import 'package:budget_assistant/features/auth/domain/notifiers/auth_notifier.dart';
@@ -106,6 +107,7 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
     });
     final settingsAsync = ref.watch(appSettingsRowProvider);
     return Scaffold(
+      drawer: const AppDrawer(currentRoute: '/settings/security'),
       backgroundColor: AppColors.surfaceBackground,
       appBar: AppBar(
         backgroundColor: AppColors.surfaceBackground,
