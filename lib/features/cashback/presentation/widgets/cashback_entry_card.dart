@@ -10,6 +10,7 @@ import '../providers/cashback_providers.dart';
 /// Чип статуса переключает potential <-> approved тапом.
 /// Кнопки редактирования/удаления — в верхней строке; чипыPercent/статус
 /// перенесены в Wrap, чтобы не было RenderFlex overflow на узких экранах.
+/// Этап 22: добавлена семантика для TalkBack.
 class CashbackEntryCard extends ConsumerWidget {
   const CashbackEntryCard({
     super.key,
@@ -24,7 +25,9 @@ class CashbackEntryCard extends ConsumerWidget {
 
   String get _lifetimeLabel =>
       summary.lifetimeType == 'weekly' ? 'Недельный' : 'Месячный';
+
   double get _percent => summary.percentBps / 100;
+
   bool get _approved => summary.status == 'approved';
 
   @override
@@ -34,76 +37,86 @@ class CashbackEntryCard extends ConsumerWidget {
     String money(int kopecks) =>
         formatter.formatAmount(kopecks, summary.currency, mode);
     final theme = Theme.of(context);
+    final semanticLabel = 'Кэшбэк ${summary.categoryName}, '
+        '$_lifetimeLabel ${_percent.toStringAsFixed(1)}%, '
+        'статус ${_approved ? 'подтверждён' : 'начислен'}';
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    summary.categoryName,
-                    style: theme.textTheme.titleMedium,
+    return Semantics(
+      label: semanticLabel,
+      container: true,
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Semantics(
+                      header: true,
+                      child: Text(
+                        summary.categoryName,
+                        style: theme.textTheme.titleMedium,
+                      ),
+                    ),
                   ),
-                ),
-                if (onEdit != null)
-                  IconButton(
-                    tooltip: 'Изменить',
-                    icon: const Icon(Icons.edit_outlined, size: 20),
-                    onPressed: onEdit,
+                  if (onEdit != null)
+                    IconButton(
+                      tooltip: 'Изменить',
+                      icon: const Icon(Icons.edit_outlined, size: 20),
+                      onPressed: onEdit,
+                    ),
+                  if (onDelete != null)
+                    IconButton(
+                      tooltip: 'Удалить',
+                      icon: const Icon(Icons.delete_outline, size: 20),
+                      onPressed: onDelete,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                children: [
+                  Chip(
+                    label:
+                        Text('$_lifetimeLabel ${_percent.toStringAsFixed(1)}%'),
                   ),
-                if (onDelete != null)
-                  IconButton(
-                    tooltip: 'Удалить',
-                    icon: const Icon(Icons.delete_outline, size: 20),
-                    onPressed: onDelete,
+                  ActionChip(
+                    avatar: Icon(
+                      _approved ? Icons.verified : Icons.hourglass_bottom,
+                      size: 14,
+                      color: _approved ? Colors.green : Colors.orange,
+                    ),
+                    label: Text(_approved ? 'Подтверждён' : 'Начислен'),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => _toggleStatus(context, ref),
                   ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Wrap(
-              spacing: 4,
-              runSpacing: 4,
-              children: [
-                Chip(
-                  label:
-                      Text('$_lifetimeLabel ${_percent.toStringAsFixed(1)}%'),
-                ),
-                ActionChip(
-                  avatar: Icon(
-                    _approved ? Icons.verified : Icons.hourglass_bottom,
-                    size: 14,
-                    color: _approved ? Colors.green : Colors.orange,
+                ],
+              ),
+              const SizedBox(height: 12),
+              _row('Траты (брутто)', money(summary.grossExpenseKopecks)),
+              _row('Возвраты', '- ${money(summary.refundKopecks)}'),
+              _row('NET-база', money(summary.netExpenseKopecks)),
+              const Divider(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Кэшбэк', style: theme.textTheme.titleSmall),
+                  Text(
+                    money(summary.cashbackKopecks),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  label: Text(_approved ? 'Подтверждён' : 'Начислен'),
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () => _toggleStatus(context, ref),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _row('Траты (брутто)', money(summary.grossExpenseKopecks)),
-            _row('Возвраты', '- ${money(summary.refundKopecks)}'),
-            _row('NET-база', money(summary.netExpenseKopecks)),
-            const Divider(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Кэшбэк', style: theme.textTheme.titleSmall),
-                Text(
-                  money(summary.cashbackKopecks),
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

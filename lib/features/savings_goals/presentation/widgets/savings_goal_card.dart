@@ -17,6 +17,7 @@ import 'savings_goal_long_press_menu.dart';
 import 'withdraw_from_goal_sheet.dart';
 
 /// Карточка активной цели накопления (ТЗ 6.3.16.6).
+/// Этап 22: добавлена семантика для TalkBack.
 class SavingsGoalCard extends ConsumerWidget {
   const SavingsGoalCard({super.key, required this.goal});
 
@@ -27,127 +28,120 @@ class SavingsGoalCard extends ConsumerWidget {
     final mode = ref.watch(privacyModeProvider);
     final formatter = ref.watch(privacyFormatterProvider);
     final theme = Theme.of(context);
-
     final userId = ref.watch(currentUserIdProvider);
     final accounts = ref.watch(accountsListProvider(userId)).value;
     final account = findAccountById(accounts, goal.linkedAccountId);
-
     final name = formatter.formatName(goal.name, mode);
     final currentText =
         formatter.formatAmount(goal.currentAmount, goal.currency, mode);
     final targetText =
         formatter.formatAmount(goal.targetAmount, goal.currency, mode);
     final percentText = formatter.formatPercent(goal.progressPercent, mode);
-
     final daysLeft = goal.deadline == null ? null : daysUntil(goal.deadline!);
     final overdue =
         goal.deadline != null && daysLeft! < 0 && !goal.isReached;
 
-    return GestureDetector(
-      onLongPress: () {
-        HapticFeedback.mediumImpact();
-        showSavingsGoalLongPressMenu(context, goal);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.spacing16),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceCard,
-          borderRadius: BorderRadius.circular(AppRadius.radiusLg),
-          border: Border.all(color: AppColors.borderDivider),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
+    void onLongPress() {
+      HapticFeedback.mediumImpact();
+      showSavingsGoalLongPressMenu(context, goal);
+    }
+
+    final semanticLabel = 'Цель $name, накоплено $currentText из $targetText'
+        '${percentText.isEmpty ? '' : ', прогресс $percentText'}';
+
+    return Semantics(
+      label: semanticLabel,
+      button: true,
+      onLongPress: onLongPress,
+      child: GestureDetector(
+        onLongPress: onLongPress,
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.spacing16),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceCard,
+            borderRadius: BorderRadius.circular(AppRadius.radiusLg),
+            border: Border.all(color: AppColors.borderDivider),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    goal.isVirtual ? '💭' : '🏦',
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  const SizedBox(width: AppSpacing.spacing8),
+                  Expanded(
+                    child: Semantics(
+                      header: true,
+                      child: Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                  if (goal.syncStatus == SyncStatus.pending)
+                    const PendingSyncIndicator(),
+                ],
+              ),
+              if (account != null) ...[
+                const SizedBox(height: AppSpacing.spacing4),
                 Text(
-                  goal.isVirtual ? '💭' : '🏦',
-                  style: theme.textTheme.titleMedium,
+                  formatter.formatName(accountLabel(account), mode),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(color: AppColors.textSecondary),
                 ),
-                const SizedBox(width: AppSpacing.spacing8),
-                Expanded(
-                  child: Text(
-                    name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w700),
+              ],
+              const SizedBox(height: AppSpacing.spacing8),
+              Text(
+                '$currentText / $targetText${percentText.isEmpty ? '' : ' · $percentText'}',
+                style: theme.textTheme.bodyLarge
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              if (goal.deadline != null) ...[
+                const SizedBox(height: AppSpacing.spacing4),
+                Text(
+                  deadlineText(goal.deadline!, daysLeft!, overdue),
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: overdue
+                        ? AppColors.colorExpense
+                        : (daysLeft <= 7
+                            ? AppColors.colorWarning
+                            : AppColors.textSecondary),
+                    fontWeight:
+                        overdue ? FontWeight.w700 : FontWeight.normal,
                   ),
                 ),
-                if (goal.syncStatus == SyncStatus.pending)
-                  const PendingSyncIndicator(),
               ],
-            ),
-            if (account != null) ...[
-              const SizedBox(height: AppSpacing.spacing4),
-              Text(
-                formatter.formatName(accountLabel(account), mode),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium
-                    ?.copyWith(color: AppColors.textSecondary),
-              ),
-            ],
-            const SizedBox(height: AppSpacing.spacing8),
-            Text(
-              '$currentText / $targetText${percentText.isEmpty ? '' : ' · $percentText'}',
-              style: theme.textTheme.bodyLarge
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            if (goal.deadline != null) ...[
-              const SizedBox(height: AppSpacing.spacing4),
-              Text(
-                deadlineText(goal.deadline!, daysLeft!, overdue),
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: overdue
-                      ? AppColors.colorExpense
-                      : (daysLeft <= 7
-                          ? AppColors.colorWarning
-                          : AppColors.textSecondary),
-                  fontWeight:
-                      overdue ? FontWeight.w700 : FontWeight.normal,
-                ),
-              ),
-            ],
-            const SizedBox(height: AppSpacing.spacing12),
-            ClipRRect(
-              borderRadius: AppRadius.radiusFull,
-              child: Container(
-                height: 8,
-                color: AppColors.borderDivider,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: FractionallySizedBox(
-                    widthFactor:
-                        (goal.progressPercent / 100).clamp(0.0, 1.0),
-                    child: Container(
-                      color: overdue
-                          ? AppColors.colorExpense
-                          : AppColors.colorIncome,
+              const SizedBox(height: AppSpacing.spacing12),
+              ClipRRect(
+                borderRadius: AppRadius.radiusFull,
+                child: Container(
+                  height: 8,
+                  color: AppColors.borderDivider,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: FractionallySizedBox(
+                      widthFactor:
+                          (goal.progressPercent / 100).clamp(0.0, 1.0),
+                      child: Container(
+                        color: overdue
+                            ? AppColors.colorExpense
+                            : AppColors.colorIncome,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.spacing12),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        builder: (_) => ContributeToGoalSheet(goal: goal),
-                      );
-                    },
-                    child:
-                        const Text(SavingsGoalsStrings.actionContribute),
-                  ),
-                ),
-                if (goal.currentAmount > 0) ...[
-                  const SizedBox(width: AppSpacing.spacing8),
+              const SizedBox(height: AppSpacing.spacing12),
+              Row(
+                children: [
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
@@ -155,17 +149,34 @@ class SavingsGoalCard extends ConsumerWidget {
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
-                          builder: (_) =>
-                              WithdrawFromGoalSheet(goal: goal),
+                          builder: (_) => ContributeToGoalSheet(goal: goal),
                         );
                       },
-                      child: const Text(SavingsGoalsStrings.actionWithdraw),
+                      child:
+                          const Text(SavingsGoalsStrings.actionContribute),
                     ),
                   ),
+                  if (goal.currentAmount > 0) ...[
+                    const SizedBox(width: AppSpacing.spacing8),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (_) =>
+                                WithdrawFromGoalSheet(goal: goal),
+                          );
+                        },
+                        child: const Text(SavingsGoalsStrings.actionWithdraw),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );

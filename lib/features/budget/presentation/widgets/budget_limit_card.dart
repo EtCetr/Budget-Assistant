@@ -6,12 +6,14 @@ import '../../domain/entities/budget_limit.dart';
 import '../providers/budget_providers.dart';
 import 'budget_progress_indicator.dart';
 
+/// Этап 22: добавлена семантика для TalkBack.
 class BudgetLimitCard extends ConsumerWidget {
   final BudgetLimit limit;
   final BalanceVisibilityMode privacyMode;
   final PrivacyFormatter formatter;
   final String categoryName;
   final VoidCallback? onTap;
+
   const BudgetLimitCard({
     super.key,
     required this.limit,
@@ -65,33 +67,42 @@ class BudgetLimitCard extends ConsumerWidget {
   }) {
     final spentText = formatter.formatAmount(spent, 'RUB', privacyMode);
     final limitText = formatter.formatAmount(limitAmount, 'RUB', privacyMode);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          categoryName,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(height: 8),
-        BudgetProgressIndicator(
-          percentUsed: percentUsed,
-          privacyMode: privacyMode,
-        ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Потрачено: $spentText',
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+    final semanticLabel = 'Лимит $categoryName, потрачено $spentText из $limitText';
+
+    return Semantics(
+      label: semanticLabel,
+      button: onTap != null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Semantics(
+            header: true,
+            child: Text(
+              categoryName,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
-            Text(
-              'Лимит: $limitText',
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
-        ),
-      ],
+          ),
+          const SizedBox(height: 8),
+          BudgetProgressIndicator(
+            percentUsed: percentUsed,
+            privacyMode: privacyMode,
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Потрачено: $spentText',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              Text(
+                'Лимит: $limitText',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

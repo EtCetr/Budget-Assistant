@@ -15,6 +15,7 @@ import 'loyalty_cards_category_ui.dart';
 /// Privacy: имя магазина и номер — только через PrivacyFormatter
 /// (hidden: имя •••, номер ••••); бейджи категории/избранного остаются
 /// (метаданные), бейдж создателя скрывается в hidden.
+/// Этап 22: добавлена семантика для TalkBack.
 class LoyaltyCardTile extends ConsumerWidget {
   const LoyaltyCardTile({
     super.key,
@@ -57,83 +58,89 @@ class LoyaltyCardTile extends ConsumerWidget {
     final subColor = onBrand
         ? Colors.white.withValues(alpha: 0.7)
         : AppColors.textSecondary;
-    return Container(
-      decoration: BoxDecoration(
-        color: brand,
-        borderRadius: const BorderRadius.all(Radius.circular(16)),
-        border: card.syncStatus == SyncStatus.conflict
-            ? Border.all(color: AppColors.colorExpense, width: 2)
-            : null,
-      ),
-      padding: const EdgeInsets.all(AppSpacing.spacing16),
-      child: Stack(
-        children: [
-          Center(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                Text(
-                  card.iconAsset ?? '💳',
-                  style: const TextStyle(fontSize: 40),
-                ),
-                const SizedBox(height: AppSpacing.spacing8),
-                Text(
-                  formatter.formatMerchant(card.storeName, mode),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: titleColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.spacing4),
-                Text(
-                  _maskedNumber(),
-                  style: TextStyle(color: subColor, letterSpacing: 2),
-                ),
-                const SizedBox(height: AppSpacing.spacing8),
-                Row(
+    final storeName = formatter.formatMerchant(card.storeName, mode);
+    final semanticLabel = '$storeName, карта лояльности'
+        '${card.isFavorite ? ', избранная' : ''}';
+
+    return Semantics(
+      label: semanticLabel,
+      child: Container(
+        decoration: BoxDecoration(
+          color: brand,
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
+          border: card.syncStatus == SyncStatus.conflict
+              ? Border.all(color: AppColors.colorExpense, width: 2)
+              : null,
+        ),
+        padding: const EdgeInsets.all(AppSpacing.spacing16),
+        child: Stack(
+          children: [
+            Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (card.isFavorite)
-                      const Icon(Icons.star,
-                          size: 16, color: AppColors.colorWarning),
-                    if (card.isFavorite)
-                      const SizedBox(width: AppSpacing.spacing8),
-                    Icon(
-                      LoyaltyCardCategoryUi.icon(card.category),
-                      size: 16,
-                      color: LoyaltyCardCategoryUi.color(card.category),
+                    Text(
+                      card.iconAsset ?? '💳',
+                      style: const TextStyle(fontSize: 40),
                     ),
-                    if (card.userId != currentUserId &&
-              formatter.shouldShowFamilyColors(mode) &&
-              (ref.watch(appSettingsRowProvider).value
-                      ?.showFamilyColorsInTransactions ??
-                  true)) ...[
-                      const SizedBox(width: AppSpacing.spacing8),
-                      // Этап 21 (D17-3 закрыт): цвет создателя — override из member_colors.
-            Icon(Icons.person_outline,
-                size: 16,
-                color: ref.watch(
-                    memberColorInCurrentSpaceProvider(card.userId))),
-                    ],
+                    const SizedBox(height: AppSpacing.spacing8),
+                    Text(
+                      storeName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: titleColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.spacing4),
+                    Text(
+                      _maskedNumber(),
+                      style: TextStyle(color: subColor, letterSpacing: 2),
+                    ),
+                    const SizedBox(height: AppSpacing.spacing8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (card.isFavorite)
+                          const Icon(Icons.star,
+                              size: 16, color: AppColors.colorWarning),
+                        if (card.isFavorite)
+                          const SizedBox(width: AppSpacing.spacing8),
+                        Icon(
+                          LoyaltyCardCategoryUi.icon(card.category),
+                          size: 16,
+                          color: LoyaltyCardCategoryUi.color(card.category),
+                        ),
+                        if (card.userId != currentUserId &&
+                            formatter.shouldShowFamilyColors(mode) &&
+                            (ref.watch(appSettingsRowProvider).value
+                                    ?.showFamilyColorsInTransactions ??
+                                true)) ...[
+                          const SizedBox(width: AppSpacing.spacing8),
+                          Icon(Icons.person_outline,
+                              size: 16,
+                              color: ref.watch(
+                                  memberColorInCurrentSpaceProvider(card.userId))),
+                        ],
+                      ],
+                    ),
                   ],
                 ),
-                ],
               ),
             ),
-          ),
-          if (card.syncStatus == SyncStatus.pending)
-            const Positioned(
-              top: 0,
-              right: 0,
-              child: Icon(Icons.cloud_off,
-                  size: 16, color: AppColors.colorPendingSync),
-            ),
-        ],
+            if (card.syncStatus == SyncStatus.pending)
+              const Positioned(
+                top: 0,
+                right: 0,
+                child: Icon(Icons.cloud_off,
+                    size: 16, color: AppColors.colorPendingSync),
+              ),
+          ],
+        ),
       ),
     );
   }

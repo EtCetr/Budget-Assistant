@@ -15,6 +15,7 @@ import 'reminder_area_badge.dart';
 
 /// Карточка напоминания (ТЗ 6.3.10.5): приоритет, название, сумма,
 /// дата, assignee, recurring-иконка, бейджи просрочки/области/snooze.
+/// Этап 22: добавлена семантика для TalkBack.
 class ReminderCard extends ConsumerWidget {
   const ReminderCard({
     super.key,
@@ -35,108 +36,123 @@ class ReminderCard extends ConsumerWidget {
     final now = ref.watch(remindersNowUtcProvider);
     final overdue = reminder.isOverdueAt(now);
     final completed = reminder.isCompleted;
-    return InkWell(
+    final dateText = DateFormat('d MMMM yyyy, HH:mm', 'ru')
+        .format(reminder.remindAt.toLocal());
+
+    final semanticLabel = '${reminder.title}, $dateText'
+        '${overdue && !completed ? ', просрочено' : ''}'
+        '${completed ? ', выполнено' : ''}';
+
+    return Semantics(
+      label: semanticLabel,
+      button: true,
       onTap: onTap,
       onLongPress: onLongPress,
-      borderRadius: BorderRadius.circular(AppRadius.radiusLg),
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.spacing16),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceCard,
-          borderRadius: BorderRadius.circular(AppRadius.radiusLg),
-          border: Border.all(color: AppColors.borderDivider),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            PriorityIndicator(priority: reminder.priority),
-            const SizedBox(width: AppSpacing.spacing12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          reminder.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                decoration: completed
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                              ),
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        borderRadius: BorderRadius.circular(AppRadius.radiusLg),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.spacing16),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceCard,
+            borderRadius: BorderRadius.circular(AppRadius.radiusLg),
+            border: Border.all(color: AppColors.borderDivider),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              PriorityIndicator(priority: reminder.priority),
+              const SizedBox(width: AppSpacing.spacing12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Semantics(
+                            header: true,
+                            child: Text(
+                              reminder.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    decoration: completed
+                                        ? TextDecoration.lineThrough
+                                        : null,
+                                  ),
+                            ),
+                          ),
                         ),
-                      ),
-                      if (reminder.linkedRecurringId != null)
-                        const Icon(Icons.repeat,
-                            size: 16, color: AppColors.colorTransfer),
-                      if (reminder.syncStatus == SyncStatus.pending)
-                        const Padding(
-                          padding: EdgeInsets.only(left: 6),
-                          child: PendingSyncIndicator(),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.spacing4),
-                  Text(
-                    DateFormat('d MMMM yyyy, HH:mm', 'ru')
-                        .format(reminder.remindAt.toLocal()),
-                    style: TextStyle(
-                      color: overdue && !completed
-                          ? AppColors.colorExpense
-                          : AppColors.textSecondary,
-                      fontSize: 13,
+                        if (reminder.linkedRecurringId != null)
+                          const Icon(Icons.repeat,
+                              size: 16, color: AppColors.colorTransfer),
+                        if (reminder.syncStatus == SyncStatus.pending)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 6),
+                            child: PendingSyncIndicator(),
+                          ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.spacing8),
-                  Wrap(
-                    spacing: AppSpacing.spacing8,
-                    runSpacing: AppSpacing.spacing4,
-                    children: [
-                      if (reminder.expectedAmount != null)
-                        Text(
-                          formatter.formatAmount(
-                              reminder.expectedAmount!, currency, mode),
-                          style: const TextStyle(
-                              color: AppColors.colorExpense, fontSize: 14),
-                        ),
-                      if (overdue && !completed)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color:
-                                AppColors.colorExpense.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(8),
+                    const SizedBox(height: AppSpacing.spacing4),
+                    Text(
+                      dateText,
+                      style: TextStyle(
+                        color: overdue && !completed
+                            ? AppColors.colorExpense
+                            : AppColors.textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.spacing8),
+                    Wrap(
+                      spacing: AppSpacing.spacing8,
+                      runSpacing: AppSpacing.spacing4,
+                      children: [
+                        if (reminder.expectedAmount != null)
+                          Text(
+                            formatter.formatAmount(
+                                reminder.expectedAmount!, currency, mode),
+                            style: const TextStyle(
+                                color: AppColors.colorExpense, fontSize: 14),
                           ),
-                          child: const Text(
-                            RemindersStrings.badgeOverdue,
-                            style: TextStyle(
-                                color: AppColors.colorExpense, fontSize: 12),
+                        if (overdue && !completed)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color:
+                                  AppColors.colorExpense.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              RemindersStrings.badgeOverdue,
+                              style: TextStyle(
+                                  color: AppColors.colorExpense, fontSize: 12),
+                            ),
                           ),
-                        ),
-                      if (reminder.snoozeCount > 0)
-                        Text(
-                          '⏰ x${reminder.snoozeCount}',
-                          style: const TextStyle(
-                              color: AppColors.colorWarning, fontSize: 12),
-                        ),
-                      AssigneeBadge(assigneeId: reminder.assigneeId),
-                      ReminderAreaBadge(isFamily: reminder.isFamily),
-                    ],
-                  ),
-                ],
+                        if (reminder.snoozeCount > 0)
+                          Text(
+                            '⏰ x${reminder.snoozeCount}',
+                            style: const TextStyle(
+                                color: AppColors.colorWarning, fontSize: 12),
+                          ),
+                        AssigneeBadge(assigneeId: reminder.assigneeId),
+                        ReminderAreaBadge(isFamily: reminder.isFamily),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            if (completed)
-              const Icon(Icons.check_circle, color: AppColors.colorIncome),
-          ],
+              if (completed)
+                const Icon(Icons.check_circle, color: AppColors.colorIncome),
+            ],
+          ),
         ),
       ),
     );
