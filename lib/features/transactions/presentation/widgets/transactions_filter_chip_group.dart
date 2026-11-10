@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../core/formatting/money_input_parser.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/lookup_item.dart';
@@ -9,10 +8,32 @@ import '../../domain/entities/transactions_filter_state.dart';
 import '../labels/transactions_log_labels.dart';
 import '../providers/transactions_log_providers.dart';
 
+/// Этап 22 (ТЗ 6.10.3): чипы фильтров с семантикой.
 class TransactionsFilterChipGroup extends ConsumerWidget {
   const TransactionsFilterChipGroup({super.key, required this.filter});
 
   final TransactionsFilterState filter;
+
+  /// Обёртка чипа с семантикой для TalkBack.
+  Widget _chip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+    Color? selectedColor,
+  }) {
+    return MergeSemantics(
+      child: Semantics(
+        label: '$label, ${selected ? "выбран" : "не выбран"}',
+        button: true,
+        child: FilterChip(
+          label: Text(label),
+          selected: selected,
+          selectedColor: selectedColor,
+          onSelected: (_) => onTap(),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,61 +44,56 @@ class TransactionsFilterChipGroup extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
           if (filter.hasActiveFilters) ...[
-            FilterChip(
-              label: const Text(TransactionsLogLabels.reset),
+            _chip(
+              label: TransactionsLogLabels.reset,
               selected: false,
-              onSelected: (_) {
+              onTap: () {
                 HapticFeedback.mediumImpact();
                 ref.read(transactionsFilterProvider.notifier).reset();
               },
             ),
             const SizedBox(width: 8),
           ],
-          FilterChip(
-            label: Text(_typeLabel(filter.type)),
+          _chip(
+            label: _typeLabel(filter.type),
             selected: filter.type != TransactionTypeFilter.all,
-            onSelected: (_) => _showTypeSheet(context, ref),
+            onTap: () => _showTypeSheet(context, ref),
           ),
           const SizedBox(width: 8),
-          FilterChip(
-            label: Text(
-              filter.categoryIds.isEmpty
-                  ? TransactionsLogLabels.categories
-                  : '${TransactionsLogLabels.categories}: ${filter.categoryIds.length}',
-            ),
+          _chip(
+            label: filter.categoryIds.isEmpty
+                ? TransactionsLogLabels.categories
+                : '${TransactionsLogLabels.categories}: ${filter.categoryIds.length}',
             selected: filter.categoryIds.isNotEmpty,
-            onSelected: (_) => _showCategoriesSheet(context, ref),
+            onTap: () => _showCategoriesSheet(context, ref),
           ),
           const SizedBox(width: 8),
-          FilterChip(
-            label: Text(
-              filter.accountIds.isEmpty
-                  ? TransactionsLogLabels.accounts
-                  : '${TransactionsLogLabels.accounts}: ${filter.accountIds.length}',
-            ),
+          _chip(
+            label: filter.accountIds.isEmpty
+                ? TransactionsLogLabels.accounts
+                : '${TransactionsLogLabels.accounts}: ${filter.accountIds.length}',
             selected: filter.accountIds.isNotEmpty,
-            onSelected: (_) => _showAccountsSheet(context, ref),
+            onTap: () => _showAccountsSheet(context, ref),
           ),
           const SizedBox(width: 8),
-          FilterChip(
-            label: Text(_periodLabel(filter.period)),
+          _chip(
+            label: _periodLabel(filter.period),
             selected: filter.period != TransactionsPeriodPreset.all,
-            onSelected: (_) => _showPeriodSheet(context, ref),
+            onTap: () => _showPeriodSheet(context, ref),
           ),
           const SizedBox(width: 8),
-          FilterChip(
-            label: const Text(TransactionsLogLabels.amount),
-            selected:
-                filter.amountFromKopecks != null ||
+          _chip(
+            label: TransactionsLogLabels.amount,
+            selected: filter.amountFromKopecks != null ||
                 filter.amountToKopecks != null,
-            onSelected: (_) => _showAmountSheet(context, ref),
+            onTap: () => _showAmountSheet(context, ref),
           ),
           const SizedBox(width: 8),
-          FilterChip(
-            label: const Text(TransactionsLogLabels.withReceipts),
+          _chip(
+            label: TransactionsLogLabels.withReceipts,
             selected: filter.onlyWithReceipt,
             selectedColor: AppColors.colorWarning.withValues(alpha: .25),
-            onSelected: (_) {
+            onTap: () {
               HapticFeedback.selectionClick();
               ref
                   .read(transactionsFilterProvider.notifier)
@@ -85,32 +101,32 @@ class TransactionsFilterChipGroup extends ConsumerWidget {
             },
           ),
           const SizedBox(width: 8),
-          FilterChip(
-            label: const Text(TransactionsLogLabels.onlySplit),
+          _chip(
+            label: TransactionsLogLabels.onlySplit,
             selected: filter.onlySplit,
             selectedColor: const Color(0xFF14B8A6).withValues(alpha: .25),
-            onSelected: (_) {
+            onTap: () {
               HapticFeedback.selectionClick();
               ref.read(transactionsFilterProvider.notifier).toggleOnlySplit();
             },
           ),
           const SizedBox(width: 8),
-          FilterChip(
-            label: const Text(TransactionsLogLabels.onlyDebts),
+          _chip(
+            label: TransactionsLogLabels.onlyDebts,
             selected: filter.onlyDebts,
             selectedColor: AppColors.colorExpense.withValues(alpha: .2),
-            onSelected: (_) {
+            onTap: () {
               HapticFeedback.selectionClick();
               ref.read(transactionsFilterProvider.notifier).toggleOnlyDebts();
             },
           ),
           const SizedBox(width: 8),
-          FilterChip(
+          _chip(
             // D21-41: лейбл инлайном (TransactionsLogLabels не верифицирован).
-            label: const Text('🎁 Секретные'),
+            label: '🎁 Секретные',
             selected: filter.onlySecret,
             selectedColor: AppColors.colorWarning.withValues(alpha: .25),
-            onSelected: (_) {
+            onTap: () {
               HapticFeedback.selectionClick();
               ref
                   .read(transactionsFilterProvider.notifier)
@@ -118,21 +134,21 @@ class TransactionsFilterChipGroup extends ConsumerWidget {
             },
           ),
           const SizedBox(width: 8),
-          FilterChip(
-            label: const Text(TransactionsLogLabels.excludeOwn),
+          _chip(
+            label: TransactionsLogLabels.excludeOwn,
             selected: filter.excludeOwn,
             selectedColor: AppColors.colorTransfer.withValues(alpha: .25),
-            onSelected: (_) {
+            onTap: () {
               HapticFeedback.selectionClick();
               ref.read(transactionsFilterProvider.notifier).toggleExcludeOwn();
             },
           ),
           const SizedBox(width: 8),
-          FilterChip(
-            label: const Text(TransactionsLogLabels.excludeLargeExpenses),
+          _chip(
+            label: TransactionsLogLabels.excludeLargeExpenses,
             selected: filter.excludeLargeExpenses,
             selectedColor: const Color(0xFF8B5CF6).withValues(alpha: .25),
-            onSelected: (_) {
+            onTap: () {
               HapticFeedback.selectionClick();
               ref
                   .read(transactionsFilterProvider.notifier)
@@ -201,7 +217,6 @@ Future<void> _showTypeSheet(BuildContext context, WidgetRef ref) async {
 }
 
 Future<void> _showCategoriesSheet(BuildContext context, WidgetRef ref) async {
-  // Перечитываем категории, чтобы новые записи были видны без рестарта.
   ref.invalidate(transactionCategoryLookupProvider);
   final lookupAsync = ref.read(transactionCategoryLookupProvider);
   await showModalBottomSheet(
@@ -230,7 +245,6 @@ Future<void> _showCategoriesSheet(BuildContext context, WidgetRef ref) async {
 }
 
 Future<void> _showAccountsSheet(BuildContext context, WidgetRef ref) async {
-  // Перечитываем счета, чтобы новые записи были видны без рестарта.
   ref.invalidate(transactionAccountLookupProvider);
   final lookupAsync = ref.read(transactionAccountLookupProvider);
   await showModalBottomSheet(
@@ -339,7 +353,6 @@ Widget _periodTile(
 }
 
 Future<void> _showAmountSheet(BuildContext context, WidgetRef ref) async {
-  // Читаем текущий фильтр, чтобы предзаполнить поля суммы.
   final currentFilter = ref.read(transactionsFilterProvider);
   final fromController = TextEditingController(
     text: currentFilter.amountFromKopecks == null
@@ -425,7 +438,6 @@ Future<void> _showAmountSheet(BuildContext context, WidgetRef ref) async {
 }
 
 /// Форматирует копейки в строку для поля ввода (без double).
-/// Пример: 25050 -> "250,50"; 25000 -> "250".
 String _formatAmountForInput(int kopecks) {
   final abs = kopecks.abs();
   final rubles = abs ~/ 100;

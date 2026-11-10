@@ -13,6 +13,7 @@ import '../reminders_strings.dart';
 /// В hidden все чипы серые.
 /// Повторный тап по активному фильтру (кроме «Все») сбрасывает в «Все»
 /// (пожелание владельца, фикс 14.6-ux).
+/// Этап 22 (ТЗ 6.10.3): семантика для TalkBack.
 class RemindersFilterRow extends ConsumerWidget {
   const RemindersFilterRow({super.key});
 
@@ -31,6 +32,7 @@ class RemindersFilterRow extends ConsumerWidget {
       (RemindersUpcomingFilter.overdue, RemindersStrings.filterOverdue,
           AppColors.colorExpense),
     ];
+
     return SizedBox(
       height: 44,
       child: ListView.separated(
@@ -44,25 +46,31 @@ class RemindersFilterRow extends ConsumerWidget {
           final (filter, label, color) = items[index];
           final selected = active == filter;
           final chipColor = hidden ? AppColors.textSecondary : color;
-          return FilterChip(
-            label: Text(label),
-            selected: selected,
-            onSelected: (_) {
-              MotionTokens.selection();
-              final notifier =
-                  ref.read(remindersFilterProvider.notifier);
-              if (selected && filter != RemindersUpcomingFilter.all) {
-                notifier.set(RemindersUpcomingFilter.all);
-              } else {
-                notifier.set(filter);
-              }
-            },
-            selectedColor: chipColor.withValues(alpha: 0.25),
-            side: BorderSide(
-              color: selected ? chipColor : AppColors.borderDivider,
-            ),
-            labelStyle: TextStyle(
-              color: selected ? chipColor : AppColors.textSecondary,
+          return MergeSemantics(
+            child: Semantics(
+              label: '$label, ${selected ? "выбран" : "не выбран"}',
+              button: true,
+              child: FilterChip(
+                label: Text(label),
+                selected: selected,
+                onSelected: (_) {
+                  MotionTokens.selection();
+                  final notifier =
+                      ref.read(remindersFilterProvider.notifier);
+                  if (selected && filter != RemindersUpcomingFilter.all) {
+                    notifier.set(RemindersUpcomingFilter.all);
+                  } else {
+                    notifier.set(filter);
+                  }
+                },
+                selectedColor: chipColor.withValues(alpha: 0.25),
+                side: BorderSide(
+                  color: selected ? chipColor : AppColors.borderDivider,
+                ),
+                labelStyle: TextStyle(
+                  color: selected ? chipColor : AppColors.textSecondary,
+                ),
+              ),
             ),
           );
         },

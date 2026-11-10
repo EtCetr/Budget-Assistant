@@ -11,16 +11,17 @@ import 'snooze_bottom_sheet.dart';
 
 /// Long-press меню карточки (ТЗ 6.3.10.7): открыть / редактировать /
 /// отложить / удалить (+ переход к регулярке).
+/// Этап 22 (ТЗ 6.10.5): пункт «Выполнено» — альтернатива свайпу для TalkBack.
 Future<void> showReminderLongPressMenu(
   BuildContext context,
   WidgetRef ref,
   Reminder reminder,
 ) async {
-  // ScaffoldMessenger берём ДО любых await (lint use_build_context_synchronously).
   final messenger = ScaffoldMessenger.of(context);
   MotionTokens.medium();
   final canEdit = await ref.read(canEditReminderProvider(reminder).future);
   if (!context.mounted) return;
+
   await showModalBottomSheet<void>(
     context: context,
     builder: (sheetContext) {
@@ -43,6 +44,30 @@ Future<void> showReminderLongPressMenu(
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   context.push('/reminders/create?id=${reminder.id}');
+                },
+              ),
+            // Этап 22: альтернатива свайпу «Выполнено» для TalkBack.
+            if (!reminder.isCompleted)
+              ListTile(
+                leading: const Icon(Icons.check_circle_outline,
+                    color: AppColors.colorIncome),
+                title: const Text('Выполнено'),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  try {
+                    await ref
+                        .read(completeReminderUseCaseProvider)
+                        .call(reminder.id);
+                    messenger.showSnackBar(
+                      const SnackBar(
+                          content: Text('Напоминание выполнено')),
+                    );
+                  } catch (_) {
+                    messenger.showSnackBar(
+                      const SnackBar(
+                          content: Text('Не удалось выполнить напоминание')),
+                    );
+                  }
                 },
               ),
             ListTile(

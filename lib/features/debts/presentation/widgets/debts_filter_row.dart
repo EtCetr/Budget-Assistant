@@ -10,6 +10,7 @@ import '../providers/debts_screen_providers.dart';
 
 /// Горизонтальный ряд фильтрующих чипов (6.3.13.5).
 /// В hidden-режиме все чипы серые (Privacy Matrix).
+/// Этап 22 (ТЗ 6.10.3): семантика для TalkBack.
 class DebtsFilterRow extends ConsumerWidget {
   const DebtsFilterRow({super.key});
 
@@ -32,25 +33,29 @@ class DebtsFilterRow extends ConsumerWidget {
       final foreground = isActive && activeColor != null
           ? Colors.white
           : AppColors.textSecondary;
-      return InkWell(
-        borderRadius: AppRadius.radiusFull,
-        onTap: () {
-          HapticFeedback.selectionClick();
-          ref.read(debtsScreenFilterProvider.notifier).set(value);
-        },
-        child: Container(
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacing12),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: background,
-            borderRadius: AppRadius.radiusFull,
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: foreground,
-              fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+      return Semantics(
+        label: '$label, ${isActive ? "выбран" : "не выбран"}',
+        button: true,
+        child: InkWell(
+          borderRadius: AppRadius.radiusFull,
+          onTap: () {
+            HapticFeedback.selectionClick();
+            ref.read(debtsScreenFilterProvider.notifier).set(value);
+          },
+          child: Container(
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.spacing12),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: background,
+              borderRadius: AppRadius.radiusFull,
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                color: foreground,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+              ),
             ),
           ),
         ),
