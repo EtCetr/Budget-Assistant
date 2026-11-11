@@ -375,3 +375,21 @@ Flutter: DropdownButtonFormField в Row требует ограничения ш
 Этап 21 «Security Settings + Profile + Spaces Management» (UX-рефакторинг 2026-11-11):
 [x] UX-рефакторинг: профиль=семья/пространства/админ/цвета, настройки=конфиг, drawer в безопасности, одна кнопка редактирования, пуши группы в уведомлениях.
 Точки входа: Drawer «Безопасность» (теперь с Drawer) → /settings/security; Профиль ⚙ → /settings; Профиль → «Мои пространства» (карточки + админ-панель + цвета участников + создать/присоединиться); Настройки → 7 секций (безопасность/уведомления/импорт/чеки/валюта/экспорт/о приложении).
+
+Этап 22 «Accessibility (WCAG AA)»: ЗАВЕРШЁН (2026-11-12)
+
+[x] 22.1 Core: lib/core/accessibility/ (AnimationUtils + HapticService с учётом reduce motion, MinimumTouchTarget 48×48, FocusableButton с клавиатурной навигацией, ArrowNavigableList, SemanticsX extensions); ограничение textScaler до 2.0 в app.dart; Semantics для TransactionRow, EmptyStateWidget, AppDrawer.
+[x] 22.2 Контраст: ContrastChecker (WCAG 2.1 формула), обновлён AppColors (+colorHiddenMask #64748B, +light-токены для светлой темы), автотест всех цветовых пар (33 теста).
+[x] 22.3 Semantics карточек: SavingsGoalCard, DebtCard, ReminderCard, LoyaltyCardTile, AccountCard, BudgetLimitCard, CategoryListItem, CashbackEntryCard — все с описательными label для TalkBack.
+[x] 22.4 Навигация + альтернативы жестам: FAB (tooltip + Semantics), FilterChip-группы транзакций/долгов/напоминаний (состояние «выбран/не выбран»), перемещение карт вверх/вниз через меню (альтернатива drag-and-drop), пункт «Выполнено» в меню напоминаний (альтернатива свайпу).
+[x] 22.5 Тесты: test/accessibility/ (contrast_test, touch_target_test, semantics_test, talkback_flow_test, keyboard_navigation_test) — все зелёные.
+
+Точки входа: все экраны приложения (семантика встроена на уровне виджетов). Проверка: Настройки Android → TalkBack / Размер шрифта 2.0.
+
+Техдолг Этапа 22 (всё TODO(25) или на усмотрение владельца):
+[ ] Полная интеграция с экраном лояльности для «Переместить вверх/вниз» (меню готово, экран не передаёт onMoveUp/onMoveDown).
+[ ] Semantics для графиков fl_chart (Dashboard ExpenseFlowChart, SavingsAnalytics) — ТЗ 6.10.4 рекомендует агрегированные описания.
+[ ] Skip Links (WCAG 2.4.1) — кнопка «Пропустить до контента» для TalkBack.
+[ ] Live Regions для Snackbar/ошибок форм (WCAG 4.1.3).
+[ ] Autofill hints для TextField форм (1.3.5) — не блокирует, но улучшает.
+
