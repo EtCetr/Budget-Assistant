@@ -21,6 +21,7 @@ class MinimumTouchTarget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
+      container: true,
       label: semanticLabel,
       button: onTap != null || onLongPress != null,
       excludeSemantics: excludeSemantics,

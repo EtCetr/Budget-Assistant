@@ -40,8 +40,8 @@ class EmptyStateWidget extends StatelessWidget {
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.spacing32),
         child: Semantics(
-          label: semanticLabel,
           container: true,
+          label: semanticLabel,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

@@ -5,8 +5,10 @@ extension SemanticsX on Widget {
   /// Обёртка с семантикой кнопки.
   Widget asButton({String? label}) {
     return Semantics(
+      container: true,
       label: label,
       button: true,
+      excludeSemantics: true,
       child: this,
     );
   }
@@ -14,8 +16,10 @@ extension SemanticsX on Widget {
   /// Обёртка с семантикой заголовка.
   Widget asHeader({String? label}) {
     return Semantics(
+      container: true,
       label: label,
       header: true,
+      excludeSemantics: true,
       child: this,
     );
   }
@@ -23,6 +27,7 @@ extension SemanticsX on Widget {
   /// Обёртка с семантикой прогресс-бара.
   Widget asProgress({required String label}) {
     return Semantics(
+      container: true,
       label: label,
       excludeSemantics: true,
       child: this,
