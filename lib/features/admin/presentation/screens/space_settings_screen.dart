@@ -14,6 +14,7 @@ import 'package:budget_assistant/core/router/app_router.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/core/widgets/skeleton_shimmer.dart';
+import 'package:budget_assistant/core/widgets/async_value_wrapper.dart';
 import 'package:budget_assistant/features/admin/presentation/providers/admin_providers.dart';
 import 'package:budget_assistant/features/admin/presentation/providers/space_settings_providers.dart';
 import 'package:budget_assistant/features/admin/presentation/widgets/dissolve_word_dialog.dart';
@@ -38,13 +39,11 @@ class SpaceSettingsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.surfaceBackground,
       appBar: AppBar(title: const Text('Настройки пространства')),
-      body: access.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Text('Ошибка доступа: $e',
-              style: const TextStyle(color: AppColors.textPrimary)),
-        ),
-        data: (isAdmin) => isAdmin
+      body: AsyncValueWrapper<bool>(
+        value: access,
+        onRetry: () => ref.invalidate(adminAccessProvider(scope)),
+        errorMessage: 'Не удалось проверить доступ',
+        dataBuilder: (ctx, isAdmin) => isAdmin
             ? _content(context, ref, scope)
             : const Center(
                 child: Padding(
@@ -66,21 +65,16 @@ class SpaceSettingsScreen extends ConsumerWidget {
     final mode = ref.watch(privacyModeProvider);
     final hidden = mode == BalanceVisibilityMode.hidden;
     final pf = ref.watch(privacyFormatterProvider);
-    return row.when(
-      loading: () => ListView(
-        padding: const EdgeInsets.all(AppSpacing.spacing16),
-        children: List.generate(
-          3,
-          (_) => Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.spacing12),
-            child: SkeletonShimmer.card(),
-          ),
-        ),
-      ),
-      error: (e, _) => Center(
-        child: Text('Ошибка: $e', style: const TextStyle(color: AppColors.textPrimary)),
-      ),
-      data: (space) {
+    final membersCount =
+        ref.watch(membersStreamProvider(scope.spaceId)).value?.length ?? 0;
+    return AsyncValueWrapper<dynamic>(
+      value: row,
+      onRetry: () => ref.invalidate(spaceSettingsRowProvider),
+      errorMessage: 'Не удалось загрузить настройки пространства',
+      isEmpty: (s) => s == null,
+      emptyIcon: Icons.groups_outlined,
+      emptyTitle: 'Пространство не найдено',
+      dataBuilder: (ctx, space) {
         if (space == null) {
           return const Center(
             child: Text('Пространство не найдено',
@@ -102,7 +96,7 @@ class SpaceSettingsScreen extends ConsumerWidget {
               loading: () => SkeletonShimmer.card(),
               error: (e, _) => Text('Ошибка: $e',
                   style: const TextStyle(color: AppColors.textPrimary)),
-              data: (st) => _statsGrid(st, pf, mode, ref.watch(membersStreamProvider(scope.spaceId)).value?.length ?? 0),
+              data: (st) => _statsGrid(st, pf, mode, membersCount),
             ),
             const SizedBox(height: AppSpacing.spacing16),
             _shareSection(context, ref, scope),

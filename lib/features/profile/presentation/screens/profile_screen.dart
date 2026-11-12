@@ -12,6 +12,9 @@ import 'package:budget_assistant/core/providers/transfer_profile_provider.dart';
 import 'package:budget_assistant/core/router/app_router.dart' as router;
 import 'package:budget_assistant/core/providers/security_providers.dart' as security;
 import 'package:budget_assistant/core/theme/app_colors.dart';
+import 'package:budget_assistant/core/widgets/offline_error_card.dart';
+import 'package:budget_assistant/core/widgets/empty_state_widget.dart';
+import 'package:budget_assistant/core/widgets/skeleton_shimmer.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/features/admin/presentation/providers/admin_providers.dart';
 import 'package:budget_assistant/features/auth/domain/notifiers/auth_notifier.dart';
@@ -299,30 +302,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ],
       ),
       body: userAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => ListView(
+          padding: const EdgeInsets.all(16),
+          children: const [
+            SkeletonShimmer(height: 120),
+            SizedBox(height: 16),
+            SkeletonShimmer(height: 96),
+            SizedBox(height: 16),
+            SkeletonShimmer(height: 160),
+          ],
+        ),
         error: (e, st) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Не удалось загрузить профиль',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: () => ref.invalidate(userProfileProvider),
-                child: const Text('Повторить'),
-              ),
-            ],
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: OfflineErrorCard(
+              message: 'Не удалось загрузить профиль',
+              retryLabel: 'Повторить',
+              onRetry: () => ref.invalidate(userProfileProvider),
+            ),
           ),
         ),
         data: (user) {
           if (user == null) {
-            return const Center(
-              child: Text(
-                'Профиль не найден',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
+            return const EmptyStateWidget(
+              icon: Icons.person_off_outlined,
+              title: 'Профиль не найден',
+              subtitle: 'Попробуйте выйти и войти снова',
             );
           }
           return ListView(

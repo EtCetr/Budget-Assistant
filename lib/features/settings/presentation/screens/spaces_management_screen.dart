@@ -1,4 +1,5 @@
-// Управление пространствами (Этап 21) + чекбокс подключения (Этап 23.6c).
+// Управление пространствами (Этап 21) + чекбокс подключения (Этап 23.6c)
+// + единые состояния AsyncValueWrapper (Этап 23.7b).
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:budget_assistant/core/providers/security_providers.dart' as sec;
 import 'package:budget_assistant/core/router/app_router.dart' as ar;
 import 'package:budget_assistant/core/theme/app_colors.dart';
+import 'package:budget_assistant/core/widgets/async_value_wrapper.dart';
+import 'package:budget_assistant/core/widgets/empty_state_widget.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
 import 'package:budget_assistant/features/settings/presentation/providers/spaces_management_providers.dart';
 import 'package:budget_assistant/features/settings/presentation/widgets/join_space_dialog.dart';
@@ -29,25 +32,31 @@ class SpacesManagementScreen extends ConsumerWidget {
         backgroundColor: AppColors.surfaceBackground,
         title: const Text('Управление пространствами'),
       ),
-      body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Не удалось загрузить пространства',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: () => ref.invalidate(spacesManagementProvider),
-                child: const Text('Повторить'),
-              ),
-            ],
-          ),
+      body: AsyncValueWrapper<List<SpaceMembershipInfo>>(
+        value: async,
+        onRetry: () => ref.invalidate(spacesManagementProvider),
+        errorMessage: 'Не удалось загрузить пространства',
+        isEmpty: (all) => all.isEmpty,
+        emptyIcon: Icons.group_outlined,
+        emptyTitle: 'У вас пока нет пространств',
+        emptySubtitle:
+            'Создайте семейное пространство или присоединитесь по приглашению',
+        emptyPrimaryAction: EmptyStateAction(
+          label: 'Создать пространство',
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            CreateSpaceDialog.show(context);
+          },
         ),
-        data: (all) {
+        emptySecondaryAction: EmptyStateAction(
+          label: 'Присоединиться по приглашению',
+          isPrimary: false,
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            JoinSpaceDialog.show(context);
+          },
+        ),
+        dataBuilder: (ctx, all) {
           final active = all.where((s) => !s.isDissolved).toList();
           final dissolved = all.where((s) => s.isDissolved).toList();
           return ListView(
@@ -67,28 +76,10 @@ class SpacesManagementScreen extends ConsumerWidget {
               if (active.isEmpty)
                 const Padding(
                   padding: EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.group_outlined,
-                        size: 48,
-                        color: AppColors.textSecondary,
-                      ),
-                      SizedBox(height: 12),
-                      Text(
-                        'У вас пока нет пространств',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Создайте семейное пространство или присоединитесь по приглашению',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
-                    ],
+                  child: Text(
+                    'Активных пространств нет — только архив',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppColors.textSecondary),
                   ),
                 )
               else
