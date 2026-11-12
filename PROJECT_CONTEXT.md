@@ -449,3 +449,9 @@ Roadmap.docx не редактируется (правило 22-3, бинарн�
 [x] Профиль: карточка «Годовой отчёт».
 Техдолг: синк personal_share_flags и copy_group_id — TODO(25); unit-тесты копий и матриц — Этап 24.
 Следующий этап: 23.7 — AsyncValueWrapper (проверка D23-6 по коду, регресс-тест, миграция оставшихся экранов).
+Этап 23.7 «AsyncValueWrapper»: 23.7a РЕАЛИЗОВАН (2026-11-13)
+[x] Верификация D23-6 по коду: onRetry (VoidCallback), retryTarget отсутствует.
+[x] Регресс-тесты test/widgets/async_value_wrapper_test.dart (10 кейсов).
+[x] Идемпотентный фикс year в _analysis2 годового отчёта.
+[ ] 23.7b: миграция экранов на AsyncValueWrapper (spaces_management, space_settings, profile, post_import_review) — после свежего сбора контекста.
+Техдолг: остальные экраны переводятся постепенно при будущих правках (долг Этапа 23).
