@@ -1,3 +1,4 @@
+// TODO(25): Semantics для графиков (доступность, долг Этапа 22).
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';

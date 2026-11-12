@@ -1,3 +1,5 @@
+// TODO(24): unit-тесты копий - создание, сплиты, includePersonal, идемпотентность.
+// TODO(25): синк transactions.copy_group_id.
 import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';

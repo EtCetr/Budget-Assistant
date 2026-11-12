@@ -536,3 +536,33 @@ v25: personal_share_flags (+ UNIQUE(user_id, space_id) в beforeOpen).
 [ ] Полностью автоматический carry-forward лимитов (сейчас — кнопка-баннер).
 [ ] Semantics для новых графиков fl_chart (долг Этапа 22).
 Следующий этап по роадмапу: 24 «Testing (Unit + Widget + Integration)».
+РЕЕСТР ДОЛГОВ 23.5-23.7 (актуальный на 2026-11-13, заменяет прежние списки долгов)
+Формат: TODO(N) - закрывается в этапе N; BACKLOG - нужно решение владельца; НЕ ДЕЛАЕМ - зафиксированное решение.
+Источник правды по долгам - этот реестр. Маркеры TODO(N) в коде дублируют записи реестра.
+
+TODO(23.8) - функциональный пробел, закрыть ДО тестов
+[ ] Сторно/возврат (markAsRefund) не пропагируется на копии группы (правка и удаление - пропагируются).
+Маркеры: update_transaction_usecase.dart, delete_transaction_usecase.dart.
+
+TODO(24) - тесты
+[ ] Unit: математика матриц - средняя (деление на месяцы с данными), профицит, крупные покупки без задвоения, сплиты, 'Без категории' и чужой скоуп.
+[ ] Unit: месячная статистика - Сумма/Лимит/Осталось, Нераспределено, состав категорий.
+[ ] Unit: carryOver (лимиты категорий + Выделено), saveLimit для семьи (одна строка на группу).
+[ ] Unit: группы копий - создание/перемещение/удаление, запрет пустого состава, обнуление copy_group_id, propagation правки и удаления, сплиты копий, includePersonal.
+Маркеры: calculate_year_budget_usecase.dart, calculate_month_stats_usecase.dart, year_budget_repository_impl.dart, add_transaction_copies_usecase.dart, set_transaction_spaces_usecase.dart, update_transaction_usecase.dart, delete_transaction_usecase.dart.
+
+TODO(25) - синк и доступность перед релизом
+[ ] Синк monthly_budgets, personal_share_flags, transactions.copy_group_id (E2E payload + таблицы Supabase).
+[ ] Semantics для новых графиков fl_chart (долг Этапа 22).
+Маркеры: year_budget_repository_impl.dart, set_personal_share_usecase.dart, add_transaction_copies_usecase.dart, cashflow_chart.dart, structure_pie.dart.
+
+BACKLOG - нужно решение владельца, этап не назначен
+[ ] Агрегат-режим 'Все пространства' в журнале транзакций.
+[ ] Унификация семейного скоупа 'Статистики года' (D19-13) и годового отчёта (D23.5-6).
+[ ] Пояснения категорий (лист 'настройки' Excel владельца) - тултипы.
+[ ] Полностью автоматический carry-forward лимитов (сейчас - кнопка-баннер).
+[ ] Полный перенос ProfileScreen на AsyncValueWrapper (выделить тело в ConsumerWidget).
+[ ] Вложенные секции stats на .when -> обёртка.
+
+НЕ ДЕЛАЕМ (решение, не долг)
+- PNG-экспорт матриц: достаточно XLSX (D23.5-12).

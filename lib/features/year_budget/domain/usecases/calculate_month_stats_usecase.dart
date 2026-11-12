@@ -1,3 +1,5 @@
+// TODO(24): unit-тесты месячной статистики - Сумма/Лимит/Осталось,
+// Нераспределено, состав категорий (скоуп + категории из данных).
 import 'package:logger/logger.dart';
 import '../models/year_budget_models.dart';
 import '../repositories/year_budget_repository.dart';

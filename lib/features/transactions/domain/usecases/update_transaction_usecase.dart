@@ -1,3 +1,5 @@
+// TODO(24): unit-тесты propagation правки на копии группы (включая сплиты).
+// TODO(23.8): сторно/возврат (markAsRefund) пока НЕ пропагируется на копии группы.
 import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';

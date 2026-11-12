@@ -1,3 +1,4 @@
+// TODO(25): синк personal_share_flags (E2E payload + таблица Supabase).
 import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
