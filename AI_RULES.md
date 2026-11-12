@@ -250,3 +250,60 @@
 | Правило | Суть | Причина |
 | --- | --- | --- |
 | R21-8: профиль vs настройки | Профиль = личные данные + семья/пространства + админ-вход; Настройки = конфигурация приложения (безопасность/уведомления/импорт/чеки/валюта/экспорт/о приложении) | UX: логическая группировка без дублей |
+
+## Этап 23: Performance + Error Handling
+
+### Обработка ошибок
+- **GlobalErrorHandler** (lib/core/services/global_error_handler.dart):
+  - `runWithGuard()` — глобальный гард всего приложения (RunZonedGuarded + FlutterError.onError + PlatformDispatcher.onError + слушатель изолята)
+  - `runGuardedBackground()` — гард для фоновых задач WorkManager (возвращает `false` при ошибке, WorkManager повторит)
+  - Все ошибки логируются через `AppLogger`, приложение не крашится
+- **RetryPolicy** (lib/core/utils/retry_policy.dart):
+  - Экспоненциальный бэкофф: initialDelay=2с, multiplier=2, maxDelay=30с, jitter=±20%
+  - Применяется ТОЛЬКО к фоновому синку в WorkManager
+  - Pull-to-refresh — без повторов (UI не ждёт бэкофф)
+  - `retryWhen` — предикат для остановки повторов при фатальных ошибках
+
+### Производительность
+- **PerfMonitor** (lib/core/performance/perf_monitor.dart):
+  - `measure<T>()` / `measureSync<T>()` — замер времени операций
+  - debug: всегда пишет в лог, warning: если медленнее порога (по умолчанию 300мс)
+  - Ошибки пробрасывает дальше (не глотает)
+  - Встроен в `SyncService.forceSyncNow()` (порог 1000мс)
+- **IsolateRunner** (lib/core/performance/isolate_runner.dart):
+  - Обёртка `compute()` с таймингом, логированием и try/catch
+  - Порог медленности: 1000мс
+  - Требует топ-функцию (не замыкание)
+- **DriftQueryExplainer** (lib/core/performance/drift_query_explainer.dart):
+  - Аудит 10 горячих запросов через `EXPLAIN QUERY PLAN`
+  - Включается флагом: `flutter run --dart-define=PERF_EXPLAIN=true`
+  - Предупреждает о полных сканах таблиц (SCAN без USING INDEX)
+- **LeakGuard** (lib/core/performance/leak_guard.dart):
+  - Debug-детекция утечек памяти (без новых пакетов)
+  - `LeakGuard.track()` / `LeakGuard.release()` — ручная регистрация
+  - `LeakGuardedState` — миксин для автоматической регистрации State
+  - `LeakGuard.logReport()` — отчёт о живых объектах
+
+### UI-состояния (4 типа)
+- **AsyncValueWrapper** (lib/core/widgets/async_value_wrapper.dart):
+  - Единая обёртка для экранов с `AsyncValue<T>`
+  - 4 состояния: loading (скелетон) / error (карточка + Retry) / empty / data
+  - `retryTarget: ProviderListenable<Object?>` — провайдер для invalidate
+  - `isEmpty: bool Function(T)` — проверка пустоты данных
+- **SkeletonShimmer** (lib/core/widgets/skeleton_shimmer.dart):
+  - Универсальный скелетон с мерцанием (скрыт от TalkBack)
+  - Фабрики: `.card()`, `.text()`, `.title()`, `.field()`, `.avatar()`
+- **FullScreenError** (lib/core/widgets/full_screen_error.dart):
+  - Полноэкранная ошибка для критических сбоев (без Lottie, статичная иконка)
+  - Кнопка Retry (invalidate провайдера)
+- **OfflineErrorCard** (lib/core/widgets/offline_error_card.dart):
+  - Компактная карточка ошибки с кнопкой Retry
+  - Semantics: container=true, label=message
+- **PendingSyncIndicator** (lib/core/widgets/pending_sync_indicator.dart):
+  - Индикатор ожидания синхронизации (cloud_off + пульс)
+  - Semantics: label='Ожидает синхронизации'
+### AsyncValueWrapper (lib/core/widgets/async_value_wrapper.dart)
+- Единая обёртка для экранов с `AsyncValue<T>`
+- 4 состояния: loading (скелетон) / error (карточка + Retry) / empty / data
+- `onRetry: VoidCallback?` — колбэк для кнопки Retry (передавайте `() => ref.invalidate(provider)`)
+- `isEmpty: bool Function(T)` — проверка пустоты данных

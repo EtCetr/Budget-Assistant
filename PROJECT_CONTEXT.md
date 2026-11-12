@@ -393,3 +393,16 @@ Flutter: DropdownButtonFormField в Row требует ограничения ш
 [ ] Live Regions для Snackbar/ошибок форм (WCAG 4.1.3).
 [ ] Autofill hints для TextField форм (1.3.5) — не блокирует, но улучшает.
 
+
+Этап 23 «Performance + Error Handling»: ЗАВЕРШЁН (2026-11-12)
+[x] 23.1 Ошибки: GlobalErrorHandler расширен (PlatformDispatcher.onError + слушатель изолята), фоновые задачи WorkManager в защищённой зоне (runGuardedBackground).
+[x] 23.2 Retry: RetryPolicy с экспоненциальным бэкоффом и джиттером — в фоновом синке; pull-to-refresh без повторов.
+[x] 23.3 Offline-состояния: AsyncValueWrapper (4 состояния: скелетон/ошибка+Retry/пусто/данные), FullScreenError без Lottie, Semantics на OfflineErrorCard/PendingSyncIndicator/SkeletonShimmer, фабрики скелетонов text/title/field/avatar.
+[x] 23.4 Производительность: PerfMonitor (замер операций, порог 300мс, встроен в SyncService), IsolateRunner (compute + тайминг + лог), LeakGuard (debug-детекция утечек), DriftQueryExplainer (EXPLAIN QUERY PLAN 10 горячих запросов, -dart-define PERF_EXPLAIN=true).
+[x] 23.5 Тесты: 5 unit-тестов RetryPolicy.
+Точки входа: новых экранов нет (инфраструктурный этап).
+Техдолг Этапа 23:
+[ ] Sentry/Crashlytics — опционально, по решению владельца (сейчас только логирование).
+[ ] Миграция существующих экранов на AsyncValueWrapper — постепенно, при будущих правках экранов.
+[ ] Интеграция LeakGuard/IsolateRunner в существующие State/UseCases — точечно, при будущих правках.
+[x] 23.6 Фикс AsyncValueWrapper: убран неиспользуемый retryTarget (ProviderListenable), оставлен только onRetry (VoidCallback) для совместимости с flutter_riverpod без добавления транзитивных зависимостей.

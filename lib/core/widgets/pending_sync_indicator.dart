@@ -1,7 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
+/// Этап 23 (6.7.2.2): индикатор ожидания синхронизации (cloud_off + пульс).
+/// НЕ блокирует работу с данными. Добавлены Semantics (Этап 22, WCAG).
 class PendingSyncIndicator extends StatefulWidget {
   const PendingSyncIndicator({super.key});
 
@@ -32,12 +34,15 @@ class _PendingSyncIndicatorState extends State<PendingSyncIndicator>
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _controller,
-      child: const Icon(
-        Icons.cloud_off,
-        size: 16,
-        color: AppColors.colorPendingSync,
+    return Semantics(
+      label: 'Ожидает синхронизации',
+      child: FadeTransition(
+        opacity: _controller,
+        child: const Icon(
+          Icons.cloud_off,
+          size: 16,
+          color: AppColors.colorPendingSync,
+        ),
       ),
     );
   }

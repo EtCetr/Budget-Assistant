@@ -1,8 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
+/// Этап 23 (6.7.1.2): универсальный скелетон с мерцанием.
+/// Скрыт от TalkBack (плейсхолдер не несёт смысла).
+/// Добавлены фабрики text/title/field/avatar (6.7.1.3).
 class SkeletonShimmer extends StatefulWidget {
   const SkeletonShimmer({
     super.key,
@@ -17,6 +20,26 @@ class SkeletonShimmer extends StatefulWidget {
 
   factory SkeletonShimmer.card({double height = 72}) {
     return SkeletonShimmer(height: height);
+  }
+
+  /// Строка короткого текста.
+  factory SkeletonShimmer.text() {
+    return const SkeletonShimmer(height: 16, borderRadius: 4);
+  }
+
+  /// Заголовок.
+  factory SkeletonShimmer.title() {
+    return const SkeletonShimmer(height: 24, borderRadius: 4);
+  }
+
+  /// Поле ввода в формах.
+  factory SkeletonShimmer.field() {
+    return const SkeletonShimmer(height: 56);
+  }
+
+  /// Аватар.
+  factory SkeletonShimmer.avatar() {
+    return const SkeletonShimmer(width: 48, height: 48, borderRadius: 999);
   }
 
   @override
@@ -46,14 +69,16 @@ class _SkeletonShimmerState extends State<SkeletonShimmer>
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _controller,
-      child: Container(
-        width: widget.width,
-        height: widget.height,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceElevated,
-          borderRadius: BorderRadius.circular(widget.borderRadius),
+    return ExcludeSemantics(
+      child: FadeTransition(
+        opacity: _controller,
+        child: Container(
+          width: widget.width,
+          height: widget.height,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceElevated,
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+          ),
         ),
       ),
     );
@@ -69,7 +94,8 @@ class TransactionsLogSkeleton extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(AppSpacing.spacing16),
       itemCount: 10,
-      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.spacing12),
+      separatorBuilder: (_, __) =>
+          const SizedBox(height: AppSpacing.spacing12),
       itemBuilder: (_, __) => SkeletonShimmer.card(),
     );
   }

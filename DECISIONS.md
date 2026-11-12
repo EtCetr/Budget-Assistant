@@ -372,3 +372,15 @@ duplicate_receipt / duplicate_detected / transfer_detected / hold_confirmed вш
 | D22-8: ContrastChecker использует color.r/.g/.b (новый Flutter Color API) | color.red/.green/.blue deprecated с v3.32; flagsCollection вместо flags (SemanticsData) |
 | D22-9: тесты доступности используют matchesSemantics / find.bySemanticsLabel вместо низкоуровневых проверок флагов | Семантика флагов нестабильна между версиями; стандартные матчеры надёжнее |
 
+
+## Обновления решений (Этап 23 — Performance + Error Handling, 2026-11-12)
+| Решение | Обоснование |
+| --- | --- |
+| D23-1: глобальная обработка ошибок = RunZonedGuarded + FlutterError.onError + PlatformDispatcher.onError + слушатель ошибок рутового изолята; Sentry/Crashlytics не подключены | Ни одной новой зависимости (пункт роадмапа «опционально»); все ошибки логируются через AppLogger |
+| D23-2: RetryPolicy (2с -> 4с, множитель 2, джиттер ±20%, потолок 30с) применяется только к фоновому синку в WorkManager; pull-to-refresh — без повторов | UI не должен ждать бэкофф; при `false` WorkManager сам повторяет задачу |
+| D23-3: AsyncValueWrapper — единый обработчик 4 состояний (skeleton / error+Retry / empty / data); FullScreenError без Lottie, статичная иконка | ТОМ 7 §2.1 и 6.7; Lottie удалён решением владельца (12.9) |
+| D23-4: perf-инструменты только для debug: PerfMonitor, IsolateRunner, LeakGuard, DriftQueryExplainer (EXPLAIN QUERY PLAN, включение `-dart-define PERF_EXPLAIN=true`) | Не влияют на release-сборку; аудит индексов по чек-листу роадмапа |
+## Обновления решений (Этап 23 — фикс ProviderListenable, 2026-11-13)
+| Решение | Обоснование |
+| --- | --- |
+| D23-6: AsyncValueWrapper использует `VoidCallback onRetry` вместо `ProviderListenable retryTarget` | `ProviderListenable` не экспортируется напрямую из `flutter_riverpod` и требует добавления `riverpod` в pubspec (нарушение `depend_on_referenced_packages`); `VoidCallback` чище, не зависит от внутренних типов Riverpod и работает с любой версией |

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' show Variable;
 import 'package:budget_assistant/features/admin/workers/inactive_admin_check_worker.dart';
@@ -8,11 +9,11 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'package:budget_assistant/app.dart';
 import 'package:budget_assistant/core/bootstrap/app_bootstrap_flags.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/logger.dart';
+import 'package:budget_assistant/core/performance/drift_query_explainer.dart';
 import 'package:budget_assistant/core/services/global_error_handler.dart';
 import 'package:budget_assistant/core/services/secure_storage_service.dart';
 import 'package:budget_assistant/features/sync/application/sync_providers.dart';
@@ -34,13 +35,12 @@ Future<void> main() async {
       'SUPABASE_ANON_KEY',
       defaultValue: 'YOUR-ANON-KEY',
     );
-
     await Supabase.initialize(
       url: supabaseUrl,
       publishableKey: supabaseAnonKey,
     );
 
-    // Сохраняем ключи Supabase в SecureStorage для WorkManager
+    // Сохранение Supabase в SecureStorage для WorkManager
     final storage = SecureStorageService();
     final pendingRoute = await storage.read('pending_deep_link');
     if (pendingRoute != null && pendingRoute.isNotEmpty) {
@@ -49,6 +49,7 @@ Future<void> main() async {
     }
     await storage.write('supabase_url', supabaseUrl);
     await storage.write('supabase_anon_key', supabaseAnonKey);
+
     final currentUserId = Supabase.instance.client.auth.currentUser?.id;
     if (currentUserId != null) {
       await storage.write('current_user_id', currentUserId);
@@ -56,11 +57,12 @@ Future<void> main() async {
 
     AppLogger.i('App bootstrap completed successfully');
     AppLogger.i('🚀 Forcing DB initialization...');
+
     final db = AppDatabase();
     await db.customSelect('SELECT 1').get();
 
-    // Этап 18 (фикс «Неизвестный пользователь» в журнале аудита): локальная
-    // копия профиля с email из Supabase Auth. Идемпотентно: INSERT OR IGNORE
+    // Этап 18 (вслед «миграции пользователя»): локально добиваем
+    // пользователя с email из Supabase Auth. INSERT OR IGNORE
     // + UPDATE только пустого email. display_name приедет с синком (Этап 25).
     if (currentUserId != null) {
       try {
@@ -90,7 +92,18 @@ Future<void> main() async {
         AppLogger.e('Failed to backfill local user email', e, st);
       }
     }
+
     AppLogger.i('✅ DB initialized successfully');
+
+    // Этап 23: аудит горячих запросов через EXPLAIN QUERY PLAN.
+    // Только debug; включается: flutter run --dart-define=PERF_EXPLAIN=true
+    if (kDebugMode && const bool.fromEnvironment('PERF_EXPLAIN')) {
+      try {
+        await DriftQueryExplainer.audit(db);
+      } catch (e, st) {
+        AppLogger.e('Drift query audit failed', e, st);
+      }
+    }
 
     // Флаг онбординга
     try {
@@ -105,7 +118,7 @@ Future<void> main() async {
         if (row.read<int>('c') > 0) status = 'completed';
       }
       AppBootstrapFlags.onboardingStatus = status;
-      AppLogger.i('🚦 Onboarding status at boot: $status');
+      AppLogger.i('🚩 Onboarding status at boot: $status');
     } catch (e, st) {
       AppLogger.e('Failed to read onboarding flag', e, st);
       AppBootstrapFlags.onboardingStatus = 'not_started';
@@ -122,8 +135,8 @@ Future<void> main() async {
     final logger = Logger();
     await InactiveAdminCheckWorker.register();
     await NotificationTriggersWorker.register();
-  await YearlyAggregatesWorker.register();
-    
+    await YearlyAggregatesWorker.register();
+
     runApp(
       ProviderScope(
         overrides: [
