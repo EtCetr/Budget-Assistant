@@ -71,6 +71,8 @@ import 'package:budget_assistant/features/loyalty_cards/presentation/screens/loy
 import 'package:budget_assistant/features/receipts/presentation/screens/product_analytics_screen.dart';
 import 'package:budget_assistant/features/receipts/presentation/screens/product_aliases_settings_screen.dart';
 import 'package:budget_assistant/features/cashback/presentation/screens/exchange_rates_screen.dart';
+import 'package:budget_assistant/features/year_budget/presentation/screens/year_budget_screen.dart';
+import 'package:budget_assistant/features/year_budget/presentation/screens/month_stats_screen.dart';
 part 'app_router.g.dart';
 
 @riverpod
@@ -522,6 +524,20 @@ path: '/exchange-rates',
 name: 'exchange-rates',
 builder: (context, state) => const ExchangeRatesScreen(),
 ),
+    GoRoute(
+      path: '/year-budget',
+      name: 'year-budget',
+      builder: (context, state) => const YearBudgetScreen(),
+    ),
+    GoRoute(
+      path: '/month-stats',
+      name: 'month-stats',
+      builder: (context, state) => MonthStatsScreen(
+        year: int.tryParse(state.uri.queryParameters['year'] ?? '') ?? DateTime.now().year,
+        month: int.tryParse(state.uri.queryParameters['month'] ?? '') ?? DateTime.now().month,
+        spaceId: state.uri.queryParameters['space'],
+      ),
+    ),
     ],
     redirect: (context, state) {
       final location = state.uri.toString();

@@ -35,6 +35,7 @@ import 'tables/loyalty_cards.dart';
 import 'tables/loyalty_card_drafts.dart';
 import 'tables/product_analytics_cache.dart';
 import 'tables/member_colors.dart';
+import 'tables/monthly_budgets.dart';
 part 'app_database.g.dart';
 
 // Этап 5: Счета, Ипотеки, Категории
@@ -597,6 +598,7 @@ LoyaltyCards,
 LoyaltyCardDrafts,
 ProductAnalyticsCache,
     MemberColors,
+MonthlyBudgets,
 ],
   daos: [
     UsersDao,
@@ -620,7 +622,7 @@ class AppDatabase extends _$AppDatabase {
   /// v13: Этап 14 — reminders, holidays, recurring_transactions,
   /// forecast_cache, reminder_drafts + 5 колонок app_settings + сиды РФ.
   @override
-  int get schemaVersion => 22;
+  int get schemaVersion => 23;
 
   Future<void> _createSavingsIndexes() async {
     await customStatement('''
@@ -1104,6 +1106,12 @@ await _createReceiptsIndexes();
           await m.addColumn(appSettings, appSettings.nightModeStart);
           await m.addColumn(appSettings, appSettings.nightModeEnd);
         }
+      if (from < 23) {
+        // Этап 23.5: «Выделено» на месяц (лично и per-space).
+        await m.createTable(monthlyBudgets);
+        await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS idx_monthly_budgets_unique ON monthly_budgets(user_id, space_id, year, month)');
+        await customStatement('CREATE INDEX IF NOT EXISTS idx_monthly_budgets_lookup ON monthly_budgets(space_id, year, month)');
+      }
         },
         beforeOpen: (details) async {
           AppLogger.i(
