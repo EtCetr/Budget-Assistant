@@ -4,8 +4,8 @@ import 'package:uuid/uuid.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 
-/// Этап 23.6 (D23.6-2): создаёт связанные копии транзакции в выбранных
-/// пространствах. Общая колонка copy_group_id связывает копии.
+/// Этап 23.6 (D23.6-2): связанные копии транзакции в выбранных пространствах.
+/// Этап 23.6c: добавлена личная копия (includePersonal) для импорта в семью.
 class AddTransactionCopiesUseCase {
   AddTransactionCopiesUseCase({required AppDatabase db, required Logger logger})
       : _db = db,
@@ -18,13 +18,15 @@ class AddTransactionCopiesUseCase {
     required String transactionId,
     required List<String> spaceIds,
     required String userId,
+    bool includePersonal = false,
   }) async {
     try {
-      if (spaceIds.isEmpty) return 0;
+      if (spaceIds.isEmpty && !includePersonal) return 0;
       final source = await (_db.select(_db.transactions)
             ..where((t) => t.id.equals(transactionId)))
           .getSingleOrNull();
       if (source == null) return 0;
+
       final now = DateTime.now().toUtc();
       final gid = source.copyGroupId ?? const Uuid().v4();
       if (source.copyGroupId == null) {
@@ -36,16 +38,16 @@ class AddTransactionCopiesUseCase {
           syncStatus: const Value(SyncStatus.pending),
         ));
       }
+
       final existing = await (_db.select(_db.transactions)
             ..where((t) => t.copyGroupId.equals(gid)))
           .get();
-      final present = existing.map((e) => e.spaceId).toSet();
+      final presentSpaces = existing.map((e) => e.spaceId).toSet();
       final splits = await (_db.select(_db.transactionSplits)
             ..where((s) => s.transactionId.equals(transactionId)))
           .get();
-      var created = 0;
-      for (final spaceId in spaceIds) {
-        if (present.contains(spaceId)) continue;
+
+      Future<void> insertCopy(String? spaceId) async {
         final copyId = const Uuid().v4();
         await _db.into(_db.transactions).insert(TransactionsCompanion.insert(
               id: copyId,
@@ -87,6 +89,16 @@ class AddTransactionCopiesUseCase {
                 ),
               );
         }
+      }
+
+      var created = 0;
+      if (includePersonal && !presentSpaces.contains(null)) {
+        await insertCopy(null);
+        created++;
+      }
+      for (final spaceId in spaceIds) {
+        if (presentSpaces.contains(spaceId)) continue;
+        await insertCopy(spaceId);
         created++;
       }
       return created;

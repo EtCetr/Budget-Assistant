@@ -3,14 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:budget_assistant/core/errors/result.dart';
 import 'package:budget_assistant/core/providers/security_providers.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+import '../providers/personal_share_providers.dart';
 import '../providers/space_providers.dart';
 
-/// Минимальный диалог создания семейной группы.
-///
-/// Создаёт space + membership(admin) локально и делает группу активной.
-/// Чекбокс «Подключить личные транзакции» (дефолт ВЫКЛ — приватность):
-/// при галочке история с space_id = NULL сразу уходит в новую группу.
-/// Приглашения, роли и HKDF-передача ключей — Этап 17.
+/// Создание семейной группы + разовый чекбокс подключения личных транзакций.
 class CreateSpaceDialog extends ConsumerStatefulWidget {
   const CreateSpaceDialog({super.key});
 
@@ -50,7 +46,6 @@ class _CreateSpaceDialogState extends ConsumerState<CreateSpaceDialog> {
           await ref.read(createSpaceUseCaseProvider)(userId: userId, name: name);
       switch (result) {
         case Success(:final value):
-          // Делаем новую группу активной для семейного скоупа.
           ref.read(currentSpaceIdProvider.notifier).set(value.id);
           var message = 'Группа «${value.name}» создана';
           if (_attachExisting) {
@@ -66,6 +61,15 @@ class _CreateSpaceDialogState extends ConsumerState<CreateSpaceDialog> {
               message = 'Группа «${value.name}» создана, '
                   'но транзакции подключить не удалось';
             }
+            // Этап 23.6c: фиксируем личный флаг участника (без повторного attach).
+            try {
+              await ref.read(setPersonalShareUseCaseProvider)(
+                userId: userId,
+                spaceId: value.id,
+                enabled: true,
+                performAttach: false,
+              );
+            } catch (_) {}
           }
           if (!mounted) return;
           Navigator.of(context).pop();

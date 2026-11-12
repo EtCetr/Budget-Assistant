@@ -21,6 +21,7 @@ import 'package:budget_assistant/features/admin/presentation/widgets/edit_space_
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
 import 'package:budget_assistant/features/spaces/presentation/providers/space_providers.dart';
+import 'package:budget_assistant/features/spaces/presentation/widgets/personal_share_tile.dart';
 
 /// Настройки пространства (ТЗ 6.3.36): identity, статистика 2x2,
 /// семейный лимит, опасная зона (экспорт XLSX + расформирование).
@@ -103,6 +104,8 @@ class SpaceSettingsScreen extends ConsumerWidget {
                   style: const TextStyle(color: AppColors.textPrimary)),
               data: (st) => _statsGrid(st, pf, mode, ref.watch(membersStreamProvider(scope.spaceId)).value?.length ?? 0),
             ),
+            const SizedBox(height: AppSpacing.spacing16),
+            _shareSection(context, ref, scope),
             const SizedBox(height: AppSpacing.spacing16),
             _budgetSection(context, ref, scope, space),
             const SizedBox(height: AppSpacing.spacing16),
@@ -267,6 +270,22 @@ class SpaceSettingsScreen extends ConsumerWidget {
                   color: color, fontSize: 18, fontWeight: FontWeight.bold)),
         ],
       ),
+    );
+  }
+
+  Widget _shareSection(
+    BuildContext context,
+    WidgetRef ref,
+    AdminScope scope,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.spacing16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: const BorderRadius.all(Radius.circular(AppRadius.radiusLg)),
+        border: Border.all(color: AppColors.borderDivider),
+      ),
+      child: PersonalShareTile(spaceId: scope.spaceId),
     );
   }
 

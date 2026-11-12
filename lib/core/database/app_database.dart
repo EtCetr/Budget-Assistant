@@ -36,6 +36,7 @@ import 'tables/loyalty_card_drafts.dart';
 import 'tables/product_analytics_cache.dart';
 import 'tables/member_colors.dart';
 import 'tables/monthly_budgets.dart';
+import 'tables/personal_share_flags.dart';
 part 'app_database.g.dart';
 
 // Этап 5: Счета, Ипотеки, Категории
@@ -601,6 +602,7 @@ LoyaltyCardDrafts,
 ProductAnalyticsCache,
     MemberColors,
 MonthlyBudgets,
+PersonalShareFlags,
 ],
   daos: [
     UsersDao,
@@ -624,7 +626,7 @@ class AppDatabase extends _$AppDatabase {
   /// v13: Этап 14 — reminders, holidays, recurring_transactions,
   /// forecast_cache, reminder_drafts + 5 колонок app_settings + сиды РФ.
   @override
-  int get schemaVersion => 24;
+  int get schemaVersion => 25;
 
   Future<void> _createSavingsIndexes() async {
     await customStatement('''
@@ -1119,6 +1121,10 @@ await _createReceiptsIndexes();
         await customStatement('ALTER TABLE transactions ADD COLUMN copy_group_id TEXT');
         await customStatement('CREATE INDEX IF NOT EXISTS idx_transactions_copy_group ON transactions(copy_group_id)');
       }
+      if (from < 25) {
+        // Этап 23.6c: личный флаг подключения личных транзакций.
+        await m.createTable(personalShareFlags);
+      }
         },
         beforeOpen: (details) async {
           AppLogger.i(
@@ -1139,7 +1145,8 @@ await _createReceiptsIndexes();
             'CREATE INDEX IF NOT EXISTS idx_yearly_aggregates_lookup ON yearly_aggregates(user_id, space_id, year)');
         await customStatement(
             'CREATE INDEX IF NOT EXISTS idx_yearly_aggregates_sync_status ON yearly_aggregates(sync_status)');
-          await customStatement('PRAGMA journal_mode = WAL');
+          await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS idx_personal_share_flags_unique ON personal_share_flags(user_id, space_id)');
+      await customStatement('PRAGMA journal_mode = WAL');
           await customStatement('PRAGMA synchronous = NORMAL');
           final tables = await customSelect(
             "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name",

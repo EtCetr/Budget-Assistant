@@ -334,6 +334,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const SizedBox(height: 16),
               _spacesSection(mode, formatter),
               const SizedBox(height: 16),
+              _yearBudgetCard(),
+              const SizedBox(height: 16),
               _myStatsSection(),
               const SizedBox(height: 8),
               const DebtsSection(),
@@ -443,6 +445,53 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _yearBudgetCard() {
+    return InkWell(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        context.push('/year-budget');
+      },
+      borderRadius: const BorderRadius.all(Radius.circular(12)),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceCard,
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          border: Border.all(color: AppColors.borderDivider),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.table_chart_outlined, color: AppColors.colorTransfer),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Годовой отчёт',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Анализ 1 и Анализ 2: лимиты, траты, движение, структуры',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: AppColors.textSecondary),
+          ],
+        ),
       ),
     );
   }

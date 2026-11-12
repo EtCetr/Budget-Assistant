@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:budget_assistant/core/logger.dart';
 import 'package:budget_assistant/core/theme/motion_tokens.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/features/import/domain/entities/category_suggestion.dart';
@@ -7,6 +8,7 @@ import 'package:budget_assistant/features/import/domain/entities/finalize_outcom
 import 'package:budget_assistant/features/import/domain/entities/hold_confirmation_candidate.dart';
 import 'package:budget_assistant/features/import/domain/entities/import_result.dart';
 import 'package:budget_assistant/features/import/domain/entities/parsed_row.dart';
+import 'package:budget_assistant/features/transactions/presentation/providers/transaction_scope_providers.dart';
 import 'import_usecase_providers.dart';
 import 'package:budget_assistant/core/providers/transactions_trigger_provider.dart';
 
@@ -22,6 +24,9 @@ class PostImportReviewState {
     this.suggestionsLoading = false,
     this.activeTab = 3,
     this.isFinalizing = false,
+    this.scopeSpaceIds = const {},
+    this.scopePersonal = true,
+    this.scopesInitialized = false,
   });
 
   final ImportResult? result;
@@ -31,10 +36,13 @@ class PostImportReviewState {
   final List<ParsedRow> rows;
   final Map<int, CategorySuggestion?> suggestions;
   final bool suggestionsLoading;
-
-  /// 0 дубли, 1 переводы, 2 hold, 3 категории (дефолт).
   final int activeTab;
   final bool isFinalizing;
+
+  /// Этап 23.6c: куда дополнительно записать импортированные операции.
+  final Set<String> scopeSpaceIds;
+  final bool scopePersonal;
+  final bool scopesInitialized;
 
   PostImportReviewState copyWith({
     ImportResult? result,
@@ -46,6 +54,9 @@ class PostImportReviewState {
     bool? suggestionsLoading,
     int? activeTab,
     bool? isFinalizing,
+    Set<String>? scopeSpaceIds,
+    bool? scopePersonal,
+    bool? scopesInitialized,
   }) {
     return PostImportReviewState(
       result: result ?? this.result,
@@ -57,6 +68,9 @@ class PostImportReviewState {
       suggestionsLoading: suggestionsLoading ?? this.suggestionsLoading,
       activeTab: activeTab ?? this.activeTab,
       isFinalizing: isFinalizing ?? this.isFinalizing,
+      scopeSpaceIds: scopeSpaceIds ?? this.scopeSpaceIds,
+      scopePersonal: scopePersonal ?? this.scopePersonal,
+      scopesInitialized: scopesInitialized ?? this.scopesInitialized,
     );
   }
 }
@@ -79,6 +93,35 @@ class PostImportReviewNotifier extends Notifier<PostImportReviewState> {
       rows: result.rows,
     );
     _loadSuggestions();
+  }
+
+  /// Этап 23.6c: по умолчанию отмечены все пространства (личное — всегда).
+  void initScopes({
+    required List<String> allSpaceIds,
+    required String? baseSpaceId,
+  }) {
+    if (state.scopesInitialized) return;
+    state = state.copyWith(
+      scopeSpaceIds: allSpaceIds.toSet(),
+      scopePersonal: true,
+      scopesInitialized: true,
+    );
+  }
+
+  void toggleScopeSpace(String spaceId, bool value) {
+    MotionTokens.selection();
+    final next = Set<String>.of(state.scopeSpaceIds);
+    if (value) {
+      next.add(spaceId);
+    } else {
+      next.remove(spaceId);
+    }
+    state = state.copyWith(scopeSpaceIds: next);
+  }
+
+  void setScopePersonal(bool value) {
+    MotionTokens.selection();
+    state = state.copyWith(scopePersonal: value);
   }
 
   Future<void> _loadSuggestions() async {
@@ -135,15 +178,16 @@ class PostImportReviewNotifier extends Notifier<PostImportReviewState> {
     state = state.copyWith(selectedRows: next);
   }
 
-  /// Переключить признак «перевод» у строки (табы Переводы <-> Категории).
   void toggleTransfer(int rowIndex) {
     MotionTokens.selection();
-    state = state.copyWith(rows: _mapRow(rowIndex, (r) => r.copyWith(isTransfer: !r.isTransfer)));
+    state = state.copyWith(
+        rows: _mapRow(rowIndex, (r) => r.copyWith(isTransfer: !r.isTransfer)));
   }
 
   void setCategory(int rowIndex, String? categoryId) {
     MotionTokens.selection();
-    state = state.copyWith(rows: _mapRow(rowIndex, (r) => r.copyWith(assignedCategoryId: categoryId)));
+    state = state.copyWith(
+        rows: _mapRow(rowIndex, (r) => r.copyWith(assignedCategoryId: categoryId)));
   }
 
   void applySuggestion(int rowIndex) {
@@ -199,7 +243,6 @@ class PostImportReviewNotifier extends Notifier<PostImportReviewState> {
     return [for (final r in state.rows) if (r.rowIndex == rowIndex) f(r) else r];
   }
 
-  /// Группировка строк по дням (UTC-дата), сортировка по убыванию.
   List<MapEntry<DateTime, List<ParsedRow>>> dayGroups() {
     final map = <DateTime, List<ParsedRow>>{};
     for (final row in state.rows) {
@@ -250,7 +293,8 @@ class PostImportReviewNotifier extends Notifier<PostImportReviewState> {
         selectedRowIndices: state.selectedRows,
       );
       if (outcome != null) {
-        // Дашборд и "Статистика по годам" должны увидеть новые транзакции.
+        // Этап 23.6c: связанные копии в отмеченных пространствах.
+        await _createScopeCopies(outcome, userId, r.targetSpaceId);
         ref.read(transactionsTriggerProvider.notifier).bump();
       }
       return outcome;
@@ -259,6 +303,30 @@ class PostImportReviewNotifier extends Notifier<PostImportReviewState> {
       return null;
     } finally {
       if (!_disposed) state = state.copyWith(isFinalizing: false);
+    }
+  }
+
+  Future<void> _createScopeCopies(
+    FinalizeOutcome outcome,
+    String userId,
+    String? baseSpaceId,
+  ) async {
+    final extra =
+        state.scopeSpaceIds.where((s) => s != baseSpaceId).toList();
+    final includePersonal = state.scopePersonal && baseSpaceId != null;
+    if (extra.isEmpty && !includePersonal) return;
+    try {
+      final useCase = ref.read(addTransactionCopiesUseCaseProvider);
+      for (final c in outcome.created) {
+        await useCase(
+          transactionId: c.id,
+          spaceIds: extra,
+          userId: userId,
+          includePersonal: includePersonal,
+        );
+      }
+    } catch (e, st) {
+      AppLogger.e('Import scope copies failed', e, st);
     }
   }
 }

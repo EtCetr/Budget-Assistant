@@ -28848,17 +28848,6 @@ class $ReceiptDraftsTable extends ReceiptDrafts
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _copyGroupIdMeta = const VerificationMeta(
-    'copyGroupId',
-  );
-  @override
-  late final GeneratedColumn<String> copyGroupId = GeneratedColumn<String>(
-    'copy_group_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
   static const VerificationMeta _formDataJsonMeta = const VerificationMeta(
     'formDataJson',
   );
@@ -28899,7 +28888,6 @@ class $ReceiptDraftsTable extends ReceiptDrafts
     id,
     userId,
     receiptId,
-    copyGroupId,
     formDataJson,
     createdAt,
     updatedAt,
@@ -28933,15 +28921,6 @@ class $ReceiptDraftsTable extends ReceiptDrafts
       context.handle(
         _receiptIdMeta,
         receiptId.isAcceptableOrUnknown(data['receipt_id']!, _receiptIdMeta),
-      );
-    }
-    if (data.containsKey('copy_group_id')) {
-      context.handle(
-        _copyGroupIdMeta,
-        copyGroupId.isAcceptableOrUnknown(
-          data['copy_group_id']!,
-          _copyGroupIdMeta,
-        ),
       );
     }
     if (data.containsKey('form_data_json')) {
@@ -28988,10 +28967,6 @@ class $ReceiptDraftsTable extends ReceiptDrafts
         DriftSqlType.string,
         data['${effectivePrefix}receipt_id'],
       ),
-      copyGroupId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}copy_group_id'],
-      ),
       formDataJson: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}form_data_json'],
@@ -29017,7 +28992,6 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
   final String id;
   final String userId;
   final String? receiptId;
-  final String? copyGroupId;
   final String formDataJson;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -29025,7 +28999,6 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
     required this.id,
     required this.userId,
     this.receiptId,
-    this.copyGroupId,
     required this.formDataJson,
     required this.createdAt,
     required this.updatedAt,
@@ -29037,9 +29010,6 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
     map['user_id'] = Variable<String>(userId);
     if (!nullToAbsent || receiptId != null) {
       map['receipt_id'] = Variable<String>(receiptId);
-    }
-    if (!nullToAbsent || copyGroupId != null) {
-      map['copy_group_id'] = Variable<String>(copyGroupId);
     }
     map['form_data_json'] = Variable<String>(formDataJson);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -29054,9 +29024,6 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
       receiptId: receiptId == null && nullToAbsent
           ? const Value.absent()
           : Value(receiptId),
-      copyGroupId: copyGroupId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(copyGroupId),
       formDataJson: Value(formDataJson),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -29072,7 +29039,6 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
       id: serializer.fromJson<String>(json['id']),
       userId: serializer.fromJson<String>(json['userId']),
       receiptId: serializer.fromJson<String?>(json['receiptId']),
-      copyGroupId: serializer.fromJson<String?>(json['copyGroupId']),
       formDataJson: serializer.fromJson<String>(json['formDataJson']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -29085,7 +29051,6 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
       'id': serializer.toJson<String>(id),
       'userId': serializer.toJson<String>(userId),
       'receiptId': serializer.toJson<String?>(receiptId),
-      'copyGroupId': serializer.toJson<String?>(copyGroupId),
       'formDataJson': serializer.toJson<String>(formDataJson),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -29096,7 +29061,6 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
     String? id,
     String? userId,
     Value<String?> receiptId = const Value.absent(),
-    Value<String?> copyGroupId = const Value.absent(),
     String? formDataJson,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -29104,7 +29068,6 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
     id: id ?? this.id,
     userId: userId ?? this.userId,
     receiptId: receiptId.present ? receiptId.value : this.receiptId,
-    copyGroupId: copyGroupId.present ? copyGroupId.value : this.copyGroupId,
     formDataJson: formDataJson ?? this.formDataJson,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -29114,9 +29077,6 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
       id: data.id.present ? data.id.value : this.id,
       userId: data.userId.present ? data.userId.value : this.userId,
       receiptId: data.receiptId.present ? data.receiptId.value : this.receiptId,
-      copyGroupId: data.copyGroupId.present
-          ? data.copyGroupId.value
-          : this.copyGroupId,
       formDataJson: data.formDataJson.present
           ? data.formDataJson.value
           : this.formDataJson,
@@ -29131,7 +29091,6 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
           ..write('id: $id, ')
           ..write('userId: $userId, ')
           ..write('receiptId: $receiptId, ')
-          ..write('copyGroupId: $copyGroupId, ')
           ..write('formDataJson: $formDataJson, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -29140,15 +29099,8 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    userId,
-    receiptId,
-    copyGroupId,
-    formDataJson,
-    createdAt,
-    updatedAt,
-  );
+  int get hashCode =>
+      Object.hash(id, userId, receiptId, formDataJson, createdAt, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -29156,7 +29108,6 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
           other.id == this.id &&
           other.userId == this.userId &&
           other.receiptId == this.receiptId &&
-          other.copyGroupId == this.copyGroupId &&
           other.formDataJson == this.formDataJson &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -29166,7 +29117,6 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
   final Value<String> id;
   final Value<String> userId;
   final Value<String?> receiptId;
-  final Value<String?> copyGroupId;
   final Value<String> formDataJson;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -29175,7 +29125,6 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
     this.id = const Value.absent(),
     this.userId = const Value.absent(),
     this.receiptId = const Value.absent(),
-    this.copyGroupId = const Value.absent(),
     this.formDataJson = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -29185,7 +29134,6 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
     required String id,
     required String userId,
     this.receiptId = const Value.absent(),
-    this.copyGroupId = const Value.absent(),
     required String formDataJson,
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -29197,7 +29145,6 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
     Expression<String>? id,
     Expression<String>? userId,
     Expression<String>? receiptId,
-    Expression<String>? copyGroupId,
     Expression<String>? formDataJson,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -29207,7 +29154,6 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
       if (id != null) 'id': id,
       if (userId != null) 'user_id': userId,
       if (receiptId != null) 'receipt_id': receiptId,
-      if (copyGroupId != null) 'copy_group_id': copyGroupId,
       if (formDataJson != null) 'form_data_json': formDataJson,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -29219,7 +29165,6 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
     Value<String>? id,
     Value<String>? userId,
     Value<String?>? receiptId,
-    Value<String?>? copyGroupId,
     Value<String>? formDataJson,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -29229,7 +29174,6 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
       id: id ?? this.id,
       userId: userId ?? this.userId,
       receiptId: receiptId ?? this.receiptId,
-      copyGroupId: copyGroupId ?? this.copyGroupId,
       formDataJson: formDataJson ?? this.formDataJson,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -29248,9 +29192,6 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
     }
     if (receiptId.present) {
       map['receipt_id'] = Variable<String>(receiptId.value);
-    }
-    if (copyGroupId.present) {
-      map['copy_group_id'] = Variable<String>(copyGroupId.value);
     }
     if (formDataJson.present) {
       map['form_data_json'] = Variable<String>(formDataJson.value);
@@ -29273,7 +29214,6 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
           ..write('id: $id, ')
           ..write('userId: $userId, ')
           ..write('receiptId: $receiptId, ')
-          ..write('copyGroupId: $copyGroupId, ')
           ..write('formDataJson: $formDataJson, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -32403,6 +32343,529 @@ class MonthlyBudgetsCompanion extends UpdateCompanion<MonthlyBudgetDb> {
   }
 }
 
+class $PersonalShareFlagsTable extends PersonalShareFlags
+    with TableInfo<$PersonalShareFlagsTable, PersonalShareFlagDb> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PersonalShareFlagsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES users (id)',
+    ),
+  );
+  static const VerificationMeta _spaceIdMeta = const VerificationMeta(
+    'spaceId',
+  );
+  @override
+  late final GeneratedColumn<String> spaceId = GeneratedColumn<String>(
+    'space_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES spaces (id)',
+    ),
+  );
+  static const VerificationMeta _isEnabledMeta = const VerificationMeta(
+    'isEnabled',
+  );
+  @override
+  late final GeneratedColumn<bool> isEnabled = GeneratedColumn<bool>(
+    'is_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _lastAttachedAtMeta = const VerificationMeta(
+    'lastAttachedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastAttachedAt =
+      GeneratedColumn<DateTime>(
+        'last_attached_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    spaceId,
+    isEnabled,
+    lastAttachedAt,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'personal_share_flags';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PersonalShareFlagDb> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('space_id')) {
+      context.handle(
+        _spaceIdMeta,
+        spaceId.isAcceptableOrUnknown(data['space_id']!, _spaceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_spaceIdMeta);
+    }
+    if (data.containsKey('is_enabled')) {
+      context.handle(
+        _isEnabledMeta,
+        isEnabled.isAcceptableOrUnknown(data['is_enabled']!, _isEnabledMeta),
+      );
+    }
+    if (data.containsKey('last_attached_at')) {
+      context.handle(
+        _lastAttachedAtMeta,
+        lastAttachedAt.isAcceptableOrUnknown(
+          data['last_attached_at']!,
+          _lastAttachedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PersonalShareFlagDb map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PersonalShareFlagDb(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      spaceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}space_id'],
+      )!,
+      isEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_enabled'],
+      )!,
+      lastAttachedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_attached_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+    );
+  }
+
+  @override
+  $PersonalShareFlagsTable createAlias(String alias) {
+    return $PersonalShareFlagsTable(attachedDatabase, alias);
+  }
+}
+
+class PersonalShareFlagDb extends DataClass
+    implements Insertable<PersonalShareFlagDb> {
+  final String id;
+  final String userId;
+  final String spaceId;
+  final bool isEnabled;
+  final DateTime? lastAttachedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String syncStatus;
+  const PersonalShareFlagDb({
+    required this.id,
+    required this.userId,
+    required this.spaceId,
+    required this.isEnabled,
+    this.lastAttachedAt,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.syncStatus,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['space_id'] = Variable<String>(spaceId);
+    map['is_enabled'] = Variable<bool>(isEnabled);
+    if (!nullToAbsent || lastAttachedAt != null) {
+      map['last_attached_at'] = Variable<DateTime>(lastAttachedAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['sync_status'] = Variable<String>(syncStatus);
+    return map;
+  }
+
+  PersonalShareFlagsCompanion toCompanion(bool nullToAbsent) {
+    return PersonalShareFlagsCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      spaceId: Value(spaceId),
+      isEnabled: Value(isEnabled),
+      lastAttachedAt: lastAttachedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastAttachedAt),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncStatus: Value(syncStatus),
+    );
+  }
+
+  factory PersonalShareFlagDb.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PersonalShareFlagDb(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      spaceId: serializer.fromJson<String>(json['spaceId']),
+      isEnabled: serializer.fromJson<bool>(json['isEnabled']),
+      lastAttachedAt: serializer.fromJson<DateTime?>(json['lastAttachedAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'spaceId': serializer.toJson<String>(spaceId),
+      'isEnabled': serializer.toJson<bool>(isEnabled),
+      'lastAttachedAt': serializer.toJson<DateTime?>(lastAttachedAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+    };
+  }
+
+  PersonalShareFlagDb copyWith({
+    String? id,
+    String? userId,
+    String? spaceId,
+    bool? isEnabled,
+    Value<DateTime?> lastAttachedAt = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? syncStatus,
+  }) => PersonalShareFlagDb(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    spaceId: spaceId ?? this.spaceId,
+    isEnabled: isEnabled ?? this.isEnabled,
+    lastAttachedAt: lastAttachedAt.present
+        ? lastAttachedAt.value
+        : this.lastAttachedAt,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+  );
+  PersonalShareFlagDb copyWithCompanion(PersonalShareFlagsCompanion data) {
+    return PersonalShareFlagDb(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      spaceId: data.spaceId.present ? data.spaceId.value : this.spaceId,
+      isEnabled: data.isEnabled.present ? data.isEnabled.value : this.isEnabled,
+      lastAttachedAt: data.lastAttachedAt.present
+          ? data.lastAttachedAt.value
+          : this.lastAttachedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PersonalShareFlagDb(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('isEnabled: $isEnabled, ')
+          ..write('lastAttachedAt: $lastAttachedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    spaceId,
+    isEnabled,
+    lastAttachedAt,
+    createdAt,
+    updatedAt,
+    syncStatus,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PersonalShareFlagDb &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.spaceId == this.spaceId &&
+          other.isEnabled == this.isEnabled &&
+          other.lastAttachedAt == this.lastAttachedAt &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncStatus == this.syncStatus);
+}
+
+class PersonalShareFlagsCompanion extends UpdateCompanion<PersonalShareFlagDb> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> spaceId;
+  final Value<bool> isEnabled;
+  final Value<DateTime?> lastAttachedAt;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<String> syncStatus;
+  final Value<int> rowid;
+  const PersonalShareFlagsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.spaceId = const Value.absent(),
+    this.isEnabled = const Value.absent(),
+    this.lastAttachedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PersonalShareFlagsCompanion.insert({
+    required String id,
+    required String userId,
+    required String spaceId,
+    this.isEnabled = const Value.absent(),
+    this.lastAttachedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       spaceId = Value(spaceId);
+  static Insertable<PersonalShareFlagDb> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? spaceId,
+    Expression<bool>? isEnabled,
+    Expression<DateTime>? lastAttachedAt,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? syncStatus,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (spaceId != null) 'space_id': spaceId,
+      if (isEnabled != null) 'is_enabled': isEnabled,
+      if (lastAttachedAt != null) 'last_attached_at': lastAttachedAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PersonalShareFlagsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? spaceId,
+    Value<bool>? isEnabled,
+    Value<DateTime?>? lastAttachedAt,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<String>? syncStatus,
+    Value<int>? rowid,
+  }) {
+    return PersonalShareFlagsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      spaceId: spaceId ?? this.spaceId,
+      isEnabled: isEnabled ?? this.isEnabled,
+      lastAttachedAt: lastAttachedAt ?? this.lastAttachedAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (spaceId.present) {
+      map['space_id'] = Variable<String>(spaceId.value);
+    }
+    if (isEnabled.present) {
+      map['is_enabled'] = Variable<bool>(isEnabled.value);
+    }
+    if (lastAttachedAt.present) {
+      map['last_attached_at'] = Variable<DateTime>(lastAttachedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PersonalShareFlagsCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('spaceId: $spaceId, ')
+          ..write('isEnabled: $isEnabled, ')
+          ..write('lastAttachedAt: $lastAttachedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -32456,6 +32919,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $ProductAnalyticsCacheTable(this);
   late final $MemberColorsTable memberColors = $MemberColorsTable(this);
   late final $MonthlyBudgetsTable monthlyBudgets = $MonthlyBudgetsTable(this);
+  late final $PersonalShareFlagsTable personalShareFlags =
+      $PersonalShareFlagsTable(this);
   late final Index idxInvitationsSpace = Index(
     'idx_invitations_space',
     'CREATE INDEX idx_invitations_space ON invitations (space_id)',
@@ -32535,6 +33000,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     productAnalyticsCache,
     memberColors,
     monthlyBudgets,
+    personalShareFlags,
     idxInvitationsSpace,
     idxInvitationsSync,
     idxAuditSpace,
@@ -33751,6 +34217,30 @@ final class $$UsersTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<
+    $PersonalShareFlagsTable,
+    List<PersonalShareFlagDb>
+  >
+  _personalShareFlagsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.personalShareFlags,
+        aliasName: 'users__id__personal_share_flags__user_id',
+      );
+
+  $$PersonalShareFlagsTableProcessedTableManager get personalShareFlagsRefs {
+    final manager = $$PersonalShareFlagsTableTableManager(
+      $_db,
+      $_db.personalShareFlags,
+    ).filter((f) => f.userId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _personalShareFlagsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
@@ -34499,6 +34989,31 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
           }) => $$MonthlyBudgetsTableFilterComposer(
             $db: $db,
             $table: $db.monthlyBudgets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> personalShareFlagsRefs(
+    Expression<bool> Function($$PersonalShareFlagsTableFilterComposer f) f,
+  ) {
+    final $$PersonalShareFlagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.personalShareFlags,
+      getReferencedColumn: (t) => t.userId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PersonalShareFlagsTableFilterComposer(
+            $db: $db,
+            $table: $db.personalShareFlags,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -35311,6 +35826,32 @@ class $$UsersTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> personalShareFlagsRefs<T extends Object>(
+    Expression<T> Function($$PersonalShareFlagsTableAnnotationComposer a) f,
+  ) {
+    final $$PersonalShareFlagsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.personalShareFlags,
+          getReferencedColumn: (t) => t.userId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PersonalShareFlagsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.personalShareFlags,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$UsersTableTableManager
@@ -35355,6 +35896,7 @@ class $$UsersTableTableManager
             bool productAnalyticsCacheRefs,
             bool memberColorsRefs,
             bool monthlyBudgetsRefs,
+            bool personalShareFlagsRefs,
           })
         > {
   $$UsersTableTableManager(_$AppDatabase db, $UsersTable table)
@@ -35452,6 +35994,7 @@ class $$UsersTableTableManager
                 productAnalyticsCacheRefs = false,
                 memberColorsRefs = false,
                 monthlyBudgetsRefs = false,
+                personalShareFlagsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -35484,6 +36027,7 @@ class $$UsersTableTableManager
                     if (productAnalyticsCacheRefs) db.productAnalyticsCache,
                     if (memberColorsRefs) db.memberColors,
                     if (monthlyBudgetsRefs) db.monthlyBudgets,
+                    if (personalShareFlagsRefs) db.personalShareFlags,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -36056,6 +36600,27 @@ class $$UsersTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (personalShareFlagsRefs)
+                        await $_getPrefetchedData<
+                          User,
+                          $UsersTable,
+                          PersonalShareFlagDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$UsersTableReferences
+                              ._personalShareFlagsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$UsersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).personalShareFlagsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.userId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -36105,6 +36670,7 @@ typedef $$UsersTableProcessedTableManager =
         bool productAnalyticsCacheRefs,
         bool memberColorsRefs,
         bool monthlyBudgetsRefs,
+        bool personalShareFlagsRefs,
       })
     >;
 typedef $$SpacesTableCreateCompanionBuilder =
@@ -36440,6 +37006,30 @@ final class $$SpacesTableReferences
     ).filter((f) => f.spaceId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_loyaltyCardsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $PersonalShareFlagsTable,
+    List<PersonalShareFlagDb>
+  >
+  _personalShareFlagsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.personalShareFlags,
+        aliasName: 'spaces__id__personal_share_flags__space_id',
+      );
+
+  $$PersonalShareFlagsTableProcessedTableManager get personalShareFlagsRefs {
+    final manager = $$PersonalShareFlagsTableTableManager(
+      $_db,
+      $_db.personalShareFlags,
+    ).filter((f) => f.spaceId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _personalShareFlagsRefsTable($_db),
+    );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -36912,6 +37502,31 @@ class $$SpacesTableFilterComposer
           }) => $$LoyaltyCardsTableFilterComposer(
             $db: $db,
             $table: $db.loyaltyCards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> personalShareFlagsRefs(
+    Expression<bool> Function($$PersonalShareFlagsTableFilterComposer f) f,
+  ) {
+    final $$PersonalShareFlagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.personalShareFlags,
+      getReferencedColumn: (t) => t.spaceId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PersonalShareFlagsTableFilterComposer(
+            $db: $db,
+            $table: $db.personalShareFlags,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -37457,6 +38072,32 @@ class $$SpacesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> personalShareFlagsRefs<T extends Object>(
+    Expression<T> Function($$PersonalShareFlagsTableAnnotationComposer a) f,
+  ) {
+    final $$PersonalShareFlagsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.personalShareFlags,
+          getReferencedColumn: (t) => t.spaceId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$PersonalShareFlagsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.personalShareFlags,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$SpacesTableTableManager
@@ -37489,6 +38130,7 @@ class $$SpacesTableTableManager
             bool receiptsRefs,
             bool productAliasesRefs,
             bool loyaltyCardsRefs,
+            bool personalShareFlagsRefs,
           })
         > {
   $$SpacesTableTableManager(_$AppDatabase db, $SpacesTable table)
@@ -37590,6 +38232,7 @@ class $$SpacesTableTableManager
                 receiptsRefs = false,
                 productAliasesRefs = false,
                 loyaltyCardsRefs = false,
+                personalShareFlagsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -37610,6 +38253,7 @@ class $$SpacesTableTableManager
                     if (receiptsRefs) db.receipts,
                     if (productAliasesRefs) db.productAliases,
                     if (loyaltyCardsRefs) db.loyaltyCards,
+                    if (personalShareFlagsRefs) db.personalShareFlags,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -37938,6 +38582,27 @@ class $$SpacesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (personalShareFlagsRefs)
+                        await $_getPrefetchedData<
+                          Space,
+                          $SpacesTable,
+                          PersonalShareFlagDb
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SpacesTableReferences
+                              ._personalShareFlagsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SpacesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).personalShareFlagsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.spaceId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -37975,6 +38640,7 @@ typedef $$SpacesTableProcessedTableManager =
         bool receiptsRefs,
         bool productAliasesRefs,
         bool loyaltyCardsRefs,
+        bool personalShareFlagsRefs,
       })
     >;
 typedef $$YearlyAggregatesTableCreateCompanionBuilder =
@@ -58812,7 +59478,6 @@ typedef $$ReceiptDraftsTableCreateCompanionBuilder =
       required String id,
       required String userId,
       Value<String?> receiptId,
-      Value<String?> copyGroupId,
       required String formDataJson,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -58823,7 +59488,6 @@ typedef $$ReceiptDraftsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> userId,
       Value<String?> receiptId,
-      Value<String?> copyGroupId,
       Value<String> formDataJson,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -58872,11 +59536,6 @@ class $$ReceiptDraftsTableFilterComposer
 
   ColumnFilters<String> get receiptId => $composableBuilder(
     column: $table.receiptId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get copyGroupId => $composableBuilder(
-    column: $table.copyGroupId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -58938,11 +59597,6 @@ class $$ReceiptDraftsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get copyGroupId => $composableBuilder(
-    column: $table.copyGroupId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<String> get formDataJson => $composableBuilder(
     column: $table.formDataJson,
     builder: (column) => ColumnOrderings(column),
@@ -58996,11 +59650,6 @@ class $$ReceiptDraftsTableAnnotationComposer
 
   GeneratedColumn<String> get receiptId =>
       $composableBuilder(column: $table.receiptId, builder: (column) => column);
-
-  GeneratedColumn<String> get copyGroupId => $composableBuilder(
-    column: $table.copyGroupId,
-    builder: (column) => column,
-  );
 
   GeneratedColumn<String> get formDataJson => $composableBuilder(
     column: $table.formDataJson,
@@ -59068,7 +59717,6 @@ class $$ReceiptDraftsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> userId = const Value.absent(),
                 Value<String?> receiptId = const Value.absent(),
-                Value<String?> copyGroupId = const Value.absent(),
                 Value<String> formDataJson = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -59077,7 +59725,6 @@ class $$ReceiptDraftsTableTableManager
                 id: id,
                 userId: userId,
                 receiptId: receiptId,
-                copyGroupId: copyGroupId,
                 formDataJson: formDataJson,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -59088,7 +59735,6 @@ class $$ReceiptDraftsTableTableManager
                 required String id,
                 required String userId,
                 Value<String?> receiptId = const Value.absent(),
-                Value<String?> copyGroupId = const Value.absent(),
                 required String formDataJson,
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -59097,7 +59743,6 @@ class $$ReceiptDraftsTableTableManager
                 id: id,
                 userId: userId,
                 receiptId: receiptId,
-                copyGroupId: copyGroupId,
                 formDataJson: formDataJson,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -61396,6 +62041,488 @@ typedef $$MonthlyBudgetsTableProcessedTableManager =
       MonthlyBudgetDb,
       PrefetchHooks Function({bool userId})
     >;
+typedef $$PersonalShareFlagsTableCreateCompanionBuilder =
+    PersonalShareFlagsCompanion Function({
+      required String id,
+      required String userId,
+      required String spaceId,
+      Value<bool> isEnabled,
+      Value<DateTime?> lastAttachedAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
+      Value<int> rowid,
+    });
+typedef $$PersonalShareFlagsTableUpdateCompanionBuilder =
+    PersonalShareFlagsCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<String> spaceId,
+      Value<bool> isEnabled,
+      Value<DateTime?> lastAttachedAt,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String> syncStatus,
+      Value<int> rowid,
+    });
+
+final class $$PersonalShareFlagsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $PersonalShareFlagsTable,
+          PersonalShareFlagDb
+        > {
+  $$PersonalShareFlagsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $UsersTable _userIdTable(_$AppDatabase db) =>
+      db.users.createAlias('personal_share_flags__user_id__users__id');
+
+  $$UsersTableProcessedTableManager get userId {
+    final $_column = $_itemColumn<String>('user_id')!;
+
+    final manager = $$UsersTableTableManager(
+      $_db,
+      $_db.users,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_userIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SpacesTable _spaceIdTable(_$AppDatabase db) =>
+      db.spaces.createAlias('personal_share_flags__space_id__spaces__id');
+
+  $$SpacesTableProcessedTableManager get spaceId {
+    final $_column = $_itemColumn<String>('space_id')!;
+
+    final manager = $$SpacesTableTableManager(
+      $_db,
+      $_db.spaces,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_spaceIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$PersonalShareFlagsTableFilterComposer
+    extends Composer<_$AppDatabase, $PersonalShareFlagsTable> {
+  $$PersonalShareFlagsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isEnabled => $composableBuilder(
+    column: $table.isEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastAttachedAt => $composableBuilder(
+    column: $table.lastAttachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$UsersTableFilterComposer get userId {
+    final $$UsersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableFilterComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableFilterComposer get spaceId {
+    final $$SpacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableFilterComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PersonalShareFlagsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PersonalShareFlagsTable> {
+  $$PersonalShareFlagsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isEnabled => $composableBuilder(
+    column: $table.isEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastAttachedAt => $composableBuilder(
+    column: $table.lastAttachedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$UsersTableOrderingComposer get userId {
+    final $$UsersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableOrderingComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableOrderingComposer get spaceId {
+    final $$SpacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PersonalShareFlagsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PersonalShareFlagsTable> {
+  $$PersonalShareFlagsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<bool> get isEnabled =>
+      $composableBuilder(column: $table.isEnabled, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastAttachedAt => $composableBuilder(
+    column: $table.lastAttachedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  $$UsersTableAnnotationComposer get userId {
+    final $$UsersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.userId,
+      referencedTable: $db.users,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$UsersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.users,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SpacesTableAnnotationComposer get spaceId {
+    final $$SpacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.spaceId,
+      referencedTable: $db.spaces,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SpacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.spaces,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$PersonalShareFlagsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PersonalShareFlagsTable,
+          PersonalShareFlagDb,
+          $$PersonalShareFlagsTableFilterComposer,
+          $$PersonalShareFlagsTableOrderingComposer,
+          $$PersonalShareFlagsTableAnnotationComposer,
+          $$PersonalShareFlagsTableCreateCompanionBuilder,
+          $$PersonalShareFlagsTableUpdateCompanionBuilder,
+          (PersonalShareFlagDb, $$PersonalShareFlagsTableReferences),
+          PersonalShareFlagDb,
+          PrefetchHooks Function({bool userId, bool spaceId})
+        > {
+  $$PersonalShareFlagsTableTableManager(
+    _$AppDatabase db,
+    $PersonalShareFlagsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PersonalShareFlagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PersonalShareFlagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PersonalShareFlagsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> spaceId = const Value.absent(),
+                Value<bool> isEnabled = const Value.absent(),
+                Value<DateTime?> lastAttachedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PersonalShareFlagsCompanion(
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                isEnabled: isEnabled,
+                lastAttachedAt: lastAttachedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String userId,
+                required String spaceId,
+                Value<bool> isEnabled = const Value.absent(),
+                Value<DateTime?> lastAttachedAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PersonalShareFlagsCompanion.insert(
+                id: id,
+                userId: userId,
+                spaceId: spaceId,
+                isEnabled: isEnabled,
+                lastAttachedAt: lastAttachedAt,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$PersonalShareFlagsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({userId = false, spaceId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (userId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.userId,
+                                referencedTable:
+                                    $$PersonalShareFlagsTableReferences
+                                        ._userIdTable(db),
+                                referencedColumn:
+                                    $$PersonalShareFlagsTableReferences
+                                        ._userIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+                    if (spaceId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.spaceId,
+                                referencedTable:
+                                    $$PersonalShareFlagsTableReferences
+                                        ._spaceIdTable(db),
+                                referencedColumn:
+                                    $$PersonalShareFlagsTableReferences
+                                        ._spaceIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PersonalShareFlagsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PersonalShareFlagsTable,
+      PersonalShareFlagDb,
+      $$PersonalShareFlagsTableFilterComposer,
+      $$PersonalShareFlagsTableOrderingComposer,
+      $$PersonalShareFlagsTableAnnotationComposer,
+      $$PersonalShareFlagsTableCreateCompanionBuilder,
+      $$PersonalShareFlagsTableUpdateCompanionBuilder,
+      (PersonalShareFlagDb, $$PersonalShareFlagsTableReferences),
+      PersonalShareFlagDb,
+      PrefetchHooks Function({bool userId, bool spaceId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -61482,4 +62609,6 @@ class $AppDatabaseManager {
       $$MemberColorsTableTableManager(_db, _db.memberColors);
   $$MonthlyBudgetsTableTableManager get monthlyBudgets =>
       $$MonthlyBudgetsTableTableManager(_db, _db.monthlyBudgets);
+  $$PersonalShareFlagsTableTableManager get personalShareFlags =>
+      $$PersonalShareFlagsTableTableManager(_db, _db.personalShareFlags);
 }

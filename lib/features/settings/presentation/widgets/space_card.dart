@@ -1,5 +1,4 @@
-// lib/features/settings/presentation/widgets/space_card.dart
-// Этап 21 (ТЗ 6.3.51.2 / 6.3.39.5): карточка пространства (активное / архив).
+// Карточка пространства (Этап 21) + личный чекбокс подключения (Этап 23.6c).
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
@@ -7,6 +6,7 @@ import 'package:budget_assistant/core/theme/member_color_palette.dart';
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/features/privacy/presentation/privacy_formatter.dart';
 import 'package:budget_assistant/features/spaces/domain/entities/space_membership_info.dart';
+import 'package:budget_assistant/features/spaces/presentation/widgets/personal_share_tile.dart';
 
 class SpaceCard extends StatelessWidget {
   const SpaceCard({
@@ -17,6 +17,7 @@ class SpaceCard extends StatelessWidget {
     this.onOpenSettings,
     this.onLeave,
     this.onOpenArchive,
+    this.showShareTile = false,
   });
 
   final SpaceMembershipInfo info;
@@ -25,6 +26,7 @@ class SpaceCard extends StatelessWidget {
   final VoidCallback? onOpenSettings;
   final VoidCallback? onLeave;
   final VoidCallback? onOpenArchive;
+  final bool showShareTile;
 
   Color get _iconColor =>
       parseMemberColorHex(info.iconColor) ?? AppColors.surfaceElevated;
@@ -38,6 +40,7 @@ class SpaceCard extends StatelessWidget {
             ? 'Расформировано'
             : 'Расформировано ${df.format(info.dissolvedAt!.toLocal())}')
         : '${info.memberCount} участников · Присоединился ${df.format(info.joinedAt.toLocal())}';
+
     return Opacity(
       opacity: dissolved ? 0.5 : 1,
       child: Container(
@@ -84,6 +87,10 @@ class SpaceCard extends StatelessWidget {
                 fontSize: 13,
               ),
             ),
+            if (showShareTile && !dissolved) ...[
+              const SizedBox(height: 4),
+              PersonalShareTile(spaceId: info.spaceId),
+            ],
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -104,27 +111,12 @@ class SpaceCard extends StatelessWidget {
                     icon: const Icon(Icons.logout, size: 18),
                     label: const Text('Выйти'),
                   ),
-                if (dissolved)
-                  (onOpenArchive == null
-                      ? Tooltip(
-                          message: 'Появится в под-шаге 21.6',
-                          child: OutlinedButton.icon(
-                            onPressed: null,
-                            icon: const Icon(
-                              Icons.bar_chart_outlined,
-                              size: 18,
-                            ),
-                            label: const Text('Посмотреть архив'),
-                          ),
-                        )
-                      : OutlinedButton.icon(
-                          onPressed: onOpenArchive,
-                          icon: const Icon(
-                            Icons.bar_chart_outlined,
-                            size: 18,
-                          ),
-                          label: const Text('Посмотреть архив'),
-                        )),
+                if (dissolved && onOpenArchive != null)
+                  OutlinedButton.icon(
+                    onPressed: onOpenArchive,
+                    icon: const Icon(Icons.bar_chart_outlined, size: 18),
+                    label: const Text('Посмотреть архив'),
+                  ),
               ],
             ),
           ],

@@ -1,5 +1,4 @@
-// lib/features/settings/presentation/screens/spaces_management_screen.dart
-// Этап 21 (ТЗ 6.3.51): управление пространствами.
+// Управление пространствами (Этап 21) + чекбокс подключения (Этап 23.6c).
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +22,7 @@ class SpacesManagementScreen extends ConsumerWidget {
     final async = ref.watch(spacesManagementProvider);
     final mode = ref.watch(privacyModeProvider);
     final formatter = ref.watch(privacyFormatterProvider);
+
     return Scaffold(
       backgroundColor: AppColors.surfaceBackground,
       appBar: AppBar(
@@ -97,6 +97,7 @@ class SpacesManagementScreen extends ConsumerWidget {
                     info: info,
                     mode: mode,
                     formatter: formatter,
+                    showShareTile: true,
                     onOpenSettings: info.isAdmin
                         ? () => _openSpaceSettings(ref, context, info)
                         : null,
@@ -159,8 +160,6 @@ class SpacesManagementScreen extends ConsumerWidget {
     SpaceMembershipInfo info,
   ) {
     HapticFeedback.lightImpact();
-    // Настройки пространства админ-скоупные: переключаем активное пространство
-    // в обоих провайдерах (D17-14), затем открываем экран Этапа 18.
     ref.read(ar.currentSpaceIdProvider.notifier).setSpaceId(info.spaceId);
     ref.read(sec.currentSpaceIdProvider.notifier).set(info.spaceId);
     context.push('/admin/space-settings');

@@ -8,6 +8,8 @@ import 'package:budget_assistant/features/import/domain/entities/import_result.d
 import 'package:budget_assistant/features/import/domain/entities/import_secrecy_handoff.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
+import 'package:budget_assistant/features/spaces/domain/entities/user_space.dart';
+import 'package:budget_assistant/features/spaces/presentation/providers/space_providers.dart';
 import '../providers/post_import_review_notifier.dart';
 import '../providers/import_usecase_providers.dart';
 import '../providers/import_onboarding_notifier.dart';
@@ -19,7 +21,7 @@ import '../widgets/hold_tab.dart';
 import '../widgets/categories_tab.dart';
 import '../widgets/selected_summary.dart';
 
-/// Экран проверки импорта (ТЗ 6.3.26).
+/// Экран проверки импорта (ТЗ 6.3.26) + выбор пространств (Этап 23.6c).
 class PostImportReviewScreen extends ConsumerStatefulWidget {
   const PostImportReviewScreen({super.key, this.result});
   final ImportResult? result;
@@ -66,12 +68,14 @@ class _PostImportReviewScreenState
     final notifier = ref.read(postImportReviewProvider.notifier);
     final state = ref.read(postImportReviewProvider);
     final userId = ref.read(currentUserIdProvider);
+
     if (notifier.summary().count == 0) {
       MotionTokens.error();
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Выберите хотя бы одну транзакцию')));
       return;
     }
+
     final uncategorizedSelected = state.rows
         .where((r) =>
             state.selectedRows.contains(r.rowIndex) &&
@@ -96,6 +100,7 @@ class _PostImportReviewScreenState
       );
       if (proceed != true || !mounted) return;
     }
+
     final outcome = await notifier.finalize();
     if (outcome == null || !mounted) {
       if (mounted) {
@@ -105,11 +110,11 @@ class _PostImportReviewScreenState
       }
       return;
     }
+
     MotionTokens.heavy();
     final result = state.result!;
     if (result.options.checkSecrecy && outcome.created.isNotEmpty) {
       try {
-        final userId = ref.read(currentUserIdProvider);
         final candidates =
             await ref.read(checkSecrecyModeUseCaseProvider).call(
                   transactions: outcome.created.map((c) => c.row).toList(),
@@ -130,6 +135,7 @@ class _PostImportReviewScreenState
         }
       } catch (_) {}
     }
+
     if (!mounted) return;
     final periodDays = result.periodEnd.difference(result.periodStart).inDays;
     var recurringTouched = 0;
@@ -143,9 +149,8 @@ class _PostImportReviewScreenState
         }
       } catch (_) {}
     }
+
     if (!mounted) return;
-    // Владелец (2026-10): после успеха открываем стек «Главная -> Транзакции»,
-    // чтобы с экрана транзакций можно было вернуться на главный.
     final messenger = ScaffoldMessenger.of(context);
     final router = GoRouter.of(context);
     ref.read(importOnboardingProvider.notifier).resetAfterSuccess();
@@ -163,10 +168,83 @@ class _PostImportReviewScreenState
     ));
   }
 
+  /// Этап 23.6c: чипы «Куда записать». Базовый скоуп (счёт импорта) заблокирован.
+  Widget _buildScopeChips(
+    PostImportReviewState state,
+    List<UserSpace> spaces,
+    ImportResult result,
+  ) {
+    if (spaces.isEmpty) return const SizedBox.shrink();
+    final baseSpaceId = result.targetSpaceId;
+    final basePersonal = baseSpaceId == null;
+    final notifier = ref.read(postImportReviewProvider.notifier);
+    String nameOf(String id) {
+      for (final s in spaces) {
+        if (s.id == id) return s.name;
+      }
+      return 'Группа';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Куда записать',
+              style: TextStyle(
+                  color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              FilterChip(
+                label: const Text('Личное'),
+                selected: basePersonal || state.scopePersonal,
+                onSelected: basePersonal
+                    ? null
+                    : (v) => notifier.setScopePersonal(v),
+              ),
+              for (final s in spaces)
+                FilterChip(
+                  label: Text(s.name),
+                  selected: s.id == baseSpaceId ||
+                      state.scopeSpaceIds.contains(s.id),
+                  onSelected: s.id == baseSpaceId
+                      ? null
+                      : (v) => notifier.toggleScopeSpace(s.id, v),
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            basePersonal
+                ? 'Личное — всегда. Отмеченные группы получат связанные копии.'
+                : 'Базовая группа: ${nameOf(baseSpaceId)}. Остальное — связанные копии.',
+            style: const TextStyle(
+                color: AppColors.textSecondary, fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(postImportReviewProvider);
     final result = state.result;
+    final spaces = ref.watch(userSpacesProvider).value ?? const <UserSpace>[];
+
+    if (result != null && !state.scopesInitialized && spaces.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(postImportReviewProvider.notifier).initScopes(
+              allSpaceIds: spaces.map((e) => e.id).toList(),
+              baseSpaceId: result.targetSpaceId,
+            );
+      });
+    }
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -195,7 +273,8 @@ class _PostImportReviewScreenState
             ? EmptyStateWidget(
                 icon: Icons.file_open_outlined,
                 title: 'Нет данных импорта',
-                subtitle: 'Вернитесь к мастеру импорта и загрузите файл',
+                subtitle:
+                    'Вернитесь к мастеру импорта и загрузите файл',
                 primaryAction: EmptyStateAction(
                     label: 'Назад', onPressed: () => context.pop()),
               )
@@ -209,6 +288,7 @@ class _PostImportReviewScreenState
                     periodEnd: result.periodEnd,
                     targetAccountId: result.targetAccountId,
                   ),
+                  _buildScopeChips(state, spaces, result),
                   const SmartDetectionTabs(),
                   Expanded(
                     child: switch (state.activeTab) {
