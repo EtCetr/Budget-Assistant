@@ -12,6 +12,7 @@ import '../../domain/entities/lookup_item.dart';
 import '../../domain/entities/transaction_ui_model.dart';
 import '../labels/transactions_log_labels.dart';
 import '../providers/transactions_log_providers.dart';
+import 'transaction_space_sheet.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/providers/transactions_trigger_provider.dart';
 import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
@@ -192,7 +193,20 @@ context.push('/receipts//preview');
 
             // 🗑️ Удалить транзакцию (владелец: отдельная кнопка, не в редакторе).
         ListTile(
-          leading: const Icon(Icons.delete_outline,
+          leading: const Icon(Icons.workspaces_outlined),
+              title: const Text('Пространство'),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                HapticFeedback.lightImpact();
+                showTransactionSpaceSheet(
+                  context: context,
+                  ref: ref,
+                  transactionId: transaction.id,
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline,
               color: AppColors.colorExpense),
           title: const Text(TransactionsLogLabels.delete),
           onTap: () {

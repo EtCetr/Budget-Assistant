@@ -163,6 +163,7 @@ class Transactions extends Table {
   BoolColumn get isWithdrawal => boolean().withDefault(const Constant(false))();
   BoolColumn get isSplit => boolean().withDefault(const Constant(false))();
   TextColumn get receiptId => text().nullable()();
+  TextColumn get copyGroupId => text().nullable()();
   BoolColumn get isLargeExpense =>
       boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime()();
@@ -549,6 +550,7 @@ class ReceiptDrafts extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text().references(Users, #id)();
   TextColumn get receiptId => text().nullable()();
+  TextColumn get copyGroupId => text().nullable()();
   TextColumn get formDataJson => text()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
@@ -622,7 +624,7 @@ class AppDatabase extends _$AppDatabase {
   /// v13: Этап 14 — reminders, holidays, recurring_transactions,
   /// forecast_cache, reminder_drafts + 5 колонок app_settings + сиды РФ.
   @override
-  int get schemaVersion => 23;
+  int get schemaVersion => 24;
 
   Future<void> _createSavingsIndexes() async {
     await customStatement('''
@@ -1111,6 +1113,11 @@ await _createReceiptsIndexes();
         await m.createTable(monthlyBudgets);
         await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS idx_monthly_budgets_unique ON monthly_budgets(user_id, space_id, year, month)');
         await customStatement('CREATE INDEX IF NOT EXISTS idx_monthly_budgets_lookup ON monthly_budgets(space_id, year, month)');
+      }
+      if (from < 24) {
+        // Этап 23.6: связанные копии транзакций.
+        await customStatement('ALTER TABLE transactions ADD COLUMN copy_group_id TEXT');
+        await customStatement('CREATE INDEX IF NOT EXISTS idx_transactions_copy_group ON transactions(copy_group_id)');
       }
         },
         beforeOpen: (details) async {

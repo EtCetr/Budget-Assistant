@@ -13230,6 +13230,17 @@ class $TransactionsTable extends Transactions
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _copyGroupIdMeta = const VerificationMeta(
+    'copyGroupId',
+  );
+  @override
+  late final GeneratedColumn<String> copyGroupId = GeneratedColumn<String>(
+    'copy_group_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _isLargeExpenseMeta = const VerificationMeta(
     'isLargeExpense',
   );
@@ -13307,6 +13318,7 @@ class $TransactionsTable extends Transactions
     isWithdrawal,
     isSplit,
     receiptId,
+    copyGroupId,
     isLargeExpense,
     createdAt,
     updatedAt,
@@ -13538,6 +13550,15 @@ class $TransactionsTable extends Transactions
         receiptId.isAcceptableOrUnknown(data['receipt_id']!, _receiptIdMeta),
       );
     }
+    if (data.containsKey('copy_group_id')) {
+      context.handle(
+        _copyGroupIdMeta,
+        copyGroupId.isAcceptableOrUnknown(
+          data['copy_group_id']!,
+          _copyGroupIdMeta,
+        ),
+      );
+    }
     if (data.containsKey('is_large_expense')) {
       context.handle(
         _isLargeExpenseMeta,
@@ -13688,6 +13709,10 @@ class $TransactionsTable extends Transactions
         DriftSqlType.string,
         data['${effectivePrefix}receipt_id'],
       ),
+      copyGroupId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}copy_group_id'],
+      ),
       isLargeExpense: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_large_expense'],
@@ -13751,6 +13776,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
   final bool isWithdrawal;
   final bool isSplit;
   final String? receiptId;
+  final String? copyGroupId;
   final bool isLargeExpense;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -13784,6 +13810,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
     required this.isWithdrawal,
     required this.isSplit,
     this.receiptId,
+    this.copyGroupId,
     required this.isLargeExpense,
     required this.createdAt,
     required this.updatedAt,
@@ -13858,6 +13885,9 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
     if (!nullToAbsent || receiptId != null) {
       map['receipt_id'] = Variable<String>(receiptId);
     }
+    if (!nullToAbsent || copyGroupId != null) {
+      map['copy_group_id'] = Variable<String>(copyGroupId);
+    }
     map['is_large_expense'] = Variable<bool>(isLargeExpense);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -13929,6 +13959,9 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
       receiptId: receiptId == null && nullToAbsent
           ? const Value.absent()
           : Value(receiptId),
+      copyGroupId: copyGroupId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(copyGroupId),
       isLargeExpense: Value(isLargeExpense),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -13980,6 +14013,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
       isWithdrawal: serializer.fromJson<bool>(json['isWithdrawal']),
       isSplit: serializer.fromJson<bool>(json['isSplit']),
       receiptId: serializer.fromJson<String?>(json['receiptId']),
+      copyGroupId: serializer.fromJson<String?>(json['copyGroupId']),
       isLargeExpense: serializer.fromJson<bool>(json['isLargeExpense']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -14024,6 +14058,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
       'isWithdrawal': serializer.toJson<bool>(isWithdrawal),
       'isSplit': serializer.toJson<bool>(isSplit),
       'receiptId': serializer.toJson<String?>(receiptId),
+      'copyGroupId': serializer.toJson<String?>(copyGroupId),
       'isLargeExpense': serializer.toJson<bool>(isLargeExpense),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -14062,6 +14097,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
     bool? isWithdrawal,
     bool? isSplit,
     Value<String?> receiptId = const Value.absent(),
+    Value<String?> copyGroupId = const Value.absent(),
     bool? isLargeExpense,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -14115,6 +14151,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
     isWithdrawal: isWithdrawal ?? this.isWithdrawal,
     isSplit: isSplit ?? this.isSplit,
     receiptId: receiptId.present ? receiptId.value : this.receiptId,
+    copyGroupId: copyGroupId.present ? copyGroupId.value : this.copyGroupId,
     isLargeExpense: isLargeExpense ?? this.isLargeExpense,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -14186,6 +14223,9 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
           : this.isWithdrawal,
       isSplit: data.isSplit.present ? data.isSplit.value : this.isSplit,
       receiptId: data.receiptId.present ? data.receiptId.value : this.receiptId,
+      copyGroupId: data.copyGroupId.present
+          ? data.copyGroupId.value
+          : this.copyGroupId,
       isLargeExpense: data.isLargeExpense.present
           ? data.isLargeExpense.value
           : this.isLargeExpense,
@@ -14228,6 +14268,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
           ..write('isWithdrawal: $isWithdrawal, ')
           ..write('isSplit: $isSplit, ')
           ..write('receiptId: $receiptId, ')
+          ..write('copyGroupId: $copyGroupId, ')
           ..write('isLargeExpense: $isLargeExpense, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -14266,6 +14307,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
     isWithdrawal,
     isSplit,
     receiptId,
+    copyGroupId,
     isLargeExpense,
     createdAt,
     updatedAt,
@@ -14303,6 +14345,7 @@ class TransactionDb extends DataClass implements Insertable<TransactionDb> {
           other.isWithdrawal == this.isWithdrawal &&
           other.isSplit == this.isSplit &&
           other.receiptId == this.receiptId &&
+          other.copyGroupId == this.copyGroupId &&
           other.isLargeExpense == this.isLargeExpense &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -14338,6 +14381,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
   final Value<bool> isWithdrawal;
   final Value<bool> isSplit;
   final Value<String?> receiptId;
+  final Value<String?> copyGroupId;
   final Value<bool> isLargeExpense;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -14372,6 +14416,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
     this.isWithdrawal = const Value.absent(),
     this.isSplit = const Value.absent(),
     this.receiptId = const Value.absent(),
+    this.copyGroupId = const Value.absent(),
     this.isLargeExpense = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -14407,6 +14452,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
     this.isWithdrawal = const Value.absent(),
     this.isSplit = const Value.absent(),
     this.receiptId = const Value.absent(),
+    this.copyGroupId = const Value.absent(),
     this.isLargeExpense = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -14449,6 +14495,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
     Expression<bool>? isWithdrawal,
     Expression<bool>? isSplit,
     Expression<String>? receiptId,
+    Expression<String>? copyGroupId,
     Expression<bool>? isLargeExpense,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -14488,6 +14535,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
       if (isWithdrawal != null) 'is_withdrawal': isWithdrawal,
       if (isSplit != null) 'is_split': isSplit,
       if (receiptId != null) 'receipt_id': receiptId,
+      if (copyGroupId != null) 'copy_group_id': copyGroupId,
       if (isLargeExpense != null) 'is_large_expense': isLargeExpense,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -14525,6 +14573,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
     Value<bool>? isWithdrawal,
     Value<bool>? isSplit,
     Value<String?>? receiptId,
+    Value<String?>? copyGroupId,
     Value<bool>? isLargeExpense,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -14560,6 +14609,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
       isWithdrawal: isWithdrawal ?? this.isWithdrawal,
       isSplit: isSplit ?? this.isSplit,
       receiptId: receiptId ?? this.receiptId,
+      copyGroupId: copyGroupId ?? this.copyGroupId,
       isLargeExpense: isLargeExpense ?? this.isLargeExpense,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -14661,6 +14711,9 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
     if (receiptId.present) {
       map['receipt_id'] = Variable<String>(receiptId.value);
     }
+    if (copyGroupId.present) {
+      map['copy_group_id'] = Variable<String>(copyGroupId.value);
+    }
     if (isLargeExpense.present) {
       map['is_large_expense'] = Variable<bool>(isLargeExpense.value);
     }
@@ -14712,6 +14765,7 @@ class TransactionsCompanion extends UpdateCompanion<TransactionDb> {
           ..write('isWithdrawal: $isWithdrawal, ')
           ..write('isSplit: $isSplit, ')
           ..write('receiptId: $receiptId, ')
+          ..write('copyGroupId: $copyGroupId, ')
           ..write('isLargeExpense: $isLargeExpense, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -28794,6 +28848,17 @@ class $ReceiptDraftsTable extends ReceiptDrafts
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _copyGroupIdMeta = const VerificationMeta(
+    'copyGroupId',
+  );
+  @override
+  late final GeneratedColumn<String> copyGroupId = GeneratedColumn<String>(
+    'copy_group_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _formDataJsonMeta = const VerificationMeta(
     'formDataJson',
   );
@@ -28834,6 +28899,7 @@ class $ReceiptDraftsTable extends ReceiptDrafts
     id,
     userId,
     receiptId,
+    copyGroupId,
     formDataJson,
     createdAt,
     updatedAt,
@@ -28867,6 +28933,15 @@ class $ReceiptDraftsTable extends ReceiptDrafts
       context.handle(
         _receiptIdMeta,
         receiptId.isAcceptableOrUnknown(data['receipt_id']!, _receiptIdMeta),
+      );
+    }
+    if (data.containsKey('copy_group_id')) {
+      context.handle(
+        _copyGroupIdMeta,
+        copyGroupId.isAcceptableOrUnknown(
+          data['copy_group_id']!,
+          _copyGroupIdMeta,
+        ),
       );
     }
     if (data.containsKey('form_data_json')) {
@@ -28913,6 +28988,10 @@ class $ReceiptDraftsTable extends ReceiptDrafts
         DriftSqlType.string,
         data['${effectivePrefix}receipt_id'],
       ),
+      copyGroupId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}copy_group_id'],
+      ),
       formDataJson: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}form_data_json'],
@@ -28938,6 +29017,7 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
   final String id;
   final String userId;
   final String? receiptId;
+  final String? copyGroupId;
   final String formDataJson;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -28945,6 +29025,7 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
     required this.id,
     required this.userId,
     this.receiptId,
+    this.copyGroupId,
     required this.formDataJson,
     required this.createdAt,
     required this.updatedAt,
@@ -28956,6 +29037,9 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
     map['user_id'] = Variable<String>(userId);
     if (!nullToAbsent || receiptId != null) {
       map['receipt_id'] = Variable<String>(receiptId);
+    }
+    if (!nullToAbsent || copyGroupId != null) {
+      map['copy_group_id'] = Variable<String>(copyGroupId);
     }
     map['form_data_json'] = Variable<String>(formDataJson);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -28970,6 +29054,9 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
       receiptId: receiptId == null && nullToAbsent
           ? const Value.absent()
           : Value(receiptId),
+      copyGroupId: copyGroupId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(copyGroupId),
       formDataJson: Value(formDataJson),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -28985,6 +29072,7 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
       id: serializer.fromJson<String>(json['id']),
       userId: serializer.fromJson<String>(json['userId']),
       receiptId: serializer.fromJson<String?>(json['receiptId']),
+      copyGroupId: serializer.fromJson<String?>(json['copyGroupId']),
       formDataJson: serializer.fromJson<String>(json['formDataJson']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -28997,6 +29085,7 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
       'id': serializer.toJson<String>(id),
       'userId': serializer.toJson<String>(userId),
       'receiptId': serializer.toJson<String?>(receiptId),
+      'copyGroupId': serializer.toJson<String?>(copyGroupId),
       'formDataJson': serializer.toJson<String>(formDataJson),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -29007,6 +29096,7 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
     String? id,
     String? userId,
     Value<String?> receiptId = const Value.absent(),
+    Value<String?> copyGroupId = const Value.absent(),
     String? formDataJson,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -29014,6 +29104,7 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
     id: id ?? this.id,
     userId: userId ?? this.userId,
     receiptId: receiptId.present ? receiptId.value : this.receiptId,
+    copyGroupId: copyGroupId.present ? copyGroupId.value : this.copyGroupId,
     formDataJson: formDataJson ?? this.formDataJson,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -29023,6 +29114,9 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
       id: data.id.present ? data.id.value : this.id,
       userId: data.userId.present ? data.userId.value : this.userId,
       receiptId: data.receiptId.present ? data.receiptId.value : this.receiptId,
+      copyGroupId: data.copyGroupId.present
+          ? data.copyGroupId.value
+          : this.copyGroupId,
       formDataJson: data.formDataJson.present
           ? data.formDataJson.value
           : this.formDataJson,
@@ -29037,6 +29131,7 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
           ..write('id: $id, ')
           ..write('userId: $userId, ')
           ..write('receiptId: $receiptId, ')
+          ..write('copyGroupId: $copyGroupId, ')
           ..write('formDataJson: $formDataJson, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -29045,8 +29140,15 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, userId, receiptId, formDataJson, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    receiptId,
+    copyGroupId,
+    formDataJson,
+    createdAt,
+    updatedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -29054,6 +29156,7 @@ class ReceiptDraftDb extends DataClass implements Insertable<ReceiptDraftDb> {
           other.id == this.id &&
           other.userId == this.userId &&
           other.receiptId == this.receiptId &&
+          other.copyGroupId == this.copyGroupId &&
           other.formDataJson == this.formDataJson &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -29063,6 +29166,7 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
   final Value<String> id;
   final Value<String> userId;
   final Value<String?> receiptId;
+  final Value<String?> copyGroupId;
   final Value<String> formDataJson;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -29071,6 +29175,7 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
     this.id = const Value.absent(),
     this.userId = const Value.absent(),
     this.receiptId = const Value.absent(),
+    this.copyGroupId = const Value.absent(),
     this.formDataJson = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -29080,6 +29185,7 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
     required String id,
     required String userId,
     this.receiptId = const Value.absent(),
+    this.copyGroupId = const Value.absent(),
     required String formDataJson,
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -29091,6 +29197,7 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
     Expression<String>? id,
     Expression<String>? userId,
     Expression<String>? receiptId,
+    Expression<String>? copyGroupId,
     Expression<String>? formDataJson,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -29100,6 +29207,7 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
       if (id != null) 'id': id,
       if (userId != null) 'user_id': userId,
       if (receiptId != null) 'receipt_id': receiptId,
+      if (copyGroupId != null) 'copy_group_id': copyGroupId,
       if (formDataJson != null) 'form_data_json': formDataJson,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -29111,6 +29219,7 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
     Value<String>? id,
     Value<String>? userId,
     Value<String?>? receiptId,
+    Value<String?>? copyGroupId,
     Value<String>? formDataJson,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -29120,6 +29229,7 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
       id: id ?? this.id,
       userId: userId ?? this.userId,
       receiptId: receiptId ?? this.receiptId,
+      copyGroupId: copyGroupId ?? this.copyGroupId,
       formDataJson: formDataJson ?? this.formDataJson,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -29138,6 +29248,9 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
     }
     if (receiptId.present) {
       map['receipt_id'] = Variable<String>(receiptId.value);
+    }
+    if (copyGroupId.present) {
+      map['copy_group_id'] = Variable<String>(copyGroupId.value);
     }
     if (formDataJson.present) {
       map['form_data_json'] = Variable<String>(formDataJson.value);
@@ -29160,6 +29273,7 @@ class ReceiptDraftsCompanion extends UpdateCompanion<ReceiptDraftDb> {
           ..write('id: $id, ')
           ..write('userId: $userId, ')
           ..write('receiptId: $receiptId, ')
+          ..write('copyGroupId: $copyGroupId, ')
           ..write('formDataJson: $formDataJson, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -45650,6 +45764,7 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       Value<bool> isWithdrawal,
       Value<bool> isSplit,
       Value<String?> receiptId,
+      Value<String?> copyGroupId,
       Value<bool> isLargeExpense,
       required DateTime createdAt,
       required DateTime updatedAt,
@@ -45686,6 +45801,7 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<bool> isWithdrawal,
       Value<bool> isSplit,
       Value<String?> receiptId,
+      Value<String?> copyGroupId,
       Value<bool> isLargeExpense,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -45994,6 +46110,11 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<String> get receiptId => $composableBuilder(
     column: $table.receiptId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get copyGroupId => $composableBuilder(
+    column: $table.copyGroupId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -46376,6 +46497,11 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get copyGroupId => $composableBuilder(
+    column: $table.copyGroupId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isLargeExpense => $composableBuilder(
     column: $table.isLargeExpense,
     builder: (column) => ColumnOrderings(column),
@@ -46640,6 +46766,11 @@ class $$TransactionsTableAnnotationComposer
 
   GeneratedColumn<String> get receiptId =>
       $composableBuilder(column: $table.receiptId, builder: (column) => column);
+
+  GeneratedColumn<String> get copyGroupId => $composableBuilder(
+    column: $table.copyGroupId,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<bool> get isLargeExpense => $composableBuilder(
     column: $table.isLargeExpense,
@@ -46965,6 +47096,7 @@ class $$TransactionsTableTableManager
                 Value<bool> isWithdrawal = const Value.absent(),
                 Value<bool> isSplit = const Value.absent(),
                 Value<String?> receiptId = const Value.absent(),
+                Value<String?> copyGroupId = const Value.absent(),
                 Value<bool> isLargeExpense = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -46999,6 +47131,7 @@ class $$TransactionsTableTableManager
                 isWithdrawal: isWithdrawal,
                 isSplit: isSplit,
                 receiptId: receiptId,
+                copyGroupId: copyGroupId,
                 isLargeExpense: isLargeExpense,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -47035,6 +47168,7 @@ class $$TransactionsTableTableManager
                 Value<bool> isWithdrawal = const Value.absent(),
                 Value<bool> isSplit = const Value.absent(),
                 Value<String?> receiptId = const Value.absent(),
+                Value<String?> copyGroupId = const Value.absent(),
                 Value<bool> isLargeExpense = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
@@ -47069,6 +47203,7 @@ class $$TransactionsTableTableManager
                 isWithdrawal: isWithdrawal,
                 isSplit: isSplit,
                 receiptId: receiptId,
+                copyGroupId: copyGroupId,
                 isLargeExpense: isLargeExpense,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -58677,6 +58812,7 @@ typedef $$ReceiptDraftsTableCreateCompanionBuilder =
       required String id,
       required String userId,
       Value<String?> receiptId,
+      Value<String?> copyGroupId,
       required String formDataJson,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -58687,6 +58823,7 @@ typedef $$ReceiptDraftsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> userId,
       Value<String?> receiptId,
+      Value<String?> copyGroupId,
       Value<String> formDataJson,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -58735,6 +58872,11 @@ class $$ReceiptDraftsTableFilterComposer
 
   ColumnFilters<String> get receiptId => $composableBuilder(
     column: $table.receiptId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get copyGroupId => $composableBuilder(
+    column: $table.copyGroupId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -58796,6 +58938,11 @@ class $$ReceiptDraftsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get copyGroupId => $composableBuilder(
+    column: $table.copyGroupId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get formDataJson => $composableBuilder(
     column: $table.formDataJson,
     builder: (column) => ColumnOrderings(column),
@@ -58849,6 +58996,11 @@ class $$ReceiptDraftsTableAnnotationComposer
 
   GeneratedColumn<String> get receiptId =>
       $composableBuilder(column: $table.receiptId, builder: (column) => column);
+
+  GeneratedColumn<String> get copyGroupId => $composableBuilder(
+    column: $table.copyGroupId,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get formDataJson => $composableBuilder(
     column: $table.formDataJson,
@@ -58916,6 +59068,7 @@ class $$ReceiptDraftsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> userId = const Value.absent(),
                 Value<String?> receiptId = const Value.absent(),
+                Value<String?> copyGroupId = const Value.absent(),
                 Value<String> formDataJson = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -58924,6 +59077,7 @@ class $$ReceiptDraftsTableTableManager
                 id: id,
                 userId: userId,
                 receiptId: receiptId,
+                copyGroupId: copyGroupId,
                 formDataJson: formDataJson,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -58934,6 +59088,7 @@ class $$ReceiptDraftsTableTableManager
                 required String id,
                 required String userId,
                 Value<String?> receiptId = const Value.absent(),
+                Value<String?> copyGroupId = const Value.absent(),
                 required String formDataJson,
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -58942,6 +59097,7 @@ class $$ReceiptDraftsTableTableManager
                 id: id,
                 userId: userId,
                 receiptId: receiptId,
+                copyGroupId: copyGroupId,
                 formDataJson: formDataJson,
                 createdAt: createdAt,
                 updatedAt: updatedAt,

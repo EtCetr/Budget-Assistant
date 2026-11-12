@@ -17,13 +17,15 @@ import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/features/cashback/presentation/providers/cashback_providers.dart';
 import 'package:budget_assistant/features/reminders/presentation/providers/reminders_providers.dart';
 import 'package:budget_assistant/features/reminders/presentation/providers/reminders_repository_providers.dart';
-import '../../../../core/providers/security_providers.dart';
 import '../../domain/entities/lookup_item.dart';
 import '../../domain/models/secrecy_config.dart';
 import '../../domain/models/transaction_draft.dart';
 import '../labels/transactions_log_labels.dart';
 import '../providers/create_transaction_providers.dart';
 import '../providers/transactions_log_providers.dart';
+import '../providers/transaction_scope_providers.dart';
+import 'package:budget_assistant/features/spaces/domain/entities/user_space.dart';
+import 'package:budget_assistant/features/spaces/presentation/providers/space_providers.dart';
 
 /// Экран создания транзакции.
 ///
@@ -57,6 +59,7 @@ class _CreateTransactionScreenState
   final _merchantController = TextEditingController();
   final _commentController = TextEditingController();
   bool _isSaving = false;
+  final Set<String> _selectedSpaces = <String>{};
   String? _amountError;
   String? _selectedCurrency;
   String? _previewText;
@@ -210,7 +213,9 @@ class _CreateTransactionScreenState
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.spacing16),
       children: [
-        _buildAmountField(_selectedCurrency ?? accountCurrency),
+        _buildScopeChips(),
+            const SizedBox(height: AppSpacing.spacing16),
+            _buildAmountField(_selectedCurrency ?? accountCurrency),
         const SizedBox(height: AppSpacing.spacing16),
         _buildAccountDropdown(accounts),
         const SizedBox(height: AppSpacing.spacing16),
@@ -230,6 +235,55 @@ class _CreateTransactionScreenState
         const SizedBox(height: AppSpacing.spacing16),
         _buildCommentField(),
         const SizedBox(height: AppSpacing.spacing32),
+      ],
+    );
+  }
+
+  Widget _buildScopeChips() {
+    final spaces = ref.watch(userSpacesProvider).value ?? const <UserSpace>[];
+    if (spaces.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Куда записать',
+            style: TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            const FilterChip(
+              label: Text('Личное'),
+              selected: true,
+              onSelected: null,
+            ),
+            for (final s in spaces)
+              FilterChip(
+                label: Text(s.name),
+                selected: _selectedSpaces.contains(s.id),
+                onSelected: (v) => setState(() {
+                  if (v) {
+                    _selectedSpaces.add(s.id);
+                  } else {
+                    _selectedSpaces.remove(s.id);
+                  }
+                }),
+              ),
+            ActionChip(
+              label: const Text('Выбрать все'),
+              onPressed: () => setState(() {
+                _selectedSpaces
+                  ..clear()
+                  ..addAll(spaces.map((e) => e.id));
+              }),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Личное — всегда. Семьи — только по вашей отметке.',
+          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        ),
       ],
     );
   }
@@ -486,7 +540,7 @@ class _CreateTransactionScreenState
     try {
       final usecase = ref.read(createTransactionUseCaseProvider);
       final userId = ref.read(currentUserIdForCreateProvider);
-      final spaceId = ref.read(currentSpaceIdProvider);
+      const String? spaceId = null; // 23.6: личное всегда автоматически
       final currencyMap =
           await ref.read(accountCurrencyMapProvider.future);
       final accountCurrency = currencyMap[_draft.accountId] ?? 'RUB';
@@ -529,6 +583,17 @@ class _CreateTransactionScreenState
       if (!mounted) return;
       switch (result) {
         case Success(:final value):
+            if (_selectedSpaces.isNotEmpty) {
+              try {
+                await ref.read(addTransactionCopiesUseCaseProvider)(
+                  transactionId: value.id,
+                  spaceIds: _selectedSpaces.toList(),
+                  userId: userId,
+                );
+              } catch (e, st) {
+                AppLogger.e('Create copies failed', e, st);
+              }
+            }
           HapticFeedback.mediumImpact();
           ref.read(transactionsTriggerProvider.notifier).bump();
           ref.invalidate(transactionsLogProvider);
