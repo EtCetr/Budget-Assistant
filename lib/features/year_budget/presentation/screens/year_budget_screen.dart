@@ -1,12 +1,14 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
-
+import 'package:budget_assistant/core/logger.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/core/widgets/async_value_wrapper.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
@@ -16,8 +18,11 @@ import '../../domain/models/year_budget_models.dart';
 import '../providers/year_budget_providers.dart';
 import '../widgets/cashflow_chart.dart';
 import '../widgets/matrix_table.dart';
+import '../widgets/structure_pie.dart';
 
 /// Годовой отчёт — реплика Excel-модели владельца (Этап 23.5).
+/// Верхний уровень: «Анализ 1» (лимиты/траты/итоги) и «Анализ 2» (движение,
+/// структуры, графики) — как листы файла владельца.
 class YearBudgetScreen extends ConsumerWidget {
   const YearBudgetScreen({super.key});
 
@@ -56,8 +61,50 @@ class YearBudgetScreen extends ConsumerWidget {
         year: year,
         spaceId: scope,
       );
-      await SharePlus.instance.share(ShareParams(files: [XFile(path)], subject: 'Годовой отчёт $year'));
-    } catch (e) {
+      if (!context.mounted) return;
+      final choice = await showDialog<String>(
+        context: context,
+        builder: (d) => AlertDialog(
+          backgroundColor: AppColors.surfaceCard,
+          title: const Text('Отчёт готов'),
+          content: const Text('Куда сохранить файл отчёта?'),
+          actions: [
+            FilledButton.icon(
+              icon: const Icon(Icons.save_outlined),
+              label: const Text('Сохранить'),
+              onPressed: () => Navigator.of(d).pop('save'),
+            ),
+            FilledButton.icon(
+              icon: const Icon(Icons.share),
+              label: const Text('Поделиться'),
+              onPressed: () => Navigator.of(d).pop('share'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(d).pop(),
+              child: const Text('Отмена'),
+            ),
+          ],
+        ),
+      );
+      if (choice == 'save') {
+        final file = File(path);
+        final bytes = await file.readAsBytes();
+        const channel = MethodChannel('budget_assistant/clock');
+        final uri = await channel.invokeMethod<String>('saveToDownloads', {
+          'fileName': file.uri.pathSegments.last,
+          'bytes': bytes,
+          'mime':
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        messenger.showSnackBar(SnackBar(
+            content: Text('Сохранено: ${uri ?? 'Downloads/BudgetAssistant'}')));
+      } else if (choice == 'share') {
+        await SharePlus.instance.share(
+          ShareParams(files: [XFile(path)], subject: 'Годовой отчёт $year'),
+        );
+      }
+    } catch (e, st) {
+      AppLogger.e('Year budget export failed', e, st);
       messenger.showSnackBar(SnackBar(content: Text('Ошибка экспорта: $e')));
     }
   }
@@ -76,6 +123,11 @@ class YearBudgetScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Годовой отчёт'),
         actions: [
+          IconButton(
+            tooltip: 'Месячная статистика',
+            icon: const Icon(Icons.calendar_month_outlined),
+            onPressed: () => _openMonth(context, ref, DateTime.now().month),
+          ),
           if (privacy != BalanceVisibilityMode.hidden)
             IconButton(
               tooltip: 'Экспорт XLSX',
@@ -103,9 +155,8 @@ class YearBudgetScreen extends ConsumerWidget {
                     ChoiceChip(
                       label: Text(s.name),
                       selected: scope == s.id,
-                      onSelected: (_) => ref
-                          .read(yearBudgetScopeProvider.notifier)
-                          .set(s.id),
+                      onSelected: (_) =>
+                          ref.read(yearBudgetScopeProvider.notifier).set(s.id),
                     ),
                   ],
                 ],
@@ -113,7 +164,7 @@ class YearBudgetScreen extends ConsumerWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
             child: DropdownButtonFormField<int>(
               initialValue: year,
               decoration: const InputDecoration(
@@ -131,6 +182,13 @@ class YearBudgetScreen extends ConsumerWidget {
               },
             ),
           ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
+            child: Text(
+              'Нажмите на название месяца в шапке таблицы — откроется месячная статистика.',
+              style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+            ),
+          ),
           Expanded(
             child: AsyncValueWrapper<YearBudgetData>(
               value: data,
@@ -143,25 +201,20 @@ class YearBudgetScreen extends ConsumerWidget {
               emptyTitle: 'Нет данных за выбранный год',
               emptySubtitle: 'Создайте операции или выберите другой год',
               dataBuilder: (ctx, d) => DefaultTabController(
-                length: 4,
+                length: 2,
                 child: Column(
                   children: [
                     const TabBar(
-                      isScrollable: true,
                       tabs: [
-                        Tab(text: 'Лимиты'),
-                        Tab(text: 'Траты'),
-                        Tab(text: 'Итоги'),
-                        Tab(text: 'Движение'),
+                        Tab(text: 'Анализ 1'),
+                        Tab(text: 'Анализ 2'),
                       ],
                     ),
                     Expanded(
                       child: TabBarView(
                         children: [
-                          _limitsTab(ref, d),
-                          _expenseTab(ref, d),
-                          _summaryTab(d),
-                          _motionTab(ref, d),
+                          _analysis1(context, ref, d),
+                          _analysis2(context, ref, d),
                         ],
                       ),
                     ),
@@ -175,111 +228,41 @@ class YearBudgetScreen extends ConsumerWidget {
     );
   }
 
-  Widget _limitsTab(WidgetRef ref, YearBudgetData d) {
-    return MatrixTable(
-      headerLabel: 'Категория',
-      monthLabels: _monthShort,
-      trailingHeaders: const ['Сумма', 'Средняя'],
-      onMonthTap: (m) => _openMonth(ref.context, ref, m),
-      rows: [
-        for (final r in d.limitRows)
-          MatrixRowVm(
-            label: r.name,
-            cells: [for (final v in r.months) _fmt(v)],
-            trailing: [_fmt(r.sumKopecks), _fmt(r.avgKopecks)],
+  /// Анализ 1: лимиты, траты, итоги (таблицы категория × месяц).
+  Widget _analysis1(BuildContext context, WidgetRef ref, YearBudgetData d) {
+    return DefaultTabController(
+      length: 3,
+      child: Column(
+        children: [
+          const TabBar(
+            isScrollable: true,
+            tabs: [
+              Tab(text: 'Лимиты'),
+              Tab(text: 'Траты'),
+              Tab(text: 'Итоги'),
+            ],
           ),
-        MatrixRowVm(
-          label: 'Сумма лимита',
-          isTotal: true,
-          cells: [
-            for (var m = 1; m <= 12; m++)
-              _fmt(_monthSum(d.limitRows, m)),
-          ],
-          trailing: [_fmt(d.totalLimitKopecks), ''],
-        ),
-      ],
-    );
-  }
-
-  Widget _expenseTab(WidgetRef ref, YearBudgetData d) {
-    return MatrixTable(
-      headerLabel: 'Категория',
-      monthLabels: _monthShort,
-      trailingHeaders: const ['Сумма', 'Средняя', '%'],
-      onMonthTap: (m) => _openMonth(ref.context, ref, m),
-      rows: [
-        for (final r in d.expenseRows)
-          MatrixRowVm(
-            label: r.name,
-            cells: [for (final v in r.months) _fmt(v)],
-            trailing: [_fmt(r.sumKopecks), _fmt(r.avgKopecks), _pct(r.percentBps)],
-          ),
-        MatrixRowVm(
-          label: 'Сумма трат',
-          isTotal: true,
-          cells: [for (var m = 1; m <= 12; m++) _fmt(_monthSum(d.expenseRows, m))],
-          trailing: [_fmt(d.totalExpenseKopecks), '', '100%'],
-        ),
-      ],
-    );
-  }
-
-  Widget _summaryTab(YearBudgetData d) {
-    final rows = <Widget>[];
-    for (var i = 0; i < d.expenseRows.length; i++) {
-      final e = d.expenseRows[i];
-      final l = i < d.limitRows.length ? d.limitRows[i].sumKopecks : 0;
-      final diff = l - e.sumKopecks;
-      rows.add(ListTile(
-        dense: true,
-        title: Text(e.name, style: const TextStyle(fontSize: 14)),
-        subtitle: Text(
-          'Лимит ${_fmt(l)} · Траты ${_fmt(e.sumKopecks)}',
-          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-        ),
-        trailing: Text(
-          _fmt(diff),
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: diff >= 0 ? AppColors.colorIncome : AppColors.colorExpense,
-          ),
-        ),
-      ));
-    }
-    final totalDiff = d.totalLimitKopecks - d.totalExpenseKopecks;
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.spacing16),
-      children: [
-        ...rows,
-        const Divider(),
-        ListTile(
-          dense: true,
-          title: const Text('Общая',
-              style: TextStyle(fontWeight: FontWeight.w700)),
-          subtitle: Text(
-            'Лимит ${_fmt(d.totalLimitKopecks)} · Траты ${_fmt(d.totalExpenseKopecks)}',
-            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-          ),
-          trailing: Text(
-            _fmt(totalDiff),
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              color: totalDiff >= 0
-                  ? AppColors.colorIncome
-                  : AppColors.colorExpense,
+          Expanded(
+            child: TabBarView(
+              children: [
+                _limitsTab(context, ref, d),
+                _expenseTab(context, ref, d),
+                _summaryTab(d),
+              ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _motionTab(WidgetRef ref, YearBudgetData d) {
+  /// Анализ 2: движение, графики и структуры (как лист файла владельца).
+  Widget _analysis2(BuildContext context, WidgetRef ref, YearBudgetData d) {
+    final year = ref.watch(yearBudgetYearProvider);
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.spacing16),
       children: [
-        const Text('Доходы / Расходы / Профицит',
+        const Text('Доходы-расходы',
             style: TextStyle(fontWeight: FontWeight.w700)),
         const SizedBox(height: AppSpacing.spacing8),
         CashflowChart(months: d.cashflow),
@@ -296,6 +279,16 @@ class YearBudgetScreen extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: AppSpacing.spacing16),
+        const Text('Профицит (доходы − расходы)',
+            style: TextStyle(fontWeight: FontWeight.w700)),
+        const SizedBox(height: AppSpacing.spacing8),
+        SurplusBarChart(months: d.cashflow),
+        const SizedBox(height: AppSpacing.spacing16),
+        const Text('Сумма трат',
+            style: TextStyle(fontWeight: FontWeight.w700)),
+        const SizedBox(height: AppSpacing.spacing8),
+        ExpenseBarChart(months: d.cashflow),
+        const SizedBox(height: AppSpacing.spacing16),
         for (final c in d.cashflow)
           ListTile(
             dense: true,
@@ -303,29 +296,61 @@ class YearBudgetScreen extends ConsumerWidget {
                 style: const TextStyle(fontSize: 14)),
             subtitle: Text(
               'Доходы ${_fmt(c.incomeKopecks)} · Расходы ${_fmt(c.expenseKopecks)}',
-              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style: const TextStyle(
+                  fontSize: 12, color: AppColors.textSecondary),
             ),
-            trailing: Text(
-              _fmt(c.surplusKopecks),
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: c.surplusKopecks >= 0
-                    ? AppColors.colorIncome
-                    : AppColors.colorExpense,
-              ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _fmt(c.surplusKopecks),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: c.surplusKopecks >= 0
+                        ? AppColors.colorIncome
+                        : AppColors.colorExpense,
+                  ),
+                ),
+                const Icon(Icons.chevron_right, size: 18),
+              ],
             ),
-            onTap: () => _openMonth(ref.context, ref, c.month),
+            onTap: () => _openMonth(context, ref, c.month),
           ),
         const SizedBox(height: AppSpacing.spacing16),
-        const Text('Структура доходов',
+        StructurePie(
+          title: 'Структура доходов $year',
+          slices: [
+            for (final r in d.incomeRows)
+              PieSlice(r.name, r.sumKopecks, r.colorHex),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.spacing16),
+        StructurePie(
+          title: 'Структура расходов $year',
+          slices: [
+            for (final r in d.expenseRows)
+              PieSlice(r.name, r.sumKopecks, r.colorHex),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.spacing16),
+        StructurePie(
+          title: 'Средние лимиты по категориям',
+          slices: [
+            for (final r in d.limitRows)
+              PieSlice(r.name, r.avgKopecks, r.colorHex),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.spacing16),
+        const Text('Структура доходов (таблица)',
             style: TextStyle(fontWeight: FontWeight.w700)),
         SizedBox(
-          height: 40 * (d.incomeRows.length + 2).toDouble(),
+          height: 44 * (d.incomeRows.length + 2).toDouble(),
           child: MatrixTable(
             headerLabel: 'Категория',
             monthLabels: _monthShort,
             trailingHeaders: const ['Сумма', '%'],
+            onMonthTap: (m) => _openMonth(context, ref, m),
             rows: [
               for (final r in d.incomeRows)
                 MatrixRowVm(
@@ -337,14 +362,15 @@ class YearBudgetScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.spacing16),
-        const Text('Структура расходов',
+        const Text('Структура расходов (таблица)',
             style: TextStyle(fontWeight: FontWeight.w700)),
         SizedBox(
-          height: 40 * (d.expenseRows.length + 2).toDouble(),
+          height: 44 * (d.expenseRows.length + 2).toDouble(),
           child: MatrixTable(
             headerLabel: 'Категория',
             monthLabels: _monthShort,
             trailingHeaders: const ['Сумма', '%'],
+            onMonthTap: (m) => _openMonth(context, ref, m),
             rows: [
               for (final r in d.expenseRows)
                 MatrixRowVm(
@@ -353,6 +379,107 @@ class YearBudgetScreen extends ConsumerWidget {
                   trailing: [_fmt(r.sumKopecks), _pct(r.percentBps)],
                 ),
             ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _limitsTab(BuildContext context, WidgetRef ref, YearBudgetData d) {
+    return MatrixTable(
+      headerLabel: 'Категория',
+      monthLabels: _monthShort,
+      trailingHeaders: const ['Сумма', 'Средняя'],
+      onMonthTap: (m) => _openMonth(context, ref, m),
+      rows: [
+        for (final r in d.limitRows)
+          MatrixRowVm(
+            label: r.name,
+            cells: [for (final v in r.months) _fmt(v)],
+            trailing: [_fmt(r.sumKopecks), _fmt(r.avgKopecks)],
+          ),
+        MatrixRowVm(
+          label: 'Сумма лимита',
+          isTotal: true,
+          cells: [for (var m = 1; m <= 12; m++) _fmt(_monthSum(d.limitRows, m))],
+          trailing: [_fmt(d.totalLimitKopecks), ''],
+        ),
+      ],
+    );
+  }
+
+  Widget _expenseTab(BuildContext context, WidgetRef ref, YearBudgetData d) {
+    return MatrixTable(
+      headerLabel: 'Категория',
+      monthLabels: _monthShort,
+      trailingHeaders: const ['Сумма', 'Средняя', '%'],
+      onMonthTap: (m) => _openMonth(context, ref, m),
+      rows: [
+        for (final r in d.expenseRows)
+          MatrixRowVm(
+            label: r.name,
+            cells: [for (final v in r.months) _fmt(v)],
+            trailing: [
+              _fmt(r.sumKopecks),
+              _fmt(r.avgKopecks),
+              _pct(r.percentBps),
+            ],
+          ),
+        MatrixRowVm(
+          label: 'Сумма трат',
+          isTotal: true,
+          cells: [
+            for (var m = 1; m <= 12; m++) _fmt(_monthSum(d.expenseRows, m)),
+          ],
+          trailing: [_fmt(d.totalExpenseKopecks), '', '100%'],
+        ),
+      ],
+    );
+  }
+
+  Widget _summaryTab(YearBudgetData d) {
+    final limitById = {for (final r in d.limitRows) r.categoryId: r.sumKopecks};
+    return ListView(
+      padding: const EdgeInsets.all(AppSpacing.spacing16),
+      children: [
+        for (final e in d.expenseRows)
+          ListTile(
+            dense: true,
+            title: Text(e.name, style: const TextStyle(fontSize: 14)),
+            subtitle: Text(
+              'Лимит ${_fmt(limitById[e.categoryId] ?? 0)} · Траты ${_fmt(e.sumKopecks)}',
+              style: const TextStyle(
+                  fontSize: 12, color: AppColors.textSecondary),
+            ),
+            trailing: Text(
+              _fmt((limitById[e.categoryId] ?? 0) - e.sumKopecks),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: (limitById[e.categoryId] ?? 0) - e.sumKopecks >= 0
+                    ? AppColors.colorIncome
+                    : AppColors.colorExpense,
+              ),
+            ),
+          ),
+        const Divider(),
+        ListTile(
+          dense: true,
+          title: const Text('Общая',
+              style: TextStyle(fontWeight: FontWeight.w700)),
+          subtitle: Text(
+            'Лимит ${_fmt(d.totalLimitKopecks)} · Траты ${_fmt(d.totalExpenseKopecks)}',
+            style: const TextStyle(
+                fontSize: 12, color: AppColors.textSecondary),
+          ),
+          trailing: Text(
+            _fmt(d.totalLimitKopecks - d.totalExpenseKopecks),
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: d.totalLimitKopecks - d.totalExpenseKopecks >= 0
+                  ? AppColors.colorIncome
+                  : AppColors.colorExpense,
+            ),
           ),
         ),
       ],

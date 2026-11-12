@@ -1,6 +1,5 @@
 import '../models/year_budget_models.dart';
 
-/// Контракт годового отчёта (Этап 23.5).
 abstract class YearBudgetRepository {
   Future<List<YearCatMonthSum>> expenseMatrix({
     required String userId,
@@ -16,6 +15,7 @@ abstract class YearBudgetRepository {
     required String userId,
     required String? spaceId,
   });
+  Future<List<CategoryInfo>> allCategories({required String userId});
   Future<Map<String, Map<int, int>>> limitsYear({
     required String userId,
     required String? spaceId,

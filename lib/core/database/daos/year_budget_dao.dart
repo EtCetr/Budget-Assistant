@@ -2,7 +2,6 @@ import 'package:drift/drift.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 part 'year_budget_dao.g.dart';
 
-/// Строка агрегата «категория × месяц» (внутренняя для слоя данных).
 class CatMonthSum {
   const CatMonthSum(this.categoryId, this.month, this.total);
   final String categoryId;
@@ -10,8 +9,15 @@ class CatMonthSum {
   final int total;
 }
 
-/// DAO годовых матриц (Этап 23.5). Не зарегистрирован в daos: —
-/// создаётся конструктором YearBudgetDao(db) (правило R21-4).
+typedef CategoryRow = ({
+  String id,
+  String name,
+  String type,
+  String? colorHex,
+  String? iconEmoji,
+});
+
+/// DAO годовых матриц (Этап 23.5). Создаётся конструктором YearBudgetDao(db).
 @DriftAccessor(tables: [Transactions, TransactionSplits, BudgetLimits, Categories])
 class YearBudgetDao extends DatabaseAccessor<AppDatabase>
     with _$YearBudgetDaoMixin {
@@ -30,8 +36,6 @@ class YearBudgetDao extends DatabaseAccessor<AppDatabase>
       ? [Variable.withString(userId)]
       : [Variable.withString(spaceId)];
 
-  /// Траты: сплит-родители исключены (позиции считаем отдельно),
-  /// крупные (is_large_expense) — в синтетическую '__large__' (D23.5-2).
   Future<List<CatMonthSum>> expenseMatrix({
     required String userId,
     required String? spaceId,
@@ -90,8 +94,6 @@ class YearBudgetDao extends DatabaseAccessor<AppDatabase>
         .toList();
   }
 
-  /// Лимиты месяца. Возвращаем record-ы, чтобы не зависеть от имени
-  /// сгенерированного data-класса таблицы.
   Future<List<({String categoryId, int month, int limitAmount})>> limitsForMonth({
     required String userId,
     required String? spaceId,
@@ -116,8 +118,7 @@ class YearBudgetDao extends DatabaseAccessor<AppDatabase>
         .toList();
   }
 
-  Future<List<({String id, String name, String type, String? colorHex, String? iconEmoji})>>
-      scopeCategories({
+  Future<List<CategoryRow>> scopeCategories({
     required String userId,
     required String? spaceId,
   }) async {
@@ -130,16 +131,24 @@ class YearBudgetDao extends DatabaseAccessor<AppDatabase>
             (c) => OrderingTerm.asc(c.name),
           ]))
         .get();
-    return rows
-        .map((c) => (
-              id: c.id,
-              name: c.name,
-              type: c.type,
-              colorHex: c.colorHex,
-              iconEmoji: c.iconEmoji,
-            ))
-        .toList();
+    return rows.map(_mapCat).toList();
   }
+
+  /// Все видимые категории — для резолва имён категорий из чужого скоупа.
+  Future<List<CategoryRow>> allCategories({required String userId}) async {
+    final rows = await (select(categories)
+          ..where((c) => c.userId.equals(userId) | c.spaceId.isNotNull()))
+        .get();
+    return rows.map(_mapCat).toList();
+  }
+
+  CategoryRow _mapCat(Category c) => (
+        id: c.id,
+        name: c.name,
+        type: c.type,
+        colorHex: c.colorHex,
+        iconEmoji: c.iconEmoji,
+      );
 
   Future<List<int>> availableYears({
     required String userId,
@@ -153,7 +162,6 @@ class YearBudgetDao extends DatabaseAccessor<AppDatabase>
     return rows.map((r) => r.read<int>('y')).toList();
   }
 
-  /// Операции месяца + позиции сплитов (ispos=1).
   Future<List<QueryRow>> monthTransactions({
     required String userId,
     required String? spaceId,

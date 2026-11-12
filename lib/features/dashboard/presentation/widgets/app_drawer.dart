@@ -52,6 +52,7 @@ class AppDrawer extends StatelessWidget {
             _item(context, '/categories', Icons.category, DashboardStrings.navCategories),
             _item(context, '/budget', Icons.pie_chart, DashboardStrings.navBudget),
             _item(context, '/year-budget', Icons.table_chart_outlined, 'Годовой отчёт'),
+            _item(context, '/month-stats', Icons.calendar_month_outlined, 'Месячная статистика'),
             _item(context, '/cashback', Icons.loyalty, DashboardStrings.navCashback),
             _item(context, '/savings-goals', Icons.savings, DashboardStrings.navSavingsGoals),
             _item(context, '/debts', Icons.handshake_outlined, DebtsStrings.screenTitle),

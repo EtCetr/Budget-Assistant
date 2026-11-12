@@ -550,7 +550,7 @@ class ReceiptDrafts extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text().references(Users, #id)();
   TextColumn get receiptId => text().nullable()();
-  TextColumn get copyGroupId => text().nullable()();
+  
   TextColumn get formDataJson => text()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();

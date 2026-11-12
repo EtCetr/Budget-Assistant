@@ -23,9 +23,8 @@ class YearBudgetRepositoryImpl implements YearBudgetRepository {
     required int year,
   }) async {
     try {
-      final raw = await _dao.expenseMatrix(
-          userId: userId, spaceId: spaceId, year: year);
-      return _merge(raw);
+      return _merge(await _dao.expenseMatrix(
+          userId: userId, spaceId: spaceId, year: year));
     } catch (e, st) {
       _logger.e('expenseMatrix failed', error: e, stackTrace: st);
       rethrow;
@@ -39,9 +38,8 @@ class YearBudgetRepositoryImpl implements YearBudgetRepository {
     required int year,
   }) async {
     try {
-      final raw = await _dao.incomeMatrix(
-          userId: userId, spaceId: spaceId, year: year);
-      return _merge(raw);
+      return _merge(await _dao.incomeMatrix(
+          userId: userId, spaceId: spaceId, year: year));
     } catch (e, st) {
       _logger.e('incomeMatrix failed', error: e, stackTrace: st);
       rethrow;
@@ -72,12 +70,24 @@ class YearBudgetRepositoryImpl implements YearBudgetRepository {
     final rows = await _dao.scopeCategories(userId: userId, spaceId: spaceId);
     return rows
         .map((c) => CategoryInfo(
-              id: c.id,
-              name: c.name,
-              type: c.type,
-              colorHex: c.colorHex,
-              emoji: c.iconEmoji,
-            ))
+            id: c.id,
+            name: c.name,
+            type: c.type,
+            colorHex: c.colorHex,
+            emoji: c.iconEmoji))
+        .toList();
+  }
+
+  @override
+  Future<List<CategoryInfo>> allCategories({required String userId}) async {
+    final rows = await _dao.allCategories(userId: userId);
+    return rows
+        .map((c) => CategoryInfo(
+            id: c.id,
+            name: c.name,
+            type: c.type,
+            colorHex: c.colorHex,
+            emoji: c.iconEmoji))
         .toList();
   }
 
@@ -210,7 +220,6 @@ class YearBudgetRepositoryImpl implements YearBudgetRepository {
     try {
       final now = DateTime.now().toUtc();
       if (spaceId != null) {
-        // Семья: одна таблица на группу — убираем строки других участников.
         await (_db.delete(_db.budgetLimits)
               ..where((b) =>
                   b.spaceId.equals(spaceId) &
@@ -289,9 +298,7 @@ class YearBudgetRepositoryImpl implements YearBudgetRepository {
           userId: userId, spaceId: spaceId, year: y, month: m);
       final alloc = await allocated(
           userId: userId, spaceId: spaceId, year: y, month: m);
-      if (limits.isNotEmpty || alloc != null) {
-        return (year: y, month: m);
-      }
+      if (limits.isNotEmpty || alloc != null) return (year: y, month: m);
     }
     return null;
   }

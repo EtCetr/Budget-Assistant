@@ -60,6 +60,7 @@ class _CreateTransactionScreenState
   final _commentController = TextEditingController();
   bool _isSaving = false;
   final Set<String> _selectedSpaces = <String>{};
+  bool _scopesInitialized = false;
   String? _amountError;
   String? _selectedCurrency;
   String? _previewText;
@@ -242,6 +243,10 @@ class _CreateTransactionScreenState
   Widget _buildScopeChips() {
     final spaces = ref.watch(userSpacesProvider).value ?? const <UserSpace>[];
     if (spaces.isEmpty) return const SizedBox.shrink();
+    if (!_scopesInitialized) {
+      _scopesInitialized = true;
+      _selectedSpaces.addAll(spaces.map((e) => e.id));
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

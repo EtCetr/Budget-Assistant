@@ -1,9 +1,9 @@
 import 'package:logger/logger.dart';
 import '../models/year_budget_models.dart';
 import '../repositories/year_budget_repository.dart';
+import 'calculate_year_budget_usecase.dart';
 
-/// «Месячная статистика»: Выделено/Нераспределено, категории Сумма/Лимит/
-/// Осталось, списки расходов и доходов месяца.
+/// «Месячная статистика»: Выделено/Нераспределено, категории, списки операций.
 class CalculateMonthStatsUseCase {
   CalculateMonthStatsUseCase({
     required YearBudgetRepository repository,
@@ -20,7 +20,12 @@ class CalculateMonthStatsUseCase {
   }) async {
     try {
       final spaceId = key.spaceId;
-      final cats = await _repository.categories(userId: userId, spaceId: spaceId);
+      final cats =
+          await _repository.categories(userId: userId, spaceId: spaceId);
+      final allCats = await _repository.allCategories(userId: userId);
+      final nameById = <String, CategoryInfo>{
+        for (final c in allCats) c.id: c,
+      };
       final expenseSums = await _repository.expenseMatrix(
           userId: userId, spaceId: spaceId, year: key.year);
       final limits = await _repository.limitsForMonth(
@@ -28,31 +33,45 @@ class CalculateMonthStatsUseCase {
       final allocated = await _repository.allocated(
           userId: userId, spaceId: spaceId, year: key.year, month: key.month);
 
-      int sumOf(String categoryId) => expenseSums
-          .where((e) => e.month == key.month && e.categoryId == categoryId)
-          .fold<int>(0, (s, e) => s + e.totalKopecks);
+      final monthSums = <String, int>{};
+      for (final e in expenseSums) {
+        if (e.month != key.month) continue;
+        monthSums[e.categoryId] =
+            (monthSums[e.categoryId] ?? 0) + e.totalKopecks;
+      }
 
-      final expenseCats = cats.where((c) => c.type == 'expense').toList();
-      final categoryRows = <MonthCategoryRow>[
-        for (final c in expenseCats)
-          MonthCategoryRow(
-            categoryId: c.id,
-            name: c.name,
-            colorHex: c.colorHex,
-            emoji: c.emoji,
-            sumKopecks: sumOf(c.id),
-            limitKopecks: limits[c.id],
-            remainingKopecks: (limits[c.id] ?? 0) - sumOf(c.id),
-          ),
-        MonthCategoryRow(
-          categoryId: CalculateYearBudgetLargeId.value,
-          name: 'Крупные покупки',
-          emoji: '💎',
-          sumKopecks: sumOf('__large__'),
-          limitKopecks: limits['__large__'],
-          remainingKopecks: (limits['__large__'] ?? 0) - sumOf('__large__'),
-        ),
-      ];
+      MonthCategoryRow row(String id, String name, String? emoji, String? color) {
+        final sum = monthSums[id] ?? 0;
+        final limit = limits[id];
+        return MonthCategoryRow(
+          categoryId: id,
+          name: name,
+          colorHex: color,
+          emoji: emoji,
+          sumKopecks: sum,
+          limitKopecks: limit,
+          remainingKopecks: (limit ?? 0) - sum,
+        );
+      }
+
+      final covered = <String>{};
+      final categoryRows = <MonthCategoryRow>[];
+      for (final c in cats.where((c) => c.type == 'expense')) {
+        categoryRows.add(row(c.id, c.name, c.emoji, c.colorHex));
+        covered.add(c.id);
+      }
+      categoryRows.add(row(
+          CalculateYearBudgetUseCase.largeId, 'Крупные покупки', '💎', null));
+      covered.add(CalculateYearBudgetUseCase.largeId);
+      for (final id in {...monthSums.keys, ...limits.keys}) {
+        if (covered.contains(id)) continue;
+        final c = nameById[id];
+        final name = id == CalculateYearBudgetUseCase.noneId
+            ? 'Без категории'
+            : (c?.name ?? 'Категория (другой скоуп)');
+        categoryRows.add(row(id, name, c?.emoji, c?.colorHex));
+        covered.add(id);
+      }
 
       final expenses = await _repository.monthTransactions(
           userId: userId,
@@ -67,7 +86,8 @@ class CalculateMonthStatsUseCase {
           month: key.month,
           type: 'income');
 
-      final sumExpenses = categoryRows.fold<int>(0, (s, r) => s + r.sumKopecks);
+      final sumExpenses =
+          categoryRows.fold<int>(0, (s, r) => s + r.sumKopecks);
       final sumIncomes = incomes.fold<int>(0, (s, r) => s + r.amountKopecks);
       final sumLimits = limits.values.fold<int>(0, (a, b) => a + b);
 
@@ -94,9 +114,4 @@ class CalculateMonthStatsUseCase {
       rethrow;
     }
   }
-}
-
-/// Общая константа id синтетической строки крупных покупок.
-class CalculateYearBudgetLargeId {
-  static const value = '__large__';
 }

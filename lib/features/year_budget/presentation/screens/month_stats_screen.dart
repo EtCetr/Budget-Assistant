@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/core/formatting/money_formatter.dart';
 import 'package:budget_assistant/core/formatting/money_input_parser.dart';
 import 'package:budget_assistant/core/formatting/money_text_input_formatter.dart';
 import 'package:budget_assistant/core/theme/app_colors.dart';
 import 'package:budget_assistant/core/theme/app_spacing.dart';
 import 'package:budget_assistant/core/widgets/async_value_wrapper.dart';
+import 'package:budget_assistant/features/auth/presentation/providers/current_user_provider.dart';
 import 'package:budget_assistant/features/privacy/domain/models/balance_visibility_mode.dart';
 import 'package:budget_assistant/features/privacy/presentation/providers/privacy_mode_provider.dart';
 import '../../domain/models/year_budget_models.dart';
 import '../providers/year_budget_providers.dart';
+import '../widgets/structure_pie.dart';
+import 'package:budget_assistant/features/dashboard/presentation/widgets/app_drawer.dart';
 
 /// «Месячная статистика» — реплика месячного листа Excel (Этап 23.5).
-class MonthStatsScreen extends ConsumerWidget {
+class MonthStatsScreen extends ConsumerStatefulWidget {
   const MonthStatsScreen({
     super.key,
     required this.year,
@@ -26,20 +28,43 @@ class MonthStatsScreen extends ConsumerWidget {
   final int month;
   final String? spaceId;
 
+  @override
+  ConsumerState<MonthStatsScreen> createState() => _MonthStatsScreenState();
+}
+
+class _MonthStatsScreenState extends ConsumerState<MonthStatsScreen> {
+  late int _year = widget.year;
+  late int _month = widget.month;
+
   static const _monthFull = [
     'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
     'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
   ];
 
+  MonthStatsKey _key() =>
+      MonthStatsKey(year: _year, month: _month, spaceId: widget.spaceId);
+
+  void _shift(int delta) {
+    var m = _month + delta;
+    var y = _year;
+    if (m < 1) {
+      m = 12;
+      y--;
+    } else if (m > 12) {
+      m = 1;
+      y++;
+    }
+    setState(() {
+      _month = m;
+      _year = y;
+    });
+  }
+
   String _fmt(int? k) => k == null
       ? '—'
       : MoneyFormatter.formatKopecks(k, 'RUB', showSign: false);
 
-  MonthStatsKey _key() => MonthStatsKey(year: year, month: month, spaceId: spaceId);
-
   Future<void> _editAmount({
-    required BuildContext context,
-    required WidgetRef ref,
     required String title,
     required int? initial,
     required Future<void> Function(int kopecks) onSave,
@@ -73,11 +98,11 @@ class MonthStatsScreen extends ConsumerWidget {
     final kopecks = MoneyInputParser.parseKopecks(controller.text) ?? 0;
     try {
       await onSave(kopecks);
-      if (!context.mounted) return;
+      if (!mounted) return;
       ref.invalidate(monthStatsProvider(_key()));
       ref.invalidate(yearBudgetDataProvider);
     } catch (e) {
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('Ошибка сохранения: $e')));
       }
@@ -85,21 +110,32 @@ class MonthStatsScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final key = _key();
     final data = ref.watch(monthStatsProvider(key));
-    final privacy = ref.watch(privacyModeProvider);
-    final hidden = privacy == BalanceVisibilityMode.hidden;
+    final hidden =
+        ref.watch(privacyModeProvider) == BalanceVisibilityMode.hidden;
 
     return Scaffold(
-      appBar: AppBar(title: Text('${_monthFull[month - 1]} $year')),
+      drawer: const AppDrawer(currentRoute: '/month-stats'),
+      appBar: AppBar(
+        title: Text('${_monthFull[_month - 1]} $_year'),
+        actions: [
+          IconButton(
+            tooltip: 'Предыдущий месяц',
+            icon: const Icon(Icons.chevron_left),
+            onPressed: () => _shift(-1),
+          ),
+          IconButton(
+            tooltip: 'Следующий месяц',
+            icon: const Icon(Icons.chevron_right),
+            onPressed: () => _shift(1),
+          ),
+        ],
+      ),
       body: AsyncValueWrapper<MonthStatsData>(
         value: data,
         onRetry: () => ref.invalidate(monthStatsProvider(key)),
-        isEmpty: (d) =>
-            d.expenses.isEmpty && d.incomes.isEmpty && d.sumLimitsKopecks == 0,
-        emptyIcon: Icons.calendar_month_outlined,
-        emptyTitle: 'За этот месяц данных нет',
         dataBuilder: (ctx, d) => ListView(
           padding: const EdgeInsets.all(AppSpacing.spacing16),
           children: [
@@ -113,8 +149,6 @@ class MonthStatsScreen extends ConsumerWidget {
                     IconButton(
                       icon: const Icon(Icons.edit_outlined, size: 18),
                       onPressed: () => _editAmount(
-                        context: context,
-                        ref: ref,
                         title: 'Выделено на месяц',
                         initial: d.allocatedKopecks,
                         onSave: (k) => ref
@@ -129,14 +163,13 @@ class MonthStatsScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            if (d.allocatedKopecks != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.spacing8),
-                child: Text(
-                  'Нераспределено: ${hidden ? '•••' : _fmt(d.unallocatedKopecks)}',
-                  style: const TextStyle(color: AppColors.textSecondary),
-                ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.spacing8),
+              child: Text(
+                'Нераспределено: ${hidden ? '•••' : _fmt(d.unallocatedKopecks)}',
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
+            ),
             if (d.carryFromMonth != null)
               Card(
                 child: Padding(
@@ -145,7 +178,7 @@ class MonthStatsScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Подставить лимиты и «Выделено» из '
+                        'Подставить лимиты категорий и «Выделено» из '
                         '${_monthFull[d.carryFromMonth! - 1]} ${d.carryFromYear}?',
                         style: const TextStyle(fontSize: 14),
                       ),
@@ -156,8 +189,7 @@ class MonthStatsScreen extends ConsumerWidget {
                             await ref
                                 .read(saveMonthBudgetUseCaseProvider)
                                 .carryOver(
-                                  userId:
-                                      ref.read(currentUserIdProvider),
+                                  userId: ref.read(currentUserIdProvider),
                                   key: key,
                                   fromYear: d.carryFromYear!,
                                   fromMonth: d.carryFromMonth!,
@@ -178,6 +210,14 @@ class MonthStatsScreen extends ConsumerWidget {
                 ),
               ),
             const SizedBox(height: AppSpacing.spacing8),
+            StructurePie(
+              title: 'Структура расходов месяца',
+              slices: [
+                for (final c in d.categories)
+                  PieSlice(c.name, c.sumKopecks, c.colorHex),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.spacing16),
             const Text('Категории: Сумма / Лимит / Осталось',
                 style: TextStyle(fontWeight: FontWeight.w700)),
             for (final c in d.categories)
@@ -188,8 +228,8 @@ class MonthStatsScreen extends ConsumerWidget {
                 subtitle: Text(
                   'Лимит: ${hidden ? '•••' : _fmt(c.limitKopecks)} · '
                   'Осталось: ${hidden ? '•••' : _fmt(c.remainingKopecks)}',
-                  style: const TextStyle(fontSize: 12,
-                      color: AppColors.textSecondary),
+                  style: const TextStyle(
+                      fontSize: 12, color: AppColors.textSecondary),
                 ),
                 trailing: Text(
                   hidden ? '•••' : _fmt(c.sumKopecks),
@@ -204,15 +244,12 @@ class MonthStatsScreen extends ConsumerWidget {
                 onTap: c.categoryId == '__large__'
                     ? null
                     : () => _editAmount(
-                          context: context,
-                          ref: ref,
                           title: 'Лимит: ${c.name}',
                           initial: c.limitKopecks,
                           onSave: (k) => ref
                               .read(saveMonthBudgetUseCaseProvider)
                               .saveLimit(
-                                  userId:
-                                      ref.read(currentUserIdProvider),
+                                  userId: ref.read(currentUserIdProvider),
                                   key: key,
                                   categoryId: c.categoryId,
                                   kopecks: k),
@@ -232,8 +269,8 @@ class MonthStatsScreen extends ConsumerWidget {
                 subtitle: t.comment == null
                     ? null
                     : Text(t.comment!,
-                        style: const TextStyle(fontSize: 12,
-                            color: AppColors.textSecondary)),
+                        style: const TextStyle(
+                            fontSize: 12, color: AppColors.textSecondary)),
                 trailing: Text(
                   hidden ? '•••' : '-${_fmt(t.amountKopecks)}',
                   style: const TextStyle(
@@ -254,8 +291,8 @@ class MonthStatsScreen extends ConsumerWidget {
                 subtitle: t.comment == null
                     ? null
                     : Text(t.comment!,
-                        style: const TextStyle(fontSize: 12,
-                            color: AppColors.textSecondary)),
+                        style: const TextStyle(
+                            fontSize: 12, color: AppColors.textSecondary)),
                 trailing: Text(
                   hidden ? '•••' : _fmt(t.amountKopecks),
                   style: const TextStyle(
