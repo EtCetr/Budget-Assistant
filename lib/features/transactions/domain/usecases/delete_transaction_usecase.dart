@@ -1,5 +1,4 @@
 // TODO(24): unit-тесты удаления всех копий группы (включая сплиты).
-// TODO(23.8): сторно/возврат (markAsRefund) пока НЕ пропагируется на копии группы.
 import 'package:logger/logger.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/errors/result.dart';

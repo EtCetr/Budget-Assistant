@@ -136,6 +136,8 @@ Future<void> showTransactionLongPressMenu({
                       .read(markAsRefundUseCaseProvider)
                       .call(transaction);
 
+if (result.isSuccess) { ref.read(transactionsTriggerProvider.notifier).bump(); }
+
                   _invalidateAndNotify(messenger, ref, result);
                 },
               ),
