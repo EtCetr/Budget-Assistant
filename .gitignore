@@ -46,3 +46,5 @@ app.*.map.json
 
 run.bat.vscode/
 .dart_tool/
+coverage/
+sqlite3.dll

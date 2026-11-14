@@ -14,18 +14,27 @@ import 'package:budget_assistant/features/transactions/domain/models/transaction
 import 'package:budget_assistant/features/transactions/domain/repositories/transactions_repository.dart';
 import 'package:budget_assistant/features/transactions/domain/validation/transaction_validator.dart';
 
+/// Правка операции.
+///
+/// Этап 23.6 (D23.6-2): правка применяется ко всем копиям группы.
+/// Этап 24: БД подключается необязательным параметром для тестов.
 class UpdateTransactionUseCase {
   final TransactionsRepository _repository;
   final Logger _logger;
   final ClockPort _clock;
+  final AppDatabase? _dbOverride;
 
   UpdateTransactionUseCase({
     required TransactionsRepository repository,
     required Logger logger,
     required ClockPort clock,
+    AppDatabase? db,
   })  : _repository = repository,
         _logger = logger,
-        _clock = clock;
+        _clock = clock,
+        _dbOverride = db;
+
+  AppDatabase get _db => _dbOverride ?? AppDatabase();
 
   Future<Result<Transaction>> call({
     required TransactionDraft draft,
@@ -39,15 +48,19 @@ class UpdateTransactionUseCase {
           Failure.validation('Transaction id is required for update'),
         );
       }
+
       final validationError = TransactionValidator.validate(draft);
       if (validationError != null) {
         return Error(Failure.validation(validationError));
       }
+
       final existing = await _repository.getTransactionById(id);
       if (existing == null || existing.userId != userId) {
         return const Error(Failure.notFound('Transaction not found'));
       }
+
       final nowUtc = DateTime.now().toUtc();
+
       final splits = (draft.splits ?? [])
           .map(
             (splitDraft) => TransactionSplit(
@@ -62,6 +75,7 @@ class UpdateTransactionUseCase {
             ),
           )
           .toList();
+
       var updated = existing.copyWith(
         accountId: draft.accountId,
         linkedAccountId: draft.linkedAccountId,
@@ -82,6 +96,7 @@ class UpdateTransactionUseCase {
         updatedAt: nowUtc,
         syncStatus: SyncStatus.pending,
       );
+
       if (_shouldLockSync(draft.type, draft.amount, secrecyConfig)) {
         final elapsed = await _clock.elapsedRealtimeMs();
         updated = updated.copyWith(
@@ -94,9 +109,12 @@ class UpdateTransactionUseCase {
           syncLockedDurationMs: null,
         );
       }
+
       await _repository.updateTransaction(updated, splits);
+
       // Этап 23.6 (D23.6-2): правка применяется ко всем копиям группы.
       await _propagateToCopies(id, updated, splits, nowUtc);
+
       return Success(updated);
     } catch (e, stack) {
       _logger.e('UpdateTransactionUseCase failed', error: e, stackTrace: stack);
@@ -111,15 +129,19 @@ class UpdateTransactionUseCase {
     DateTime nowUtc,
   ) async {
     try {
-      final db = AppDatabase();
+      final db = _db;
       final row = await (db.select(db.transactions)
             ..where((t) => t.id.equals(sourceId)))
           .getSingleOrNull();
       final gid = row?.copyGroupId;
       if (gid == null) return;
+
       final copies = await (db.select(db.transactions)
-            ..where((t) => t.copyGroupId.equals(gid) & t.id.equals(sourceId).not()))
+            ..where(
+              (t) => t.copyGroupId.equals(gid) & t.id.equals(sourceId).not(),
+            ))
           .get();
+
       for (final c in copies) {
         await (db.update(db.transactions)
               ..where((t) => t.id.equals(c.id)))
@@ -141,9 +163,11 @@ class UpdateTransactionUseCase {
           updatedAt: Value(nowUtc),
           syncStatus: const Value(SyncStatus.pending),
         ));
+
         await (db.delete(db.transactionSplits)
               ..where((s) => s.transactionId.equals(c.id)))
             .go();
+
         for (final s in splits) {
           await db.into(db.transactionSplits).insert(
                 TransactionSplitsCompanion.insert(

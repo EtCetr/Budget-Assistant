@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';
-
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import 'package:budget_assistant/core/errors/failures.dart';
 import 'package:budget_assistant/core/errors/result.dart';
@@ -16,7 +15,7 @@ import 'package:budget_assistant/features/transactions/domain/usecases/create_tr
 import 'package:budget_assistant/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:budget_assistant/features/transactions/domain/usecases/update_transaction_usecase.dart';
 
-/// Заглушка часов: всегда возвращает 1000 мс с момента «загрузки устройства».
+/// Заглушка часов: всегда 1000 мс с момента «загрузки устройства».
 class FakeClock implements ClockPort {
   const FakeClock();
 
@@ -24,13 +23,8 @@ class FakeClock implements ClockPort {
   Future<int> elapsedRealtimeMs() async => 1000;
 }
 
-/// Репозиторий-заглушка в памяти.
-///
-/// Нам не нужна реальная БД в этом тесте: здесь проверяется БИЗНЕС-ЛОГИКА
-/// (валидация, pending, блокировка). Реальные Drift-тесты будут в Этапе 24.
-class FakeTransactionsRepository implements TransactionsRepository {
-  @override
-  Future<TransactionSplit?> getSplitById(String splitId) async => null;
+/// Репозиторий-заглушка в памяти: проверяем бизнес-логику без БД.
+class FakeTransactionsRepository implements TransactionsRepository {
   final Map<String, Transaction> store = {};
   final Map<String, List<TransactionSplit>> splitsStore = {};
 
@@ -72,10 +66,12 @@ class FakeTransactionsRepository implements TransactionsRepository {
   }
 
   @override
+  Future<TransactionSplit?> getSplitById(String splitId) async => null;
+
+  @override
   Future<List<Transaction>> getTransactionsByGoalId(String goalId) async {
-    final result = store.values
-        .where((t) => t.savingsGoalId == goalId)
-        .toList();
+    final result =
+        store.values.where((t) => t.savingsGoalId == goalId).toList();
     result.sort((a, b) => a.date.compareTo(b.date));
     return result;
   }
@@ -116,7 +112,7 @@ void main() {
     return TransactionDraft(
       accountId: 'acc-1',
       linkedAccountId: linkedAccountId,
-      date: DateTime.utc(2026, 7, 10, 12, 0),
+      date: DateTime.utc(2026, 7, 10, 12),
       amount: amount,
       type: type,
       merchantName: 'Перекрёсток',
@@ -129,10 +125,8 @@ void main() {
 
     expect(result, isA<Success<Transaction>>());
     final tx = (result as Success<Transaction>).value;
-
     expect(tx.syncStatus, SyncStatus.pending);
-    expect(repo.store.containsKey(tx.id), isTrue);
-    expect(repo.store[tx.id]!.syncStatus, SyncStatus.pending);
+    expect(repo.store[tx.id]?.syncStatus, SyncStatus.pending);
   });
 
   test('Валидация: amount <= 0 отклоняется', () async {
@@ -153,7 +147,7 @@ void main() {
     expect((result as Error<Transaction>).failure, isA<ValidationFailure>());
   });
 
-  test('Валидация: сумма сплитов должна равняться сумме транзакции', () async {
+  test('Валидация: сумма сплитов равна сумме транзакции', () async {
     final result = await createUseCase(
       draft: draft(
         splits: [
@@ -169,7 +163,7 @@ void main() {
 
   test('DoD 2: крупная трата блокирует синхронизацию', () async {
     final result = await createUseCase(
-      draft: draft(amount: 15000000), // 150 000 ₽ > порога 100 000 ₽
+      draft: draft(amount: 15000000),
       userId: 'user-1',
       secrecyConfig: const SecrecyConfig(
         enabled: true,
@@ -179,9 +173,8 @@ void main() {
     );
 
     final tx = (result as Success<Transaction>).value;
-
-    expect(tx.syncLockedStartedAt, 1000); // значение FakeClock
-    expect(tx.syncLockedDurationMs, 120000); // 120 сек * 1000
+    expect(tx.syncLockedStartedAt, 1000);
+    expect(tx.syncLockedDurationMs, 120000);
   });
 
   test('Обновление: isUserEdited = true и снова pending', () async {
@@ -195,7 +188,6 @@ void main() {
     );
 
     final tx = (result as Success<Transaction>).value;
-
     expect(tx.isUserEdited, isTrue);
     expect(tx.syncStatus, SyncStatus.pending);
     expect(tx.amount, 7000);
@@ -208,10 +200,33 @@ void main() {
     expect((result as Error<void>).failure, isA<NotFoundFailure>());
   });
 
-  group('DoD 3: PrivacyFormatter', () {
+  test('Удаление своей транзакции -> Success', () async {
+    final created = (await createUseCase(draft: draft(), userId: 'user-1')
+            as Success<Transaction>)
+        .value;
+
+    final result = await deleteUseCase(id: created.id, userId: 'user-1');
+
+    expect(result, isA<Success<void>>());
+    expect(repo.store, isEmpty);
+  });
+
+  test('Удаление чужой транзакции -> NotFound', () async {
+    final created = (await createUseCase(draft: draft(), userId: 'user-1')
+            as Success<Transaction>)
+        .value;
+
+    final result = await deleteUseCase(id: created.id, userId: 'user-2');
+
+    expect(result, isA<Error<void>>());
+    expect((result as Error<void>).failure, isA<NotFoundFailure>());
+    expect(repo.store.containsKey(created.id), isTrue);
+  });
+
+  group('DoD 3: PrivacyFormatter (режимы visible / hidden, D19-14)', () {
     const formatter = PrivacyFormatter();
 
-    test('суммы маскируются в partial и hidden', () {
+    test('сумма видна в visible и скрыта в hidden', () {
       expect(
         formatter.formatAmount(15000000, 'RUB', BalanceVisibilityMode.visible),
         isNot('•••'),
@@ -220,15 +235,11 @@ void main() {
         formatter.formatAmount(15000000, 'RUB', BalanceVisibilityMode.hidden),
         '•••',
       );
-      expect(
-        formatter.formatAmount(15000000, 'RUB', BalanceVisibilityMode.hidden),
-        '•••',
-      );
     });
 
-    test('мерчант виден в partial, скрыт в hidden', () {
+    test('мерчант виден в visible и скрыт в hidden', () {
       expect(
-        formatter.formatMerchant('Перекрёсток', BalanceVisibilityMode.hidden),
+        formatter.formatMerchant('Перекрёсток', BalanceVisibilityMode.visible),
         'Перекрёсток',
       );
       expect(
