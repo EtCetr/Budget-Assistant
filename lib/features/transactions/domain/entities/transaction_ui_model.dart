@@ -1,4 +1,4 @@
-﻿import 'package:budget_assistant/core/enums/transaction_enums.dart';
+import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'transaction_ui_model.freezed.dart';
@@ -27,5 +27,10 @@ abstract class TransactionUiModel with _$TransactionUiModel {
     required String? memberColorHex,
     @Default(false) bool isHiddenByCalendar,
     @Default(false) bool isLargeExpense,
+
+    /// Этап 24 (D24-9): состав группы копий для бейджа «Личное + Семья».
+    String? copyGroupId,
+    @Default(false) bool hasPersonalCopy,
+    @Default(<String>[]) List<String> groupSpaceIds,
   }) = _TransactionUiModel;
 }

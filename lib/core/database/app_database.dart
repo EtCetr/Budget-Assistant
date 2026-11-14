@@ -1171,6 +1171,8 @@ LazyDatabase _openConnection() {
     );
     final fileExists = await File(dbPath).exists();
     AppLogger.i('📄 DB file exists before open: $fileExists');
-    return NativeDatabase(File(dbPath));
+    // Этап 24 (D24-10): SQLite в фоновом изоляте — тяжёлые запросы отчётов
+    // не блокируют UI-поток (устранение ANR).
+    return NativeDatabase.createInBackground(File(dbPath));
   });
 }

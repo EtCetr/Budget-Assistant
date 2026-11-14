@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -26,6 +27,10 @@ import 'package:budget_assistant/features/spaces/presentation/widgets/personal_s
 
 /// Настройки пространства (ТЗ 6.3.36): identity, статистика 2x2,
 /// семейный лимит, опасная зона (экспорт XLSX + расформирование).
+///
+/// Этап 24 (D24-13): плитки внутри цветных карточек обёрнуты в собственный
+/// прозрачный Material — иначе Flutter выдаёт ассерт про невидимый фон
+/// и волну нажатия ListTile.
 class SpaceSettingsScreen extends ConsumerWidget {
   const SpaceSettingsScreen({super.key});
 
@@ -67,6 +72,7 @@ class SpaceSettingsScreen extends ConsumerWidget {
     final pf = ref.watch(privacyFormatterProvider);
     final membersCount =
         ref.watch(membersStreamProvider(scope.spaceId)).value?.length ?? 0;
+
     return AsyncValueWrapper<dynamic>(
       value: row,
       onRetry: () => ref.invalidate(spaceSettingsRowProvider),
@@ -121,6 +127,7 @@ class SpaceSettingsScreen extends ConsumerWidget {
     final emoji = (space.iconEmoji as String?) ?? '👨‍👩‍👧';
     final colorHex = (space.iconColor as String?) ?? '#FFF97316';
     final color = _parseColor(colorHex);
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.spacing24),
       decoration: BoxDecoration(
@@ -140,18 +147,22 @@ class SpaceSettingsScreen extends ConsumerWidget {
               Positioned(
                 right: 0,
                 bottom: 0,
-                child: InkWell(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    _openIdentity(context, ref, scope, space);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(
-                      color: AppColors.colorFAB,
-                      shape: BoxShape.circle,
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      _openIdentity(context, ref, scope, space);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: AppColors.colorFAB,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.edit, size: 16, color: Colors.white),
                     ),
-                    child: const Icon(Icons.edit, size: 16, color: Colors.white),
                   ),
                 ),
               ),
@@ -201,25 +212,32 @@ class SpaceSettingsScreen extends ConsumerWidget {
     dynamic space,
   ) async {
     final messenger = ScaffoldMessenger.of(context);
-    await showEditSpaceIdentitySheet(
-      context,
-      initialName: space.name as String,
-      initialEmoji: (space.iconEmoji as String?) ?? '👨‍👩‍👧',
-      initialColor: (space.iconColor as String?) ?? '#FFF97316',
-      onSave: (name, emoji, color) => ref
-          .read(updateSpaceIdentityUseCaseProvider)
-          .call(
-            spaceId: scope.spaceId,
-            actorId: scope.userId,
-            newName: name,
-            newIconEmoji: emoji,
-            newIconColor: color,
-            oldName: space.name as String,
-          ),
-    );
-    messenger.showSnackBar(
-      const SnackBar(content: Text('✅ Настройки пространства сохранены')),
-    );
+    try {
+      await showEditSpaceIdentitySheet(
+        context,
+        initialName: space.name as String,
+        initialEmoji: (space.iconEmoji as String?) ?? '👨‍👩‍👧',
+        initialColor: (space.iconColor as String?) ?? '#FFF97316',
+        onSave: (name, emoji, color) => ref
+            .read(updateSpaceIdentityUseCaseProvider)
+            .call(
+              spaceId: scope.spaceId,
+              actorId: scope.userId,
+              newName: name,
+              newIconEmoji: emoji,
+              newIconColor: color,
+              oldName: space.name as String,
+            ),
+      );
+      messenger.showSnackBar(
+        const SnackBar(content: Text('✅ Настройки пространства сохранены')),
+      );
+    } catch (e, st) {
+      AppLogger.e('Update space identity failed', e, st);
+      messenger.showSnackBar(
+        const SnackBar(content: Text('❌ Не удалось сохранить настройки')),
+      );
+    }
   }
 
   Widget _statsGrid(dynamic st, dynamic pf, BalanceVisibilityMode mode, int membersCount) {
@@ -329,18 +347,21 @@ class SpaceSettingsScreen extends ConsumerWidget {
               border: Border.all(
                   color: AppColors.colorTransfer.withValues(alpha: 0.3)),
             ),
-            child: ListTile(
-              leading: const Icon(Icons.upload_outlined,
-                  color: AppColors.colorTransfer),
-              title: const Text('Экспорт всех данных пространства',
-                  style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600)),
-              subtitle: const Text('XLSX со всеми транзакциями, счетами, целями, долгами',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-              onTap: hidden
-                  ? null
-                  : () => _exportFlow(context, ref, scope, space),
+            child: Material(
+              type: MaterialType.transparency,
+              child: ListTile(
+                leading: const Icon(Icons.upload_outlined,
+                    color: AppColors.colorTransfer),
+                title: const Text('Экспорт всех данных пространства',
+                    style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w600)),
+                subtitle: const Text('XLSX со всеми транзакциями, счетами, целями, долгами',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                onTap: hidden
+                    ? null
+                    : () => _exportFlow(context, ref, scope, space),
+              ),
             ),
           ),
         ),
@@ -355,16 +376,19 @@ class SpaceSettingsScreen extends ConsumerWidget {
               border: Border.all(
                   color: AppColors.colorExpense.withValues(alpha: 0.3)),
             ),
-            child: ListTile(
-              leading:
-                  const Icon(Icons.delete_forever, color: AppColors.colorExpense),
-              title: const Text('Расформировать пространство',
-                  style: TextStyle(
-                      color: AppColors.colorExpense,
-                      fontWeight: FontWeight.w600)),
-              subtitle: const Text('Необратимое действие. Все участники потеряют доступ',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-              onTap: hidden ? null : () => _dissolveFlow(context, ref, scope),
+            child: Material(
+              type: MaterialType.transparency,
+              child: ListTile(
+                leading:
+                    const Icon(Icons.delete_forever, color: AppColors.colorExpense),
+                title: const Text('Расформировать пространство',
+                    style: TextStyle(
+                        color: AppColors.colorExpense,
+                        fontWeight: FontWeight.w600)),
+                subtitle: const Text('Необратимое действие. Все участники потеряют доступ',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                onTap: hidden ? null : () => _dissolveFlow(context, ref, scope),
+              ),
             ),
           ),
         ),
@@ -389,6 +413,7 @@ class SpaceSettingsScreen extends ConsumerWidget {
         if (!context.mounted) return;
         if (ok != true) return;
       }
+
       final confirm = await showDialog<bool>(
         context: context,
         builder: (d) => AlertDialog(
@@ -414,12 +439,14 @@ class SpaceSettingsScreen extends ConsumerWidget {
         ),
       );
       if (confirm != true || !context.mounted) return;
+
       final path = await ref.read(exportSpaceDataUseCaseProvider).call(
             spaceId: scope.spaceId,
             actorId: scope.userId,
             spaceName: space.name as String,
           );
       if (!context.mounted) return;
+
       final choice = await showDialog<String>(
         context: context,
         builder: (d) => AlertDialog(
@@ -446,6 +473,7 @@ class SpaceSettingsScreen extends ConsumerWidget {
           ],
         ),
       );
+
       if (choice == 'save') {
         final file = File(path);
         final bytes = await file.readAsBytes();
@@ -486,6 +514,7 @@ class SpaceSettingsScreen extends ConsumerWidget {
   ) async {
     HapticFeedback.lightImpact();
     final messenger = ScaffoldMessenger.of(context);
+
     final ok1 = await showDialog<bool>(
       context: context,
       builder: (d) => AlertDialog(
@@ -516,6 +545,7 @@ class SpaceSettingsScreen extends ConsumerWidget {
       ),
     );
     if (ok1 != true || !context.mounted) return;
+
     HapticFeedback.mediumImpact();
     final settings =
         await ref.read(appSettingsDaoProvider).getForUser(scope.userId);
@@ -525,21 +555,23 @@ class SpaceSettingsScreen extends ConsumerWidget {
       if (!context.mounted) return;
       if (pinOk != true) return;
     }
+
     final ok2 = await showDialog<bool>(
       context: context,
       builder: (_) => const DissolveWordDialog(),
     );
     if (ok2 != true || !context.mounted) return;
+
     try {
       await ref.read(dissolveSpaceUseCaseProvider).call(
             spaceId: scope.spaceId,
             actorId: scope.userId,
           );
+      if (!context.mounted) return;
       ref.read(currentSpaceIdProvider.notifier).setSpaceId(null);
       ref.read(sec.currentSpaceIdProvider.notifier).set(null);
       ref.invalidate(userSpacesProvider);
       HapticFeedback.heavyImpact();
-      if (!context.mounted) return;
       context.go('/');
       messenger.showSnackBar(
         const SnackBar(
@@ -560,8 +592,10 @@ class SpaceSettingsScreen extends ConsumerWidget {
 /// Секция семейного лимита (6.3.36.5/6): тумблер + поле суммы с валидацией.
 class _SpaceBudgetSection extends StatefulWidget {
   const _SpaceBudgetSection({required this.initialLimit, required this.onSave});
+
   final int? initialLimit;
   final Future<void> Function(int? limitKopecks) onSave;
+
   @override
   State<_SpaceBudgetSection> createState() => _SpaceBudgetSectionState();
 }
@@ -599,7 +633,8 @@ class _SpaceBudgetSectionState extends State<_SpaceBudgetSection> {
           const SnackBar(content: Text('✅ Семейный бюджет сохранён')),
         );
       }
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.e('Save space budget limit failed', e, st);
       if (mounted) {
         HapticFeedback.vibrate();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -644,12 +679,15 @@ class _SpaceBudgetSectionState extends State<_SpaceBudgetSection> {
           const SizedBox(height: 4),
           const Text('💡 Общий лимит расходов на месяц для всех участников',
               style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            value: _enabled,
-            onChanged: _busy ? null : _toggle,
-            title: const Text('Месячный лимит',
-                style: TextStyle(color: AppColors.textPrimary)),
+          Material(
+            type: MaterialType.transparency,
+            child: SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: _enabled,
+              onChanged: _busy ? null : _toggle,
+              title: const Text('Месячный лимит',
+                  style: TextStyle(color: AppColors.textPrimary)),
+            ),
           ),
           if (_enabled) ...[
             TextField(

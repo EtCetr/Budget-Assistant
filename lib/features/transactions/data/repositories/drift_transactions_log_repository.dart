@@ -4,7 +4,6 @@ import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import 'package:budget_assistant/core/logger.dart';
 import 'package:drift/drift.dart';
-
 import '../../domain/entities/lookup_item.dart';
 import '../../domain/entities/transaction_ui_model.dart';
 import '../../domain/entities/transactions_filter_state.dart';
@@ -12,10 +11,22 @@ import '../../domain/repositories/transactions_log_repository.dart';
 
 /// Drift-реализация репозитория лога транзакций (Этап 7).
 /// Все фильтры применяются ТОЛЬКО в SQL (DECISIONS.md).
+///
+/// Этап 24 (D24-9): одна операция = одна группа копий. В скоупе «Все»
+/// показываем представителя группы (личная копия важнее семейной),
+/// «Личное» = группы с личной копией, «Семейные» = копии пространства.
 class DriftTransactionsLogRepository implements TransactionsLogRepository {
   DriftTransactionsLogRepository(this._db);
 
   final AppDatabase _db;
+
+  /// Представитель группы копий: личная копия, затем самая ранняя.
+  static const _groupDedup = CustomExpression<bool>(
+    '(transactions.copy_group_id IS NULL OR transactions.id = ('
+    'SELECT x.id FROM transactions x '
+    'WHERE x.copy_group_id = transactions.copy_group_id '
+    'ORDER BY (x.space_id IS NULL) DESC, x.created_at ASC, x.id ASC LIMIT 1))',
+  );
 
   @override
   Future<List<TransactionUiModel>> fetchPage({
@@ -44,7 +55,6 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
       if (filter.categoryIds.isNotEmpty) {
         expressions.add(t.customCategoryId.isIn(filter.categoryIds));
       }
-
       if (filter.accountIds.isNotEmpty) {
         expressions.add(t.accountId.isIn(filter.accountIds));
       }
@@ -55,37 +65,22 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
         expressions.add(t.date.isSmallerOrEqualValue(range.$2));
       }
 
-      // Фильтр по сумме работает по МОДУЛЮ: пользователь вводит "от 200",
-      // и получает и трату на 250, и доход на 280.
-      // Тип транзакции фильтруется отдельно через _typeExpression.
+      // Фильтр суммы по МОДУЛЮ: «от 200» ловит и трату 250, и доход 280.
       final absAmount = CustomExpression<int>('ABS(${t.amount.name})');
-
       if (filter.amountFromKopecks != null) {
-        expressions.add(
-          absAmount.isBiggerOrEqualValue(filter.amountFromKopecks!),
-        );
+        expressions.add(absAmount.isBiggerOrEqualValue(filter.amountFromKopecks!));
       }
       if (filter.amountToKopecks != null) {
-        expressions.add(
-          absAmount.isSmallerOrEqualValue(filter.amountToKopecks!),
-        );
+        expressions.add(absAmount.isSmallerOrEqualValue(filter.amountToKopecks!));
       }
 
       if (filter.onlyWithReceipt) {
         expressions.add(t.receiptId.isNotNull());
       }
-
       if (filter.onlySplit) {
         expressions.add(t.isSplit.equals(true));
       }
-
-            if (filter.onlyDebts) {
-        // Этап 13: транзакция считается связанной с долгами, если на неё
-        // ссылается debts.original_transaction_id ИЛИ если на её сплиты
-        // (transaction_splits) ссылается debts.split_id. Учитываются долги
-        // любых статусов (включая закрытую историю).
-        // Drift не имеет встроенного API для EXISTS-подзапросов в WHERE —
-        // используем CustomExpression с raw SQL (имена таблиц литералами).
+      if (filter.onlyDebts) {
         expressions.add(
           const CustomExpression<bool>(
             '(EXISTS (SELECT 1 FROM debts '
@@ -96,22 +91,15 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
           ),
         );
       }
-      // «Без моих»: исключить собственные транзакции пользователя.
-      // Комбинируется с любым сегментом (Все / Семейные).
       if (filter.excludeOwn) {
         expressions.add(t.userId.equals(currentUserId).not());
       }
-
-      // Фильтр аналитики: «Без крупных трат».
-      // Применяется в P&L, Dashboard, Monthly Analytics.
-      // В лимитах по категориям не используется (там своя логика).
       if (filter.excludeLargeExpenses) {
         expressions.add(t.isLargeExpense.equals(false));
       }
-    // D21-14: секретные транзакции (режим секретности/подарки).
-    if (filter.onlySecret) {
-      expressions.add(t.isHiddenByCalendar.equals(true));
-    }
+      if (filter.onlySecret) {
+        expressions.add(t.isHiddenByCalendar.equals(true));
+      }
 
       final search = filter.search.trim();
       if (search.isNotEmpty) {
@@ -121,20 +109,42 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
         );
       }
 
-      final query =
-          _db.select(t).join([
-              leftOuterJoin(c, c.id.equalsExp(t.customCategoryId)),
-              leftOuterJoin(u, u.id.equalsExp(t.userId)),
-            ])
-            ..where(expressions.reduce((a, b) => a & b))
-            ..orderBy([
-              OrderingTerm.desc(t.date),
-              OrderingTerm.desc(t.createdAt),
-            ])
-            ..limit(limit, offset: offset);
+      final query = _db.select(t).join([
+        leftOuterJoin(c, c.id.equalsExp(t.customCategoryId)),
+        leftOuterJoin(u, u.id.equalsExp(t.userId)),
+      ])
+        ..where(expressions.reduce((a, b) => a & b))
+        ..orderBy([
+          OrderingTerm.desc(t.date),
+          OrderingTerm.desc(t.createdAt),
+        ])
+        ..limit(limit, offset: offset);
 
       final rows = await query.get();
-      return rows.map(_mapRow).toList();
+
+      // Состав групп копий — одним запросом на страницу (без N+1).
+      final gids = <String>{};
+      for (final r in rows) {
+        final g = r.readTable(t).copyGroupId;
+        if (g != null) gids.add(g);
+      }
+      final groups = <String, _GroupInfo>{};
+      if (gids.isNotEmpty) {
+        final groupRows = await (_db.select(_db.transactions)
+              ..where((x) => x.copyGroupId.isIn(gids.toList())))
+            .get();
+        for (final g in groupRows) {
+          final info = groups.putIfAbsent(g.copyGroupId!, _GroupInfo.new);
+          final sid = g.spaceId;
+          if (sid == null) {
+            info.personal = true;
+          } else {
+            info.spaces.add(sid);
+          }
+        }
+      }
+
+      return rows.map((r) => _mapRow(r, groups)).toList();
     } catch (e, s) {
       AppLogger.e('fetchPage failed: $e', e, s);
       rethrow;
@@ -144,9 +154,9 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
   @override
   Future<List<LookupItem>> fetchCategories() async {
     try {
-      final rows = await (_db.select(
-        _db.categories,
-      )..orderBy([(c) => OrderingTerm.asc(c.name)])).get();
+      final rows = await (_db.select(_db.categories)
+            ..orderBy([(c) => OrderingTerm.asc(c.name)]))
+          .get();
       return rows.map((c) => LookupItem(id: c.id, name: c.name)).toList();
     } catch (e, s) {
       AppLogger.e('fetchCategories failed: $e', e, s);
@@ -157,16 +167,14 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
   @override
   Future<List<LookupItem>> fetchAccounts() async {
     try {
-      final rows = await (_db.select(
-        _db.accounts,
-      )..orderBy([(a) => OrderingTerm.asc(a.bankName)])).get();
+      final rows = await (_db.select(_db.accounts)
+            ..orderBy([(a) => OrderingTerm.asc(a.bankName)]))
+          .get();
       return rows
-          .map(
-            (a) => LookupItem(
-              id: a.id,
-              name: a.customName.isNotEmpty ? a.customName : a.bankName,
-            ),
-          )
+          .map((a) => LookupItem(
+                id: a.id,
+                name: a.customName.isNotEmpty ? a.customName : a.bankName,
+              ))
           .toList();
     } catch (e, s) {
       AppLogger.e('fetchAccounts failed: $e', e, s);
@@ -178,15 +186,13 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
   Future<void> hideAsGift(String transactionId) async {
     try {
       final now = DateTime.now().toUtc();
-      await (_db.update(
-        _db.transactions,
-      )..where((t) => t.id.equals(transactionId))).write(
-        TransactionsCompanion(
-          isHiddenByCalendar: const Value(true),
-          syncStatus: const Value(SyncStatus.pending),
-          updatedAt: Value(now),
-        ),
-      );
+      await (_db.update(_db.transactions)
+            ..where((t) => t.id.equals(transactionId)))
+          .write(TransactionsCompanion(
+        isHiddenByCalendar: const Value(true),
+        syncStatus: const Value(SyncStatus.pending),
+        updatedAt: Value(now),
+      ));
     } catch (e, s) {
       AppLogger.e('hideAsGift failed: $e', e, s);
       rethrow;
@@ -200,15 +206,13 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
   }) async {
     try {
       final now = DateTime.now().toUtc();
-      await (_db.update(
-        _db.transactions,
-      )..where((t) => t.id.equals(transactionId))).write(
-        TransactionsCompanion(
-          customCategoryId: Value(categoryId),
-          syncStatus: const Value(SyncStatus.pending),
-          updatedAt: Value(now),
-        ),
-      );
+      await (_db.update(_db.transactions)
+            ..where((t) => t.id.equals(transactionId)))
+          .write(TransactionsCompanion(
+        customCategoryId: Value(categoryId),
+        syncStatus: const Value(SyncStatus.pending),
+        updatedAt: Value(now),
+      ));
     } catch (e, s) {
       AppLogger.e('updateCategory failed: $e', e, s);
       rethrow;
@@ -218,20 +222,15 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
   @override
   Future<void> createCompensatingIncome(String originalTransactionId) async {
     try {
-      final original = await (_db.select(
-        _db.transactions,
-      )..where((t) => t.id.equals(originalTransactionId))).getSingleOrNull();
-
+      final original = await (_db.select(_db.transactions)
+            ..where((t) => t.id.equals(originalTransactionId)))
+          .getSingleOrNull();
       if (original == null) {
         AppLogger.w('Original transaction not found: $originalTransactionId');
         return;
       }
-
       final now = DateTime.now().toUtc();
-
-      await _db
-          .into(_db.transactions)
-          .insert(
+      await _db.into(_db.transactions).insert(
             TransactionsCompanion.insert(
               id: _newId(),
               accountId: original.accountId,
@@ -261,40 +260,64 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
       ..where(_db.transactions.syncStatus.equalsValue(SyncStatus.pending));
     return query.map((row) => row.read(countExp) ?? 0).watchSingle();
   }
-  
+
   @override
   Future<void> unhideAsGift(String transactionId) async {
     try {
       final now = DateTime.now().toUtc();
-      await (_db.update(
-        _db.transactions,
-      )..where((t) => t.id.equals(transactionId))).write(
-        TransactionsCompanion(
-          isHiddenByCalendar: const Value(false),
-          hiddenUntilDate: const Value(null),
-          syncStatus: const Value(SyncStatus.pending),
-          updatedAt: Value(now),
-        ),
-      );
+      await (_db.update(_db.transactions)
+            ..where((t) => t.id.equals(transactionId)))
+          .write(TransactionsCompanion(
+        isHiddenByCalendar: const Value(false),
+        hiddenUntilDate: const Value(null),
+        syncStatus: const Value(SyncStatus.pending),
+        updatedAt: Value(now),
+      ));
     } catch (e, s) {
       AppLogger.e('unhideAsGift failed: $e', e, s);
       rethrow;
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // Helpers
-  // ═══════════════════════════════════════════════════════════════
+  @override
+  Future<void> toggleLargeExpense(String transactionId) async {
+    try {
+      final now = DateTime.now().toUtc();
+      await _db.customUpdate(
+        '''
+UPDATE transactions
+SET is_large_expense = NOT is_large_expense,
+    sync_status = 'pending',
+    updated_at = ?
+WHERE id = ?
+''',
+        variables: [
+          Variable.withDateTime(now),
+          Variable.withString(transactionId),
+        ],
+      );
+    } catch (e, s) {
+      AppLogger.e('toggleLargeExpense failed: $e', e, s);
+      rethrow;
+    }
+  }
 
-  TransactionUiModel _mapRow(TypedResult row) {
+  // ─────────────────────────────────────────────────────────────
+  // Helpers
+  // ─────────────────────────────────────────────────────────────
+
+  TransactionUiModel _mapRow(TypedResult row, Map<String, _GroupInfo> groups) {
     final t = row.readTable(_db.transactions);
     final c = row.readTableOrNull(_db.categories);
     final u = row.readTableOrNull(_db.users);
+    final gid = t.copyGroupId;
+    final info = gid == null ? null : groups[gid];
+    final sid = t.spaceId;
 
     return TransactionUiModel(
       id: t.id,
       userId: t.userId,
-      spaceId: t.spaceId,
+      spaceId: sid,
       accountId: t.accountId,
       categoryId: t.customCategoryId,
       type: t.type,
@@ -313,6 +336,9 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
       memberColorHex: null,
       isHiddenByCalendar: t.isHiddenByCalendar,
       isLargeExpense: t.isLargeExpense,
+      copyGroupId: gid,
+      hasPersonalCopy: info?.personal ?? (sid == null),
+      groupSpaceIds: info?.spaces.toList() ?? (sid == null ? const [] : [sid]),
     );
   }
 
@@ -322,49 +348,20 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
     required String? currentSpaceId,
   }) {
     final t = _db.transactions;
-
     switch (scope) {
       case TransactionsScope.all:
-        if (currentSpaceId == null) {
-          return t.userId.equals(currentUserId);
-        }
-        return t.spaceId.equals(currentSpaceId) |
-            t.userId.equals(currentUserId);
-
+        // D24-9: группа показывается один раз — берём представителя.
+        final base = currentSpaceId == null
+            ? t.userId.equals(currentUserId)
+            : (t.spaceId.equals(currentSpaceId) | t.userId.equals(currentUserId));
+        return base & _groupDedup;
       case TransactionsScope.mine:
-        return t.userId.equals(currentUserId);
-
+        // «Личное»: группы, у которых есть личная копия (в т.ч. расшаренные).
+        return t.userId.equals(currentUserId) & t.spaceId.isNull();
       case TransactionsScope.family:
-        // Продуктовое решение (отклонение от ТЗ 6.3.2.3):
-        // «Семейные» = ВСЕ транзакции активного пространства, включая мои.
-        // «Только члены семьи, без меня» = чип «Без моих» (excludeOwn).
-        // Изоляция Multi-group сохранена: данные других пространств не попадают.
+        // «Семейные» = все операции активного пространства, включая мои.
         if (currentSpaceId == null) return const Constant(false);
         return t.spaceId.equals(currentSpaceId);
-    }
-  }
-
-  @override
-  Future<void> toggleLargeExpense(String transactionId) async {
-    try {
-      final now = DateTime.now().toUtc();
-      // Инвертируем текущее значение флага
-      await _db.customUpdate(
-        '''
-          UPDATE transactions
-          SET is_large_expense = NOT is_large_expense,
-              sync_status = 'pending',
-              updated_at = ?
-          WHERE id = ?
-        ''',
-        variables: [
-          Variable.withDateTime(now),
-          Variable.withString(transactionId),
-        ],
-      );
-    } catch (e, s) {
-      AppLogger.e('toggleLargeExpense failed: $e', e, s);
-      rethrow;
     }
   }
 
@@ -391,27 +388,18 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
         final start = DateTime(now.year, now.month, now.day);
         return _toUtcRange(start, start);
       case TransactionsPeriodPreset.week:
-        final startLocal = DateTime(
-          now.year,
-          now.month,
-          now.day,
-        ).subtract(Duration(days: now.weekday - 1));
+        final startLocal = DateTime(now.year, now.month, now.day)
+            .subtract(Duration(days: now.weekday - 1));
         return _toUtcRange(startLocal, startLocal.add(const Duration(days: 6)));
       case TransactionsPeriodPreset.month:
         final startLocal = DateTime(now.year, now.month, 1);
-        final endLocal = DateTime(
-          now.year,
-          now.month + 1,
-          1,
-        ).subtract(const Duration(days: 1));
+        final endLocal = DateTime(now.year, now.month + 1, 1)
+            .subtract(const Duration(days: 1));
         return _toUtcRange(startLocal, endLocal);
       case TransactionsPeriodPreset.year:
         final startLocal = DateTime(now.year, 1, 1);
-        final endLocal = DateTime(
-          now.year + 1,
-          1,
-          1,
-        ).subtract(const Duration(days: 1));
+        final endLocal =
+            DateTime(now.year + 1, 1, 1).subtract(const Duration(days: 1));
         return _toUtcRange(startLocal, endLocal);
       case TransactionsPeriodPreset.custom:
         final from = filter.customFrom;
@@ -422,11 +410,8 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
   }
 
   (DateTime, DateTime) _toUtcRange(DateTime startLocal, DateTime endLocal) {
-    final from = DateTime(
-      startLocal.year,
-      startLocal.month,
-      startLocal.day,
-    ).toUtc();
+    final from =
+        DateTime(startLocal.year, startLocal.month, startLocal.day).toUtc();
     final to = DateTime(
       endLocal.year,
       endLocal.month,
@@ -444,4 +429,9 @@ class DriftTransactionsLogRepository implements TransactionsLogRepository {
     final bytes = List<int>.generate(16, (_) => random.nextInt(256));
     return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
   }
+}
+
+class _GroupInfo {
+  bool personal = false;
+  final Set<String> spaces = <String>{};
 }

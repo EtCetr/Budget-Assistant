@@ -13,8 +13,18 @@ class BudgetLimitsRepositoryImpl implements BudgetLimitsRepository {
   final Logger _logger;
 
   BudgetLimitsRepositoryImpl({required AppDatabase db, required Logger logger})
-    : _db = db,
-      _logger = logger;
+      : _db = db,
+        _logger = logger;
+
+  /// Этап 24 (D24-9): в личном скоупе группа копий считается один раз.
+  /// В семейном скоупе дедубль не нужен: копия в пространстве одна.
+  static const _groupDedup = CustomExpression<bool>(
+    '(transactions.copy_group_id IS NULL OR transactions.id = ('
+    'SELECT x.id FROM transactions x '
+    'WHERE x.copy_group_id = transactions.copy_group_id '
+    'AND x.user_id = transactions.user_id '
+    'ORDER BY (x.space_id IS NULL) DESC, x.created_at ASC, x.id ASC LIMIT 1))',
+  );
 
   @override
   Future<List<BudgetLimit>> getForMonth({
@@ -32,11 +42,8 @@ class BudgetLimitsRepositoryImpl implements BudgetLimitsRepository {
       );
       return rows.map(_fromDb).toList();
     } catch (e, stack) {
-      _logger.e(
-        'Failed to get budget limits for month',
-        error: e,
-        stackTrace: stack,
-      );
+      _logger.e('Failed to get budget limits for month',
+          error: e, stackTrace: stack);
       rethrow;
     }
   }
@@ -64,11 +71,7 @@ class BudgetLimitsRepositoryImpl implements BudgetLimitsRepository {
       final row = await _db.budgetLimitsDao.getById(id);
       return row == null ? null : _fromDb(row);
     } catch (e, stack) {
-      _logger.e(
-        'Failed to get budget limit by id',
-        error: e,
-        stackTrace: stack,
-      );
+      _logger.e('Failed to get budget limit by id', error: e, stackTrace: stack);
       rethrow;
     }
   }
@@ -91,11 +94,8 @@ class BudgetLimitsRepositoryImpl implements BudgetLimitsRepository {
       );
       return row == null ? null : _fromDb(row);
     } catch (e, stack) {
-      _logger.e(
-        'Failed to get budget limit for category',
-        error: e,
-        stackTrace: stack,
-      );
+      _logger.e('Failed to get budget limit for category',
+          error: e, stackTrace: stack);
       rethrow;
     }
   }
@@ -132,29 +132,13 @@ class BudgetLimitsRepositoryImpl implements BudgetLimitsRepository {
     bool excludeLargeExpenses = false,
   }) async {
     try {
-      final localStart = DateTime(year, month, 1);
-      final localEnd = DateTime(
-        year,
-        month + 1,
-        1,
-      ).subtract(const Duration(seconds: 1));
-      final utcStart = localStart.toUtc();
-      final utcEnd = localEnd.toUtc();
-
       final t = _db.transactions;
-
-      Expression<bool> filter =
-          t.userId.equals(userId) &
-          t.date.isBiggerOrEqualValue(utcStart) &
-          t.date.isSmallerOrEqualValue(utcEnd) &
-          t.type.equals(TransactionType.transfer.name).not() &
-          t.savingsGoalId.isNull() &
-          t.isWithdrawal.equals(false) &
-          t.auditStatus.equals(AuditStatus.ignored.name).not();
-
-      if (spaceId != null) {
-        filter = filter & t.spaceId.equals(spaceId);
-      }
+      var filter = _baseFilter(
+        userId: userId,
+        spaceId: spaceId,
+        year: year,
+        month: month,
+      );
 
       if (excludeLargeExpenses) {
         filter = filter & t.isLargeExpense.equals(false);
@@ -202,43 +186,24 @@ class BudgetLimitsRepositoryImpl implements BudgetLimitsRepository {
     required int month,
   }) async {
     try {
-      final localStart = DateTime(year, month, 1);
-      final localEnd = DateTime(
-        year,
-        month + 1,
-        1,
-      ).subtract(const Duration(seconds: 1));
-      final utcStart = localStart.toUtc();
-      final utcEnd = localEnd.toUtc();
-
       final t = _db.transactions;
-
-      Expression<bool> filter =
-          t.userId.equals(userId) &
-          t.date.isBiggerOrEqualValue(utcStart) &
-          t.date.isSmallerOrEqualValue(utcEnd) &
+      final filter = _baseFilter(
+            userId: userId,
+            spaceId: spaceId,
+            year: year,
+            month: month,
+          ) &
           t.type.equals(TransactionType.expense.name) &
-          t.customCategoryId.equals(categoryId) &
-          t.savingsGoalId.isNull() &
-          t.isWithdrawal.equals(false) &
-          t.auditStatus.equals(AuditStatus.ignored.name).not();
-
-      if (spaceId != null) {
-        filter = filter & t.spaceId.equals(spaceId);
-      }
+          t.customCategoryId.equals(categoryId);
 
       final query = _db.selectOnly(t)..addColumns([t.amount.sum()]);
       query.where(filter);
       final result = await query.getSingle();
       final total = result.read(t.amount.sum()) ?? 0;
-
       return Success(total);
     } catch (e, stack) {
-      _logger.e(
-        'Failed to calculate category expense',
-        error: e,
-        stackTrace: stack,
-      );
+      _logger.e('Failed to calculate category expense',
+          error: e, stackTrace: stack);
       return Error(Failure.database(e.toString(), stack));
     }
   }
@@ -251,49 +216,55 @@ class BudgetLimitsRepositoryImpl implements BudgetLimitsRepository {
     required int month,
   }) {
     try {
-      final localStart = DateTime(year, month, 1);
-      final localEnd = DateTime(
-        year,
-        month + 1,
-        1,
-      ).subtract(const Duration(seconds: 1));
-      final utcStart = localStart.toUtc();
-      final utcEnd = localEnd.toUtc();
-
       final t = _db.transactions;
-
-      Expression<bool> filter =
-          t.userId.equals(userId) &
-          t.date.isBiggerOrEqualValue(utcStart) &
-          t.date.isSmallerOrEqualValue(utcEnd) &
-          t.type.equals(TransactionType.transfer.name).not() &
-          t.savingsGoalId.isNull() &
-          t.isWithdrawal.equals(false) &
-          t.auditStatus.equals(AuditStatus.ignored.name).not();
-
-      if (spaceId != null) {
-        filter = filter & t.spaceId.equals(spaceId);
-      }
+      final filter = _baseFilter(
+        userId: userId,
+        spaceId: spaceId,
+        year: year,
+        month: month,
+      );
 
       final query = _db.selectOnly(t)..addColumns([t.id.count()]);
       query.where(filter);
 
-      // ВАЖНО: возвращаем не агрегат (сумма не меняется при смене категории),
-      // а уникальную метку времени. Любая запись в таблицу транзакций
-      // (добавление / правка суммы / смена категории / удаление) заставляет
-      // Drift перевыполнить запрос, а метка времени гарантирует, что значение
-      // будет новым и Riverpod пересчитает зависимые провайдеры.
+      // Возвращаем метку времени, а не агрегат: смена категории тоже
+      // должна перезапускать зависимые провайдеры.
       return query.watch().map((rows) {
         return DateTime.now().microsecondsSinceEpoch;
       });
     } catch (e, stack) {
-      _logger.e(
-        'Failed to watch monthly transaction changes',
-        error: e,
-        stackTrace: stack,
-      );
+      _logger.e('Failed to watch monthly transaction changes',
+          error: e, stackTrace: stack);
       return Stream.value(0);
     }
+  }
+
+  /// Жёсткие фильтры P&L (ТОМ 4) + дедубль групп копий в личном скоупе.
+  Expression<bool> _baseFilter({
+    required String userId,
+    required String? spaceId,
+    required int year,
+    required int month,
+  }) {
+    final localStart = DateTime(year, month, 1);
+    final localEnd =
+        DateTime(year, month + 1, 1).subtract(const Duration(seconds: 1));
+    final t = _db.transactions;
+
+    Expression<bool> filter = t.userId.equals(userId) &
+        t.date.isBiggerOrEqualValue(localStart.toUtc()) &
+        t.date.isSmallerOrEqualValue(localEnd.toUtc()) &
+        t.type.equals(TransactionType.transfer.name).not() &
+        t.savingsGoalId.isNull() &
+        t.isWithdrawal.equals(false) &
+        t.auditStatus.equals(AuditStatus.ignored.name).not();
+
+    if (spaceId != null) {
+      filter = filter & t.spaceId.equals(spaceId);
+    } else {
+      filter = filter & _groupDedup;
+    }
+    return filter;
   }
 
   BudgetLimitsCompanion _toCompanion(BudgetLimit limit) {

@@ -48,3 +48,4 @@ run.bat.vscode/
 .dart_tool/
 coverage/
 sqlite3.dll
+test_log.txt

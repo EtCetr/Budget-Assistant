@@ -98,14 +98,13 @@ class YearBudgetRepositoryImpl implements YearBudgetRepository {
     required String? spaceId,
     required int year,
   }) async {
+    // D24-10: один запрос вместо 12 (устранение блокировок UI).
+    final rows =
+        await _dao.limitsForYear(userId: userId, spaceId: spaceId, year: year);
     final result = <String, Map<int, int>>{};
-    for (var m = 1; m <= 12; m++) {
-      final rows = await _dao.limitsForMonth(
-          userId: userId, spaceId: spaceId, year: year, month: m);
-      for (final r in rows) {
-        final byMonth = result.putIfAbsent(r.categoryId, () => {});
-        byMonth[r.month] = (byMonth[r.month] ?? 0) + r.limitAmount;
-      }
+    for (final r in rows) {
+      final byMonth = result.putIfAbsent(r.categoryId, () => {});
+      byMonth[r.month] = (byMonth[r.month] ?? 0) + r.limitAmount;
     }
     return result;
   }
@@ -287,21 +286,23 @@ class YearBudgetRepositoryImpl implements YearBudgetRepository {
     required int year,
     required int month,
   }) async {
-    var y = year;
-    var m = month;
-    for (var i = 0; i < 24; i++) {
-      m--;
-      if (m == 0) {
-        m = 12;
-        y--;
+    try {
+      // D24-10: два запроса вместо 48 (24 месяца x 2).
+      final limits = await _dao.limitMonths(userId: userId, spaceId: spaceId);
+      final allocs = await _dao.allocatedMonths(userId: userId, spaceId: spaceId);
+      final target = year * 12 + (month - 1);
+      var best = -1;
+      for (final m in [...limits, ...allocs]) {
+        final idx = m.year * 12 + (m.month - 1);
+        if (idx >= target || idx < target - 24) continue;
+        if (idx > best) best = idx;
       }
-      final limits = await limitsForMonth(
-          userId: userId, spaceId: spaceId, year: y, month: m);
-      final alloc = await allocated(
-          userId: userId, spaceId: spaceId, year: y, month: m);
-      if (limits.isNotEmpty || alloc != null) return (year: y, month: m);
+      if (best < 0) return null;
+      return (year: best ~/ 12, month: best % 12 + 1);
+    } catch (e, st) {
+      _logger.e('previousBudgetMonth failed', error: e, stackTrace: st);
+      rethrow;
     }
-    return null;
   }
 
   @override

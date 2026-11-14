@@ -20,6 +20,15 @@ class TransactionRow extends ConsumerWidget {
 
   final TransactionUiModel transaction;
 
+  /// Этап 24 (D24-9, правка): «Личное» пишем только у личных операций.
+  /// У общих (есть семейная копия) и у чисто семейных — ничего.
+  String _scopeSuffix() {
+    if (transaction.hasPersonalCopy && transaction.groupSpaceIds.isEmpty) {
+      return 'Личное';
+    }
+    return '';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final privacyMode = ref.watch(privacyModeProvider);
@@ -30,18 +39,25 @@ class TransactionRow extends ConsumerWidget {
     final showFamilyAttributes = isFamilyMember &&
         colorsOn &&
         privacyMode != BalanceVisibilityMode.hidden;
+
     final merchant = formatter.text(
       transaction.merchantName,
       privacyMode,
       fallback: transaction.categoryName,
     );
+
+    final suffix = _scopeSuffix();
     final subtitle = formatter.text(
-      '${transaction.categoryName} • ${DateFormat.Hm().format(transaction.date.toLocal())}',
+      '${transaction.categoryName} • '
+      '${DateFormat.Hm().format(transaction.date.toLocal())}'
+      '${suffix.isEmpty ? '' : ' · $suffix'}',
       privacyMode,
     );
+
     final hasPendingSync = transaction.syncStatus == SyncStatus.pending;
     final hasSyncError = transaction.syncStatus == SyncStatus.conflict;
     final isHold = transaction.auditStatus == AuditStatus.pending;
+
     final amountText = formatter.amount(
       kopecks: transaction.type == TransactionType.expense
           ? -transaction.amountKopecks
@@ -50,6 +66,7 @@ class TransactionRow extends ConsumerWidget {
       mode: privacyMode,
       showSign: transaction.type != TransactionType.transfer,
     );
+
     final amountColor = switch (transaction.type) {
       TransactionType.expense => AppColors.colorExpense,
       TransactionType.income => AppColors.colorIncome,
@@ -65,7 +82,6 @@ class TransactionRow extends ConsumerWidget {
       );
     }
 
-    // Этап 22 (ТЗ 6.10.4): семантика для TalkBack.
     return Semantics(
       label: '$merchant, $subtitle, $amountText',
       button: true,
@@ -90,15 +106,14 @@ class TransactionRow extends ConsumerWidget {
                   height: 48,
                   margin: const EdgeInsets.only(right: 8),
                   decoration: BoxDecoration(
-                    color: ref.watch(memberColorInCurrentSpaceProvider(transaction.userId)),
+                    color: ref.watch(
+                        memberColorInCurrentSpaceProvider(transaction.userId)),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               CircleAvatar(
                 radius: 20,
-                backgroundColor: ColorParser.fromHex(
-                  transaction.categoryColorHex,
-                ),
+                backgroundColor: ColorParser.fromHex(transaction.categoryColorHex),
                 child: const Icon(Icons.category, color: Colors.white, size: 20),
               ),
               const SizedBox(width: 12),
@@ -131,7 +146,8 @@ class TransactionRow extends ConsumerWidget {
                   padding: const EdgeInsets.only(right: 8),
                   child: CircleAvatar(
                     radius: 12,
-                    backgroundColor: ref.watch(memberColorInCurrentSpaceProvider(transaction.userId)),
+                    backgroundColor: ref.watch(
+                        memberColorInCurrentSpaceProvider(transaction.userId)),
                     child: Text(
                       _initials(transaction.memberDisplayName!),
                       style: const TextStyle(fontSize: 10, color: Colors.white),
@@ -147,15 +163,6 @@ class TransactionRow extends ConsumerWidget {
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
                           color: AppColors.colorWarning,
                         ),
-                  ),
-                ),
-              if (transaction.receiptId != null)
-                const Padding(
-                  padding: EdgeInsets.only(right: 6),
-                  child: Icon(
-                    Icons.receipt_long,
-                    size: 16,
-                    color: AppColors.textSecondary,
                   ),
                 ),
               if (transaction.receiptId != null)
@@ -219,7 +226,6 @@ class TransactionRow extends ConsumerWidget {
     if (parts.length == 1) {
       return parts.first.substring(0, 1).toUpperCase();
     }
-    return '${parts[0].substring(0, 1)}${parts[1].substring(0, 1)}'
-        .toUpperCase();
+    return '${parts[0].substring(0, 1)}${parts[1].substring(0, 1)}'.toUpperCase();
   }
 }

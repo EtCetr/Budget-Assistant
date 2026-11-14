@@ -7,6 +7,7 @@ import '../../../helpers/test_db.dart';
 
 /// Этап 24: SQL-математика годовых матриц на Drift in-memory.
 /// Сплиты, крупные покупки, фильтры P&L, скоупы, локальный месяц.
+/// D24-9: «Лично» = мой вклад (личные + мои семейные), группа — один раз.
 Map<String, int> sumByCat(List<CatMonthSum> rows) {
   final out = <String, int>{};
   for (final r in rows) {
@@ -145,7 +146,7 @@ void main() {
       expect(sumByCat(rows), {'__none__': 700});
     });
 
-    test('скоупы изолированы: личное и семейное не смешиваются', () async {
+    test('личный скоуп = мой вклад: личные + мои семейные', () async {
       await seed.tx(id: 'p', amountKopecks: 1000, categoryId: 'c1');
       await seed.tx(
         id: 'f',
@@ -165,7 +166,7 @@ void main() {
         year: 2026,
       );
 
-      expect(sumByCat(personal), {'c1': 1000});
+      expect(sumByCat(personal), {'c1': 3000});
       expect(sumByCat(family), {'c1': 2000});
     });
 
@@ -208,7 +209,7 @@ void main() {
       expect(sumByCat(rows), {'i1': 50000});
     });
 
-    test('availableYears: годы только выбранного скоупа', () async {
+    test('availableYears: личный скоуп видит и семейные годы', () async {
       await seed.tx(
         id: 'y25',
         amountKopecks: 100,
@@ -224,9 +225,12 @@ void main() {
         date: testDate(2024, 5),
       );
 
-      final years = await dao.availableYears(userId: kUserId, spaceId: null);
+      final personal = await dao.availableYears(userId: kUserId, spaceId: null);
+      final family =
+          await dao.availableYears(userId: kUserId, spaceId: kSpaceId);
 
-      expect(years, [2025, 2026]);
+      expect(personal, [2024, 2025, 2026]);
+      expect(family, [2024]);
     });
 
     test('лимиты месяца: только active и только свой скоуп', () async {
@@ -264,6 +268,39 @@ void main() {
       expect(rows.length, 1);
       expect(rows.single.categoryId, 'c1');
       expect(rows.single.limitAmount, 20000);
+    });
+
+    test('лимиты года читаются одним списком', () async {
+      await seed.limit(
+        id: 'l1',
+        categoryId: 'c1',
+        year: 2026,
+        month: 1,
+        kopecks: 20000,
+      );
+      await seed.limit(
+        id: 'l2',
+        categoryId: 'c1',
+        year: 2026,
+        month: 12,
+        kopecks: 30000,
+      );
+      await seed.limit(
+        id: 'l3',
+        categoryId: 'c1',
+        year: 2025,
+        month: 5,
+        kopecks: 99999,
+      );
+
+      final rows = await dao.limitsForYear(
+        userId: kUserId,
+        spaceId: null,
+        year: 2026,
+      );
+
+      expect(rows.length, 2);
+      expect(rows.map((r) => r.month).toSet(), {1, 12});
     });
 
     test('операции месяца: сплит-позиции отдельными строками', () async {
@@ -307,6 +344,184 @@ void main() {
       expect(plain.read<int>('amt'), 1500);
       expect(plain.read<String>('cat'), 'Продукты');
       expect(plain.read<String>('acc'), 'Карта');
+    });
+
+    group('Дедубль групп копий (D24-9)', () {
+      test('группа считается один раз в личном скоупе', () async {
+        await seed.tx(
+          id: 'p',
+          amountKopecks: 5000,
+          categoryId: 'c1',
+          copyGroupId: 'g1',
+        );
+        await seed.tx(
+          id: 'f',
+          amountKopecks: 5000,
+          categoryId: 'c1',
+          spaceId: kSpaceId,
+          copyGroupId: 'g1',
+        );
+
+        final personal = await dao.expenseMatrix(
+          userId: kUserId,
+          spaceId: null,
+          year: 2026,
+        );
+        final family = await dao.expenseMatrix(
+          userId: kUserId,
+          spaceId: kSpaceId,
+          year: 2026,
+        );
+
+        expect(sumByCat(personal), {'c1': 5000});
+        expect(sumByCat(family), {'c1': 5000});
+      });
+
+      test('семейная копия без личной попадает в мой вклад', () async {
+        await seed.tx(
+          id: 'f-only',
+          amountKopecks: 7000,
+          categoryId: 'c1',
+          spaceId: kSpaceId,
+          copyGroupId: 'g2',
+        );
+
+        final personal = await dao.expenseMatrix(
+          userId: kUserId,
+          spaceId: null,
+          year: 2026,
+        );
+
+        expect(sumByCat(personal), {'c1': 7000});
+      });
+
+      test('чужие семейные операции не попадают в мой вклад', () async {
+        await seed.user(kOtherUserId);
+        await seed.tx(
+          id: 'other',
+          amountKopecks: 9000,
+          categoryId: 'c1',
+          spaceId: kSpaceId,
+          userId: kOtherUserId,
+        );
+
+        final personal = await dao.expenseMatrix(
+          userId: kUserId,
+          spaceId: null,
+          year: 2026,
+        );
+        final family = await dao.expenseMatrix(
+          userId: kUserId,
+          spaceId: kSpaceId,
+          year: 2026,
+        );
+
+        expect(sumByCat(personal), isEmpty);
+        expect(sumByCat(family), {'c1': 9000});
+      });
+
+      test('сплиты группы копий не задваиваются', () async {
+        await seed.tx(
+          id: 'sp-p',
+          amountKopecks: 30000,
+          categoryId: 'c1',
+          isSplit: true,
+          copyGroupId: 'g3',
+        );
+        await seed.tx(
+          id: 'sp-f',
+          amountKopecks: 30000,
+          categoryId: 'c1',
+          isSplit: true,
+          spaceId: kSpaceId,
+          copyGroupId: 'g3',
+        );
+        await seed.split(
+          id: 'a1',
+          transactionId: 'sp-p',
+          categoryId: 'c1',
+          amountKopecks: 10000,
+        );
+        await seed.split(
+          id: 'a2',
+          transactionId: 'sp-p',
+          categoryId: 'c2',
+          amountKopecks: 20000,
+        );
+        await seed.split(
+          id: 'b1',
+          transactionId: 'sp-f',
+          categoryId: 'c1',
+          amountKopecks: 10000,
+        );
+        await seed.split(
+          id: 'b2',
+          transactionId: 'sp-f',
+          categoryId: 'c2',
+          amountKopecks: 20000,
+        );
+
+        final personal = await dao.expenseMatrix(
+          userId: kUserId,
+          spaceId: null,
+          year: 2026,
+        );
+
+        expect(sumByCat(personal), {'c1': 10000, 'c2': 20000});
+      });
+
+      test('доход группы копий считается один раз', () async {
+        await seed.tx(
+          id: 'i-p',
+          amountKopecks: 50000,
+          categoryId: 'i1',
+          type: TransactionType.income,
+          copyGroupId: 'g4',
+        );
+        await seed.tx(
+          id: 'i-f',
+          amountKopecks: 50000,
+          categoryId: 'i1',
+          type: TransactionType.income,
+          spaceId: kSpaceId,
+          copyGroupId: 'g4',
+        );
+
+        final personal = await dao.incomeMatrix(
+          userId: kUserId,
+          spaceId: null,
+          year: 2026,
+        );
+
+        expect(sumByCat(personal), {'i1': 50000});
+      });
+
+      test('операции месяца: группа показывается один раз', () async {
+        await seed.tx(
+          id: 'm-p',
+          amountKopecks: 1500,
+          categoryId: 'c1',
+          copyGroupId: 'g5',
+        );
+        await seed.tx(
+          id: 'm-f',
+          amountKopecks: 1500,
+          categoryId: 'c1',
+          spaceId: kSpaceId,
+          copyGroupId: 'g5',
+        );
+
+        final rows = await dao.monthTransactions(
+          userId: kUserId,
+          spaceId: null,
+          year: 2026,
+          month: 7,
+          type: 'expense',
+        );
+
+        expect(rows.length, 1);
+        expect(rows.single.read<String>('id'), 'm-p');
+      });
     });
   }, skip: skip);
 }

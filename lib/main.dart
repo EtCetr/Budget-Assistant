@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' show Variable;
@@ -23,7 +25,6 @@ import 'package:budget_assistant/features/sync/application/sync_service.dart';
 Future<void> main() async {
   GlobalErrorHandler.runWithGuard(() async {
     WidgetsFlutterBinding.ensureInitialized();
-
     await initializeDateFormatting();
     Intl.defaultLocale = 'ru';
 
@@ -35,12 +36,12 @@ Future<void> main() async {
       'SUPABASE_ANON_KEY',
       defaultValue: 'YOUR-ANON-KEY',
     );
+
     await Supabase.initialize(
       url: supabaseUrl,
       publishableKey: supabaseAnonKey,
     );
 
-    // Сохранение Supabase в SecureStorage для WorkManager
     final storage = SecureStorageService();
     final pendingRoute = await storage.read('pending_deep_link');
     if (pendingRoute != null && pendingRoute.isNotEmpty) {
@@ -56,14 +57,11 @@ Future<void> main() async {
     }
 
     AppLogger.i('App bootstrap completed successfully');
-    AppLogger.i('🚀 Forcing DB initialization...');
 
     final db = AppDatabase();
     await db.customSelect('SELECT 1').get();
 
-    // Этап 18 (вслед «миграции пользователя»): локально добиваем
-    // пользователя с email из Supabase Auth. INSERT OR IGNORE
-    // + UPDATE только пустого email. display_name приедет с синком (Этап 25).
+    // Этап 18: локально добиваем пользователя email-ом из Supabase Auth.
     if (currentUserId != null) {
       try {
         final email = Supabase.instance.client.auth.currentUser?.email ?? '';
@@ -93,10 +91,7 @@ Future<void> main() async {
       }
     }
 
-    AppLogger.i('✅ DB initialized successfully');
-
-    // Этап 23: аудит горячих запросов через EXPLAIN QUERY PLAN.
-    // Только debug; включается: flutter run --dart-define=PERF_EXPLAIN=true
+    // Этап 23: аудит горячих запросов (только debug + PERF_EXPLAIN=true).
     if (kDebugMode && const bool.fromEnvironment('PERF_EXPLAIN')) {
       try {
         await DriftQueryExplainer.audit(db);
@@ -105,7 +100,6 @@ Future<void> main() async {
       }
     }
 
-    // Флаг онбординга
     try {
       final flag = await storage.read('onboarding_completed');
       String status = 'not_started';
@@ -118,24 +112,13 @@ Future<void> main() async {
         if (row.read<int>('c') > 0) status = 'completed';
       }
       AppBootstrapFlags.onboardingStatus = status;
-      AppLogger.i('🚩 Onboarding status at boot: $status');
+      AppLogger.i('Onboarding status at boot: $status');
     } catch (e, st) {
       AppLogger.e('Failed to read onboarding flag', e, st);
       AppBootstrapFlags.onboardingStatus = 'not_started';
     }
 
-    // Инициализация WorkManager для фоновой синхронизации
-    try {
-      await SyncScheduler.ensureRegistered();
-      AppLogger.i('✅ WorkManager initialized');
-    } catch (e, st) {
-      AppLogger.e('Failed to initialize WorkManager', e, st);
-    }
-
     final logger = Logger();
-    await InactiveAdminCheckWorker.register();
-    await NotificationTriggersWorker.register();
-    await YearlyAggregatesWorker.register();
 
     runApp(
       ProviderScope(
@@ -157,5 +140,35 @@ Future<void> main() async {
         child: const BudgetAssistantApp(),
       ),
     );
+
+    // Этап 24 (D24-11): фоновые задачи регистрируются ПОСЛЕ runApp.
+    // Раньше четыре платформенных вызова шли до первого кадра — приложение
+    // не успевало отрисоваться, Android показывал «приложение не отвечает».
+    unawaited(_registerBackgroundWorkers());
   });
+}
+
+/// Регистрация WorkManager-задач. Ошибка одной не мешает остальным.
+Future<void> _registerBackgroundWorkers() async {
+  try {
+    await SyncScheduler.ensureRegistered();
+    AppLogger.i('WorkManager initialized');
+  } catch (e, st) {
+    AppLogger.e('Failed to initialize WorkManager', e, st);
+  }
+  try {
+    await InactiveAdminCheckWorker.register();
+  } catch (e, st) {
+    AppLogger.e('Failed to register InactiveAdminCheckWorker', e, st);
+  }
+  try {
+    await NotificationTriggersWorker.register();
+  } catch (e, st) {
+    AppLogger.e('Failed to register NotificationTriggersWorker', e, st);
+  }
+  try {
+    await YearlyAggregatesWorker.register();
+  } catch (e, st) {
+    AppLogger.e('Failed to register YearlyAggregatesWorker', e, st);
+  }
 }

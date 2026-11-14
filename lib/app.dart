@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -21,16 +23,35 @@ class BudgetAssistantApp extends ConsumerStatefulWidget {
 }
 
 class _BudgetAssistantAppState extends ConsumerState<BudgetAssistantApp> {
+  /// Этап 24 (D24-10): подписка на deep-link создаётся ОДИН раз в initState.
+  /// Раньше она вешалась в build() — каждый rebuild добавлял новую подписку,
+  /// старые не отменялись (утечка + повторная навигация).
+  StreamSubscription<dynamic>? _deepLinkSub;
+
+  /// Стартовые задачи (deep-link холодного старта, авто-оверлей статистики)
+  /// выполняются один раз за жизнь виджета, а не на каждый rebuild.
+  bool _startupScheduled = false;
+
   @override
   void initState() {
     super.initState();
+    _deepLinkSub = DeepLinkBus.instance.stream.listen((route) {
+      if (!mounted) return;
+      try {
+        ref.read(appRouterProvider).go(route);
+      } catch (e, st) {
+        AppLogger.e('Deep link navigation failed', e, st);
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startSecurityServices();
+      _scheduleStartupTasks();
     });
   }
 
   @override
   void dispose() {
+    _deepLinkSub?.cancel();
     ShakeDetector.instance.stop();
     FaceDownDetector.instance.stop();
     UserActivityObserver.instance.stop();
@@ -53,10 +74,11 @@ class _BudgetAssistantAppState extends ConsumerState<BudgetAssistantApp> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final router = ref.watch(appRouterProvider);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+  void _scheduleStartupTasks() {
+    if (_startupScheduled) return;
+    _startupScheduled = true;
+    try {
+      final router = ref.read(appRouterProvider);
       final link = AppBootstrapFlags.pendingDeepLink;
       if (link != null && link.isNotEmpty) {
         AppBootstrapFlags.pendingDeepLink = null;
@@ -65,13 +87,17 @@ class _BudgetAssistantAppState extends ConsumerState<BudgetAssistantApp> {
       }
       // Этап 19 (6.3.37.12): авто-оверлей статистики после 27 декабря.
       Future.delayed(const Duration(seconds: 2), () {
+        if (!mounted) return;
         _maybeShowYearInReview(ref, router);
       });
-    });
-    // Тёплый deep-link: мгновенный переход при тапе на пуш (D18-9).
-    DeepLinkBus.instance.stream.listen((route) {
-      router.go(route);
-    });
+    } catch (e, st) {
+      AppLogger.e('Startup tasks failed', e, st);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final router = ref.watch(appRouterProvider);
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
@@ -86,11 +112,10 @@ class _BudgetAssistantAppState extends ConsumerState<BudgetAssistantApp> {
         title: 'Budget Assistant',
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
-        // Тёмное оформление по умолчанию (токены дизайн-системы — тёмные).
         themeMode: ThemeMode.dark,
         routerConfig: router,
         builder: (context, child) {
-          // Этап 22 (ТЗ 6.10.7): ограничение масштабирования текста до 2.0.
+          // Этап 22 (ТЗ 6.10.7): масштабирование текста до 2.0.
           final mq = MediaQuery.of(context);
           final scale = mq.textScaler.scale(1.0).clamp(1.0, 2.0);
           return MediaQuery(

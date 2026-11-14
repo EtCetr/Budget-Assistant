@@ -1,9 +1,9 @@
 import 'package:logger/logger.dart';
-
 import 'package:budget_assistant/features/sync/data/crypto/sync_payload_encryptor.dart';
 import 'package:budget_assistant/features/sync/data/local/drift_sync_local_source.dart';
 import 'package:budget_assistant/features/sync/data/remote/supabase_sync_gateway.dart';
 import 'package:budget_assistant/features/sync/data/sync_table_spec.dart';
+import 'package:budget_assistant/features/sync/domain/errors/sync_exceptions.dart';
 import 'package:budget_assistant/features/sync/domain/models/sync_models.dart';
 
 class SyncPendingEntitiesUseCase {
@@ -38,16 +38,13 @@ class SyncPendingEntitiesUseCase {
           spec,
           limit: _pendingLimitPerEntity,
         );
-
         if (pendingRows.isEmpty) {
           continue;
         }
 
         final ids = pendingRows.map((row) => row.id).toList();
-
         final remoteRows = await _withRetry(
-          () =>
-              remoteGateway.fetchRemoteRows(table: spec.remoteTable, ids: ids),
+          () => remoteGateway.fetchRemoteRows(table: spec.remoteTable, ids: ids),
           operationName: 'fetchRemoteRows:${spec.remoteTable}',
         );
 
@@ -57,7 +54,6 @@ class SyncPendingEntitiesUseCase {
         };
 
         final rowsToPush = <SyncPendingRow>[];
-
         for (final localRow in pendingRows) {
           final remoteRow = remoteById[localRow.id];
           final remoteUpdatedAt = _parseDate(remoteRow?[spec.updatedAtColumn]);
@@ -69,7 +65,6 @@ class SyncPendingEntitiesUseCase {
 
           if (spec.entityType == SyncTableSpec.transactions.entityType) {
             final spaceId = localRow.spaceId;
-
             if (spaceId == null || spaceId.isEmpty) {
               logger.e(
                 'LWW remote apply failed: missing spaceId '
@@ -78,23 +73,19 @@ class SyncPendingEntitiesUseCase {
               failed++;
               continue;
             }
-
             try {
               final decryptedRemote = await encryptor.decryptRow(
                 spec: spec,
                 remoteRow: remoteRow!,
                 spaceId: spaceId,
               );
-
               await localSource.applyRemoteRow(spec, decryptedRemote);
-
               await localSource.insertConflict(
                 entityType: spec.entityType,
                 entityId: localRow.id,
                 localValue: _jsonSafe(localRow.raw),
                 remoteValue: _jsonSafe(remoteRow),
               );
-
               resolvedByLww++;
             } catch (e, st) {
               logger.e(
@@ -106,24 +97,30 @@ class SyncPendingEntitiesUseCase {
             }
           } else {
             await localSource.markConflict(spec, [localRow.id]);
-
             await localSource.insertConflict(
               entityType: spec.entityType,
               entityId: localRow.id,
               localValue: _jsonSafe(localRow.raw),
               remoteValue: _jsonSafe(remoteRow),
             );
-
             conflicts++;
           }
         }
 
         if (rowsToPush.isNotEmpty) {
           final pushResult = await _pushRows(spec: spec, rows: rowsToPush);
-
           pushed += pushResult.pushed;
           failed += pushResult.failed;
         }
+      } on RemoteSchemaMissingException catch (e) {
+        // D24-12: схема Supabase не развёрнута — это конфигурация, а не сеть.
+        // Прерываем ВЕСЬ синк сразу: повторы и остальные таблицы бессмысленны.
+        logger.w(
+          'Sync skipped: remote table "${e.table}" is missing. '
+          'Supabase migrations will be applied in Stage 25. '
+          'Local data stays pending.',
+        );
+        break;
       } catch (e, st) {
         logger.e(
           'Sync entity batch failed for ${spec.entityType}',
@@ -151,7 +148,6 @@ class SyncPendingEntitiesUseCase {
     var failed = 0;
 
     final groups = <String?, List<SyncPendingRow>>{};
-
     for (final row in rows) {
       groups.putIfAbsent(row.spaceId, () => []).add(row);
     }
@@ -170,7 +166,6 @@ class SyncPendingEntitiesUseCase {
       }
 
       final encryptedRows = <Map<String, Object?>>[];
-
       for (final row in spaceRows) {
         try {
           final encrypted = await encryptor.encryptRow(
@@ -199,21 +194,19 @@ class SyncPendingEntitiesUseCase {
           i,
           end > encryptedRows.length ? encryptedRows.length : end,
         );
-
         try {
           await _withRetry(
-            () =>
-                remoteGateway.upsertRows(table: spec.remoteTable, rows: chunk),
+            () => remoteGateway.upsertRows(table: spec.remoteTable, rows: chunk),
             operationName: 'upsertRows:${spec.remoteTable}',
           );
-
           final chunkIds = chunk
               .map((row) => row[spec.idColumn]?.toString() ?? '')
               .where((id) => id.isNotEmpty)
               .toList();
-
           await localSource.markSynced(spec, chunkIds);
           pushed += chunkIds.length;
+        } on RemoteSchemaMissingException {
+          rethrow;
         } catch (e, st) {
           logger.e(
             'Upsert batch failed for ${spec.entityType}',
@@ -231,7 +224,6 @@ class SyncPendingEntitiesUseCase {
   bool _shouldPushLocal(DateTime? localUpdatedAt, DateTime? remoteUpdatedAt) {
     if (remoteUpdatedAt == null) return true;
     if (localUpdatedAt == null) return false;
-
     return !localUpdatedAt.isBefore(remoteUpdatedAt);
   }
 
@@ -241,26 +233,25 @@ class SyncPendingEntitiesUseCase {
     int maxAttempts = 3,
   }) async {
     var delay = const Duration(seconds: 1);
-
     for (var attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         return await operation();
+      } on RemoteSchemaMissingException {
+        // Конфигурация не чинится повтором — выходим немедленно.
+        rethrow;
       } catch (e, st) {
         if (attempt == maxAttempts) {
           rethrow;
         }
-
         logger.w(
           'Retry $attempt/$maxAttempts for $operationName',
           error: e,
           stackTrace: st,
         );
-
         await Future<void>.delayed(delay);
         delay *= 2;
       }
     }
-
     throw StateError('Retry loop failed for $operationName');
   }
 
@@ -270,19 +261,15 @@ class SyncPendingEntitiesUseCase {
 
   Object? _jsonSafe(Object? value) {
     if (value == null) return null;
-
     if (value is DateTime) {
       return value.toUtc().toIso8601String();
     }
-
     if (value is Map) {
       return value.map((key, val) => MapEntry(key.toString(), _jsonSafe(val)));
     }
-
     if (value is Iterable) {
       return value.map(_jsonSafe).toList();
     }
-
     return value;
   }
 }

@@ -17,7 +17,13 @@ const kAccountId = 'a1';
 DateTime testDate(int year, int month, [int day = 15]) =>
     DateTime(year, month, day, 12).toUtc();
 
-AppDatabase openTestDb() => AppDatabase.forTesting(NativeDatabase.memory());
+AppDatabase openTestDb() {
+  // Каждый тест открывает СВОЮ БД в памяти со своим executor'ом.
+  // Предупреждение drift о нескольких инстансах здесь ложное — гасим его
+  // только в тестах, в приложении оно остаётся включённым.
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  return AppDatabase.forTesting(NativeDatabase.memory());
+}
 
 class TestSeed {
   TestSeed(this.db);

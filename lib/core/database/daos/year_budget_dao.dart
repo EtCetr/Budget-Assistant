@@ -1,9 +1,11 @@
 import 'package:drift/drift.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
+
 part 'year_budget_dao.g.dart';
 
 class CatMonthSum {
   const CatMonthSum(this.categoryId, this.month, this.total);
+
   final String categoryId;
   final int month;
   final int total;
@@ -17,7 +19,11 @@ typedef CategoryRow = ({
   String? iconEmoji,
 });
 
-/// DAO годовых матриц (Этап 23.5). Создаётся конструктором YearBudgetDao(db).
+/// DAO годовых матриц (Этап 23.5).
+///
+/// Этап 24 (D24-9): «Лично» = МОЙ ВКЛАД — личные операции + мои семейные,
+/// каждая группа копий считается ровно один раз.
+/// Этап 24 (D24-10): лимиты года и месяцы с бюджетом читаются одним запросом.
 @DriftAccessor(tables: [Transactions, TransactionSplits, BudgetLimits, Categories])
 class YearBudgetDao extends DatabaseAccessor<AppDatabase>
     with _$YearBudgetDaoMixin {
@@ -28,8 +34,16 @@ class YearBudgetDao extends DatabaseAccessor<AppDatabase>
   static const _yearExpr =
       "CAST(strftime('%Y', datetime(t.date, 'unixepoch', 'localtime')) AS INTEGER)";
 
+  /// Одна операция = одна группа копий. Представитель группы:
+  /// сначала личная копия, затем самая ранняя по created_at.
+  static const _groupDedup =
+      '(t.copy_group_id IS NULL OR t.id = ('
+      'SELECT x.id FROM transactions x '
+      'WHERE x.copy_group_id = t.copy_group_id AND x.user_id = t.user_id '
+      'ORDER BY (x.space_id IS NULL) DESC, x.created_at ASC, x.id ASC LIMIT 1))';
+
   String _scopeSql(String? spaceId) => spaceId == null
-      ? 't.space_id IS NULL AND t.user_id = ?'
+      ? 't.user_id = ? AND $_groupDedup'
       : 't.space_id = ?';
 
   List<Variable> _scopeVars(String userId, String? spaceId) => spaceId == null
@@ -51,6 +65,7 @@ class YearBudgetDao extends DatabaseAccessor<AppDatabase>
       'GROUP BY cat, m',
       variables: [..._scopeVars(userId, spaceId), Variable.withInt(year)],
     ).get();
+
     final splits = await customSelect(
       "SELECT CASE WHEN t.is_large_expense = 1 THEN '__large__' "
       "ELSE COALESCE(s.category_id, '__none__') END AS cat, "
@@ -62,6 +77,7 @@ class YearBudgetDao extends DatabaseAccessor<AppDatabase>
       'GROUP BY cat, m',
       variables: [..._scopeVars(userId, spaceId), Variable.withInt(year)],
     ).get();
+
     return [...base, ...splits]
         .map((r) => CatMonthSum(
               r.read<String>('cat'),
@@ -85,6 +101,7 @@ class YearBudgetDao extends DatabaseAccessor<AppDatabase>
       'GROUP BY cat, m',
       variables: [..._scopeVars(userId, spaceId), Variable.withInt(year)],
     ).get();
+
     return rows
         .map((r) => CatMonthSum(
               r.read<String>('cat'),
@@ -109,12 +126,71 @@ class YearBudgetDao extends DatabaseAccessor<AppDatabase>
                   ? (b.spaceId.isNull() & b.userId.equals(userId))
                   : b.spaceId.equals(spaceId))))
         .get();
+
     return rows
         .map((r) => (
               categoryId: r.categoryId,
               month: r.month,
               limitAmount: r.limitAmount,
             ))
+        .toList();
+  }
+
+  /// D24-10: лимиты всего года одним запросом (было 12 обращений).
+  Future<List<({String categoryId, int month, int limitAmount})>> limitsForYear({
+    required String userId,
+    required String? spaceId,
+    required int year,
+  }) async {
+    final rows = await (select(budgetLimits)
+          ..where((b) =>
+              b.status.equals('active') &
+              b.year.equals(year) &
+              (spaceId == null
+                  ? (b.spaceId.isNull() & b.userId.equals(userId))
+                  : b.spaceId.equals(spaceId))))
+        .get();
+
+    return rows
+        .map((r) => (
+              categoryId: r.categoryId,
+              month: r.month,
+              limitAmount: r.limitAmount,
+            ))
+        .toList();
+  }
+
+  /// D24-10: месяцы, где заданы лимиты (для поиска прошлого месяца).
+  Future<List<({int year, int month})>> limitMonths({
+    required String userId,
+    required String? spaceId,
+  }) async {
+    final where = spaceId == null
+        ? "WHERE status = 'active' AND space_id IS NULL AND user_id = ?"
+        : "WHERE status = 'active' AND space_id = ?";
+    final rows = await customSelect(
+      'SELECT DISTINCT year AS y, month AS m FROM budget_limits $where',
+      variables: [Variable.withString(spaceId ?? userId)],
+    ).get();
+    return rows
+        .map((r) => (year: r.read<int>('y'), month: r.read<int>('m')))
+        .toList();
+  }
+
+  /// D24-10: месяцы, где задано «Выделено».
+  Future<List<({int year, int month})>> allocatedMonths({
+    required String userId,
+    required String? spaceId,
+  }) async {
+    final where = spaceId == null
+        ? "WHERE space_id = '' AND user_id = ?"
+        : 'WHERE space_id = ?';
+    final rows = await customSelect(
+      'SELECT DISTINCT year AS y, month AS m FROM monthly_budgets $where',
+      variables: [Variable.withString(spaceId ?? userId)],
+    ).get();
+    return rows
+        .map((r) => (year: r.read<int>('y'), month: r.read<int>('m')))
         .toList();
   }
 
@@ -134,7 +210,7 @@ class YearBudgetDao extends DatabaseAccessor<AppDatabase>
     return rows.map(_mapCat).toList();
   }
 
-  /// Все видимые категории — для резолва имён категорий из чужого скоупа.
+  /// Все видимые категории — для резолва имён из чужого скоупа.
   Future<List<CategoryRow>> allCategories({required String userId}) async {
     final rows = await (select(categories)
           ..where((c) => c.userId.equals(userId) | c.spaceId.isNotNull()))
