@@ -1,4 +1,3 @@
-// TODO(24): unit-тесты carryOver (лимиты категорий + Выделено) и saveLimit для семьи.
 // TODO(25): синк monthly_budgets (E2E payload + таблица Supabase).
 import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';

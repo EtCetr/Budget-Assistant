@@ -5,7 +5,7 @@ import 'package:budget_assistant/core/enums/transaction_enums.dart';
 import '../../../helpers/sqlite_probe.dart';
 import '../../../helpers/test_db.dart';
 
-/// Этап 24 (TODO(24)): SQL-математика годовых матриц на Drift in-memory.
+/// Этап 24: SQL-математика годовых матриц на Drift in-memory.
 /// Сплиты, крупные покупки, фильтры P&L, скоупы, локальный месяц.
 Map<String, int> sumByCat(List<CatMonthSum> rows) {
   final out = <String, int>{};

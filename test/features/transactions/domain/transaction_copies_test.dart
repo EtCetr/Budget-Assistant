@@ -7,7 +7,7 @@ import 'package:budget_assistant/features/transactions/domain/usecases/set_trans
 import '../../../helpers/sqlite_probe.dart';
 import '../../../helpers/test_db.dart';
 
-/// Этап 24 (TODO(24)): связанные копии операции (D23.6-2 / D23.6-3 / D23.6-4).
+/// Этап 24: связанные копии операции (D23.6-2 / D23.6-3 / D23.6-4).
 void main() {
   final skip = sqliteSkipReason();
 

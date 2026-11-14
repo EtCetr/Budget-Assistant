@@ -1146,6 +1146,9 @@ await _createReceiptsIndexes();
         await customStatement(
             'CREATE INDEX IF NOT EXISTS idx_yearly_aggregates_sync_status ON yearly_aggregates(sync_status)');
           await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS idx_personal_share_flags_unique ON personal_share_flags(user_id, space_id)');
+          await customStatement("DELETE FROM monthly_budgets WHERE id IN (SELECT id FROM (SELECT id, ROW_NUMBER() OVER (PARTITION BY user_id, space_id, year, month ORDER BY updated_at DESC, rowid DESC) AS rn FROM monthly_budgets) WHERE rn > 1)");
+          await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS idx_monthly_budgets_unique ON monthly_budgets(user_id, space_id, year, month)');
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_monthly_budgets_lookup ON monthly_budgets(space_id, year, month)');
       await customStatement('PRAGMA journal_mode = WAL');
           await customStatement('PRAGMA synchronous = NORMAL');
           final tables = await customSelect(

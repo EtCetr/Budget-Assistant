@@ -1,5 +1,3 @@
-// TODO(24): unit-тесты математики матриц - средняя (деление на месяцы с данными),
-// профицит, крупные покупки без задвоения, сплиты, 'Без категории' и чужой скоуп.
 import 'package:logger/logger.dart';
 import '../models/year_budget_models.dart';
 import '../repositories/year_budget_repository.dart';

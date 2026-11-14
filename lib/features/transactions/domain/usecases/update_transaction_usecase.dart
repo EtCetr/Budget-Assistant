@@ -1,4 +1,3 @@
-// TODO(24): unit-тесты propagation правки на копии группы (включая сплиты).
 import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';

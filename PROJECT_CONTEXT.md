@@ -575,3 +575,46 @@ BACKLOG - нужно решение владельца, этап не назна
 [x] Маркеры TODO(23.8) сняты из update/delete usecases; реестр долгов обновлён.
 Техдолг: unit-тесты пропагации сторно и связывания компенсаций — TODO(24) в mark_as_refund_usecase.dart.
 Следующий этап по роадмапу: 24 «Testing (Unit + Widget + Integration)».
+
+════════════════════════════════════════════════════════════════
+ЭТАП 24 «Testing (Unit + Widget + Integration)»: БАЗОВЫЙ КОНТУР ЗАВЕРШЁН (2026-11-14)
+════════════════════════════════════════════════════════════════
+Что сделано
+[x] 24a Инфраструктура: test/helpers/test_db.dart (Drift NativeDatabase.memory + фикстуры TestSeed: копейки, UTC, порядок FK), sqlite_probe.dart (авто-skip тестов БД без нативного SQLite), fake_year_budget_repository.dart.
+[x] 24a Unit: годовые матрицы (18), месячная статистика (18), SaveMonthBudgetUseCase (7, mocktail), экспорт XLSX (4).
+[x] 24b Drift in-memory: YearBudgetDao (10) и YearBudgetRepositoryImpl (10) — сплиты, крупные, фильтры P&L, «Без категории», скоупы, локальный месяц, carryOver, saveLimit семьи, «Выделено».
+[x] 24c Группы копий (12) + propagation правки/удаления (8); PrivacyFormatter — вся матрица 6.6 в режимах visible/hidden (20); EmptyStateWidget (6); offline-состояния (10).
+[x] 24d Сторно на копии группы (4); SQL-фильтры журнала транзакций (18); Integration-B «создать → pending → синк → pull-to-refresh» (5).
+[x] 24-F Фикс: idx_monthly_budgets_unique + idx_monthly_budgets_lookup создаются в beforeOpen (на чистой установке их не было) + дедубль перед созданием + 3 регресс-теста.
+[x] 24-F Маркеры TODO(24) сняты: 8 файлов lib + 4 комментария в тестах. Реестр долгов обновлён.
+[x] tool/coverage_report.dart — отчёт покрытия по lcov + инвентаризация файлов домена по фичам.
+
+Итог прогона: все тесты зелёные (228 + 3 новых регресс-теста), flutter analyze без замечаний.
+Покрытие строк: year_budget/domain 298/298 (100%), transactions/domain 327/402 (81%).
+Домен всего: 21 из 311 файлов затронуты тестами (6.8%). Гейт Roadmap «Coverage >= 80% для domain layer» НЕ достигнут — см. TODO(24.1–24.5).
+
+Integration: выбран вариант B (решение владельца) — хостовый сквозной тест test/integration/offline_sync_flow_test.dart (настоящие UseCases + репозитории + Drift в памяти, сеть — заглушка). Пакеты integration_test и patrol НЕ добавлялись. Прогон на эмуляторе с WorkManager — ручной смоук Этапа 25.
+
+Как запускать тесты на Windows
+1. В корне проекта должен лежать официальный sqlite3.dll (sqlite.org → sqlite-dll-win-x64-*.zip). Системный winsqlite3.dll НЕ подходит: не поддерживает модификатор 'unixepoch', матрицы молча возвращают пусто.
+2. flutter test --coverage
+3. dart run tool/coverage_report.dart --min=80 --scope=lib/features/year_budget/domain
+Список файлов домена без тестов пишется в coverage/untested_domain.txt. sqlite3.dll и coverage/ в .gitignore.
+
+РЕЕСТР ДОЛГОВ ЭТАПА 24 (заменяет прежний список TODO(24))
+TODO(24) — ЗАКРЫТ
+[x] Unit: математика матриц — средняя, профицит, крупные без задвоения, сплиты, «Без категории», чужой скоуп.
+[x] Unit: месячная статистика — Сумма/Лимит/Осталось, Нераспределено, состав категорий.
+[x] Unit: carryOver (лимиты + Выделено), saveLimit для семьи.
+[x] Unit: группы копий — создание/перемещение/удаление, пустой состав, обнуление copy_group_id, propagation правки/удаления/сторно, сплиты, includePersonal.
+
+TODO(24.1–24.5) — кампания покрытия домена (гейт >= 80%)
+[ ] TODO(24.1) Деньги: budget (P&L, эффективный лимит, алерты), accounts (Net Worth, CRUD), конвертация валют.
+[ ] TODO(24.2) Кэшбэк (5 жёстких правил), категории, дашборд.
+[ ] TODO(24.3) Цели, долги (Сценарии А/Б), напоминания (RRULE), календарь и прогноз.
+[ ] TODO(24.4) Импорт (дубли, переводы, парсеры), чеки (хэш, матчинг, аналитика товаров).
+[ ] TODO(24.5) Лояльность, админка/инвайты, пространства, настройки, security, year_in_review.
+Маркеры в коде не ставятся: долг измеримый, источник правды — отчёт tool/coverage_report.dart (coverage/untested_domain.txt).
+
+TODO(25) — без изменений (12 маркеров в коде: синк monthly_budgets/personal_share_flags/copy_group_id, пуши импорта, триггеры кэша аналитики, Semantics графиков, FLAG_SECURE, RPC удаления аккаунта).
+BACKLOG и «НЕ ДЕЛАЕМ» — без изменений.

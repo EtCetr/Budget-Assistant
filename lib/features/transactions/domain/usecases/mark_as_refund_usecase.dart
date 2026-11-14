@@ -1,4 +1,3 @@
-// TODO(24): unit-тесты пропагации сторно на копии группы и связывания компенсаций.
 import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';

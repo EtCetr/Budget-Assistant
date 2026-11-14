@@ -21,7 +21,7 @@ class _FakeClock implements ClockPort {
   Future<int> elapsedRealtimeMs() async => 1000;
 }
 
-/// Этап 24 (TODO(24)): правка и удаление применяются ко всем копиям группы.
+/// Этап 24: правка и удаление применяются ко всем копиям группы.
 void main() {
   final skip = sqliteSkipReason();
 

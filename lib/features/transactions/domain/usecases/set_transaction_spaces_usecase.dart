@@ -1,5 +1,3 @@
-// TODO(24): unit-тесты состава группы - добавить/переместить/убрать,
-// запрет пустого состава, обнуление copy_group_id при одной копии.
 import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';

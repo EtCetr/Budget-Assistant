@@ -5,7 +5,7 @@ import 'package:budget_assistant/features/year_budget/data/repositories/year_bud
 import '../../../helpers/sqlite_probe.dart';
 import '../../../helpers/test_db.dart';
 
-/// Этап 24 (TODO(24)): carryOver, saveLimit для семьи, агрегация лимитов,
+/// Этап 24: carryOver, saveLimit для семьи, агрегация лимитов,
 /// «Выделено» и слияние сплитов с обычными тратами.
 void main() {
   final skip = sqliteSkipReason();
