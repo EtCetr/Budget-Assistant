@@ -142,7 +142,7 @@ class CheckBudgetAlertsUseCase {
     final existing = await _notificationsDao.db.customSelect(
       '''
       SELECT COUNT(*) AS cnt FROM notifications
-      WHERE user_id = ? AND type = ? AND related_entity_id = ?
+      WHERE user_id = ? AND type = ? AND IFNULL(related_entity_id, '') = ?
         AND created_at > ?
       ''',
       variables: [
