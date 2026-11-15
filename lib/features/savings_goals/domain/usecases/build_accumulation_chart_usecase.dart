@@ -58,7 +58,7 @@ class BuildAccumulationChartUseCase {
           hasStaleRates = true;
           continue;
         }
-        final key = '${local.year}-${local.month}-${local.day}';
+        final key = '${local.year}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')}';
         daySums[key] = (daySums[key] ?? 0) + converted;
       }
       final keys = daySums.keys.toList()..sort();
