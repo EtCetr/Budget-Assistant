@@ -49,3 +49,7 @@ run.bat.vscode/
 coverage/
 sqlite3.dll
 test_log.txt
+flutter_*.log
+*_dump.txt
+diskstats.txt
+context_*.txt
