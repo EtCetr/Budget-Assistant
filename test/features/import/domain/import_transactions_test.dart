@@ -123,7 +123,7 @@ void main() {
       expect(result.bankCode, 'tbank');
       expect(result.fileName, 'statement.csv');
       expect(result.targetAccountId, kAccountId);
-      expect(result.periodStart!.isBefore(result.periodEnd!), isTrue);
+      expect(result.periodStart.isBefore(result.periodEnd), isTrue);
       expect(result.transfers, isEmpty);
     });
 
