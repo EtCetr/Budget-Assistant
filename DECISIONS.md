@@ -583,3 +583,10 @@ duplicate_receipt / duplicate_detected / transfer_detected / hold_confirmed вш
 | D24-53: SplitPositionDraft мокается через mocktail, а не создаётся конструктором | Конструктор не верифицирован в контексте (правило 1). SplitReceiptUseCase читает только id / amount / categoryId / description — этого достаточно для проверки всех четырёх кодов ошибок |
 | D24-54: тесты ConfirmReceiptUseCase обязаны согласовывать итог чека с суммой позиций | Валидация выполняется первой и блокирует сохранение: чек на 10000 с одной позицией на 5000 даёт sum_mismatch, до saveItems/saveReceipt/link дело не доходит (4 ложных падения) |
 | D24-55: заглушка ProductAliasesRepository повторяет SQL-семантику findByHash (space_id = currentSpaceId ИЛИ space_id IS NULL) | Иначе тест «глобальный алиас находится в любом пространстве» проверял бы поведение, которого нет в реальной БД |
+
+Обновления решений (Этап 24.7d — Чеки: Drift-репозитории, 2026-11-15)
+| Решение | Обоснование |
+| --- | --- |
+| D24-56: репозитории чеков и алиасов проверяются на реальной БД с полным сидом (users + spaces + accounts + categories) | receipts/receipt_items/product_aliases связаны FK; атомарная замена позиций и каскадное удаление проверяются только настоящим SQL |
+| D24-57: sync_status в receipts / receipt_items / product_aliases хранится СТРОКОЙ ('pending'), в transactions — textEnum (SyncStatus.pending) | Тесты сравнивают соответственно строку и enum. Разнотипность подтверждена прогоном; при переносе чеков на enum понадобится миграция |
+| D24-58: блокировка привязки чека к hold проверяется вместе с откатом (transaction_id остаётся null) | Проверять только тип исключения недостаточно: важно, что чек не остался частично привязанным |
