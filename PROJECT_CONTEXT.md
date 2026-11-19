@@ -1045,3 +1045,32 @@ ParseImportFileUseCase.call() использует path_provider — покры�
 Новых дефектов не найдено — батч прошёл с первого прогона.
 
 Следующий шаг: замер покрытия по домену (flutter test --coverage + разбор lcov по фичам), чтобы точно спланировать остаток этапа 24: чеки (кэш аналитики товаров, детализация товара) и батч 24.8.
+
+════════════════════════════════════════════════════════════════
+ЭТАП 24.8a «МАЛЫЕ ФИЧИ» — ЗАВЕРШЁН (2026-11-15)
+════════════════════════════════════════════════════════════════
+Что покрыто (53 новых теста)
+[x] privacy (2): режимов ровно два (visible/hidden), имена стабильны — защита от возврата partial (D19-14).
+[x] profile (6): UserDto JSON round-trip и nullable-поля; UpdateProfileUseCase — имя/дательный + pending, avatarPath=null не трогает аватар, clearAvatar обнуляет, updated_at сдвигается вперёд (явная старая база).
+[x] onboarding (6): начальный шаг, порядок шагов до completed, идемпотентность completed, setBaseCurrency, completeOnboarding с любого шага, отсутствие шага firstAccount (D18-14).
+[x] settings (6): очистка кэша (пусто -> 0, удаляет прогноз и аналитику товаров, не трогает транзакции/счета/категории, идемпотентность), UpdateAppSettingsUseCase (одна и две последовательные правки).
+[x] security (19): уровень защиты 0-100 по группам (быстрое скрытие 30, защита данных 20, аутентификация 40, секретность 10), биометрия только при доступности, границы title; стойкость PIN (длина, одинаковые, последовательности, год, популярные, стойкий, пустая строка).
+[x] spaces (14): модели UserSpace/SpaceMembershipInfo; CreateSpaceUseCase (пустое имя, обрезка, id, DatabaseFailure); AttachPersonalTransactionsUseCase (счётчик, ошибка); SetPersonalShareUseCase (countPersonal только личные, флаг по умолчанию выкл, включение присоединяет, выключение меняет только флаг, performAttach=false).
+
+Итог: 1099 тестов зелёные, flutter analyze без замечаний.
+Инфраструктура: test/helpers/fake_spaces_repository.dart.
+
+БАЗОВЫЙ ЗАМЕР ПОКРЫТИЯ (2026-11-15, до батча 24.8a)
+lcov: 2971 / 3457 исполняемых строк = 85.9% — ЗАВЫШЕНО (в отчёт попали только загруженные файлы).
+Честная оценка: 15972 физические строки домена, 6830 (42.8%) в нетронутых файлах; исполняемых ~6040, покрыто 2971 => ~49%.
+Файлов домена: 311, без покрытия: 146.
+11 фич с нулём: admin 1302, notifications 915, year_in_review 749, loyalty_cards 626, spaces 389, settings 209, auth 195, security 189, profile 53, onboarding 47, privacy 1 (физических строк).
+Крупнейшие пробелы внутри покрытых фич: receipts 629, transactions 351, savings_goals 227, import 202, year_budget 182, cashback 161.
+CORE (lib/core): 636 / 1895 = 33.6% — в гейт не входит (роадмап: домен >= 80%).
+
+ПЛАН ДО ГЕЙТА
+24.8a малые фичи — ГОТОВО (privacy, profile, onboarding, settings, security, spaces).
+24.8b — auth (4 файла) + LeaveSpaceUseCase (нужна схема memberships).
+24.8c — loyalty_cards; 24.8d — notifications; 24.8e — year_in_review; 24.8f — admin.
+24.8g — пробелы: receipts, transactions, savings_goals, year_budget, cashback.
+24.9 — финал: гейт, закрытие TODO(24.1c / 24.2c / 24.9), документы, коммит этапа.
