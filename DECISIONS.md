@@ -624,3 +624,11 @@ duplicate_receipt / duplicate_detected / transfer_detected / hold_confirmed вш
 | D24-70: заглушка LoyaltyCardsRepository НЕ повторяет SQL-фильтрацию (scope / категория / избранное / поиск) — тесты проверяют делегирование всех параметров одним вызовом watchCards | D20-2: все фильтры уходят в SQL WHERE. Дублировать SQL в фейке — риск разойтись с реальным DAO; сама фильтрация проверяется на Drift-репозитории |
 | D24-71: права закреплены тестами — избранное переключает любой (без проверки автора), видимость is_shared только создатель; sort_order и preferred_orientation не трогают sync_status | ТЗ 6.3.19.8 / 6.3.21.13.8: LOCAL-поля не синхронизируются, race conditions между членами семьи исключены |
 | D24-72: GetLoyaltyCardByIdUseCase возвращает Success(null) для отсутствующей карты, а не Error | «Не найдено» при чтении — нормальный исход (экран редактирования закрывается), Error только для сбоя БД. Тот же контракт у RestoreLoyaltyCardDraftUseCase |
+
+Обновления решений (Этап 24.8d часть 1 — Уведомления: типы, генерация, действия, 2026-11-15)
+| Решение | Обоснование |
+| --- | --- |
+| D24-73: тип пуша нормализуется к NotificationType.name; принимаются и camelCase (dbValue), и legacy snake_case | НАСТОЯЩИЙ БАГ: в БД пишется dbValue (giftPurchaseAlert), а switch сравнивал со snake_case (gift_purchase_alert) — при передаче значения из БД кнопка «Подтвердить» не выполняла бизнес-логику |
+| D24-74: entityId разбирается как «id:суффикс» — берётся часть ДО первого двоеточия | НАСТОЯЩИЙ БАГ: бралась часть ПОСЛЕ двоеточия. Все триггеры формируют entityId как id:суффикс (reminderDue -> reminderId:2026-7-15, goalMilestone -> goalId:75), поэтому UPDATE reminders шёл по id=дата и «Выполнено» не завершало напоминание |
+| D24-75: дайджест собирает уведомления по обеим формам типа (camelCase + legacy snake_case) | SQL дайджеста фильтровал только snake_case, а GenerateNotificationUseCase пишет camelCase — системные пуши никогда не попадали в дайджест, работал лишь блок «потрачено N ₽» |
+| D24-76: Angle brackets в doc-комментариях Dart берутся в обратные кавычки | Анализатор трактует textEnum<SyncStatus> как HTML (unintended_html_in_doc_comment) |
