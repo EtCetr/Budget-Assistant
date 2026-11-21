@@ -644,3 +644,10 @@ duplicate_receipt / duplicate_detected / transfer_detected / hold_confirmed вш
 | D24-78: per-type тумблер проверяется у КАЖДОГО не-alwaysOn типа, а не только у трёх типов лимитов | НАСТОЯЩИЙ БАГ: notification_settings_json читался, но on(type) вызывался лишь для limitGlobalPercent / limitGlobalAmount / limitIndividual. Остальные 20+ типов пушились независимо от настройки пользователя (Этап 18.7 даёт 27 тумблеров). Найдено тестом «выключенный тип подавляет пуш» |
 | D24-79: локальные функции-хелперы в тестах объявляются ДО setUp | Dart запрещает ссылку на локальную функцию раньше её объявления (referenced_before_declaration); вызов member() внутри setUp при объявлении ниже давал ошибку компиляции |
 | D24-80: настройки в тестах триггеров правятся raw SQL по именам колонок из запросов UseCase | Dart-геттеры app_settings не верифицированы; имена колонок (global_alert_percent, limit_alert_mode, enable_secrecy_mode, notification_settings_json) взяты из SQL самого UseCase |
+
+Обновления решений (Этап 24.8e часть 1 — Year in Review: модели и usecase'ы, 2026-11-15)
+| Решение | Обоснование |
+| --- | --- |
+| D24-81: CheckYearInReviewAvailabilityUseCase получил необязательный параметр now | UseCase брал DateTime.now() внутри — тест проходил бы только в декабре. Прецедент: GenerateDailyDigestUseCase.maybeGenerate(userId, now). Без параметра поведение прежнее, вызывающий код не меняется |
+| D24-82: RecalculateYearlyAggregatesUseCase мокается в доменных тестах | Реальный пересчёт открывает файловую БД через path_provider + compute — на хосте не запускается. Проверяется контракт чтения кэша (свежий / устаревший / пустой), а не сама агрегация |
+| D24-83: свежесть кэша годовых итогов = lastCalculatedAt >= lastTransactionUpdate И transactionCount > 0 | D19-19: правка операции обязана инвалидировать кэш. Пустой кэш пересчитывается всегда, иначе экран навсегда остался бы с нулями |

@@ -1189,3 +1189,22 @@ on(type) вызывался только для трёх типов лимито
 24.9 — Финал: гейт >= 80% по домену, закрытие TODO(24.1c / 24.2c / 24.9), документы, коммит этапа.
 
 Следующий шаг: 24.8e «Year in Review».
+
+════════════════════════════════════════════════════════════════
+ЭТАП 24.8e ЧАСТЬ 1 «YEAR IN REVIEW: МОДЕЛИ И USECASE'Ы» — ЗАВЕРШЁН (2026-11-15)
+════════════════════════════════════════════════════════════════
+Что покрыто (29 новых тестов)
+[x] Модели (6): YearInReviewData — безопасные нули, JSON round-trip со всеми полями и вложенными topCategories/cashbackTop, nullable-поля остаются null; YearCategoryStat — дефолты amount/percent; YearInReviewYearInfo — год без кэша не просмотрен; YearlyAggregate — скоуп null = личная статистика.
+[x] CalculateYearInReviewUseCase (7): свежий непустой кэш без пересчёта, нет операций после расчёта = свежий, кэш старше последней операции -> пересчёт (D19-19), пустой кэш пересчитывается всегда, кэша нет -> пересчёт с базовой валютой из настроек, семейный скоуп в чтение и пересчёт, ошибка репозитория пробрасывается.
+[x] GetAvailableYearsUseCase + MarkYearInReviewAsViewedUseCase (6): список годов из репозитория с флагами, пусто, ошибка; отметка просмотра с личным (null) и семейным скоупом, ошибка.
+[x] CheckYearInReviewAvailabilityUseCase (10): не декабрь, 26 декабря, выключенный тумблер, кэша нет + пересчёт дал данные, пересчёт дал 0 операций, пересчёт вернул null, просмотренный отчёт, непросмотренный с данными, кэш с нулём операций, ошибка гасится в null.
+
+Итог: 1330 тестов зелёные, flutter analyze без замечаний.
+Инфраструктура: test/helpers/fake_yearly_aggregates_repository.dart (+ makeAggregate).
+
+ОСТАЛОСЬ ПО YEAR IN REVIEW
+Drift-репозиторий YearlyAggregatesRepositoryImpl (availableYears, скоупы, lastTransactionUpdate).
+ShareYearInReviewSlideUseCase — guards до вызова плагинов (нужны точные импорты SecureFlagService / AdminRepository).
+RecalculateYearlyAggregatesUseCase — только на устройстве (path_provider + compute + файловая БД).
+
+Следующий шаг: 24.8e часть 2 — Drift-репозиторий итогов и блок долгов в матрице триггеров.
