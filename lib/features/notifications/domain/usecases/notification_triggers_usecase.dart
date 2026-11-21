@@ -14,6 +14,7 @@ class NotificationTriggerResult {
     this.spaceId,
     this.dedupDays = 1,
   });
+
   final NotificationType type;
   final String title;
   final String body;
@@ -24,11 +25,17 @@ class NotificationTriggerResult {
 
 /// Оценка всех триггеров пушей (ТОМ 5 §2) из локальной БД.
 /// Каждый блок обёрнут в try/catch: падение одного не ломает остальные.
+///
+/// ФИКС Этапа 24 (D24-78): per-type тумблеры из notification_settings_json
+/// применялись ТОЛЬКО к трём типам лимитов. Остальные типы пушились
+/// независимо от настройки пользователя (Этап 18.7 даёт 27 тумблеров).
+/// Теперь on(type) проверяется у каждого не-alwaysOn типа.
+///
 /// TODO(25): добавить триггеры импорта (duplicate_receipt, duplicate_detected,
 ///   transfer_detected, hold_confirmed) — вшиваются прямо в флоу импорта.
-
 class NotificationTriggersUseCase {
   NotificationTriggersUseCase(this._db);
+
   final AppDatabase _db;
 
   String _rub(int kopecks) {
@@ -49,6 +56,7 @@ class NotificationTriggersUseCase {
     DateTime now,
   ) async {
     final out = <NotificationTriggerResult>[];
+
     var globalPercent = 80;
     var globalAmount = 0;
     var limitMode = 'global_percent';
@@ -61,6 +69,7 @@ class NotificationTriggersUseCase {
     var enableBank = true;
     var enableYearReview = true;
     final perType = <String, dynamic>{};
+
     try {
       final s = await _db.customSelect(
         'SELECT * FROM app_settings WHERE user_id = ?',
@@ -87,11 +96,14 @@ class NotificationTriggersUseCase {
     } catch (e) {
       AppLogger.w('triggers: settings read failed: $e');
     }
-    bool on(NotificationType t, bool fallback) =>
-        t.alwaysOn ? true : (perType[t.dbValue] is bool ? perType[t.dbValue] as bool : fallback);
+
+    bool on(NotificationType t, bool fallback) => t.alwaysOn
+        ? true
+        : (perType[t.dbValue] is bool ? perType[t.dbValue] as bool : fallback);
 
     final monthStart = DateTime(now.year, now.month, 1);
-    final monthEnd = DateTime(now.year, now.month + 1, 1).subtract(const Duration(seconds: 1));
+    final monthEnd = DateTime(now.year, now.month + 1, 1)
+        .subtract(const Duration(seconds: 1));
     final dayAgo = now.subtract(const Duration(hours: 24));
 
     var spaces = <Map<String, Object?>>[];
@@ -133,7 +145,10 @@ class NotificationTriggersUseCase {
         final spent = e.first.read<int>('s');
         final percent = spent * 100 ~/ lim;
         final key = '$sid:${now.year}-${now.month}';
-        if (limitMode != 'global_amount' && percent >= globalPercent && percent < 100 &&
+
+        if (limitMode != 'global_amount' &&
+            percent >= globalPercent &&
+            percent < 100 &&
             on(NotificationType.limitGlobalPercent, true)) {
           out.add(NotificationTriggerResult(
             type: NotificationType.limitGlobalPercent,
@@ -144,7 +159,9 @@ class NotificationTriggersUseCase {
             dedupDays: 3,
           ));
         }
-        if (limitMode != 'global_percent' && globalAmount > 0 && lim - spent <= globalAmount &&
+        if (limitMode != 'global_percent' &&
+            globalAmount > 0 &&
+            lim - spent <= globalAmount &&
             on(NotificationType.limitGlobalAmount, true)) {
           out.add(NotificationTriggerResult(
             type: NotificationType.limitGlobalAmount,
@@ -190,7 +207,8 @@ class NotificationTriggersUseCase {
         ).get();
         final s = spent.first.read<int>('s');
         final p = s * 100 ~/ lim;
-        if (p >= l.read<int>('ap') && on(NotificationType.limitIndividual, true)) {
+        if (p >= l.read<int>('ap') &&
+            on(NotificationType.limitIndividual, true)) {
           out.add(NotificationTriggerResult(
             type: NotificationType.limitIndividual,
             title: '🛒 Лимит «${l.read<String>('name')}» почти исчерпан ($p%)',
@@ -204,36 +222,37 @@ class NotificationTriggersUseCase {
       AppLogger.w('triggers: individual limits skipped: $e');
     }
 
-    if (enableDeficit) {
-  try {
-    final nowMonth = '${now.year}-${now.month.toString().padLeft(2, '0')}';
-    final nextMonthDate = DateTime(now.year, now.month + 1, 1);
-    final nextMonth = '${nextMonthDate.year}-${nextMonthDate.month.toString().padLeft(2, '0')}';
-    final f = await _db.customSelect(
-      'SELECT month_year, forecasted_amount FROM forecast_cache '
-      'WHERE user_id = ? AND category_id IS NULL '
-      'AND month_year IN (?, ?) AND forecasted_amount < 0 '
-      'ORDER BY month_year ASC LIMIT 1',
-      variables: [
-        Variable.withString(userId),
-        Variable.withString(nowMonth),
-        Variable.withString(nextMonth),
-      ],
-    ).get();
-    if (f.isNotEmpty) {
-      final my = f.first.read<String>('month_year');
-      out.add(NotificationTriggerResult(
-        type: NotificationType.deficitForecastWarning,
-        title: '🔮 Баланс уйдёт в минус',
-        body: 'Прогноз на $my отрицательный. Проверьте расходы.',
-        entityId: 'deficit:$my',
-        dedupDays: 7,
-      ));
+    if (enableDeficit && on(NotificationType.deficitForecastWarning, true)) {
+      try {
+        final nowMonth = '${now.year}-${now.month.toString().padLeft(2, '0')}';
+        final nextMonthDate = DateTime(now.year, now.month + 1, 1);
+        final nextMonth =
+            '${nextMonthDate.year}-${nextMonthDate.month.toString().padLeft(2, '0')}';
+        final f = await _db.customSelect(
+          'SELECT month_year, forecasted_amount FROM forecast_cache '
+          'WHERE user_id = ? AND category_id IS NULL '
+          'AND month_year IN (?, ?) AND forecasted_amount < 0 '
+          'ORDER BY month_year ASC LIMIT 1',
+          variables: [
+            Variable.withString(userId),
+            Variable.withString(nowMonth),
+            Variable.withString(nextMonth),
+          ],
+        ).get();
+        if (f.isNotEmpty) {
+          final my = f.first.read<String>('month_year');
+          out.add(NotificationTriggerResult(
+            type: NotificationType.deficitForecastWarning,
+            title: '🔮 Баланс уйдёт в минус',
+            body: 'Прогноз на $my отрицательный. Проверьте расходы.',
+            entityId: 'deficit:$my',
+            dedupDays: 7,
+          ));
+        }
+      } catch (e) {
+        AppLogger.w('triggers: deficit forecast skipped: $e');
+      }
     }
-  } catch (e) {
-    AppLogger.w('triggers: deficit forecast skipped: $e');
-  }
-}
 
     if (enableDebts) {
       try {
@@ -252,21 +271,28 @@ class NotificationTriggersUseCase {
         for (final d in debts) {
           final id = d.read<String>('id');
           final isDebtor = d.readNullable<String>('debtor') == userId;
-          final other = isDebtor ? d.read<String>('cred_d') : d.read<String>('deb_d');
+          final other =
+              isDebtor ? d.read<String>('cred_d') : d.read<String>('deb_d');
           final amount = _rub(d.read<int>('amount'));
           final status = d.read<String>('status');
           final created = d.read<DateTime>('created');
           final updated = d.read<DateTime>('updated');
-          if (created.isAfter(dayAgo)) {
+
+          if (created.isAfter(dayAgo) &&
+              on(NotificationType.debtCreated, true)) {
             out.add(NotificationTriggerResult(
               type: NotificationType.debtCreated,
-              title: isDebtor ? '🤝 Вы должны $other $amount' : '🤝 Вам должны $amount',
+              title: isDebtor
+                  ? '🤝 Вы должны $other $amount'
+                  : '🤝 Вам должны $amount',
               body: 'Новая запись о долге создана.',
               entityId: id,
               dedupDays: 30,
             ));
           }
-          if (status == 'resolved' && updated.isAfter(dayAgo)) {
+          if (status == 'resolved' &&
+              updated.isAfter(dayAgo) &&
+              on(NotificationType.debtClosed, true)) {
             out.add(NotificationTriggerResult(
               type: NotificationType.debtClosed,
               title: '✅ Долг закрыт',
@@ -275,7 +301,10 @@ class NotificationTriggersUseCase {
               dedupDays: 30,
             ));
           }
-          if (status == 'forgiven' && updated.isAfter(dayAgo) && isDebtor) {
+          if (status == 'forgiven' &&
+              updated.isAfter(dayAgo) &&
+              isDebtor &&
+              on(NotificationType.debtForgiven, true)) {
             out.add(NotificationTriggerResult(
               type: NotificationType.debtForgiven,
               title: '🕊️ ${d.read<String>('cred_n')} простил вам долг',
@@ -285,12 +314,17 @@ class NotificationTriggersUseCase {
             ));
           }
           final due = d.readNullable<DateTime>('due');
-          if (status == 'active' && due != null && due.isBefore(now.subtract(const Duration(days: 7)))) {
+          if (status == 'active' &&
+              due != null &&
+              due.isBefore(now.subtract(const Duration(days: 7))) &&
+              on(NotificationType.debtOverdue, true)) {
             final n = now.difference(due).inDays;
             out.add(NotificationTriggerResult(
               type: NotificationType.debtOverdue,
               title: '⏳ Долг просрочен на $n дн',
-              body: isDebtor ? 'Вы должны $other $amount.' : 'Долг на $amount не закрыт в срок.',
+              body: isDebtor
+                  ? 'Вы должны $other $amount.'
+                  : 'Долг на $amount не закрыт в срок.',
               entityId: id,
               dedupDays: 7,
             ));
@@ -312,17 +346,24 @@ class NotificationTriggersUseCase {
         for (final r in rems) {
           final id = r.read<String>('id');
           final at = r.readNullable<DateTime>('at');
-          if (at != null && at.isBefore(now.add(const Duration(hours: 24))) && at.isAfter(now.subtract(const Duration(hours: 2)))) {
+          if (at != null &&
+              at.isBefore(now.add(const Duration(hours: 24))) &&
+              at.isAfter(now.subtract(const Duration(hours: 2))) &&
+              on(NotificationType.reminderDue, true)) {
             final amount = r.readNullable<int>('amount');
             out.add(NotificationTriggerResult(
               type: NotificationType.reminderDue,
               title: '🔔 ${r.read<String>('title')}',
-              body: amount == null || amount == 0 ? 'Напоминание на сегодня.' : 'Сумма: ${_rub(amount)}.',
+              body: amount == null || amount == 0
+                  ? 'Напоминание на сегодня.'
+                  : 'Сумма: ${_rub(amount)}.',
               entityId: '$id:${at.year}-${at.month}-${at.day}',
             ));
           }
           final snooze = r.readNullable<String>('snooze');
-          if (snooze != null && snooze.isNotEmpty) {
+          if (snooze != null &&
+              snooze.isNotEmpty &&
+              on(NotificationType.reminderSnoozeWarning, true)) {
             try {
               final list = jsonDecode(snooze) as List;
               if (list.length >= 3) {
@@ -349,10 +390,12 @@ class NotificationTriggersUseCase {
         variables: [Variable.withString(userId), Variable.withInt(_epoch(dayAgo))],
       ).get();
       for (final r in rec) {
+        if (!on(NotificationType.recurringDetected, true)) continue;
         out.add(NotificationTriggerResult(
           type: NotificationType.recurringDetected,
           title: '🔍 Обнаружена подписка «${r.read<String>('m')}»',
-          body: 'Примерно ${_rub(r.read<int>('b'))} в месяц. Добавить как напоминание?',
+          body:
+              'Примерно ${_rub(r.read<int>('b'))} в месяц. Добавить как напоминание?',
           entityId: r.read<String>('m'),
           dedupDays: 30,
         ));
@@ -361,9 +404,10 @@ class NotificationTriggersUseCase {
       AppLogger.w('triggers: recurring skipped: $e');
     }
 
-    if (enableSecrecy) {
+    if (enableSecrecy && on(NotificationType.holidaySecrecyStart, true)) {
       try {
-        final target = DateTime(now.year, now.month, now.day).add(Duration(days: secrecyDays));
+        final target = DateTime(now.year, now.month, now.day)
+            .add(Duration(days: secrecyDays));
         final hol = await _db.customSelect(
           'SELECT name FROM holidays WHERE date >= ? AND date < ?',
           variables: [
@@ -375,7 +419,8 @@ class NotificationTriggersUseCase {
           out.add(NotificationTriggerResult(
             type: NotificationType.holidaySecrecyStart,
             title: '🎁 Режим секретности активирован',
-            body: '«${h.read<String>('name')}»: траты-подарки скрыты до ${target.day}.${target.month.toString().padLeft(2, '0')}.',
+            body:
+                '«${h.read<String>('name')}»: траты-подарки скрыты до ${target.day}.${target.month.toString().padLeft(2, '0')}.',
             entityId: '${h.read<String>('name')}:${target.year}',
             dedupDays: 300,
           ));
@@ -385,7 +430,7 @@ class NotificationTriggersUseCase {
       }
     }
 
-    if (enableSecrecy) {
+    if (enableSecrecy && on(NotificationType.giftPurchaseAlert, true)) {
       try {
         final big = await _db.customSelect(
           'SELECT id, amount, COALESCE(merchant_name, \'Покупка\') AS m FROM transactions '
@@ -417,7 +462,7 @@ class NotificationTriggersUseCase {
         final id = g.read<String>('id');
         final target = g.read<int>('target');
         final cur = g.read<int>('cur');
-        if (target > 0) {
+        if (target > 0 && on(NotificationType.goalMilestone, true)) {
           final p = cur * 100 ~/ target;
           for (final th in const [50, 75, 90]) {
             if (p >= th) {
@@ -432,7 +477,11 @@ class NotificationTriggersUseCase {
           }
         }
         final dl = g.readNullable<DateTime>('dl');
-        if (dl != null && dl.isAfter(now) && dl.isBefore(now.add(const Duration(days: 7))) && cur < target) {
+        if (dl != null &&
+            dl.isAfter(now) &&
+            dl.isBefore(now.add(const Duration(days: 7))) &&
+            cur < target &&
+            on(NotificationType.goalDeadlineApproaching, true)) {
           out.add(NotificationTriggerResult(
             type: NotificationType.goalDeadlineApproaching,
             title: '⏳ Дедлайн «${g.read<String>('name')}» через неделю',
@@ -450,49 +499,60 @@ class NotificationTriggersUseCase {
       for (final sp in spaces) {
         final sid = sp['id'] as String;
         try {
-          final admin = await _db.customSelect(
-            'SELECT m.user_id AS uid, m.last_active_at AS la, COALESCE(u.display_name, \'Админ\') AS n '
-            'FROM memberships m LEFT JOIN users u ON u.id = m.user_id '
-            "WHERE m.space_id = ? AND m.role = 'admin' AND m.status = 'active' LIMIT 1",
-            variables: [Variable.withString(sid)],
-          ).get();
-          if (admin.isNotEmpty) {
-            final a = admin.first;
-            final la = a.readNullable<DateTime>('la');
-            final adminId = a.read<String>('uid');
-            if (la != null && adminId != userId && now.difference(la).inDays >= 14) {
-              out.add(NotificationTriggerResult(
-                type: NotificationType.adminHeartbeatWarning,
-                title: '⚠️ Админ ${a.read<String>('n')} не заходил ${now.difference(la).inDays} дн',
-                body: 'Риск блокировки настроек пространства.',
-                entityId: '$sid:${now.year}-${now.month}',
-                spaceId: sid,
-                dedupDays: 14,
-              ));
+          if (on(NotificationType.adminHeartbeatWarning, true)) {
+            final admin = await _db.customSelect(
+              'SELECT m.user_id AS uid, m.last_active_at AS la, COALESCE(u.display_name, \'Админ\') AS n '
+              'FROM memberships m LEFT JOIN users u ON u.id = m.user_id '
+              "WHERE m.space_id = ? AND m.role = 'admin' AND m.status = 'active' LIMIT 1",
+              variables: [Variable.withString(sid)],
+            ).get();
+            if (admin.isNotEmpty) {
+              final a = admin.first;
+              final la = a.readNullable<DateTime>('la');
+              final adminId = a.read<String>('uid');
+              if (la != null &&
+                  adminId != userId &&
+                  now.difference(la).inDays >= 14) {
+                out.add(NotificationTriggerResult(
+                  type: NotificationType.adminHeartbeatWarning,
+                  title:
+                      '⚠️ Админ ${a.read<String>('n')} не заходил ${now.difference(la).inDays} дн',
+                  body: 'Риск блокировки настроек пространства.',
+                  entityId: '$sid:${now.year}-${now.month}',
+                  spaceId: sid,
+                  dedupDays: 14,
+                ));
+              }
             }
           }
-          final joins = await _db.customSelect(
-            'SELECT m.user_id AS uid, m.joined_at AS j, m.left_at AS l, '
-            'COALESCE(u.display_name, \'Участник\') AS n FROM memberships m '
-            'LEFT JOIN users u ON u.id = m.user_id '
-            'WHERE m.space_id = ? AND m.user_id != ? AND (m.joined_at >= ? OR m.left_at >= ?)',
-            variables: [
-              Variable.withString(sid),
-              Variable.withString(userId),
-              Variable.withInt(_epoch(dayAgo)),
-              Variable.withInt(_epoch(dayAgo)),
-            ],
-          ).get();
-          for (final j in joins) {
-            final left = j.readNullable<DateTime>('l');
-            out.add(NotificationTriggerResult(
-              type: NotificationType.memberActivity,
-              title: left == null ? '👥 ${j.read<String>('n')} присоединился' : '👥 ${j.read<String>('n')} покинул группу',
-              body: sp['name'] as String,
-              entityId: '${j.read<String>('uid')}:${left == null ? 'join' : 'left'}',
-              spaceId: sid,
-              dedupDays: 30,
-            ));
+
+          if (on(NotificationType.memberActivity, true)) {
+            final joins = await _db.customSelect(
+              'SELECT m.user_id AS uid, m.joined_at AS j, m.left_at AS l, '
+              'COALESCE(u.display_name, \'Участник\') AS n FROM memberships m '
+              'LEFT JOIN users u ON u.id = m.user_id '
+              'WHERE m.space_id = ? AND m.user_id != ? AND (m.joined_at >= ? OR m.left_at >= ?)',
+              variables: [
+                Variable.withString(sid),
+                Variable.withString(userId),
+                Variable.withInt(_epoch(dayAgo)),
+                Variable.withInt(_epoch(dayAgo)),
+              ],
+            ).get();
+            for (final j in joins) {
+              final left = j.readNullable<DateTime>('l');
+              out.add(NotificationTriggerResult(
+                type: NotificationType.memberActivity,
+                title: left == null
+                    ? '👥 ${j.read<String>('n')} присоединился'
+                    : '👥 ${j.read<String>('n')} покинул группу',
+                body: sp['name'] as String,
+                entityId:
+                    '${j.read<String>('uid')}:${left == null ? 'join' : 'left'}',
+                spaceId: sid,
+                dedupDays: 30,
+              ));
+            }
           }
         } catch (e) {
           AppLogger.w('triggers: group activity skipped: $e');
@@ -505,6 +565,7 @@ class NotificationTriggersUseCase {
         'SELECT id, entity_type AS t FROM sync_conflicts WHERE resolved_at IS NULL',
       ).get();
       for (final c in conf) {
+        if (!on(NotificationType.syncConflictManual, true)) continue;
         out.add(NotificationTriggerResult(
           type: NotificationType.syncConflictManual,
           title: '🔀 Конфликт данных «${c.read<String>('t')}»',
@@ -518,24 +579,28 @@ class NotificationTriggersUseCase {
     }
 
     try {
-      final recs = await _db.customSelect(
-        "SELECT id FROM receipts WHERE status = 'draft' AND created_at <= ?",
-        variables: [Variable.withInt(_epoch(dayAgo))],
-      ).get();
-      for (final r in recs) {
-        out.add(NotificationTriggerResult(
-          type: NotificationType.unmatchedReceipt,
-          title: '🧾 Чек не привязан к операции',
-          body: 'Чек в черновиках больше суток. Прикрепить?',
-          entityId: r.read<String>('id'),
-          dedupDays: 3,
-        ));
+      if (on(NotificationType.unmatchedReceipt, true)) {
+        final recs = await _db.customSelect(
+          "SELECT id FROM receipts WHERE status = 'draft' AND created_at <= ?",
+          variables: [Variable.withInt(_epoch(dayAgo))],
+        ).get();
+        for (final r in recs) {
+          out.add(NotificationTriggerResult(
+            type: NotificationType.unmatchedReceipt,
+            title: '🧾 Чек не привязан к операции',
+            body: 'Чек в черновиках больше суток. Прикрепить?',
+            entityId: r.read<String>('id'),
+            dedupDays: 3,
+          ));
+        }
       }
     } catch (e) {
       AppLogger.w('triggers: receipts skipped: $e');
     }
 
-    if (enableBank && now.day == 25) {
+    if (enableBank &&
+        now.day == 25 &&
+        on(NotificationType.bankStatementReminder, true)) {
       try {
         final imp = await _db.customSelect(
           'SELECT COUNT(*) AS c FROM import_drafts WHERE created_at >= ?',
@@ -555,10 +620,12 @@ class NotificationTriggersUseCase {
       }
     }
 
-
     // Этап 19 (6.3.37.13): пуш «Годовой отчёт готов» после 27 декабря.
     // Локальная генерация: сервер не видит расшифрованные итоги.
-    if (enableYearReview && now.month == 12 && now.day >= 27) {
+    if (enableYearReview &&
+        now.month == 12 &&
+        now.day >= 27 &&
+        on(NotificationType.yearReviewReady, true)) {
       try {
         final yr = await _db.customSelect(
           'SELECT is_viewed AS v FROM yearly_aggregates '
@@ -578,6 +645,7 @@ class NotificationTriggersUseCase {
         AppLogger.w('triggers: year review skipped: $e');
       }
     }
+
     return out;
   }
 }
