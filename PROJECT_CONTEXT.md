@@ -1074,3 +1074,25 @@ CORE (lib/core): 636 / 1895 = 33.6% — в гейт не входит (роад�
 24.8c — loyalty_cards; 24.8d — notifications; 24.8e — year_in_review; 24.8f — admin.
 24.8g — пробелы: receipts, transactions, savings_goals, year_budget, cashback.
 24.9 — финал: гейт, закрытие TODO(24.1c / 24.2c / 24.9), документы, коммит этапа.
+
+════════════════════════════════════════════════════════════════
+ЭТАП 24.8b «AUTH, PIN, ВЫХОД ИЗ ПРОСТРАНСТВА» — ЗАВЕРШЁН (2026-11-15)
+════════════════════════════════════════════════════════════════
+Что покрыто (38 новых тестов)
+[x] AuthRepositoryImpl (13): getCurrentUser / signIn / signUp / OTP / Google / signOut — успех и ошибка источника (Failure, наружу не летит); проброс email и пароля позиционными аргументами; authStateChanges проксируется от источника.
+[x] DeleteAccountUseCase (3): wipe всех таблиц + storage.deleteAll, идемпотентность повторного вызова, ошибка Keystore пробрасывается.
+[x] SetPinCodeUseCase / VerifyPinCodeUseCase (10): длина PIN и несовпадение подтверждения отклоняются ДО обращения к хранилищу; валидный PIN сохраняется; failure и исключение хранилища превращаются в Failure; неверный PIN = success(false), а не Failure.
+[x] LeaveSpaceUseCase (12): evaluate — нет активного членства (StateError), обычный участник, админ при другом админе, единственный админ один (dissolveSolo), 2 участника (autoPromote), 3+ (chooseSuccessor без себя), вышедший не считается активным; действия — архив только моих операций группы, автоповышение оставшегося, повышение выбранного преемника, dissolve с dissolvedBy и pending, повторный выход не трогает другие группы.
+
+ИСПРАВЛЕННЫЙ ДЕФЕКТ (D24-65)
+LeaveSpaceUseCase._leave передавал Variable-обёртки в customStatement. Выход из пространства и расформирование соло-группы падали всегда. Теперь передаются сырые значения.
+Проверка на телефоне: Профиль → Мои пространства → выйти из группы (и расформировать группу, где я один).
+
+Итог: 1137 тестов зелёные, flutter analyze без замечаний.
+
+ОСТАЛОСЬ В ЭТАПЕ 24.8
+Нулевые фичи: loyalty_cards (20 файлов), notifications (5), year_in_review (9), admin (8).
+Пробелы внутри покрытых: receipts 21 файл, transactions 14, import 11, cashback 8, savings_goals 2, year_budget 2.
+Не покрыты в уже тронутых фичах: PinCodeRepositoryImpl (мокался интерфейс), AuthNotifier, ExportAllDataUseCase и ExportEncryptionKeysUseCase (path_provider — только на устройстве).
+
+Следующий шаг: 24.8c «Карты лояльности» — EAN-13 checksum, автодетект типа кода, валидация, CRUD только создателем, сортировка и черновики.

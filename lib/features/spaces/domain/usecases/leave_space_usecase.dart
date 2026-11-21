@@ -1,6 +1,11 @@
 // lib/features/spaces/domain/usecases/leave_space_usecase.dart
 // Этап 21 (ТЗ 6.3.51.3 / 6.3.39.6): выход из пространства — 4 сценария.
 // D17-12: расформирование = soft-delete (status='dissolved'), строки живут.
+//
+// ФИКС Этапа 24 (D24-65): customStatement принимает СЫРЫЕ значения, а не
+// обёртки Variable — с Variable sqlite3 падал «Allowed parameters must
+// either be null or bool, int, num, String or List<int>», и выход из
+// пространства откатывался целиком. Variable нужен только в customSelect.
 import 'package:drift/drift.dart';
 import 'package:budget_assistant/core/database/app_database.dart';
 import 'package:budget_assistant/core/logger.dart';
@@ -43,6 +48,7 @@ class LeaveSpaceUseCase {
           scenario: LeaveSpaceScenario.simpleLeave,
         );
       }
+
       final admins = await (_db.select(_db.memberships)
             ..where((t) =>
                 t.spaceId.equals(spaceId) &
@@ -54,6 +60,7 @@ class LeaveSpaceUseCase {
           scenario: LeaveSpaceScenario.simpleLeave,
         );
       }
+
       final members = await (_db.select(_db.memberships)
             ..where((t) =>
                 t.spaceId.equals(spaceId) & t.status.equals('active')))
@@ -155,6 +162,7 @@ class LeaveSpaceUseCase {
             updatedAt: Value(now),
           ));
         }
+
         if (dissolve) {
           await (_db.update(_db.spaces)..where((t) => t.id.equals(spaceId)))
               .write(SpacesCompanion(
@@ -186,14 +194,18 @@ class LeaveSpaceUseCase {
             updatedAt: Value(now),
           ));
         }
+
         // ТЗ 6.3.39.6.e.ii: мои транзакции пространства -> архив.
+        // customStatement: список СЫРЫХ значений (D24-65).
         await _db.customStatement(
-          'UPDATE transactions SET is_archived_for_space = 1, sync_status = ?, updated_at = ? WHERE space_id = ? AND user_id = ? AND is_archived_for_space = 0',
+          'UPDATE transactions SET is_archived_for_space = 1, sync_status = ?, '
+          'updated_at = ? WHERE space_id = ? AND user_id = ? '
+          'AND is_archived_for_space = 0',
           [
-            Variable.withString('pending'),
-            Variable.withInt(now.millisecondsSinceEpoch ~/ 1000),
-            Variable.withString(spaceId),
-            Variable.withString(userId),
+            'pending',
+            now.millisecondsSinceEpoch ~/ 1000,
+            spaceId,
+            userId,
           ],
         );
       });
